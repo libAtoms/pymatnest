@@ -1,0 +1,417 @@
+#!/usr/bin/env python
+
+import sys
+
+if len(sys.argv) != 1:
+  sys.stderr.write("Usage: %s < input\n" % sys.argv[0])
+  sys.stderr.write("input:\n")
+  sys.stderr.write("start_file=start_file.xyz (MANDATORY)\n")
+  sys.stderr.write("n_walkers=n_walkers (MANDATORY)\n")
+  sys.stderr.write("n_steps=n_steps (MANDATORY)\n")
+
+  sys.stderr.write("QUIP_pot_args=QUIP_pot_args (MANDATORY)\n")
+  sys.stderr.write("QUIP_pot_params_file=QUIP_pot_params_file (MANDATORY)\n")
+
+  sys.stderr.write("MC_atom_n_steps=MC_atom_n_steps\n")
+  sys.stderr.write("MC_atom_step_size=MC_atom_step_size\n")
+  sys.stderr.write("MD_atom_n_steps=MD_atom_n_steps\n")
+  sys.stderr.write("MD_atom_timestep=MD_atom_timestep\n")
+  sys.stderr.write("MD_atom_energy_fuzz=MD_atom_energy_fuzz\n")
+
+  sys.stderr.write("2D=[ T | F ]\n")
+
+import re, numpy as np
+import ase
+try:
+   import quippy
+   have_quippy=True
+except:
+   have_quippy=False
+
+try:
+   from mpi4py import MPI
+   comm = MPI.COMM_WORLD
+   rank = comm.Get_rank()
+   size = comm.Get_size()
+except:
+   comm = None
+   rank = 0
+   size = 0
+
+if comm is not None and rank == 0:
+   print "comm ", comm, " size ", size
+
+# read inputs
+if size > 0 and rank == 0:
+   infile=open("inputs","r")
+else:
+   infile=sys.stdin
+args={}
+if rank == 0:
+   for line in infile:
+     if re.match("\s*(#.*)?$", line):
+       continue
+     matches = re.match("\s*(\S+)\s*=\s*(.*\S)", line)
+     args[matches.group(1)] = matches.group(2)
+if comm is not None:
+   args = comm.bcast(args,root=0)
+
+# parse args
+
+def exit_error(message, stat):
+   sys.stderr.write(message)
+   try:
+      comm.Abort()
+   except:
+      pass
+   sys.exit(stat)
+
+# check for mandatory args
+if not 'start_file' in args:
+  exit_error("need starting position file start_file\n",1)
+if not 'n_walkers' in args:
+  exit_error("need number of walkers n_walkers\n",1)
+if not 'n_steps' in args:
+  exit_error("need number of steps n_steps\n",1)
+
+# convert from strings to actual args
+ns_args={}
+try:
+  ns_args['start_file'] = args.pop('start_file')
+  ns_args['n_walkers'] = int(args.pop('n_walkers'))
+  ns_args['n_steps'] = int(args.pop('n_steps'))
+  ns_args['QUIP_pot_args'] = args.pop('QUIP_pot_args')
+  ns_args['QUIP_pot_params_file'] = args.pop('QUIP_pot_params_file')
+except:
+  exit_error("Failed to read some mandatory argument: start_file, n_walkers, n_steps, QUIP_pot_args, QUIP_pot_params_file\n", 1)
+
+movement_args={}
+movement_args['MC_atom_n_steps'] = int(args.pop('MC_atom_n_steps', 0))
+movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.0))
+movement_args['MD_atom_n_steps'] = int(args.pop('MD_atom_n_steps', 0))
+movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.0))
+movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-12))
+movement_args['2D'] = args.pop('2D', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+
+confining_pot_args={}
+confining_pot_args['mag'] = float(args.pop('confining_potential_mag', 0.0))
+
+if 'QUIP_pot_params_file' in ns_args:
+   if not have_quippy:
+     exit_error("Got QUIP_pot_params but no quippy module\n", 3)
+   try:
+      if rank == 0:
+	 ns_args['QUIP_pot_params'] = open(ns_args['QUIP_pot_params_file'],"r").read()
+      else:
+	 ns_args['QUIP_pot_params'] = None
+      if comm is not None:
+	 ns_args['QUIP_pot_params'] = comm.bcast(ns_args['QUIP_pot_params'], root=0)
+   except:
+      exit_error("Failed to read params file '%s'\n" % ns_args['QUIP_pot_params_file'], 1)
+else:
+   sys.stderr.write("Got no *_pot_params_file")
+
+if len(args) > 0:
+  exit_error(args+"\nUnknown arguments read in\n", 2)
+
+if rank == 0:
+   print "ns_args ",ns_args
+   print "movement_args ",movement_args
+
+# initialise potential
+if have_quippy:
+   pot = quippy.Potential(ns_args['QUIP_pot_args'], param_str=ns_args['QUIP_pot_params'], calculation_always_required=True)
+else:
+   exit_error("Need some non-quippy way of initializing calculator\n",3)
+
+# read initial config
+if have_quippy:
+   init_atoms = None
+   if rank == 0:
+      init_atoms = quippy.Atoms(ns_args['start_file'])
+   if comm is not None:
+      init_atoms = comm.bcast(init_atoms, root=0)
+   init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
+else:
+   exit_error("need some non-quippy way of reading input configuration\n",3)
+
+# clone initial config into array of walkers
+walkers=[]
+rank_of_walker = [0]*ns_args['n_walkers']
+if size <= 1:
+   n_walkers = ns_args['n_walkers']
+else:
+   n_walkers_per_task = ns_args['n_walkers']/size
+   last_walker = 0
+   for i_rank in range(size):
+      first_walker = last_walker
+      last_walker = last_walker + n_walkers_per_task
+      if last_walker > ns_args['n_walkers']:
+	 last_walker = ns_args['n_walkers']
+      if i_rank == rank:
+	 n_walkers = last_walker-first_walker
+	 my_first_walker = first_walker
+	 my_last_walker = last_walker
+      if last_walker > first_walker:
+	 rank_of_walker[first_walker:last_walker] = [i_rank]*(last_walker-first_walker)
+for i_walker in range(n_walkers):
+  walkers.append(init_atoms.copy())
+for at in walkers:
+   at.set_calculator(pot)
+
+def eval_energy(at):
+  # potential
+  if have_quippy:
+     energy = at.get_potential_energy()
+  else:
+     sys.stderr.write("Need some non-quippy way to do eval_energy")
+
+  # confining
+  if confining_pot_args['mag'] > 0.0:
+     energy += confining_pot_args['mag']*(np.linalg.norm(at.pos)**2)
+
+  # kinetic
+  velocities = at.get_velocities()
+  masses = at.get_masses()
+  if velocities is not None and masses is not None:
+      energy += 0.5*(masses * np.linalg.norm(velocities, axis=1)**2).sum()
+
+  return energy
+
+def quippy_propagate(at, dt, n_steps):
+   old_pos = at.get_positions()
+   old_velo = at.get_velocities()
+   if old_velo is not None:
+      if not hasattr(at, 'velo'):
+	 at.add_property('velo', 0.0, n_cols=3)
+      at.velo[:,:] = old_velo.transpose()/(ase.units.Ang/ase.units.fs)
+   ds=quippy.DynamicalSystem(at)
+   ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=0, connect_interval=1, write_interval=0, save_interval=0)
+   at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
+
+def do_MD_atom_walk(at, movement_args, Emax):
+
+   print rank, ": initial positions ", at.get_positions()[0]
+   if at.get_velocities() is not None:
+      print rank, ": initial velo ", at.get_velocities()[0]
+   else:
+      print rank, ": initial velo ", None
+
+   # propagate in time
+   if have_quippy:
+      quippy_propagate(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['MD_atom_n_steps']) 
+   else:
+      exit_error("Need some non-quippy way of doing MD\n",3)
+
+   if at.get_potential_energy() > Emax+movement_args['MD_atom_energy_fuzz']:
+      print rank, ": reject MD traj"
+      at.set_positions(old_pos)
+      at.set_velocities(old_velo)
+
+   ## print "velo ", at.get_velocities()
+   masses = at.get_masses()
+   ## print "masses ", masses
+   unit_rv = np.random.standard_normal( (len(at), 3) )
+   unit_rv /= np.linalg.norm(unit_rv)
+   ## print "unit_rv ", unit_rv
+   ## print "unit_rv norm ", np.linalg.norm(unit_rv)
+   mag_rv = np.random.uniform()**(1.0/(3.0*len(at)-1.0))
+   pot_energy = at.get_potential_energy()
+   ## print "mag_rv ", mag_rv
+   ## print "dup masses ", np.array([masses,]*3).transpose()
+   # from Baldock thesis Eq. 11.10 
+   #     p^{**} = r \mathbf{S} \hat{\mathbf{r}}
+   # and 11.11 
+   #     S_{ij} = \delta_{ij} (2 m_i [ E_{lim} - U(q))])^{1/2}
+   # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
+   # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
+   ## print "pot_energy, Emax (eV) ", pot_energy, Emax
+   ## print "pot energy (amu A^2/fs^2) ", pot_energy*eV_to_amu_A_sq_per_fs_sq
+   ## print "max_KE (eV) ", Emax-pot_energy
+   velocities = mag_rv * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
+   at.set_velocities(velocities)
+
+   ## print "vel norms ",np.linalg.norm(at.get_velocities(), axis=1)
+   print rank, ": kin_energy eV ",            0.5*(np.linalg.norm(at.get_velocities(), axis=1)**2 * masses).sum() 
+   print rank, ": mag_rv * mag_KE (eV) ", mag_rv**2 * (Emax-pot_energy)
+
+   print rank, ": final positions ", at.get_positions()[0]
+   print rank, ": final velo ", at.get_velocities()[0]
+
+def do_MC_atom_walk(at, movement_args, Emax):
+  if movement_args['MC_atom_n_steps'] <= 0: 
+     return
+  #DEBUG print "do_MC_atom_walk"
+  n_steps = movement_args['MC_atom_n_steps']
+  step_size = movement_args['MC_atom_step_size']
+  acc_rate=0
+  energy = eval_energy(at)
+  for i_MC_step in range(n_steps):
+    #DEBUG print "i_MC_step ",i_MC_step
+    at_list=list(range(at.n))
+    np.random.shuffle(at_list)
+    for i_at in at_list:
+      #DEBUG print "i_at ",i_at
+      dx = np.random.normal(0.0, step_size)
+      dy = np.random.normal(0.0, step_size)
+      if movement_args['2D']:
+	 dz=0.0
+      else:
+	 dz = np.random.normal(0.0, step_size)
+      old_energy = energy
+      old_pos = at.get_positions()
+      new_pos = old_pos.copy()
+      new_pos[i_at,:] += (dx, dy,dz)
+      at.set_positions(new_pos)
+      energy = eval_energy(at)
+      if energy > Emax:
+	at.set_positions(old_pos)
+	energy = old_energy
+      else:
+	acc_rate += 1
+  return float(acc_rate)/float(n_steps*at.n)
+
+def walk_single_walker_walk(at, movement_args, Emax):
+  #DEBUG print "walk_single_walkers_walk"
+  do_MC_atom_walk(at, movement_args, Emax)
+  do_MD_atom_walk(at, movement_args, Emax)
+  # do_MC_cell_step(at, movement_args, Emax)
+
+def adjust_MC_step_size(at, single_walker_routine, movement_args, step_size_str, Emax):
+  print "adjust_MC_step_size ", single_walker_routine, step_size_str
+  for i_iter in range(200):
+    at_test = at.copy()
+      at_test.calc_connect()
+    mean_acc_rate = walk_single_walkers_walk(at_test, single_walker_routine, movement_args, Emax)
+    print "  i_iter=%d mean_acc_rate=%f %s=%f" % (i_iter, mean_acc_rate, step_size_str, movement_args[step_size_str])
+    if (mean_acc_rate < 0.2):
+      movement_args[step_size_str] /= 1.2
+    elif (mean_acc_rate > 0.8):
+      movement_args[step_size_str] *= 1.2
+    else:
+      break
+
+traj_io = quippy.CInOutput("traj.%d.xyz" % rank, action=quippy.OUTPUT)
+energy_io = open("energies.%d" % rank, "w")
+
+def max_energy(walkers):
+  # do local max
+  Emax_loc_ind = np.array([ eval_energy(at) for at in walkers]).argmax()
+  Emax_ind = Emax_loc_ind + my_first_walker
+  Emax = eval_energy(walkers[Emax_loc_ind])
+  rank_of_max = 0
+  # do globale max
+  if comm is not None:
+     Emax_ind_list = comm.allgather(Emax_loc_ind+my_first_walker)
+     Emax_list = comm.allgather(Emax)
+     rank_of_max = np.array(Emax_list).argmax()
+     Emax_ind = Emax_ind_list[rank_of_max]
+     Emax = Emax_list[rank_of_max]
+  return (Emax, Emax_ind, rank_of_max)
+
+
+# do NS
+def do_ns_loop():
+
+   # WARNING not really random
+   np.random.seed(rank)
+
+   (Emax, Emax_ind, Emax_rank) = max_energy(walkers)
+
+   print rank, ": before loop"
+   walk_all_walkers_walk(walkers, walk_single_walker_walk, movement_args, Emax)
+
+   (Emax, Emax_ind, Emax_rank) = max_energy(walkers)
+
+   for i_ns_step in range(ns_args['n_steps']):
+     print rank, ": starting ns loop ",i_ns_step
+     # do atom MC step size adj
+     ## if movement_args['MC_atom_n_steps'] > 0 and i_ns_step%10 == 0:
+	## adjust_MC_step_size(walkers, do_MC_atom_walk, movement_args, 'MC_atom_step_size', Emax)
+
+     for at in walkers:
+	print rank, ": pre-move walkers", at.get_positions()[0]
+     print rank, ": pre-move energies", [ eval_energy(at) for at in walkers ]
+
+     # move all walkers
+     walk_all_walkers_walk(walkers, walk_single_walker_walk, movement_args, Emax)
+
+     for at in walkers:
+	print rank, ": post-move walkers", at.get_positions()[0]
+     print rank, ": post-move energies", [ eval_energy(at) for at in walkers ]
+
+     # record all walkers
+     energy_io.write(("%d " % i_ns_step) + " ".join(["%f" % eval_energy(at) for at in walkers])+"\n")
+     if have_quippy:
+	for at in walkers:
+	   at.write(traj_io)
+     else:
+        exit_error("Need some non-quippy way of writing trajectory\n",3)
+
+     # do NS config dropping/forming
+     (Emax, Emax_ind, Emax_rank) = max_energy(walkers)
+
+     print rank, ": got max ", Emax, Emax_ind, Emax_rank
+
+     if rank == 0:
+	print "max energy ", Emax_ind, Emax
+
+     # pick clone on one node
+     if rank == 0:
+	clone_index = Emax_ind
+	while clone_index == Emax_ind:
+	  clone_index = np.random.choice(range(ns_args['n_walkers']))
+     else:
+        clone_index = None
+     if comm is not None:
+	clone_index = comm.bcast(clone_index, root=0)
+
+     clone_rank = rank_of_walker[clone_index]
+
+     print rank, ": got clone ", clone_index, clone_rank
+
+     # if need to send clone to Emax
+     if clone_rank != Emax_rank and (clone_rank == rank or Emax_rank == rank):
+	 print rank, ": need to send/recv"
+         if rank == clone_rank: # send
+	    print rank, ": sending to ",Emax_rank
+	    comm.send(walkers[clone_index-my_first_walker].get_positions(), dest=Emax_rank, tag=1)
+	    comm.send(walkers[clone_index-my_first_walker].get_cell(), dest=Emax_rank, tag=2)
+         if rank == Emax_rank: # receive
+	    print rank, ": receiving from ", clone_rank
+	    new_positions = comm.recv(source=clone_rank, tag=1)
+	    new_cell = comm.recv(source=clone_rank, tag=2)
+	    walkers[Emax_ind-my_first_walker].set_positions(new_positions)
+	    walkers[Emax_ind-my_first_walker].set_cell(new_cell)
+     else:
+	 print rank, ": copying locally"
+	 if clone_rank == rank:
+	    new_positions = walkers[clone_index-my_first_walker].get_positions()
+	    new_cell = walkers[clone_index-my_first_walker].get_cell()
+	    walkers[Emax_ind-my_first_walker].set_positions(new_positions)
+	    walkers[Emax_ind-my_first_walker].set_cell(new_cell)
+
+
+###
+# import cProfile
+# cProfile.run('do_ns_loop()','profile')
+# 
+# import pstats
+# p = pstats.Stats('profile')
+# print "time"
+# p.sort_stats('time').print_stats()
+# 
+# print "cumulative"
+# p.sort_stats('cumulative').print_stats()
+# 
+# print "callers"
+# p.print_callers()
+# 
+# print "callees"
+# p.print_callees()
+###
+
+do_ns_loop()
+
+energy_io.close()
+traj_io.close()
