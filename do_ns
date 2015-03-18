@@ -50,10 +50,10 @@ else:
 args={}
 if rank == 0:
    for line in infile:
-     if re.match("\s*(#.*)?$", line):
+      if re.match("\s*(#.*)?$", line):
        continue
-     matches = re.match("\s*(\S+)\s*=\s*(.*\S)", line)
-     args[matches.group(1)] = matches.group(2)
+      matches = re.match("\s*(\S+)\s*=\s*(.*\S)", line)
+      args[matches.group(1)] = matches.group(2)
 if comm is not None:
    args = comm.bcast(args,root=0)
 
@@ -107,7 +107,7 @@ confining_pot_args['mag'] = float(args.pop('confining_potential_mag', 0.0))
 
 if 'QUIP_pot_params_file' in ns_args:
    if not have_quippy:
-     exit_error("Got QUIP_pot_params but no quippy module\n", 3)
+      exit_error("Got QUIP_pot_params but no quippy module\n", 3)
    try:
       if rank == 0:
 	 ns_args['QUIP_pot_params'] = open(ns_args['QUIP_pot_params_file'],"r").read()
@@ -175,13 +175,13 @@ n_cull = ns_args['n_cull']
 def eval_energy(at):
   # potential
   if have_quippy:
-     energy = at.get_potential_energy()
+      energy = at.get_potential_energy()
   else:
-     sys.stderr.write("Need some non-quippy way to do eval_energy")
+      sys.stderr.write("Need some non-quippy way to do eval_energy")
 
   # confining
   if confining_pot_args['mag'] > 0.0:
-     energy += confining_pot_args['mag']*(np.linalg.norm(at.pos)**2)
+      energy += confining_pot_args['mag']*(np.linalg.norm(at.pos)**2)
 
   # kinetic
   velocities = at.get_velocities()
@@ -260,7 +260,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
 def do_MC_atom_walk(at, movement_args, Emax):
   if movement_args['MC_atom_n_steps'] <= 0: 
-     return
+      return
   #DEBUG print "do_MC_atom_walk"
   n_steps = movement_args['MC_atom_n_steps']
   step_size = movement_args['MC_atom_step_size']
@@ -323,14 +323,11 @@ def max_energy(walkers, n):
   print rank , ": max_energies energies ",energies
   print rank , ": max_energies energies.argsort() ",energies.argsort()
 
-  Emax_ind = energies.argsort()[-1:-n-1:-1]
-  print rank, ": Emax_ind ", Emax_ind
+  Emax_ind = energies.argsort()[-1:-n-2:-1]
   Emax = energies[Emax_ind]
-  print rank, ": Emax ", Emax
   rank_of_max = np.floor(Emax_ind/len(walkers)).astype(int)
-  print rank, ": rank_of_max ", rank_of_max
 
-  return (Emax, np.mod(Emax_ind,len(walkers)), rank_of_max)
+  return (Emax[0:-1], np.mod(Emax_ind[0:-1],len(walkers)), rank_of_max[0:-1], Emax[-1])
 
 
 # do NS
@@ -339,136 +336,137 @@ def do_ns_loop():
    # WARNING not really random
    np.random.seed(rank)
 
-   (Emax, Emax_ind, Emax_rank) = max_energy(walkers, 1)
+   (Emax, Emax_ind, Emax_rank, Emax_next) = max_energy(walkers, 1)
    for at in walkers:
-      walk_single_walker(at, movement_args, Emax+10)
+      walk_single_walker(at, movement_args, Emax+10.0)
 
    for i_ns_step in range(ns_args['n_steps']):
-     print rank, ": starting ns loop ",i_ns_step
-     # do atom MC step size adj
-     ## if movement_args['MC_atom_n_steps'] > 0 and i_ns_step%10 == 0:
+      print rank, ": starting ns loop ",i_ns_step
+      # do atom MC step size adj
+      ## if movement_args['MC_atom_n_steps'] > 0 and i_ns_step%10 == 0:
 	## adjust_MC_step_size(walkers, do_MC_atom_walk, movement_args, 'MC_atom_step_size', Emax)
 
-     print rank, ": LOOP START ", [ at.get_potential_energy() for at in walkers ]
+      print rank, ": LOOP START ", [ at.get_potential_energy() for at in walkers ]
 
-     # do NS config dropping/forming
-     (Emax, Emax_ind, Emax_rank) = max_energy(walkers, n_cull)
+      # do NS config dropping/forming
+      (Emax, Emax_ind, Emax_rank, Emax_next) = max_energy(walkers, n_cull)
 
-     print rank, ": got max ", Emax, Emax_ind, Emax_rank
+      print rank, ": got Emax ", Emax
+      print rank, ": got Emax_rank ",Emax_rank
+      print rank, ": got Emax_ind ",Emax_ind
 
-     Emax_of_step=Emax[-1]
-     if rank == 0:
+      Emax_of_step=Emax_next
+      if rank == 0:
         print "Emax_of_step ", Emax_of_step
 
-     # record Emax walkers
-     if rank == 0:
+      # record Emax walkers
+      if rank == 0:
 	for E in Emax:
 	   energy_io.write("%d %f\n" % (i_ns_step, E))
-     for (i, r) in zip(Emax_ind, Emax_rank):
+      for (i, r) in zip(Emax_ind, Emax_rank):
          if rank == r: # my walker i
 	    print rank, ": writing walker ",i
 	    if have_quippy:
 	       walkers[i].write(traj_io)
 	    else:
 	       exit_error("Need some non-quippy way of writing trajectory\n",3)
+####################################################################################################
+      # calculate how many will be culled on each rank
+      n_cull_of_rank = np.array([ sum(Emax_rank == r) for r in range(size) ])
+      print rank, ": n_cull_of_rank ", n_cull_of_rank
+      # calculate how many expected to be culled on each rank for best load balance
+      n_expected_cull_of_rank = np.array([int(n_cull/size)] * size)
+      if int(n_cull/size)*size != n_cull:
+        n_expected_cull_of_rank[0:n_cull-int(n_cull/size)*size] += 1
+      print rank, ": n_expected_cull_of_rank ", n_expected_cull_of_rank
+      n_cull_net = n_cull_of_rank - n_expected_cull_of_rank
+      print rank, ": n_cull_net ", n_cull_net
 
-     # figure out where to send Emax configs
-     if comm is not None:
-	target_ind = np.floor(np.array(range(n_cull))/size).astype(int)
-	if n_cull >= size:
-	   target_rank = range(size) * int(n_cull/size)
-	if n_cull % size != 0:
-	   target_rank.append(range(n_cull) % size)
-     else:
-        target_rank = [0] * n_cull
-	target_ind = range(n_cull)
+      # find configs that need to be and are available to be sent, and where to send them to
+      my_recv_ind = None
+      recv_ind=[]
+      recv_rank=[]
+      send_ind=[]
+      send_rank=[]
+      for r in range(size):
+	 print rank, ": load balance work for rank ", r
+         if n_cull_net[r] > 0:
+	    # this rank will be receiving some new configs
+	    print rank, ": rank has excess Emax entries, will be receiving some configs ", n_cull_net[r]
+	    recv_rank.extend([r] * n_cull_net[r])
+	    # their indices will be (overwrite some of the Emax entries)
+	    rank_Emax_ind = np.where(Emax_rank == r)[0]
+	    print rank, ": rank_Emax_ind ", rank_Emax_ind
+	    recv_ind.extend(Emax_ind[rank_Emax_ind[0:n_cull_net[r]]])
+	    if rank == r:
+	       my_recv_ind = Emax_ind[rank_Emax_ind[0:n_cull_net[r]]]
+	 elif n_cull_net[r] < 0:
+	    # this rank will be sending some configs to replace excess Emax entries on some other rank
+	    print rank, ": rank has not enough Emax entries, will send receiving some configs ", -n_cull_net[r]
+	    send_rank.extend([r] * -n_cull_net[r])
+	    avail_ind = [True] * n_walkers
+	    for (rr, i) in zip(Emax_rank, Emax_ind):
+	       if rr == r:
+		  avail_ind[i] = False
+	    rank_avail_ind = np.where(avail_ind)[0]
+	    print rank, ": rank_avail_ind ", rank_avail_ind
+	    send_ind.extend(rank_avail_ind[0:-n_cull_net[r]])
 
-     print rank, ": target_ind ", target_ind
-     print rank, ": target_rank ", target_rank
+      # create sending buffers
+      print rank, ": recv_rank ", recv_rank
+      print rank, ": recv_ind ", recv_ind
+      print rank, ": send_rank ", send_rank
+      print rank, ": send_ind ", send_ind
+      pos_send_buf=[None] * size
+      cell_send_buf=[None] * size
+      for (r_send, i_send, r_recv, i_recv) in zip (send_rank, send_ind, recv_rank, recv_ind):
+	print rank, ": check sending ", r_send, i_send, r_recv, i_recv
+        if r_send == rank:
+	    print rank, ": sending to ",r_recv," from index ",i_send
+	    if pos_send_buf[r_recv] is None:
+	       pos_send_buf[r_recv] = []
+	    if cell_send_buf[r_recv] is None:
+	       cell_send_buf[r_recv] = []
+	    pos_send_buf[r_recv].append(walkers[i_send].get_positions())
+	    cell_send_buf[r_recv].append(walkers[i_send].get_cell())
+      print rank, ": pos_send_buf ", pos_send_buf
+      print rank, ": cell_send_buf ", cell_send_buf
 
-     # move local Emaxes to beginning
-     local_Emax_ind = []
-     for (i, r) in zip (Emax_ind, Emax_rank):
-        if r == rank:
-	  local_Emax_ind.append(i)
-     n_local_Emax = len(local_Emax_ind)
-     Emax_pos = []
-     Emax_cell = []
-     for i in range(n_local_Emax):
-        i_Emax = local_Emax_ind[i]
-        Emax_pos.append(walkers[i_Emax].get_positions())
-        Emax_cell.append(walkers[i_Emax].get_cell())
-	walkers[i_Emax].set_positions(walkers[i].get_positions())
-	walkers[i_Emax].set_cell(walkers[i].get_cell())
-     for i in range(n_local_Emax):
-        walkers[i].set_positions(Emax_pos[i])
-        walkers[i].set_cell(Emax_cell[i])
+      # do communication
+      print rank, ": my_recv_ind ", my_recv_ind
+      pos_recv_buf = comm.alltoall(pos_send_buf)
+      cell_recv_buf = comm.alltoall(cell_send_buf)
 
-     print rank, ": LOOP MID ", [ at.get_potential_energy() for at in walkers ]
+      # copy from receive buffers into walkers structure
+      recv_i = 0
+      for (pos_array, cell_array) in zip(pos_recv_buf, cell_recv_buf):
+	 print rank, ": received pos_array from rank", pos_array 
+	 print rank, ": received cell_array from rank", cell_array 
+	 if pos_array is not None:
+	    for (pos_entry, cell_entry) in zip(pos_array, cell_array):
+	       print rank, ": pos_entry ",pos_entry
+	       print rank, ": cell_entry ",cell_entry
+	       print rank, ": copying received config to index ",my_recv_ind[recv_i]
+	       walkers[my_recv_ind[recv_i]].set_positions(pos_entry)
+	       walkers[my_recv_ind[recv_i]].set_cell(cell_entry)
+	       recv_i += 1
 
-     sendbuf=[ None ] * size
-     for i in range(n_local_Emax):
-         t_r = target_rank[local_Emax_ind[i]]
-	 print rank, ": sending Emax ",i, " to rank ", t_r
-	 if sendbuf[t_r] is None:
-	    sendbuf[t_r] = []
-	 sendbuf[t_r].append((walkers[i].get_positions(), walkers[i].get_cell()))
+      print rank, ": LOOP MID ", [ at.get_potential_energy() for at in walkers ]
 
-     Emax_remote = comm.alltoall(sendbuf)
+      comm.Abort(0)
+####################################################################################################
 
-     sendbuf=[None] * size
-     for i in range(n_local_Emax):
-        r = Emax_rank[local_Emax_ind[i]]
-	print rank, ": sending config ",i," to rank ", r
-	if sendbuf[r] is None:
-	   sendbuf[r] = []
-	sendbuf[r].append((walkers[i].get_positions(), walkers[i].get_cell()))
-
-     config_remote = comm.alltoall(sendbuf)
-
-     # copy remote Emax to local configs
-     print rank, ": len(Emax_remote) ",len(Emax_remote)
-     n_config_local = 0
-     for data_from_rank in Emax_remote:
-	print rank, ": len(data_from_rank) ",len(data_from_rank)
-        for entry in data_from_rank:
-	    if entry is not None:
-	       print rank, ": received remote Emax, putting in ", n_config_local
-	       walkers[n_config_local].set_positions(entry[0])
-	       walkers[n_config_local].set_cell(entry[1])
-	       n_config_local += 1
-
-     # must be a better way of doing this
-     local_Emax_ind = []
-     for (i, r) in zip (Emax_ind, Emax_rank):
-        if r == rank:
-	  local_Emax_ind.append(i)
-     print rank, ": local Emaxes count ", sum(Emax_rank == rank)
-     print rank, ": local_Emax_ind ", local_Emax_ind
-     # copy configs into proper places
-     local_Emax_i = 0
-     for data_from_rank in config_remote:
-	for entry in data_from_rank:
-	   print rank, ": received remote config, putting in ", local_Emax_ind[local_Emax_i]
-	   walkers[local_Emax_ind[local_Emax_i]].set_positions(entry[0])
-	   walkers[local_Emax_ind[local_Emax_i]].set_cell(entry[1])
-	   local_Emax_i += 1
-
-     print rank, ": LOOP END ", [ at.get_potential_energy() for at in walkers ]
-
-     comm.Abort()
-
-     # move cloned walkers
-     for at in walkers:
+      # move cloned walkers
+      for at in walkers:
 	print rank, ": pre-move walkers", at.get_positions()[0]
-     print rank, ": pre-move energies", [ eval_energy(at) for at in walkers ]
+      print rank, ": pre-move energies", [ eval_energy(at) for at in walkers ]
 
-     if rank == clone_rank:
+      if rank == clone_rank:
 	walk_single_walker(walkers[clone_index-my_first_walker], movement_args, Emax)
 
-     for at in walkers:
+      for at in walkers:
 	print rank, ": post-move walkers", at.get_positions()[0]
-     print rank, ": post-move energies", [ eval_energy(at) for at in walkers ]
+      print rank, ": post-move energies", [ eval_energy(at) for at in walkers ]
 
 do_ns_loop()
 
