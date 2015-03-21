@@ -514,27 +514,27 @@ def do_ns_loop():
       # create sending/receiving buffers
       pos_send_buf=[None] * size
       cell_send_buf=[None] * size
-      for (r_send, i_send, r_recv, i_recv) in zip (send_rank, send_ind, recv_rank, recv_ind):
-	 print rank, ": check sending ", r_send, i_send, r_recv, i_recv
-         if r_send == rank:
-	    print rank, ": sending to ",r_recv," from index ",i_send
-	    if pos_send_buf[r_recv] is None:
-	       pos_send_buf[r_recv] = []
-	    if cell_send_buf[r_recv] is None:
-	       cell_send_buf[r_recv] = []
-	    pos_send_buf[r_recv].append(walkers[i_send].get_positions())
-	    cell_send_buf[r_recv].append(walkers[i_send].get_cell())
+      for i in np.where(send_rank == rank)[0]:
+	 r_recv = recv_rank[i]
+	 i_send = send_ind[i]
+	 print rank, ": sending to ",r_recv," from index ",i_send
+	 if pos_send_buf[r_recv] is None:
+	    pos_send_buf[r_recv] = []
+	 if cell_send_buf[r_recv] is None:
+	    cell_send_buf[r_recv] = []
+	 pos_send_buf[r_recv].append(walkers[i_send].get_positions())
+	 cell_send_buf[r_recv].append(walkers[i_send].get_cell())
 
       print rank, ": pos_send_buf ", pos_send_buf
       print rank, ": cell_send_buf ", cell_send_buf
 
       # do communication
-      my_recv_ind = np.array(recv_ind)[np.where(np.array(recv_rank) == rank)[0]]
-      print rank, ": my_recv_ind ", my_recv_ind
       pos_recv_buf = comm.alltoall(pos_send_buf)
       cell_recv_buf = comm.alltoall(cell_send_buf)
 
       # copy from receive buffers into walkers structure
+      my_recv_ind = np.array(recv_ind)[np.where(np.array(recv_rank) == rank)[0]]
+      print rank, ": my_recv_ind ", my_recv_ind
       recv_i = 0
       for (pos_array, cell_array) in zip(pos_recv_buf, cell_recv_buf):
 	 print rank, ": received pos_array from rank", pos_array 
@@ -550,16 +550,28 @@ def do_ns_loop():
 
       print rank, ": LOOP END ", [ at.get_potential_energy() for at in walkers ]
 
-      comm.Abort(0)
-####################################################################################################
 
       # move cloned walkers
       for at in walkers:
 	print rank, ": pre-move walkers", at.get_positions()[0]
       print rank, ": pre-move energies", [ eval_energy(at) for at in walkers ]
 
-      if rank == clone_rank:
-	walk_single_walker(walkers[clone_index-my_first_walker], movement_args, Emax_of_step)
+      # walk clone targets
+      clone_walk_ind = np.where(status[rank,:] == 'c_t_a')[0]
+      for i_at in clone_walk_ind:
+	print rank, ": walk clone ", i_at
+	### walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
+      # walk extras
+      for ii in range(max_n_cull_per_task - len(clone_walk_ind)):
+	 r_i = np.random.randint(0, n_walkers)
+	 while status[rank,r_i] != '':
+	    r_i = np.random.randint(0, n_walkers)
+	 print rank, ": walk extra ", r_i
+	 ### walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
+	 status[rank,r_i] = 'e_w'
+
+      comm.Abort()
+################################################################################
 
       for at in walkers:
 	print rank, ": post-move walkers", at.get_positions()[0]
