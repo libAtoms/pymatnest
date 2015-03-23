@@ -22,6 +22,7 @@ if len(sys.argv) != 1:
   sys.stderr.write("profile=rank_to_profile\n")
   sys.stderr.write("2D=[ T | F ]\n")
   sys.stderr.write("debug=debug_level\n")
+  sys.stderr.write("delta_random_seed=seed_shift (< 0 for seed from /dev/urandom)\n")
 
 import re, numpy as np
 import ase
@@ -98,6 +99,7 @@ except:
 
 ns_args['profile'] = int(args.pop('profile', -1))
 ns_args['debug'] = int(args.pop('debug', -1))
+ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 
 movement_args={}
 movement_args['MC_atom_n_steps'] = int(args.pop('MC_atom_n_steps', 0))
@@ -224,30 +226,20 @@ def do_MD_atom_walk(at, movement_args, Emax):
    old_pos = at.get_positions()
    old_velo = at.get_velocities()
 
-   ## print "velo ", at.get_velocities()
    masses = at.get_masses()
-   ## print "masses ", masses
    unit_rv = np.random.standard_normal( (len(at), 3) )
    unit_rv /= np.linalg.norm(unit_rv)
-   ## print "unit_rv ", unit_rv
-   ## print "unit_rv norm ", np.linalg.norm(unit_rv)
    mag_rv = np.random.uniform()**(1.0/(3.0*len(at)-1.0))
    pot_energy = at.get_potential_energy()
-   ## print "mag_rv ", mag_rv
-   ## print "dup masses ", np.array([masses,]*3).transpose()
    # from Baldock thesis Eq. 11.10 
    #     p^{**} = r \mathbf{S} \hat{\mathbf{r}}
    # and 11.11 
    #     S_{ij} = \delta_{ij} (2 m_i [ E_{lim} - U(q))])^{1/2}
    # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
    # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
-   ## print "pot_energy, Emax (eV) ", pot_energy, Emax
-   ## print "pot energy (amu A^2/fs^2) ", pot_energy*eV_to_amu_A_sq_per_fs_sq
-   ## print "max_KE (eV) ", Emax-pot_energy
    velocities = mag_rv * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
    at.set_velocities(velocities)
 
-   ## print "vel norms ",np.linalg.norm(at.get_velocities(), axis=1)
    #DEBUG print rank, ": masses for KE ",masses
    #DEBUG print rank, ": velocities for KE ",at.get_velocities()
    #DEBUG print rank, ": KE ",at.get_kinetic_energy()
@@ -264,7 +256,8 @@ def do_MD_atom_walk(at, movement_args, Emax):
    if at.get_potential_energy()+at.get_kinetic_energy() > Emax+movement_args['MD_atom_energy_fuzz']:
       print rank, ": WARNING reject MD traj "
       at.set_positions(old_pos)
-      at.set_velocities(old_velo)
+      if old_velo is not None:
+	 at.set_velocities(old_velo)
 
    #DEBUG print rank, ": final energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy()
    #DEBUG print rank, ": final positions ", at.get_positions()[0]
@@ -341,20 +334,29 @@ def max_energy(walkers, n):
 # do NS
 def do_ns_loop():
 
-   delta_seed = 2
-   # Counting on /dev/urandom here.  Should use a better parallel RNG
-   ### np.random.seed()
-   np.random.seed(rank+delta_seed)
-   ####
+   # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
+
+   if ns_args['delta_random_seed'] > 0:
+      np.random.seed(rank+ns_args['delta_random_seed'])
+   else:
+      np.random.seed()
    if rank == 0: # share a common random state
       common_random_state = np.random.get_state()
-      comm.bcast(common_random_state, root=0)
-      ### np.random.seed()
-      np.random.seed(size+1+delta_seed)
-      ###
+      common_random_state = comm.bcast(common_random_state, root=0)
+      # now back to local unique seed for rank=0
+      if ns_args['delta_random_seed'] > 0:
+	 np.random.seed(size+ns_args['delta_random_seed'])
+      else:
+	 np.random.seed()
    else:
+      # share a common random state
       common_random_state = None
       common_random_state = comm.bcast(common_random_state, root=0)
+
+   ## print rank, ": random state ", np.random.get_state()
+   ## if rank == 0:
+      ## print rank, ": common random state ", common_random_state
+
 
    max_n_cull_per_task = int(n_cull/size)
    if max_n_cull_per_task * size != n_cull:
@@ -368,9 +370,6 @@ def do_ns_loop():
    for i_ns_step in range(ns_args['n_steps']):
       #DEBUG if rank == 0:
 	 #DEBUG print "starting ns loop ",i_ns_step
-      # do atom MC step size adj
-      ## if movement_args['MC_atom_n_steps'] > 0 and i_ns_step%10 == 0:
-	## adjust_MC_step_size(walkers, do_MC_atom_walk, movement_args, 'MC_atom_step_size', Emax)
 
       if ns_args['debug'] >= 2:
 	 print rank, ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
@@ -405,7 +404,6 @@ def do_ns_loop():
 	    else:
 	       exit_error("Need some non-quippy way of writing trajectory\n",3)
 
-####################################################################################################
       # calculate how many will be culled on each rank
       n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
       #DEBUG print rank, ": n_cull_of_rank ", n_cull_of_rank
@@ -434,29 +432,49 @@ def do_ns_loop():
 
       for r in range(size):
 	 #DEBUG print rank, ": load balance for rank ", r
-	 dr_mag = 1
-	 #DEBUG print rank, ": initial n_cull_of_rank ", n_cull_of_rank
-	 while n_cull_of_rank[r] > max_n_cull_per_task: # this rank has too many to cull, must receive replacement from another node
-	    for dr in (-dr_mag, dr_mag):
-	       remote_r = (r+dr) % size
-	       #DEBUG print rank, ": check tranfer to ", remote_r
-	       if n_cull_of_rank[remote_r] < max_n_cull_per_task: # send from r+dr to r
-		  n_transfer = min(n_cull_of_rank[r]-max_n_cull_per_task, max_n_cull_per_task-n_cull_of_rank[remote_r])
-		  #DEBUG print rank, ": got n_tranfer ", n_transfer
-		  recv_rank.extend([r]*n_transfer)
-		  send_rank.extend([remote_r]*n_transfer)
-		  local_ind = np.where(status[r,:] == 'c_t')[0][0:n_transfer]
-		  recv_ind.extend(local_ind)
-		  remote_ind = np.where(status[remote_r,:] == '')[0][0:n_transfer]
-		  send_ind.extend(remote_ind)
-		  status[r,local_ind] = 'c_s'
-		  status[remote_r,remote_ind] = 'c_t_a'
-		  n_cull_of_rank[r] -= n_transfer
-		  n_cull_of_rank[remote_r] += n_transfer
-	       if n_cull_of_rank[r] <= max_n_cull_per_task:
-		  break
-	    dr_mag += 1
-	    #DEBUG print rank, ": new n_cull_of_rank ", n_cull_of_rank
+	 for dr in np.array(zip(np.array(range(1,size)), -np.array(range(1,size)))).flatten():
+	    if n_cull_of_rank[r] <= max_n_cull_per_task: # not too many to be culled on this rank
+	       break
+	    # this rank has too many to cull, must receive replacement from another node
+	    remote_r = (r+dr) % size
+	    #DEBUG print rank, ": check tranfer to ", remote_r
+	    if n_cull_of_rank[remote_r] < max_n_cull_per_task: # send from r+dr to r
+	       n_transfer = min(n_cull_of_rank[r]-max_n_cull_per_task, max_n_cull_per_task-n_cull_of_rank[remote_r])
+	       #DEBUG print rank, ": got n_tranfer ", n_transfer
+	       recv_rank.extend([r]*n_transfer)
+	       send_rank.extend([remote_r]*n_transfer)
+	       local_ind = np.where(status[r,:] == 'c_t')[0][0:n_transfer]
+	       recv_ind.extend(local_ind)
+	       remote_ind = np.where(status[remote_r,:] == '')[0][0:n_transfer]
+	       send_ind.extend(remote_ind)
+	       status[r,local_ind] = 'c_s'
+	       status[remote_r,remote_ind] = 'c_t_a'
+	       n_cull_of_rank[r] -= n_transfer
+	       n_cull_of_rank[remote_r] += n_transfer
+
+	 # dr_mag = 1
+	 # #DEBUG print rank, ": initial n_cull_of_rank ", n_cull_of_rank
+	 # while n_cull_of_rank[r] > max_n_cull_per_task: # this rank has too many to cull, must receive replacement from another node
+	    # for dr in (-dr_mag, dr_mag):
+	       # remote_r = (r+dr) % size
+	       # #DEBUG print rank, ": check tranfer to ", remote_r
+	       # if n_cull_of_rank[remote_r] < max_n_cull_per_task: # send from r+dr to r
+		  # n_transfer = min(n_cull_of_rank[r]-max_n_cull_per_task, max_n_cull_per_task-n_cull_of_rank[remote_r])
+		  # #DEBUG print rank, ": got n_tranfer ", n_transfer
+		  # recv_rank.extend([r]*n_transfer)
+		  # send_rank.extend([remote_r]*n_transfer)
+		  # local_ind = np.where(status[r,:] == 'c_t')[0][0:n_transfer]
+		  # recv_ind.extend(local_ind)
+		  # remote_ind = np.where(status[remote_r,:] == '')[0][0:n_transfer]
+		  # send_ind.extend(remote_ind)
+		  # status[r,local_ind] = 'c_s'
+		  # status[remote_r,remote_ind] = 'c_t_a'
+		  # n_cull_of_rank[r] -= n_transfer
+		  # n_cull_of_rank[remote_r] += n_transfer
+	       # if n_cull_of_rank[r] <= max_n_cull_per_task:
+		  # break
+	    # dr_mag += 1
+	    # #DEBUG print rank, ": new n_cull_of_rank ", n_cull_of_rank
 
       #DEBUG for r in range(len(status)):
 	 #DEBUG print rank, ": post-cull-load-balance status ", r, status[r]
@@ -478,6 +496,7 @@ def do_ns_loop():
 	    r_i = np.random.randint(0, n_walkers)
 	    while status[r,r_i] != '':
 	       r_i = np.random.randint(0, n_walkers)
+	    # now r_i should be something with status ''
 	    # clone from r_i into list_clone_target[i]
 	    #DEBUG print rank, ": local clone from ", r_i," to  ",list_clone_target[i]
 	    if r == rank: # actually do copy for this rank only
@@ -487,39 +506,41 @@ def do_ns_loop():
 	    status[r,r_i] = 'c_s'
 	    status[r,list_clone_target[i]] = 'c_t_a'
 	 # do remote clones
-	 dr_mag = 1
 	 n_remaining_clones = n_clone_target - n_local_clones
-	 while n_remaining_clones > 0:
-	    for dr in (-dr_mag, dr_mag):
-	       remote_r = (r+dr) % size
-	       #DEBUG print rank, ": check transfer to ", remote_r
-	       n_avail_remote = sum(status[remote_r,:] == '')
-	       if n_avail_remote > 0: # something is available on remote_r
-		  # send from random avail walker on remote_r to clone_target on r
-		  n_transfer = min(n_remaining_clones, n_avail_remote)
+	 for dr in np.array(zip(np.array(range(1,size)), -np.array(range(1,size)))).flatten():
+	    if n_remaining_clones <= 0:
+	       break
+	    remote_r = (r+dr) % size
+	    n_avail_remote = sum(status[remote_r,:] == '')
+	    #DEBUG print rank, ": check transfer to rank ", remote_r, " remote status ", status[remote_r,:], " n_avail_remote ",n_avail_remote
+	    if n_avail_remote > 0: # something is available on remote_r
+	       # send from random avail walker on remote_r to clone_target on r
+	       n_transfer = min(n_remaining_clones, n_avail_remote)
 
-		  # set ranks
-		  send_rank.extend([remote_r]*n_transfer)
-		  recv_rank.extend([r]*n_transfer)
+	       #DEBUG print rank, ": n_transfer ", n_transfer
 
-		  # set indices
-		  r_is = []
-		  for ii in range(n_transfer):
+	       # set ranks
+	       send_rank.extend([remote_r]*n_transfer)
+	       recv_rank.extend([r]*n_transfer)
+
+	       # set indices
+	       r_is = []
+	       for ii in range(n_transfer):
+		  r_i = np.random.randint(0, n_walkers)
+		  while status[remote_r,r_i] != '':
 		     r_i = np.random.randint(0, n_walkers)
-		     while status[remote_r,r_i] != '':
-			r_i = np.random.randint(0, n_walkers)
-		     status[remote_r,r_i] = 'c_s'
-		     r_is.append(r_i)
-		  send_ind.extend(r_is)
+		  # now r_i should be something with status ''
+		  #DEBUG print rank, ": cloning from ", remote_r, r_i, " status ",status[remote_r, r_i]
+		  status[remote_r,r_i] = 'c_s'
+		  r_is.append(r_i)
+	       send_ind.extend(r_is)
 
-		  list_clone_target = np.where(status[r,:] == 'c_t')[0]
-		  status[r,list_clone_target[0:n_transfer]] = 'c_t_a'
-		  recv_ind.extend(list_clone_target[0:n_transfer])
+	       list_clone_target = np.where(status[r,:] == 'c_t')[0]
+	       status[r,list_clone_target[0:n_transfer]] = 'c_t_a'
+	       recv_ind.extend(list_clone_target[0:n_transfer])
 
 	       n_remaining_clones -= n_transfer
-
-	    dr_mag += 1
-	    #DEBUG print rank, ": n_remaining_clones ", n_remaining_clones
+	       #DEBUG print rank, ": n_remaining_clones ", n_remaining_clones
 
       if ns_args['debug'] >= 2:
 	 print rank, ": LOOP_PE POST_LOC_CLONE 15 ",i_ns_step, [ eval_energy(at, True) for at in walkers ]
@@ -588,6 +609,10 @@ def do_ns_loop():
 	#DEBUG print rank, ": pre-move walkers", at.get_positions()[0]
       #DEBUG print rank, ": pre-move energies", [ eval_energy(at) for at in walkers ]
 
+      ### # do atom MC step size adj
+      ### if movement_args['MC_atom_n_steps'] > 0 and i_ns_step%10 == 0:
+	 ### adjust_MC_step_size(walkers[0], do_MC_atom_walk, movement_args, 'MC_atom_step_size', Emax_of_step)
+
       # walk clone targets
       clone_walk_ind = np.where(status[rank,:] == 'c_t_a')[0]
       for i_at in clone_walk_ind:
@@ -602,9 +627,15 @@ def do_ns_loop():
 	    final_status = status.flatten()
 	    for e in initial_unchanged:
 	       if e not in final_PE:
+		  print "initial_PE ", initial_PE
+		  print "final_PE ", final_PE
+		  print "final_status ", final_status
 		  print "WARNING energy that should have been unchanged ", e," missing from final energies"
 	    for e in initial_changed:
 	       if e in final_PE:
+		  print "initial_PE ", initial_PE
+		  print "final_PE ", final_PE
+		  print "final_status ", final_status
 		  print "WARNING: energy that should have been changed ", e," still there in final energies"
 
       #DEBUG print rank, ": before extra walks # ", max_n_cull_per_task - len(clone_walk_ind)
