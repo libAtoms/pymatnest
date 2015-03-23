@@ -48,23 +48,6 @@ except:
 if comm is not None and rank == 0:
    print "comm ", comm, " size ", size
 
-# read inputs
-if size > 0 and rank == 0:
-   infile=open("inputs","r")
-else:
-   infile=sys.stdin
-args={}
-if rank == 0:
-   for line in infile:
-      if re.match("\s*(#.*)?$", line):
-       continue
-      matches = re.match("\s*(\S+)\s*=\s*(.*\S)", line)
-      args[matches.group(1)] = matches.group(2)
-if comm is not None:
-   args = comm.bcast(args,root=0)
-
-# parse args
-
 def exit_error(message, stat):
    sys.stderr.write(message)
    try:
@@ -72,6 +55,29 @@ def exit_error(message, stat):
    except:
       pass
    sys.exit(stat)
+
+# read inputs on root, then bcast
+if rank == 0:
+   lines=sys.stdin.readlines()
+   if len(lines) == 0:
+      try:
+	 infile=open("ns_inputs","r")
+      except:
+	 exit_error("Failed to read ns_inputs file\n", 1)
+      lines = infile.readlines()
+   args={}
+   if rank == 0:
+      for line in lines:
+	 if re.match("\s*(#.*)?$", line):
+	  continue
+	 matches = re.match("\s*(\S+)\s*=\s*(.*\S)", line)
+	 args[matches.group(1)] = matches.group(2)
+else:
+   args = None
+if comm is not None:
+   args = comm.bcast(args,root=0)
+
+# parse args
 
 # convert from strings to actual args
 ns_args={}
