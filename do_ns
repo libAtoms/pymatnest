@@ -5,26 +5,29 @@ import sys
 if len(sys.argv) != 1:
   sys.stderr.write("Usage: %s < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
-  sys.stderr.write("start_file=start_file.xyz (MANDATORY)\n")
-  sys.stderr.write("n_walkers=n_walkers (MANDATORY)\n")
-  sys.stderr.write("n_cull=n_cull (MANDATORY)\n")
-  sys.stderr.write("n_steps=n_steps (MANDATORY)\n")
+  sys.stderr.write("start_file=path_to_file.xyz (MANDATORY)\n")
+  sys.stderr.write("n_walkers=int (MANDATORY)\n")
+  sys.stderr.write("n_cull=int (MANDATORY)\n")
+  sys.stderr.write("n_iter=int (MANDATORY)\n")
 
-  sys.stderr.write("QUIP_pot_args=QUIP_pot_args (MANDATORY)\n")
-  sys.stderr.write("QUIP_pot_params_file=QUIP_pot_params_file (MANDATORY)\n")
+  sys.stderr.write("QUIP_pot_args=str (MANDATORY)\n")
+  sys.stderr.write("QUIP_pot_params_file=str (MANDATORY)\n")
 
-  sys.stderr.write("MC_atom_n_steps=MC_atom_n_steps\n")
-  sys.stderr.write("MC_atom_step_size=MC_atom_step_size\n")
-  sys.stderr.write("MD_atom_n_steps=MD_atom_n_steps\n")
-  sys.stderr.write("MD_atom_timestep=MD_atom_timestep\n")
-  sys.stderr.write("MD_atom_energy_fuzz=MD_atom_energy_fuzz\n")
+  sys.stderr.write("MC_atom_n_steps_expected=int\n")
+  sys.stderr.write("MC_atom_n_steps=int (if not specified, set from expected #)\n")
+  sys.stderr.write("MC_atom_step_size=int\n")
+
+  sys.stderr.write("MD_atom_n_steps_expected=int\n")
+  sys.stderr.write("MD_atom_n_steps=int (if not specified, set from expected #)\n")
+  sys.stderr.write("MD_atom_timestep=float\n")
+  sys.stderr.write("MD_atom_energy_fuzz=float\n")
 
   sys.stderr.write("profile=rank_to_profile\n")
   sys.stderr.write("2D=[ T | F ]\n")
-  sys.stderr.write("debug=debug_level\n")
+  sys.stderr.write("debug=debug_level (<= 0 for no debugging tests/prints)\n")
   sys.stderr.write("delta_random_seed=seed_shift (< 0 for seed from /dev/urandom)\n")
 
-import re, numpy as np
+import re, numpy as np, math
 import ase
 try:
    import quippy
@@ -85,9 +88,9 @@ try:
 except:
   exit_error("need number to cull n_cull\n",1)
 try:
-  ns_args['n_steps'] = int(args.pop('n_steps'))
+  ns_args['n_iter'] = int(args.pop('n_iter'))
 except:
-  exit_error("need number of steps n_steps\n",1)
+  exit_error("need number of NS iterations n_iter\n",1)
 try:
   ns_args['QUIP_pot_args'] = args.pop('QUIP_pot_args')
 except:
@@ -102,8 +105,10 @@ ns_args['debug'] = int(args.pop('debug', -1))
 ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 
 movement_args={}
+movement_args['MC_atom_n_steps_expected'] = int(args.pop('MC_atom_n_steps_expected', 0))
 movement_args['MC_atom_n_steps'] = int(args.pop('MC_atom_n_steps', 0))
 movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.0))
+movement_args['MD_atom_n_steps_expected'] = int(args.pop('MD_atom_n_steps_expected', 0))
 movement_args['MD_atom_n_steps'] = int(args.pop('MD_atom_n_steps', 0))
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.0))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-12))
@@ -128,7 +133,7 @@ else:
    sys.stderr.write("Got no *_pot_params_file")
 
 if len(args) > 0:
-  exit_error(args+"\nUnknown arguments read in\n", 2)
+  exit_error(str(args)+"\nUnknown arguments read in\n", 2)
 
 if rank == 0:
    print "ns_args ",ns_args
@@ -363,11 +368,35 @@ def do_ns_loop():
       max_n_cull_per_task += 1
    #DEBUG print rank, ": max_n_cull_per_task ", max_n_cull_per_task
 
+   # figure out n_steps to walk on each iteration to get correct expected number
+   def set_n_steps(prop):
+      if movement_args[prop+'_expected'] > 0:
+	 if movement_args[prop] > 0:
+	    exit_error("Got both MC_atom_n_steps and MC_atom_n_steps_expected, conflict\n", 5)
+	 survival_rate = 1.0-float(n_cull)/float(ns_args['n_walkers'])
+	 mean_lifetime = survival_rate/(1.0-survival_rate)**2
+	 chance_of_walking_per_iter = float(max_n_cull_per_task*size)/float(ns_args['n_walkers'])
+	 if rank == 0:
+	    print "Calculating number of steps : survival_rate ", survival_rate, " mean_lifetime ", mean_lifetime, "chance_of_walking_per_iter ", chance_of_walking_per_iter
+	 # chance_of_walking_per_iter * n_steps_per_iter * mean_lifetime = n_steps_expected
+	 # n_steps_per_iter = ceil ( float(n_steps_expected)/(float(chance_of_walking_per_iter*mean_lifetime)) )
+	 movement_args[prop] = math.ceil ( float(movement_args[prop+'_expected'])/(float(chance_of_walking_per_iter*mean_lifetime)) )
+      else:
+	 if movement_args[prop] > 0 and rank == 0:
+	    print "WARNING: using absolute number of "+prop
+
+   set_n_steps('MC_atom_n_steps')
+   set_n_steps('MD_atom_n_steps')
+
+   if  rank == 0:
+      print "Using calculated number of MC_atom_n_steps ", movement_args['MC_atom_n_steps']
+      print "Using calculated number of MD_atom_n_steps ", movement_args['MD_atom_n_steps']
+
    (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, 1)
    for at in walkers:
       walk_single_walker(at, movement_args, Emax+10.0)
 
-   for i_ns_step in range(ns_args['n_steps']):
+   for i_ns_step in range(ns_args['n_iter']):
       #DEBUG if rank == 0:
 	 #DEBUG print "starting ns loop ",i_ns_step
 
