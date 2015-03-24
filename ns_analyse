@@ -8,7 +8,10 @@ if len(sys.argv) != 5 and len(sys.argv) != 6:
    sys.exit(1)
 
 k_Boltzmann = 8.6173324e-5 # eV/K
-infile = open(sys.argv[1])
+if sys.argv[1] == '-' or sys.argv[1] == 'stdin':
+   infile=sys.stdin
+else:
+   infile = open(sys.argv[1])
 T_min = float(sys.argv[2])
 dT = float(sys.argv[3])
 n_T = int(sys.argv[4])
@@ -54,19 +57,20 @@ def analyse(Es, T):
       #   = 3N/2 beta + 1/Z sum_n exp( log(w) + log(E) - beta E)
       U_contrib.append(math.exp(log_w + log_E - beta*Es[i_E]))
 
-      # Cv = 3N/2 k + 1/Z^2 [ sum_n w_n E_n exp(-beta E_n)/kT ] [ \sum_n w_n E_n exp(-beta E_n) ] + 1/Z [ sum_n w_n E_n^2 exp(-beta E_n)/kT^2 ]
-      Cv_contrib_1.append(math.exp(log_w + log_E - beta*Es[i_E]*beta))
-      Cv_contrib_2.append(math.exp(log_w + 2.0*log_E - beta*Es[i_E]*beta/T))
+      # Cv = 3N/2 k + 1/Z^2 [ sum_n w_n E_n exp(-beta E_n)/kT^2 ] [ \sum_n w_n E_n exp(-beta E_n) ] + 1/Z [ sum_n w_n E_n^2 exp(-beta E_n)/kT^2 ]
+      log_1_over_kTsq = math.log(beta)-math.log(T)
+      Cv_contrib_1.append(math.exp(log_w + log_E - beta*Es[i_E] + log_1_over_kTsq))
+      Cv_contrib_2.append(math.exp(log_w + 2.0*log_E - beta*Es[i_E] + log_1_over_kTsq))
 
    Z = math.fsum(Z_contrib)
    U_contrib_sum = math.fsum(U_contrib)
    U = n_DOF/(2.0*beta) + U_contrib_sum/Z
 
-   Cv = n_DOF/(2.0*k_Boltzmann) + U_contrib_sum*math.fsum(Cv_contrib_1)/Z**2 + math.fsum(Cv_contrib_2)/Z
+   Cv = n_DOF*k_Boltzmann/2.0 + U_contrib_sum*math.fsum(Cv_contrib_1)/Z**2 + math.fsum(Cv_contrib_2)/Z
 
    return (Z, U, Cv)
 
-print "# T Z(T) Cv(T)"
+print "# T      Z(T)     U(T)    Cv(T)"
 for i_T in range(n_T):
    T = T_min + i_T * dT
    (Z, U, Cv) = analyse(Es, T)
