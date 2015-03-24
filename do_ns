@@ -371,8 +371,10 @@ def max_energy(walkers, n):
 # do NS
 def do_ns_loop():
 
-   # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
+   if rank == 0:
+      energy_io.write("%d %d\n" % (ns_args['n_walkers'], ns_args['n_cull']))
 
+   # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
    if ns_args['delta_random_seed'] > 0:
       np.random.seed(rank+ns_args['delta_random_seed'])
    else:
@@ -511,8 +513,9 @@ def do_ns_loop():
 
       # record Emax walkers energies and configurations
       if rank == 0:
-	for E in Emax:
-	   energy_io.write("%d %f\n" % (i_ns_step, E))
+	 for E in Emax:
+	    energy_io.write("%d %f\n" % (i_ns_step, E))
+	 energy_io.flush()
       if cull_list[rank] is not None:
 	 for i in cull_list[rank]:
 	    #DEBUG print rank, ": writing walker ",i
