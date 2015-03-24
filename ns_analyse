@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+
+import sys
+import numpy as np
+
+if len(sys.argv) != 5:
+   sys.stderr.write("Usage: %s infile T_min dT n_T\n" % sys.argv[0])
+   sys.exit(1)
+
+infile = open(sys.argv[1])
+T_min = float(sys.argv[2])
+dT = float(sys.argv[3])
+n_T = int(sys.argv[4])
+
+(n_walkers, n_cull) = infile.readline().split()
+n_walkers = int(n_walkers)
+n_cull = int(n_cull)
+
+Es=[]
+for line in infile.readlines():
+   (n_iter, E) = line.split()
+   Es.append(float(E))
+
+alpha = float(n_walkers-n_cull)/float(n_walkers)
+
+print "n_walkers ",n_walkers," n_cull ",n_cull," alpha ",alpha
+
+def analyse(Es, T):
+   Z = 0.0
+   Cv = 0.0
+   return (Z, Cv)
+
+print "# T Z(T) Cv(T)"
+for i_T in range(n_T):
+   T = T_min + i_T * dT
+   (Z, Cv) = analyse(Es, T)
+   print T, Z, Cv
