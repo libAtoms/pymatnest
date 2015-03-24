@@ -253,7 +253,12 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #     S_{ij} = \delta_{ij} (2 m_i [ E_{lim} - U(q))])^{1/2}
    # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
    # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
-   velocities = mag_rv * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
+   if Emax > pot_energy:
+      velocities = mag_rv * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
+   else: # should never happen - maybe it's happening because of MD_atom_energy_fuzz
+      if rank == 0:
+	 print "WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in do_MD_atom_walk"
+      velocities = 0.0 * unit_rv
    at.set_velocities(velocities)
 
    #DEBUG print rank, ": masses for KE ",masses
@@ -376,8 +381,7 @@ def do_ns_loop():
       ## print rank, ": common random state ", common_random_state
 
    if ns_args['debug'] >= 1 and size <= 1:
-      mean_n_walks = 0.0
-      n_n_walks = 0
+      n_walks_history = []
 
    max_n_cull_per_task = int(n_cull/size)
    if max_n_cull_per_task * size != n_cull:
@@ -545,9 +549,11 @@ def do_ns_loop():
 	    if r == rank: # actually do copy for this rank only
 	       #DEBUG print rank, ": local clone do copy"
 	       if ns_args['debug'] >= 1 and hasattr(walkers[list_clone_target[i]], 'n_walks') and size <= 1:
-		  mean_n_walks += walkers[list_clone_target[i]].n_walks
-		  n_n_walks += 1
-		  print rank, ": mean_n_walks at culling ", n_n_walks, float(mean_n_walks)/float(n_n_walks)
+		  if len(n_walks_history) >= 500:
+		     n_walks_history.pop(0)
+		  n_walks_history.append(walkers[list_clone_target[i]].n_walks)
+		  print rank, ": mean_n_walks at culling ", float(sum(n_walks_history))/float(len(n_walks_history))
+
 		  walkers[list_clone_target[i]].n_walks = 0
 	       walkers[list_clone_target[i]].set_positions(walkers[r_i].get_positions())
 	       walkers[list_clone_target[i]].set_cell(walkers[r_i].get_cell())
