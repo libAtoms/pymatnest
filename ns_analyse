@@ -63,6 +63,7 @@ def analyse(Es, T):
       Cv_contrib_2.append(math.exp(log_w + 2.0*log_E - beta*Es[i_E] + log_1_over_kTsq))
 
    Z = math.fsum(Z_contrib)
+
    U_contrib_sum = math.fsum(U_contrib)
    U = n_DOF/(2.0*beta) + U_contrib_sum/Z
 
