@@ -10,19 +10,21 @@ if len(sys.argv) != 1:
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int\n")
   sys.stderr.write("n_iter=int (MANDATORY)\n")
-
+  sys.stderr.write("\n")
   sys.stderr.write("QUIP_pot_args=str (MANDATORY)\n")
   sys.stderr.write("QUIP_pot_params_file=str (MANDATORY)\n")
-
+  sys.stderr.write("\n")
   sys.stderr.write("MC_atom_n_steps_expected=int\n")
   sys.stderr.write("MC_atom_n_steps=int (if not specified, set from expected #)\n")
   sys.stderr.write("MC_atom_step_size=int\n")
-
+  sys.stderr.write("\n")
+  sys.stderr.write("MC_adjust_step_interval=int\n")
+  sys.stderr.write("\n")
   sys.stderr.write("MD_atom_n_steps_expected=int\n")
   sys.stderr.write("MD_atom_n_steps=int (if not specified, set from expected #)\n")
   sys.stderr.write("MD_atom_timestep=float\n")
   sys.stderr.write("MD_atom_energy_fuzz=float\n")
-
+  sys.stderr.write("\n")
   sys.stderr.write("profile=rank_to_profile\n")
   sys.stderr.write("2D=[ T | F ]\n")
   sys.stderr.write("debug=debug_level (<= 0 for no debugging tests/prints)\n")
@@ -113,13 +115,18 @@ ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 
 movement_args={}
+
 movement_args['MC_atom_n_steps_expected'] = int(args.pop('MC_atom_n_steps_expected', 0))
 movement_args['MC_atom_n_steps'] = int(args.pop('MC_atom_n_steps', 0))
-movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.0))
+movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
+
 movement_args['MD_atom_n_steps_expected'] = int(args.pop('MD_atom_n_steps_expected', 0))
 movement_args['MD_atom_n_steps'] = int(args.pop('MD_atom_n_steps', 0))
-movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.0))
+movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 1.0))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-12))
+
+movement_args['MC_adjust_step_interval'] = int(args.pop('MC_adjust_step_interval', 10))
+
 movement_args['2D'] = args.pop('2D', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
 confining_pot_args={}
@@ -290,7 +297,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
   #DEBUG print "do_MC_atom_walk"
   n_steps = movement_args['MC_atom_n_steps']
   step_size = movement_args['MC_atom_step_size']
-  acc_rate=0
+  accept_rate=0
   energy = eval_energy(at)
   for i_MC_step in range(n_steps):
     #DEBUG print "i_MC_step ",i_MC_step
@@ -314,30 +321,35 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	at.set_positions(old_pos)
 	energy = old_energy
       else:
-	acc_rate += 1
-  return float(acc_rate)/float(n_steps*at.n)
+	accept_rate += 1
+  return float(accept_rate)/float(n_steps*at.n)
 
 def walk_single_walker(at, movement_args, Emax):
    #DEBUG print "walk_single_walker"
-   do_MC_atom_walk(at, movement_args, Emax)
+   atom_accept_rate = do_MC_atom_walk(at, movement_args, Emax)
    do_MD_atom_walk(at, movement_args, Emax)
-   # do_MC_cell_step(at, movement_args, Emax)
+   ## cell_accept_rate = do_MC_cell_step(at, movement_args, Emax)
+   cell_accept_rate = 0.0
+   ##
    if hasattr(at, 'n_walks') and size <= 1:
       at.n_walks += 1
+   #DEBUG print rank, ": walk_single_walker acc rates ", atom_accept_rate, cell_accept_rate
+   return (atom_accept_rate, cell_accept_rate)
 
-def adjust_MC_step_size(at, MC_walk_routine, movement_args, step_size_str, Emax):
-  print "adjust_MC_step_size ", MC_walk_routine, step_size_str
-  for i_iter in range(200):
-    at_test = at.copy()
-    at_test.calc_connect()
-    mean_acc_rate = MC_walk_routine(at_test, movement_args, Emax)
-    print "  i_iter=%d mean_acc_rate=%f %s=%f" % (i_iter, mean_acc_rate, step_size_str, movement_args[step_size_str])
-    if (mean_acc_rate < 0.2):
-      movement_args[step_size_str] /= 1.2
-    elif (mean_acc_rate > 0.8):
-      movement_args[step_size_str] *= 1.2
-    else:
-      break
+# def adjust_MC_step_size_pilot(at, MC_walk_routine, movement_args, step_size_str, Emax):
+  # if rank == 0:
+     # print "adjust_MC_step_size_pilot ", MC_walk_routine, step_size_str
+  # for i_iter in range(200):
+    # at_test = at.copy()
+    # at_test.calc_connect()
+    # mean_accept_rate = MC_walk_routine(at_test, movement_args, Emax)
+    # print "  i_iter=%d mean_accept_rate=%f %s=%f" % (i_iter, mean_accept_rate, step_size_str, movement_args[step_size_str])
+    # if (mean_accept_rate < 0.2):
+      # movement_args[step_size_str] /= 1.2
+    # elif (mean_accept_rate > 0.8):
+      # movement_args[step_size_str] *= 1.2
+    # else:
+      # break
 
 def max_energy(walkers, n):
    # do local max
@@ -435,8 +447,36 @@ def do_ns_loop():
       print "Using calculated number of MD_atom_n_steps ", movement_args['MD_atom_n_steps']
 
    (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, 1)
+   atom_accept_rate_sum = 0.0
+   cell_accept_rate_sum = 0.0
    for at in walkers:
-      walk_single_walker(at, movement_args, Emax+10.0)
+      (atom_accept_rate, cell_accept_rate) = walk_single_walker(at, movement_args, Emax+10.0)
+      atom_accept_rate_sum += atom_accept_rate
+      cell_accept_rate_sum += cell_accept_rate
+
+   def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm):
+      atom_accept_rate_sum = comm.allreduce(atom_accept_rate_sum,MPI.SUM)
+      cell_accept_rate_sum = comm.allreduce(cell_accept_rate_sum,MPI.SUM)
+      atom_accept_rate_sum /= float(n_entries)
+      cell_accept_rate_sum /= float(n_entries)
+      if rank == 0:
+	 print "adjust_MC_steps mean rates atom ", atom_accept_rate_sum, " cell ", cell_accept_rate_sum
+      atom_dir=""
+      if atom_accept_rate_sum < 0.25:
+	 movement_args['MC_atom_step_size'] *= 1.2
+	 atom_dir="up"
+      if atom_accept_rate_sum > 0.75:
+	 movement_args['MC_atom_step_size'] /= 1.2
+	 atom_dir="down"
+      ## need to do cell steps
+
+      if atom_dir != "" and rank == 0:
+	 print "adjust MC_atom_step_size ",atom_dir," to ", movement_args['MC_atom_step_size']
+
+   adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, ns_args['n_walkers'], comm)
+   atom_accept_rate_sum = 0.0
+   cell_accept_rate_sum = 0.0
+   MC_adjust_n_iters = 0
 
    for i_ns_step in range(ns_args['n_iter']):
       #DEBUG if rank == 0:
@@ -663,15 +703,13 @@ def do_ns_loop():
 	#DEBUG print rank, ": pre-move walkers", at.get_positions()[0]
       #DEBUG print rank, ": pre-move energies", [ eval_energy(at) for at in walkers ]
 
-      ### # do atom MC step size adj
-      ### if movement_args['MC_atom_n_steps'] > 0 and i_ns_step%10 == 0:
-	 ### adjust_MC_step_size(walkers[0], do_MC_atom_walk, movement_args, 'MC_atom_step_size', Emax_of_step)
-
       # walk clone targets
       clone_walk_ind = np.where(status[rank,:] == 'c_t_a')[0]
       for i_at in clone_walk_ind:
-	#DEBUG print rank, ": walk clone ", i_at
-	walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
+	 #DEBUG print rank, ": walk clone ", i_at
+	 (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
+	 atom_accept_rate_sum += atom_accept_rate
+	 cell_accept_rate_sum += cell_accept_rate
 
       # check that everything that should have been changed has, and things that shouldn't have, haven't
       if ns_args['debug'] >= 1:
@@ -701,9 +739,19 @@ def do_ns_loop():
 	 while status[rank,r_i] != '' and status[rank,r_i] != 'c_s':
 	    r_i = np.random.randint(0, n_walkers)
 	 #DEBUG print rank, ": walk extra ", r_i
-	 walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
+	 (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
+	 atom_accept_rate_sum += atom_accept_rate
+	 cell_accept_rate_sum += cell_accept_rate
 	 # this status will be set only on this MPI task
 	 status[rank,r_i] = 'e_w'
+
+      MC_adjust_n_iters += 1
+      if i_ns_step % movement_args['MC_adjust_step_interval'] == 1:
+	 adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, (max_n_cull_per_task+n_extra_walk_per_task)*size*MC_adjust_n_iters, comm)
+	 atom_accept_rate_sum = 0.0
+	 cell_accept_rate_sum = 0.0
+	 MC_adjust_n_iters = 0
+
 
       if ns_args['debug'] >= 2:
 	 print rank, ": LOOP_TE END 30 ",i_ns_step, [ eval_energy(at) for at in walkers ]
