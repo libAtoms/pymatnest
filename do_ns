@@ -372,7 +372,10 @@ def max_energy(walkers, n):
 def do_ns_loop():
 
    if rank == 0:
-      energy_io.write("%d %d\n" % (ns_args['n_walkers'], ns_args['n_cull']))
+      nD = 3
+      if movement_args['2D']:
+	 nD = 2
+      energy_io.write("%d %d %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], len(walkers[0])*nD) )
 
    # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
    if ns_args['delta_random_seed'] > 0:
