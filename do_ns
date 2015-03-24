@@ -30,8 +30,8 @@ if len(sys.argv) != 1:
   sys.stderr.write("debug=debug_level (<= 0 for no debugging tests/prints)\n")
   sys.stderr.write("delta_random_seed=seed_shift (< 0 for seed from /dev/urandom)\n")
 
-import re, numpy as np, math
-import ase
+import re, math, time
+import numpy as np, ase
 try:
    import quippy
    have_quippy=True
@@ -297,7 +297,8 @@ def do_MC_atom_walk(at, movement_args, Emax):
   #DEBUG print "do_MC_atom_walk"
   n_steps = movement_args['MC_atom_n_steps']
   step_size = movement_args['MC_atom_step_size']
-  accept_rate=0
+  #DEBUG print rank, ": do_MC_atom_walk step_size ", step_size
+  accept_num=0
   energy = eval_energy(at)
   for i_MC_step in range(n_steps):
     #DEBUG print "i_MC_step ",i_MC_step
@@ -321,8 +322,9 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	at.set_positions(old_pos)
 	energy = old_energy
       else:
-	accept_rate += 1
-  return float(accept_rate)/float(n_steps*at.n)
+	accept_num += 1
+  #DEBUG print rank, ": returning accept rate ",float(accept_num)/float(n_steps*at.n)
+  return float(accept_num)/float(n_steps*at.n)
 
 def walk_single_walker(at, movement_args, Emax):
    #DEBUG print "walk_single_walker"
@@ -432,8 +434,9 @@ def do_ns_loop():
 	    f = (1.0-f_cull)*f_extra/(f_cull+f_extra-f_cull*f_extra)
 
 	    n_walks = f_cull/(f_cull+f_extra-f_cull*f_extra) * (1.0 + f/(1.0-f) + f/(1.0-f)**2)
-	    print "Calculated n_walks =",n_walks, " from f_cull ",f_cull," f_extra ",f_extra
-	    movement_args[prop] = math.ceil(movement_args[prop+'_expected']/n_walks)
+	    if rank == 0:
+	       print "Calculated n_walks =",n_walks, " from f_cull ",f_cull," f_extra ",f_extra
+	    movement_args[prop] = int(math.ceil(movement_args[prop+'_expected']/n_walks))
 	    
       else:
 	 if movement_args[prop] > 0 and rank == 0:
@@ -463,11 +466,11 @@ def do_ns_loop():
 	 print "adjust_MC_steps mean rates atom ", atom_accept_rate_sum, " cell ", cell_accept_rate_sum
       atom_dir=""
       if atom_accept_rate_sum < 0.25:
-	 movement_args['MC_atom_step_size'] *= 1.2
-	 atom_dir="up"
-      if atom_accept_rate_sum > 0.75:
 	 movement_args['MC_atom_step_size'] /= 1.2
-	 atom_dir="down"
+	 atom_dir='down'
+      if atom_accept_rate_sum > 0.75:
+	 movement_args['MC_atom_step_size'] *= 1.2
+	 atom_dir='up'
       ## need to do cell steps
 
       if atom_dir != "" and rank == 0:
@@ -477,6 +480,8 @@ def do_ns_loop():
    atom_accept_rate_sum = 0.0
    cell_accept_rate_sum = 0.0
    MC_adjust_n_iters = 0
+
+   prev_time = -1
 
    for i_ns_step in range(ns_args['n_iter']):
       #DEBUG if rank == 0:
@@ -500,8 +505,9 @@ def do_ns_loop():
       #DEBUG print rank, ": orig cull list ", cull_list
 
       Emax_of_step=Emax_next
-      if rank == 0 and (i_ns_step % int(ns_args['n_iter']/1000) or i_ns_step == ns_args['n_iter']) == 0:
+      if rank == 0 and (time.time() > prev_time+60 or (i_ns_step % int(ns_args['n_iter']/1000) or i_ns_step == ns_args['n_iter']) == 0):
         print i_ns_step, "Emax_of_step ", Emax_of_step
+	prev_time = time.time()
 
       # record Emax walkers energies and configurations
       if rank == 0:
