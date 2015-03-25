@@ -30,7 +30,7 @@ for line in infile.readlines():
 
 alpha = float(n_walkers-n_cull)/float(n_walkers)
 
-print "n_walkers ",n_walkers," n_cull ",n_cull," alpha ",alpha
+print "# n_walkers ",n_walkers," n_cull ",n_cull," alpha ",alpha
 
 def analyse(Es, T):
    if n_cull == 1:
@@ -49,18 +49,17 @@ def analyse(Es, T):
       #   = exp(n log(a)+log(1-a))exp(-beta E_j)
       #   = exp(n log(a)+log(1-a)-beta E_j)
       log_w = n*log_a + log_1_min_a
-      log_E = math.log(Es[i_E])
       Z_contrib.append(math.exp(log_w - beta*Es[i_E]))
       #DEBUG print "log(Z_contrib) ",n * log_a , log_1_min_a, - beta*Es[i_E]
 
       # U = 3N/2 beta + 1/Z sum_n w_n E_n exp(-beta E_n)
       #   = 3N/2 beta + 1/Z sum_n exp( log(w) + log(E) - beta E)
-      U_contrib.append(math.exp(log_w + log_E - beta*Es[i_E]))
+      U_contrib.append(Es[i_E]*math.exp(log_w - beta*Es[i_E]))
 
       # Cv = 3N/2 k + 1/Z^2 [ sum_n w_n E_n exp(-beta E_n)/kT^2 ] [ \sum_n w_n E_n exp(-beta E_n) ] + 1/Z [ sum_n w_n E_n^2 exp(-beta E_n)/kT^2 ]
       log_1_over_kTsq = math.log(beta)-math.log(T)
-      Cv_contrib_1.append(math.exp(log_w + log_E - beta*Es[i_E] + log_1_over_kTsq))
-      Cv_contrib_2.append(math.exp(log_w + 2.0*log_E - beta*Es[i_E] + log_1_over_kTsq))
+      Cv_contrib_1.append(Es[i_E]*math.exp(log_w - beta*Es[i_E] + log_1_over_kTsq))
+      Cv_contrib_2.append(Es[i_E]**2 * math.exp(log_w - beta*Es[i_E] + log_1_over_kTsq))
 
    Z = math.fsum(Z_contrib)
 
@@ -71,7 +70,9 @@ def analyse(Es, T):
 
    return (Z, U, Cv)
 
-print "# T      Z(T)     U(T)    Cv(T)"
+print "# T      Z(T)               U(T)          Cv(T)"
+#      0.05 1.88949677673e-75 8.88841272769 56975.5011109
+
 for i_T in range(n_T):
    T = T_min + i_T * dT
    (Z, U, Cv) = analyse(Es, T)
