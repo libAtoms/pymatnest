@@ -10,6 +10,7 @@ if len(sys.argv) != 1:
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int (0)\n")
   sys.stderr.write("n_iter=int (MANDATORY)\n")
+  sys.stderr.write("initial_energy_ceiling=float (MANDATORY)\n")
   sys.stderr.write("out_file_prefix=str (None)\n")
   sys.stderr.write("\n")
   sys.stderr.write("QUIP_pot_args=str (MANDATORY)\n")
@@ -103,6 +104,10 @@ try:
   ns_args['n_iter'] = int(args.pop('n_iter'))
 except:
   exit_error("need number of NS iterations n_iter\n",1)
+try:
+  ns_args['initial_energy_ceiling'] = float(args.pop('initial_energy_ceiling'))
+except:
+  exit_error("need number of NS iterations initial_energy_ceiling\n",1)
 try:
   ns_args['QUIP_pot_args'] = args.pop('QUIP_pot_args')
 except:
@@ -503,8 +508,10 @@ def do_ns_loop():
    # initial positions are just random
    for at in walkers:
       at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
-      while math.isnan(eval_energy(at)):
+      energy = eval_energy(at)
+      while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
 	 at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
+	 energy = eval_energy(at)
       print rank, ": initial energy ", eval_energy(at)
 
    atom_accept_rate_sum = 0.0
