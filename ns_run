@@ -8,25 +8,26 @@ if len(sys.argv) != 1:
   sys.stderr.write("start_file=path_to_file.xyz (MANDATORY)\n")
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
   sys.stderr.write("n_cull=int (MANDATORY)\n")
-  sys.stderr.write("n_extra_walk_per_task=int\n")
+  sys.stderr.write("n_extra_walk_per_task=int (0)\n")
   sys.stderr.write("n_iter=int (MANDATORY)\n")
-  sys.stderr.write("out_file_prefix=str\n")
+  sys.stderr.write("out_file_prefix=str (None)\n")
   sys.stderr.write("\n")
   sys.stderr.write("QUIP_pot_args=str (MANDATORY)\n")
   sys.stderr.write("QUIP_pot_params_file=str (MANDATORY)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("MC_atom_n_steps_expected=int\n")
+  sys.stderr.write("MC_atom_n_steps_expected=int (0)\n")
   sys.stderr.write("MC_atom_n_steps=int (if not specified, set from expected #)\n")
-  sys.stderr.write("MC_atom_step_size=float\n")
-  sys.stderr.write("MC_atom_step_size_max=float\n")
+  sys.stderr.write("MC_atom_step_size=float (0.1)\n")
+  sys.stderr.write("MC_atom_step_size_max=float (1.0\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_adjust_step_interval=int\n")
   sys.stderr.write("\n")
-  sys.stderr.write("MD_atom_n_steps_expected=int\n")
+  sys.stderr.write("MD_atom_n_steps_expected=int ))\n")
   sys.stderr.write("MD_atom_n_steps=int (if not specified, set from expected #)\n")
-  sys.stderr.write("MD_atom_timestep=float\n")
-  sys.stderr.write("MD_atom_energy_fuzz=float\n")
+  sys.stderr.write("MD_atom_timestep=float (1.0)\n")
+  sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-12)\n")
   sys.stderr.write("\n")
+  sys.stderr.write("energy_perturbation=float (0.0)\n")
   sys.stderr.write("profile=rank_to_profile\n")
   sys.stderr.write("2D=[ T | F ]\n")
   sys.stderr.write("debug=debug_level (<= 0 for no debugging tests/prints)\n")
@@ -116,6 +117,7 @@ ns_args['profile'] = int(args.pop('profile', -1))
 ns_args['debug'] = int(args.pop('debug', -1))
 ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
+ns_args['energy_perturbation'] = float(args.pop('energy_perturbation', 1.0e-14))
 
 movement_args={}
 
@@ -217,8 +219,8 @@ def eval_energy(at, PE_only=False):
   if confining_pot_args['mag'] > 0.0:
       energy += confining_pot_args['mag']*(np.linalg.norm(at.pos)**2)
 
+  # kinetic
   if not PE_only:
-     # kinetic
      velocities = at.get_velocities()
      masses = at.get_masses()
      if velocities is not None and masses is not None:
@@ -285,7 +287,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
    else:
       exit_error("Need some non-quippy way of doing MD\n",3)
 
-   if at.get_potential_energy()+at.get_kinetic_energy() > Emax+movement_args['MD_atom_energy_fuzz']:
+   if eval_energy(at) > Emax+movement_args['MD_atom_energy_fuzz']:
       print rank, ": WARNING reject MD traj "
       at.set_positions(old_pos)
       if old_velo is not None:
@@ -359,7 +361,7 @@ def walk_single_walker(at, movement_args, Emax):
 
 def max_energy(walkers, n):
    # do local max
-   energies_loc = np.array([ eval_energy(at) for at in walkers])
+   energies_loc = np.array([ eval_energy(at)+np.random.uniform(-1.0,1.0)*ns_args['energy_perturbation'] for at in walkers])
    energies = np.array(comm.allgather(energies_loc)).flatten()
    #DEBUG print rank , ": max_energies energies ",energies
    #DEBUG print rank , ": max_energies energies.argsort() ",energies.argsort()
