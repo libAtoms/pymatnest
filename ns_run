@@ -462,7 +462,7 @@ def do_ns_loop():
    atom_accept_rate_sum = 0.0
    cell_accept_rate_sum = 0.0
    for at in walkers:
-      (atom_accept_rate, cell_accept_rate) = walk_single_walker(at, movement_args, Emax+10.0)
+      (atom_accept_rate, cell_accept_rate) = walk_single_walker(at, movement_args, Emax+100.0)
       atom_accept_rate_sum += atom_accept_rate
       cell_accept_rate_sum += cell_accept_rate
 
@@ -528,7 +528,7 @@ def do_ns_loop():
       # record Emax walkers energies and configurations
       if rank == 0:
 	 for E in Emax:
-	    energy_io.write("%d %f\n" % (i_ns_step, E))
+	    energy_io.write("%d %.50f\n" % (i_ns_step, E))
 	 energy_io.flush()
       if cull_list[rank] is not None:
 	 for i in cull_list[rank]:

@@ -41,6 +41,7 @@ for line in infile.readlines():
    (n_iter, E) = line.split()
    Es.append(float(E))
 
+# check this
 alpha = float(n_walkers)/float(n_walkers+n_cull)
 
 print "# n_walkers ",n_walkers," n_cull ",n_cull," alpha ",alpha
