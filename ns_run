@@ -170,7 +170,22 @@ else:
 if have_quippy:
    init_atoms = None
    if rank == 0:
-      init_atoms = quippy.Atoms(ns_args['start_file'])
+      if re.search('.xyz$', ns_args['start_file']) is not None:
+	 init_atoms = quippy.Atoms(ns_args['start_file'])
+      else:
+	 start_io=open(ns_args['start_file'],'r')
+	 lattice=quippy.fzeros( (3,3) )
+	 lattice[:,1] = [ float(s) for s in start_io.readline().split() ]
+	 lattice[:,2] = [ float(s) for s in start_io.readline().split() ]
+	 lattice[:,3] = [ float(s) for s in start_io.readline().split() ]
+	 init_atoms=quippy.Atoms()
+	 init_atoms.set_lattice(lattice)
+	 for l in start_io.readlines():
+	    Z = int(l.split()[0])
+	    n = int(l.split()[1])
+	    init_atoms.add_atoms([ [0.0]* n ] * 3, [Z]*n)
+	 print "initial atoms created from a list"
+	 init_atoms.write("stdout")
    if comm is not None:
       init_atoms = comm.bcast(init_atoms, root=0)
    init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
@@ -373,6 +388,31 @@ def max_energy(walkers, n):
 
    return (Emax[0:-1], np.mod(Emax_ind[0:-1],len(walkers)), rank_of_max[0:-1], Emax[-1])
 
+def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm):
+   atom_accept_rate_sum = comm.allreduce(atom_accept_rate_sum,MPI.SUM)
+   cell_accept_rate_sum = comm.allreduce(cell_accept_rate_sum,MPI.SUM)
+   atom_accept_rate_sum /= float(n_entries)
+   cell_accept_rate_sum /= float(n_entries)
+
+   if rank == 0:
+      print "adjust_MC_steps mean rates atom ", atom_accept_rate_sum, " cell ", cell_accept_rate_sum
+
+   atom_dir=''
+   if atom_accept_rate_sum < 0.25:
+      movement_args['MC_atom_step_size'] /= 1.2
+      atom_dir='down'
+   if atom_accept_rate_sum > 0.75:
+      movement_args['MC_atom_step_size'] *= 1.2
+      atom_dir='up'
+   ## need to do cell steps
+
+   if movement_args['MC_atom_step_size'] > movement_args['MC_atom_step_size_max']:
+      movement_args['MC_atom_step_size'] = movement_args['MC_atom_step_size_max']
+      if rank == 0:
+	 print "adjust_MC_steps maxed out MC_atom_step_size=", movement_args['MC_atom_step_size'] 
+
+   if atom_dir != "" and rank == 0:
+      print "adjust MC_atom_step_size ",atom_dir," to ", movement_args['MC_atom_step_size']
 
 # do NS
 def do_ns_loop():
@@ -460,41 +500,13 @@ def do_ns_loop():
       print "Using calculated number of MC_atom_n_steps ", movement_args['MC_atom_n_steps']
       print "Using calculated number of MD_atom_n_steps ", movement_args['MD_atom_n_steps']
 
-   (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, 1)
-   atom_accept_rate_sum = 0.0
-   cell_accept_rate_sum = 0.0
+   # initial positions are just random
    for at in walkers:
-      (atom_accept_rate, cell_accept_rate) = walk_single_walker(at, movement_args, Emax+100.0)
-      atom_accept_rate_sum += atom_accept_rate
-      cell_accept_rate_sum += cell_accept_rate
+      at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
+      while math.isnan(eval_energy(at)):
+	 at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
+      print rank, ": initial energy ", eval_energy(at)
 
-   def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm):
-      atom_accept_rate_sum = comm.allreduce(atom_accept_rate_sum,MPI.SUM)
-      cell_accept_rate_sum = comm.allreduce(cell_accept_rate_sum,MPI.SUM)
-      atom_accept_rate_sum /= float(n_entries)
-      cell_accept_rate_sum /= float(n_entries)
-
-      if rank == 0:
-	 print "adjust_MC_steps mean rates atom ", atom_accept_rate_sum, " cell ", cell_accept_rate_sum
-
-      atom_dir=''
-      if atom_accept_rate_sum < 0.25:
-	 movement_args['MC_atom_step_size'] /= 1.2
-	 atom_dir='down'
-      if atom_accept_rate_sum > 0.75:
-	 movement_args['MC_atom_step_size'] *= 1.2
-	 atom_dir='up'
-      ## need to do cell steps
-
-      if movement_args['MC_atom_step_size'] > movement_args['MC_atom_step_size_max']:
-	 movement_args['MC_atom_step_size'] = movement_args['MC_atom_step_size_max']
-	 if rank == 0:
-	    print "adjust_MC_steps maxed out MC_atom_step_size=", movement_args['MC_atom_step_size'] 
-
-      if atom_dir != "" and rank == 0:
-	 print "adjust MC_atom_step_size ",atom_dir," to ", movement_args['MC_atom_step_size']
-
-   adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, ns_args['n_walkers'], comm)
    atom_accept_rate_sum = 0.0
    cell_accept_rate_sum = 0.0
    MC_adjust_n_iters = 0
@@ -771,7 +783,7 @@ def do_ns_loop():
 	 status[rank,r_i] = 'e_w'
 
       MC_adjust_n_iters += 1
-      if i_ns_step % movement_args['MC_adjust_step_interval'] == 1:
+      if i_ns_step % movement_args['MC_adjust_step_interval'] == movement_args['MC_adjust_step_interval']-1:
 	 adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, (max_n_cull_per_task+n_extra_walk_per_task)*size*MC_adjust_n_iters, comm)
 	 atom_accept_rate_sum = 0.0
 	 cell_accept_rate_sum = 0.0
