@@ -10,13 +10,15 @@ if len(sys.argv) != 1:
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int\n")
   sys.stderr.write("n_iter=int (MANDATORY)\n")
+  sys.stderr.write("out_file_prefix=str\n")
   sys.stderr.write("\n")
   sys.stderr.write("QUIP_pot_args=str (MANDATORY)\n")
   sys.stderr.write("QUIP_pot_params_file=str (MANDATORY)\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_atom_n_steps_expected=int\n")
   sys.stderr.write("MC_atom_n_steps=int (if not specified, set from expected #)\n")
-  sys.stderr.write("MC_atom_step_size=int\n")
+  sys.stderr.write("MC_atom_step_size=float\n")
+  sys.stderr.write("MC_atom_step_size_max=float\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_adjust_step_interval=int\n")
   sys.stderr.write("\n")
@@ -109,6 +111,7 @@ try:
 except:
   exit_error("need QUIP potential params file QUIP_pot_params_file\n",1)
 
+ns_args['out_file_prefix'] = args.pop('out_file_prefix', "")
 ns_args['profile'] = int(args.pop('profile', -1))
 ns_args['debug'] = int(args.pop('debug', -1))
 ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
@@ -119,6 +122,7 @@ movement_args={}
 movement_args['MC_atom_n_steps_expected'] = int(args.pop('MC_atom_n_steps_expected', 0))
 movement_args['MC_atom_n_steps'] = int(args.pop('MC_atom_n_steps', 0))
 movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
+movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
 
 movement_args['MD_atom_n_steps_expected'] = int(args.pop('MD_atom_n_steps_expected', 0))
 movement_args['MD_atom_n_steps'] = int(args.pop('MD_atom_n_steps', 0))
@@ -467,9 +471,11 @@ def do_ns_loop():
       cell_accept_rate_sum = comm.allreduce(cell_accept_rate_sum,MPI.SUM)
       atom_accept_rate_sum /= float(n_entries)
       cell_accept_rate_sum /= float(n_entries)
+
       if rank == 0:
 	 print "adjust_MC_steps mean rates atom ", atom_accept_rate_sum, " cell ", cell_accept_rate_sum
-      atom_dir=""
+
+      atom_dir=''
       if atom_accept_rate_sum < 0.25:
 	 movement_args['MC_atom_step_size'] /= 1.2
 	 atom_dir='down'
@@ -477,6 +483,11 @@ def do_ns_loop():
 	 movement_args['MC_atom_step_size'] *= 1.2
 	 atom_dir='up'
       ## need to do cell steps
+
+      if movement_args['MC_atom_step_size'] > movement_args['MC_atom_step_size_max']:
+	 movement_args['MC_atom_step_size'] = movement_args['MC_atom_step_size_max']
+	 if rank == 0:
+	    print "adjust_MC_steps maxed out MC_atom_step_size=", movement_args['MC_atom_step_size'] 
 
       if atom_dir != "" and rank == 0:
 	 print "adjust MC_atom_step_size ",atom_dir," to ", movement_args['MC_atom_step_size']
@@ -775,9 +786,16 @@ def do_ns_loop():
 	#DEBUG print rank, ": post-move walkers", at.get_positions()[0]
       #DEBUG print rank, ": post-move energies", [ eval_energy(at) for at in walkers ]
 
-traj_io = quippy.CInOutput("traj.%d.xyz" % rank, action=quippy.OUTPUT)
+if ns_args['out_file_prefix'] == "":
+   traj_io = quippy.CInOutput("traj.%d.xyz" % rank, action=quippy.OUTPUT)
+else:
+   traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'.traj.%d.xyz' % rank, action=quippy.OUTPUT)
+
 if rank == 0:
-   energy_io = open("energies", "w")
+   if ns_args['out_file_prefix'] == "":
+      energy_io = open("energies", "w")
+   else:
+      energy_io = open(ns_args['out_file_prefix']+'.energies', 'w')
 
 if ns_args['profile'] == rank:
    import cProfile
