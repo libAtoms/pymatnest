@@ -3,8 +3,8 @@
 import sys, math
 import numpy as np
 
-if len(sys.argv) != 5 and len(sys.argv) != 6:
-   sys.stderr.write("Usage: %s infile T_min dT n_T [kB, default to eV/K]\n" % sys.argv[0])
+if len(sys.argv) < 5 or len(sys.argv) > 7:
+   sys.stderr.write("Usage: %s infile T_min dT n_T [kB, default to eV/K] [debug]\n" % sys.argv[0])
    sys.exit(1)
 
 k_Boltzmann = 8.6173324e-5 # eV/K
@@ -16,7 +16,20 @@ T_min = float(sys.argv[2])
 dT = float(sys.argv[3])
 n_T = int(sys.argv[4])
 if len(sys.argv) == 6:
+   if sys.argv[5] == "debug":
+      debug=True
+   else:
+      debug=False
    k_Boltzmann = float(sys.argv[5])
+
+if len(sys.argv) == 7:
+   k_Boltzmann = float(sys.argv[5])
+   if sys.argv[6] == "debug":
+      debug=True
+   else:
+      sys.stderr.write("Unknown argument '%s'\n" % sys.argv[6])
+      sys.exit(2)
+
 
 (n_walkers, n_cull, n_DOF) = infile.readline().split()
 n_walkers = int(n_walkers)
@@ -28,45 +41,48 @@ for line in infile.readlines():
    (n_iter, E) = line.split()
    Es.append(float(E))
 
-alpha = float(n_walkers-n_cull)/float(n_walkers)
+alpha = float(n_walkers)/float(n_walkers+n_cull)
 
 print "# n_walkers ",n_walkers," n_cull ",n_cull," alpha ",alpha
 
 def analyse(Es, T):
-   if n_cull == 1:
-      log_a = math.log(alpha)
-      log_1_min_a = math.log(1.0-alpha)
+   log_a = math.log(alpha)
+   log_1_min_a = math.log(1.0-alpha)
    beta = 1.0/(k_Boltzmann*T)
-   #DEBUG print "analysis ", log_a, log_1_min_a, beta
-   Z_contrib=[]
-   U_contrib=[]
-   Cv_contrib_1=[]
-   Cv_contrib_2=[]
+   Z_term=[]
+   U_term=[]
+   Cv_term_1=[]
+   Cv_term_2=[]
    for i_E in range(len(Es)):
-      n = int(i_E/n_cull)+1
+      n = int(i_E/n_cull)
       # Z = sum_n (a^n - a^(n+1)) exp(-beta E_j)
-      #   = a^n (1-a) exp(-beta E_j)
-      #   = exp(n log(a)+log(1-a))exp(-beta E_j)
-      #   = exp(n log(a)+log(1-a)-beta E_j)
+      #   = sum_n a^n (1-a) exp(-beta E_j)
+      #   = sum_n exp(n log(a)+log(1-a))exp(-beta E_j)
+      #   = sum_n exp(n log(a)+log(1-a)-beta E_j)
       log_w = n*log_a + log_1_min_a
-      Z_contrib.append(math.exp(log_w - beta*Es[i_E]))
-      #DEBUG print "log(Z_contrib) ",n * log_a , log_1_min_a, - beta*Es[i_E]
+      Z_term.append(math.exp(log_w - beta*Es[i_E]))
+      #DEBUG print "log(Z_term) ",n * log_a , log_1_min_a, - beta*Es[i_E]
 
       # U = 3N/2 beta + 1/Z sum_n w_n E_n exp(-beta E_n)
       #   = 3N/2 beta + 1/Z sum_n exp( log(w) + log(E) - beta E)
-      U_contrib.append(Es[i_E]*math.exp(log_w - beta*Es[i_E]))
+      U_term.append(Es[i_E]*math.exp(log_w - beta*Es[i_E]))
 
       # Cv = 3N/2 k + 1/Z^2 [ sum_n w_n E_n exp(-beta E_n)/kT^2 ] [ \sum_n w_n E_n exp(-beta E_n) ] + 1/Z [ sum_n w_n E_n^2 exp(-beta E_n)/kT^2 ]
       log_1_over_kTsq = math.log(beta)-math.log(T)
-      Cv_contrib_1.append(Es[i_E]*math.exp(log_w - beta*Es[i_E] + log_1_over_kTsq))
-      Cv_contrib_2.append(Es[i_E]**2 * math.exp(log_w - beta*Es[i_E] + log_1_over_kTsq))
+      Cv_term_1.append(Es[i_E]*math.exp(log_w - beta*Es[i_E] + log_1_over_kTsq))
+      Cv_term_2.append(Es[i_E]**2 * math.exp(log_w - beta*Es[i_E] + log_1_over_kTsq))
 
-   Z = math.fsum(Z_contrib)
+   if debug:
+      for i in range(len(Z_term)):
+	 print "Z_term ", T, Es[i], Z_term[i]
+      print "Z_term"
+      print "Z_term"
+   Z = math.fsum(Z_term)
 
-   U_contrib_sum = math.fsum(U_contrib)
-   U = n_DOF/(2.0*beta) + U_contrib_sum/Z
+   U_term_sum = math.fsum(U_term)
+   U = n_DOF/(2.0*beta) + U_term_sum/Z
 
-   Cv = n_DOF*k_Boltzmann/2.0 + U_contrib_sum*math.fsum(Cv_contrib_1)/Z**2 + math.fsum(Cv_contrib_2)/Z
+   Cv = n_DOF*k_Boltzmann/2.0 + U_term_sum*math.fsum(Cv_term_1)/Z**2 + math.fsum(Cv_term_2)/Z
 
    return (Z, U, Cv)
 
