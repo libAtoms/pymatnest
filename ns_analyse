@@ -41,6 +41,9 @@ for line in infile.readlines():
    (n_iter, E) = line.split()
    Es.append(float(E))
 
+Es = np.array(Es)
+Es -= np.amin(Es)
+
 # check this
 alpha = float(n_walkers)/float(n_walkers+n_cull)
 
