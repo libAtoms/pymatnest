@@ -5,7 +5,8 @@ import sys
 if len(sys.argv) != 1:
   sys.stderr.write("Usage: %s < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
-  sys.stderr.write("start_file=path_to_file.xyz (MANDATORY)\n")
+  sys.stderr.write("start_file=path_to_file.xyz (mutually exclusive with restart_file, one is required)\n")
+  sys.stderr.write("restart_file=path_to_file.xyz (mutually exclusive with start_file, one is required)\n")
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int (0)\n")
@@ -89,10 +90,6 @@ if comm is not None:
 # convert from strings to actual args
 ns_args={}
 try:
-  ns_args['start_file'] = args.pop('start_file')
-except:
-  exit_error("need starting position file start_file\n",1)
-try:
   ns_args['n_walkers'] = int(args.pop('n_walkers'))
 except:
   exit_error("need number of walkers n_walkers\n",1)
@@ -107,7 +104,7 @@ except:
 try:
   ns_args['initial_energy_ceiling'] = float(args.pop('initial_energy_ceiling'))
 except:
-  exit_error("need number of NS iterations initial_energy_ceiling\n",1)
+  exit_error("need energy ceiling for initial distribution of configs initial_energy_ceiling\n",1)
 try:
   ns_args['QUIP_pot_args'] = args.pop('QUIP_pot_args')
 except:
@@ -117,7 +114,13 @@ try:
 except:
   exit_error("need QUIP potential params file QUIP_pot_params_file\n",1)
 
-ns_args['out_file_prefix'] = args.pop('out_file_prefix', "")
+ns_args['start_file'] = args.pop('start_file', '')
+ns_args['restart_file'] = args.pop('restart_file', '')
+if ((ns_args['start_file'] == '' and ns_args['restart_file'] == '') or
+    (ns_args['start_file'] != '' and ns_args['restart_file'] != '')):
+   exit_error("Got both start_file and restart_file, conflicting\n", 3)
+
+ns_args['out_file_prefix'] = args.pop('out_file_prefix', '')
 ns_args['profile'] = int(args.pop('profile', -1))
 ns_args['debug'] = int(args.pop('debug', -1))
 ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
@@ -171,34 +174,7 @@ if have_quippy:
 else:
    exit_error("Need some non-quippy way of initializing calculator\n",3)
 
-# read initial config
-if have_quippy:
-   init_atoms = None
-   if rank == 0:
-      if re.search('.xyz$', ns_args['start_file']) is not None:
-	 init_atoms = quippy.Atoms(ns_args['start_file'])
-      else:
-	 start_io=open(ns_args['start_file'],'r')
-	 lattice=quippy.fzeros( (3,3) )
-	 lattice[:,1] = [ float(s) for s in start_io.readline().split() ]
-	 lattice[:,2] = [ float(s) for s in start_io.readline().split() ]
-	 lattice[:,3] = [ float(s) for s in start_io.readline().split() ]
-	 init_atoms=quippy.Atoms()
-	 init_atoms.set_lattice(lattice)
-	 for l in start_io.readlines():
-	    Z = int(l.split()[0])
-	    n = int(l.split()[1])
-	    init_atoms.add_atoms([ [0.0]* n ] * 3, [Z]*n)
-	 print "initial atoms created from a list"
-	 init_atoms.write("stdout")
-   if comm is not None:
-      init_atoms = comm.bcast(init_atoms, root=0)
-   init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
-else:
-   exit_error("need some non-quippy way of reading input configuration\n",3)
-
-# clone initial config into array of walkers
-walkers=[]
+# figure out numbers of local walkers
 rank_of_walker = [0]*ns_args['n_walkers']
 if size <= 1:
    n_walkers = ns_args['n_walkers']
@@ -218,10 +194,63 @@ else:
 	 my_last_walker = last_walker
       if last_walker > first_walker:
 	 rank_of_walker[first_walker:last_walker] = [i_rank]*(last_walker-first_walker)
-if ns_args['debug'] >= 1 and have_quippy and size <= 1:
-   init_atoms.params['n_walks'] = 0
-for i_walker in range(n_walkers):
-  walkers.append(init_atoms.copy())
+
+walkers=[]
+if ns_args['restart_file'] == '': # start from scratch
+   # read initial config
+   if have_quippy:
+      init_atoms = None
+      if rank == 0:
+	 if re.search('.xyz$', ns_args['start_file']) is not None:
+	    # read config from an xyz file
+	    init_atoms = quippy.Atoms(ns_args['start_file'])
+	 else:
+	    # create atoms structs from a list of atomic numbers and numbers of atoms
+	    start_io=open(ns_args['start_file'],'r')
+	    lattice=quippy.fzeros( (3,3) )
+	    lattice[:,1] = [ float(s) for s in start_io.readline().split() ]
+	    lattice[:,2] = [ float(s) for s in start_io.readline().split() ]
+	    lattice[:,3] = [ float(s) for s in start_io.readline().split() ]
+	    init_atoms=quippy.Atoms()
+	    init_atoms.set_lattice(lattice)
+	    for l in start_io.readlines():
+	       Z = int(l.split()[0])
+	       n = int(l.split()[1])
+	       init_atoms.add_atoms([ [0.0]* n ] * 3, [Z]*n)
+	    print "initial atoms created from a list"
+	    init_atoms.write("stdout")
+      if comm is not None:
+	 init_atoms = comm.bcast(init_atoms, root=0)
+      init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
+   else:
+      exit_error("need some non-quippy way of reading input configuration\n",3)
+
+   # clone initial config into array of walkers
+   if ns_args['debug'] >= 1 and have_quippy and size <= 1:
+      init_atoms.params['n_walks'] = 0
+   for i_walker in range(n_walkers):
+     walkers.append(init_atoms.copy())
+else: # doing a restart
+   if have_quippy:
+      if rank == 0: # read on head task and send to other tasks
+	 l_walkers=[]
+	 traj_io = quippy.CInOutput(ns_args['restart_file'], action=quippy.INPUT)
+	 ar_iter = quippy.AtomsReader(traj_io).iterframes()
+	 for r in range(size):
+	    at_list=[]
+	    for i in range(n_walkers):
+	       if comm is None or r == 0:
+		  walkers.append(ar_iter.next())
+	       else:
+		  at_list.append(ar_iter.next())
+	    if r > 0:
+	       comm.send(at_list, dest=r, tag=1)
+	 traj_io.close()
+      else: # receive from head task
+	 walkers = comm.recv(source=0, tag=1)
+   else:
+      exit_error("need some non-quippy way of reading restart_file\n",3)
+
 for at in walkers:
    at.set_calculator(pot)
 
@@ -505,13 +534,16 @@ def do_ns_loop():
       print "Using calculated number of MC_atom_n_steps ", movement_args['MC_atom_n_steps']
       print "Using calculated number of MD_atom_n_steps ", movement_args['MD_atom_n_steps']
 
-   # initial positions are just random
-   for at in walkers:
-      at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
-      energy = eval_energy(at)
-      while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
+   if ns_args['restart_file'] == '': # not a restart
+      # initial positions are just random
+      for at in walkers:
 	 at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
 	 energy = eval_energy(at)
+	 while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
+	    at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
+	    energy = eval_energy(at)
+
+   for at in walkers:
       print rank, ": initial energy ", eval_energy(at)
 
    atom_accept_rate_sum = 0.0
@@ -542,7 +574,7 @@ def do_ns_loop():
       #DEBUG print rank, ": orig cull list ", cull_list
 
       Emax_of_step=Emax_next
-      if rank == 0 and (time.time() > prev_time+60 or (i_ns_step % int(ns_args['n_iter']/1000) or i_ns_step == ns_args['n_iter']) == 0):
+      if rank == 0 and (time.time() > prev_time+60 or (i_ns_step % max(int(ns_args['n_iter']/1000),1) or i_ns_step == ns_args['n_iter']) == 0):
         print i_ns_step, "Emax_of_step ", Emax_of_step
 	prev_time = time.time()
 
@@ -824,8 +856,20 @@ if ns_args['profile'] == rank:
 else:
    do_ns_loop()
 
+for at in walkers:
+   print rank, ": final energy ", eval_energy(at)
+
 if rank == 0:
    energy_io.close()
 traj_io.close()
+
+if ns_args['out_file_prefix'] == "":
+   traj_io = quippy.CInOutput("final.%d.xyz" % rank, action=quippy.OUTPUT)
+else:
+   traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'.final.%d.xyz' % rank, action=quippy.OUTPUT)
+for at in walkers:
+   at.write(traj_io)
+traj_io.close()
+
 MPI.Finalize()
 sys.exit(0)
