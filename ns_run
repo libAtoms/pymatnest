@@ -581,7 +581,7 @@ def do_ns_loop():
       # record Emax walkers energies and configurations
       if rank == 0:
 	 for E in Emax:
-	    energy_io.write("%d %.50f\n" % (i_ns_step, E))
+	    energy_io.write("%d %.60f\n" % (i_ns_step, E))
 	 energy_io.flush()
       if cull_list[rank] is not None:
 	 for i in cull_list[rank]:
