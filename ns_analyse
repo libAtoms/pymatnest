@@ -50,6 +50,7 @@ def analyse(Es, T):
    log_a = math.log(alpha)
    log_1_min_a = math.log(1.0-alpha)
    beta = 1.0/(k_Boltzmann*T)
+   log_1_over_kTsq = math.log(beta)-math.log(T)
    Z_term=[]
    U_term=[]
    Cv_term_1=[]
@@ -69,7 +70,6 @@ def analyse(Es, T):
       U_term.append(Es[i_E]*math.exp(log_w - beta*Es[i_E]))
 
       # Cv = 3N/2 k + 1/Z^2 [ sum_n w_n E_n exp(-beta E_n)/kT^2 ] [ \sum_n w_n E_n exp(-beta E_n) ] + 1/Z [ sum_n w_n E_n^2 exp(-beta E_n)/kT^2 ]
-      log_1_over_kTsq = math.log(beta)-math.log(T)
       Cv_term_1.append(Es[i_E]*math.exp(log_w - beta*Es[i_E] + log_1_over_kTsq))
       Cv_term_2.append(Es[i_E]**2 * math.exp(log_w - beta*Es[i_E] + log_1_over_kTsq))
 
@@ -83,7 +83,7 @@ def analyse(Es, T):
    U_term_sum = math.fsum(U_term)
    U = n_DOF/(2.0*beta) + U_term_sum/Z
 
-   Cv = n_DOF*k_Boltzmann/2.0 + U_term_sum*math.fsum(Cv_term_1)/Z**2 + math.fsum(Cv_term_2)/Z
+   Cv = n_DOF*k_Boltzmann/2.0 - U_term_sum*math.fsum(Cv_term_1)/Z**2 + math.fsum(Cv_term_2)/Z
 
    return (Z, U, Cv)
 
