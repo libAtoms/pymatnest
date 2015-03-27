@@ -347,39 +347,39 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DEBUG print rank, ": final velo ", at.get_velocities()[0]
 
 def do_MC_atom_walk(at, movement_args, Emax):
-  if movement_args['MC_atom_n_steps'] <= 0: 
+   if movement_args['MC_atom_n_steps'] <= 0: 
       return
-  #DEBUG print "do_MC_atom_walk"
-  n_steps = movement_args['MC_atom_n_steps']
-  step_size = movement_args['MC_atom_step_size']
-  #DEBUG print rank, ": do_MC_atom_walk step_size ", step_size
-  accept_num=0
-  energy = eval_energy(at)
-  for i_MC_step in range(n_steps):
-    #DEBUG print "i_MC_step ",i_MC_step
-    at_list=list(range(at.n))
-    np.random.shuffle(at_list)
-    for i_at in at_list:
-      #DEBUG print "i_at ",i_at
-      dx = np.random.normal(0.0, step_size)
-      dy = np.random.normal(0.0, step_size)
-      if movement_args['2D']:
-	 dz=0.0
-      else:
-	 dz = np.random.normal(0.0, step_size)
-      old_energy = energy
-      old_pos = at.get_positions()
-      new_pos = old_pos.copy()
-      new_pos[i_at,:] += (dx, dy,dz)
-      at.set_positions(new_pos)
-      energy = eval_energy(at)
-      if energy > Emax:
-	at.set_positions(old_pos)
-	energy = old_energy
-      else:
-	accept_num += 1
-  #DEBUG print rank, ": returning accept rate ",float(accept_num)/float(n_steps*at.n)
-  return float(accept_num)/float(n_steps*at.n)
+   #DEBUG print "do_MC_atom_walk"
+   n_steps = movement_args['MC_atom_n_steps']
+   step_size = movement_args['MC_atom_step_size']
+   #DEBUG print rank, ": do_MC_atom_walk step_size ", step_size
+   accept_num=0
+   energy = eval_energy(at)
+   dz=0.0
+   for i_MC_step in range(n_steps):
+      #DEBUG print "i_MC_step ",i_MC_step
+      at_list=list(range(at.n))
+      np.random.shuffle(at_list)
+      for i_at in at_list:
+	 #DEBUG print "i_at ",i_at
+	 dx = np.random.normal(0.0, step_size)
+	 dy = np.random.normal(0.0, step_size)
+	 if not movement_args['2D']:
+	    dz = np.random.normal(0.0, step_size)
+	 old_energy = energy
+	 old_pos = at.get_positions()
+	 new_pos = old_pos.copy()
+	 new_pos[i_at,:] += (dx, dy,dz)
+	 at.set_positions(new_pos)
+	 energy = eval_energy(at)
+	 if energy > Emax:
+	    # reject move
+	    at.set_positions(old_pos)
+	    energy = old_energy
+	 else:
+	    accept_num += 1
+     #DEBUG print rank, ": returning accept rate ",float(accept_num)/float(n_steps*at.n)
+   return float(accept_num)/float(n_steps*at.n)
 
 def walk_single_walker(at, movement_args, Emax):
    #DEBUG print "walk_single_walker"
@@ -410,7 +410,7 @@ def walk_single_walker(at, movement_args, Emax):
 
 def max_energy(walkers, n):
    # do local max
-   energies_loc = np.array([ eval_energy(at)+np.random.uniform(-1.0,1.0)*ns_args['energy_perturbation'] for at in walkers])
+   energies_loc = np.array([ eval_energy(at)+np.random.uniform(-1.0,0.0)*ns_args['energy_perturbation'] for at in walkers])
    energies = np.array(comm.allgather(energies_loc)).flatten()
    #DEBUG print rank , ": max_energies energies ",energies
    #DEBUG print rank , ": max_energies energies.argsort() ",energies.argsort()
