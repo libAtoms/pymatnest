@@ -292,6 +292,9 @@ def do_MD_atom_walk(at, movement_args, Emax):
    if confining_pot_args['mag'] > 0.0:
       exit_error("Can't do_MD_atom_walk with confining potential > 0.0\n", 4)
 
+   if movement_args['MD_atom_n_steps'] <= 0:
+      return
+
    #DEBUG print rank, ": do_MD_atom_walk with Emax ", Emax
 
    #DEBUG print rank, ": initial positions ", at.get_positions()[0]
@@ -355,6 +358,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
    #DEBUG print rank, ": do_MC_atom_walk step_size ", step_size
    accept_num=0
    energy = eval_energy(at)
+   #DEBUG print rank, ": MC_walk initial energy ", energy
    dz=0.0
    for i_MC_step in range(n_steps):
       #DEBUG print "i_MC_step ",i_MC_step
@@ -379,11 +383,13 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 else:
 	    accept_num += 1
      #DEBUG print rank, ": returning accept rate ",float(accept_num)/float(n_steps*at.n)
+   #DEBUG print rank, ": MC_walk final energy ", energy
    return float(accept_num)/float(n_steps*at.n)
 
 def walk_single_walker(at, movement_args, Emax):
-   #DEBUG print "walk_single_walker"
+   #DEBUG print rank, ": walk_single_walker initial E", eval_energy(at)
    atom_accept_rate = do_MC_atom_walk(at, movement_args, Emax)
+   #DEBUG print rank, ": walk_single_walker mid E", eval_energy(at)
    do_MD_atom_walk(at, movement_args, Emax)
    ## cell_accept_rate = do_MC_cell_step(at, movement_args, Emax)
    cell_accept_rate = 0.0
@@ -391,6 +397,7 @@ def walk_single_walker(at, movement_args, Emax):
    if hasattr(at, 'n_walks') and size <= 1:
       at.n_walks += 1
    #DEBUG print rank, ": walk_single_walker acc rates ", atom_accept_rate, cell_accept_rate
+   #DEBUG print rank, ": walk_single_walker final E", eval_energy(at)
    return (atom_accept_rate, cell_accept_rate)
 
 # def adjust_MC_step_size_pilot(at, MC_walk_routine, movement_args, step_size_str, Emax):
@@ -561,6 +568,11 @@ def do_ns_loop():
       if ns_args['debug'] >= 2:
 	 print rank, ": LOOP_PE START 01 ",i_ns_step, [ eval_energy(at, True) for at in walkers ]
 
+
+      #DEBUG (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, 10)
+      #DEBUG if rank == 0:
+	 #DEBUG print rank, ": top 10 energies ", Emax
+	 #DEBUG print rank, ": top 10 energy indices ", cull_ind
 
       # do NS config dropping/forming
       (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, n_cull)
@@ -780,6 +792,7 @@ def do_ns_loop():
       #DEBUG print rank, ": pre-move energies", [ eval_energy(at) for at in walkers ]
 
       # walk clone targets
+      #DEBUG print rank, ": status[rank,:] ",status[rank,:]
       clone_walk_ind = np.where(status[rank,:] == 'c_t_a')[0]
       for i_at in clone_walk_ind:
 	 #DEBUG print rank, ": walk clone ", i_at
