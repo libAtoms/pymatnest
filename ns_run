@@ -2,6 +2,8 @@
 
 import sys
 
+print_prefix=""
+
 if len(sys.argv) != 1:
   sys.stderr.write("Usage: %s < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
@@ -339,7 +341,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
    else:
       exit_error("Need some non-quippy way of doing MD\n",3)
 
-   if eval_energy(at) > Emax+movement_args['MD_atom_energy_fuzz']:
+   if eval_energy(at) >= Emax+movement_args['MD_atom_energy_fuzz']:
       print rank, ": WARNING reject MD traj "
       at.set_positions(old_pos)
       if old_velo is not None:
@@ -358,11 +360,12 @@ def do_MC_atom_walk(at, movement_args, Emax):
    #DEBUG print rank, ": do_MC_atom_walk step_size ", step_size
    accept_num=0
    energy = eval_energy(at)
-   #DEBUG print rank, ": MC_walk initial energy ", energy
+   global print_prefix ####
+   #DEBUG print rank, ": ",print_prefix," MC_walk initial energy ", energy, Emax # DEBUG
    dz=0.0
    for i_MC_step in range(n_steps):
       #DEBUG print "i_MC_step ",i_MC_step
-      at_list=list(range(at.n))
+      at_list=list(range(len(at)))
       np.random.shuffle(at_list)
       for i_at in at_list:
 	 #DEBUG print "i_at ",i_at
@@ -376,15 +379,15 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 new_pos[i_at,:] += (dx, dy,dz)
 	 at.set_positions(new_pos)
 	 energy = eval_energy(at)
-	 if energy > Emax:
+	 if energy >= Emax:
 	    # reject move
 	    at.set_positions(old_pos)
 	    energy = old_energy
 	 else:
 	    accept_num += 1
-     #DEBUG print rank, ": returning accept rate ",float(accept_num)/float(n_steps*at.n)
-   #DEBUG print rank, ": MC_walk final energy ", energy
-   return float(accept_num)/float(n_steps*at.n)
+     #DEBUG print rank, ": returning accept rate ",float(accept_num)/float(n_steps*len(at))
+   #DEBUG print rank, ": ",print_prefix," MC_walk final energy ", energy, float(accept_num)/float(n_steps*len(at)) # DEBUG
+   return float(accept_num)/float(n_steps*len(at))
 
 def walk_single_walker(at, movement_args, Emax):
    #DEBUG print rank, ": walk_single_walker initial E", eval_energy(at)
@@ -559,9 +562,13 @@ def do_ns_loop():
 
    prev_time = -1
 
+   global print_prefix #####
    for i_ns_step in range(ns_args['n_iter']):
-      #DEBUG if rank == 0:
-	 #DEBUG print "starting ns loop ",i_ns_step
+      print_prefix="%d" % i_ns_step
+      #DEBUG if rank == 0: # DEBUG
+	 #DEBUG print "starting ns loop ",i_ns_step # DEBUG
+
+      #DEBUG print rank, ": ",print_prefix," LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ] # DEBUG
 
       if ns_args['debug'] >= 2:
 	 print rank, ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
@@ -827,7 +834,7 @@ def do_ns_loop():
 	 r_i = np.random.randint(0, n_walkers)
 	 while status[rank,r_i] != '' and status[rank,r_i] != 'c_s':
 	    r_i = np.random.randint(0, n_walkers)
-	 #DEBUG print rank, ": walk extra ", r_i
+	 #DEBUG print rank, ": ",print_prefix," walk extra ", r_i
 	 (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
 	 atom_accept_rate_sum += atom_accept_rate
 	 cell_accept_rate_sum += cell_accept_rate
@@ -845,8 +852,9 @@ def do_ns_loop():
       if ns_args['debug'] >= 2:
 	 print rank, ": LOOP_TE END 30 ",i_ns_step, [ eval_energy(at) for at in walkers ]
 
-      #DEBUG for r in range(len(status)):
-	 #DEBUG print rank, ": final status ", r, status[r]
+      #DEBUG if rank == 0:
+	 #DEBUG for r in range(len(status)):
+	    #DEBUG print rank, ": ",print_prefix," final status ", r, status[r]
 
       #DEBUG for at in walkers:
 	#DEBUG print rank, ": post-move walkers", at.get_positions()[0]
