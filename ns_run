@@ -353,8 +353,8 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
 def do_MC_atom_walk(at, movement_args, Emax):
    if movement_args['MC_atom_n_steps'] <= 0: 
-      return
-   #DEBUG print "do_MC_atom_walk"
+      return None
+   #DEBUG print rank, ": do_MC_atom_walk"
    n_steps = movement_args['MC_atom_n_steps']
    step_size = movement_args['MC_atom_step_size']
    #DEBUG print rank, ": do_MC_atom_walk step_size ", step_size
@@ -385,7 +385,6 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	    energy = old_energy
 	 else:
 	    accept_num += 1
-     #DEBUG print rank, ": returning accept rate ",float(accept_num)/float(n_steps*len(at))
    #DEBUG print rank, ": ",print_prefix," MC_walk final energy ", energy, float(accept_num)/float(n_steps*len(at)) # DEBUG
    return float(accept_num)/float(n_steps*len(at))
 
@@ -395,28 +394,13 @@ def walk_single_walker(at, movement_args, Emax):
    #DEBUG print rank, ": walk_single_walker mid E", eval_energy(at)
    do_MD_atom_walk(at, movement_args, Emax)
    ## cell_accept_rate = do_MC_cell_step(at, movement_args, Emax)
-   cell_accept_rate = 0.0
+   cell_accept_rate = None
    ##
    if hasattr(at, 'n_walks') and size <= 1:
       at.n_walks += 1
    #DEBUG print rank, ": walk_single_walker acc rates ", atom_accept_rate, cell_accept_rate
    #DEBUG print rank, ": walk_single_walker final E", eval_energy(at)
    return (atom_accept_rate, cell_accept_rate)
-
-# def adjust_MC_step_size_pilot(at, MC_walk_routine, movement_args, step_size_str, Emax):
-  # if rank == 0:
-     # print "adjust_MC_step_size_pilot ", MC_walk_routine, step_size_str
-  # for i_iter in range(200):
-    # at_test = at.copy()
-    # at_test.calc_connect()
-    # mean_accept_rate = MC_walk_routine(at_test, movement_args, Emax)
-    # print "  i_iter=%d mean_accept_rate=%f %s=%f" % (i_iter, mean_accept_rate, step_size_str, movement_args[step_size_str])
-    # if (mean_accept_rate < 0.2):
-      # movement_args[step_size_str] /= 1.2
-    # elif (mean_accept_rate > 0.8):
-      # movement_args[step_size_str] *= 1.2
-    # else:
-      # break
 
 def max_energy(walkers, n):
    # do local max
@@ -433,30 +417,37 @@ def max_energy(walkers, n):
    return (Emax[0:-1], np.mod(Emax_ind[0:-1],len(walkers)), rank_of_max[0:-1], Emax[-1])
 
 def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm):
-   atom_accept_rate_sum = comm.allreduce(atom_accept_rate_sum,MPI.SUM)
-   cell_accept_rate_sum = comm.allreduce(cell_accept_rate_sum,MPI.SUM)
-   atom_accept_rate_sum /= float(n_entries)
-   cell_accept_rate_sum /= float(n_entries)
+   atom_accept_rate=None
+   if atom_accept_rate_sum is not None:
+      atom_accept_rate = comm.allreduce(atom_accept_rate_sum,MPI.SUM)/float(n_entries*size)
+
+   cell_accept_rate=None
+   if cell_accept_rate_sum is not None:
+      cell_accept_rate = comm.allreduce(cell_accept_rate_sum,MPI.SUM)/float(n_entries*size)
 
    if rank == 0:
-      print "adjust_MC_steps mean rates atom ", atom_accept_rate_sum, " cell ", cell_accept_rate_sum
+      if atom_accept_rate is not None or cell_accept_rate is not None:
+	 print "adjust_MC_steps mean rates atom ", atom_accept_rate, " cell ", cell_accept_rate
 
-   atom_dir=''
-   if atom_accept_rate_sum < 0.25:
-      movement_args['MC_atom_step_size'] /= 1.2
-      atom_dir='down'
-   if atom_accept_rate_sum > 0.75:
-      movement_args['MC_atom_step_size'] *= 1.2
-      atom_dir='up'
-   ## need to do cell steps
+   if atom_accept_rate is not None:
+      atom_dir=''
+      if atom_accept_rate < 0.25:
+	 movement_args['MC_atom_step_size'] /= 1.2
+	 atom_dir='down'
+      if atom_accept_rate > 0.75:
+	 movement_args['MC_atom_step_size'] *= 1.2
+	 atom_dir='up'
+      ## need to do cell steps
 
-   if movement_args['MC_atom_step_size'] > movement_args['MC_atom_step_size_max']:
-      movement_args['MC_atom_step_size'] = movement_args['MC_atom_step_size_max']
-      if rank == 0:
-	 print "adjust_MC_steps maxed out MC_atom_step_size=", movement_args['MC_atom_step_size'] 
+      if movement_args['MC_atom_step_size'] > movement_args['MC_atom_step_size_max']:
+	 movement_args['MC_atom_step_size'] = movement_args['MC_atom_step_size_max']
+	 if rank == 0:
+	    print "adjust_MC_steps maxed out MC_atom_step_size=", movement_args['MC_atom_step_size'] 
 
-   if atom_dir != "" and rank == 0:
-      print "adjust MC_atom_step_size ",atom_dir," to ", movement_args['MC_atom_step_size']
+      if atom_dir != "" and rank == 0:
+	 print "adjust MC_atom_step_size ",atom_dir," to ", movement_args['MC_atom_step_size']
+
+   #### if cell_accept_rate is not None:
 
 # do NS
 def do_ns_loop():
@@ -556,9 +547,9 @@ def do_ns_loop():
    for at in walkers:
       print rank, ": initial energy ", eval_energy(at)
 
-   atom_accept_rate_sum = 0.0
-   cell_accept_rate_sum = 0.0
-   MC_adjust_n_iters = 0
+   atom_accept_rate_sum = None
+   cell_accept_rate_sum = None
+   accept_rate_n = 0
 
    prev_time = -1
 
@@ -672,34 +663,10 @@ def do_ns_loop():
 	 #DEBUG print rank, ": list_clone_target ", list_clone_target
 	 n_clone_target = len(list_clone_target)
 	 n_avail = sum(status[r,:] == '')
-	 # do local clones
-	 n_local_clones = min(n_avail, n_clone_target)
-	 for i in range(n_local_clones):
-	    r_i = np.random.randint(0, n_walkers)
-	    while status[r,r_i] != '':
-	       r_i = np.random.randint(0, n_walkers)
-	    # now r_i should be something with status ''
-	    # clone from r_i into list_clone_target[i]
-	    #DEBUG print rank, ": local clone from ", r_i," to  ",list_clone_target[i]
-	    if r == rank: # actually do copy for this rank only
-	       #DEBUG print rank, ": local clone do copy"
-	       if ns_args['debug'] >= 1 and hasattr(walkers[list_clone_target[i]], 'n_walks') and size <= 1:
-		  if len(n_walks_history) >= 500:
-		     n_walks_history.pop(0)
-		  n_walks_history.append(walkers[list_clone_target[i]].n_walks)
-		  print rank, ": mean_n_walks at culling ", float(sum(n_walks_history))/float(len(n_walks_history))
-
-		  walkers[list_clone_target[i]].n_walks = 0
-	       walkers[list_clone_target[i]].set_positions(walkers[r_i].get_positions())
-	       walkers[list_clone_target[i]].set_cell(walkers[r_i].get_cell())
-	    status[r,r_i] = 'c_s'
-	    status[r,list_clone_target[i]] = 'c_t_a'
 	 # do remote clones
-	 n_remaining_clones = n_clone_target - n_local_clones
-	 for dr in np.array(zip(np.array(range(1,size)), -np.array(range(1,size)))).flatten():
-	    if n_remaining_clones <= 0:
-	       break
-	    remote_r = (r+dr) % size
+	 n_remaining_clones = n_clone_target
+	 while n_remaining_clones > 0:
+	    remote_r = np.random.randint(size)
 	    n_avail_remote = sum(status[remote_r,:] == '')
 	    #DEBUG print rank, ": check transfer to rank ", remote_r, " remote status ", status[remote_r,:], " n_avail_remote ",n_avail_remote
 	    if n_avail_remote > 0: # something is available on remote_r
@@ -804,8 +771,17 @@ def do_ns_loop():
       for i_at in clone_walk_ind:
 	 #DEBUG print rank, ": walk clone ", i_at
 	 (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
-	 atom_accept_rate_sum += atom_accept_rate
-	 cell_accept_rate_sum += cell_accept_rate
+	 accept_rate_n += 1
+	 if atom_accept_rate is not None:
+	    if atom_accept_rate_sum is None:
+	       atom_accept_rate_sum = atom_accept_rate
+	    else:
+	       atom_accept_rate_sum += atom_accept_rate
+	 if cell_accept_rate is not None:
+	    if cell_accept_rate_sum is None:
+	       cell_accept_rate_sum = cell_accept_rate
+	    else:
+	       cell_accept_rate_sum += cell_accept_rate
 
       # check that everything that should have been changed has, and things that shouldn't have, haven't
       if ns_args['debug'] >= 1:
@@ -836,17 +812,27 @@ def do_ns_loop():
 	    r_i = np.random.randint(0, n_walkers)
 	 #DEBUG print rank, ": ",print_prefix," walk extra ", r_i
 	 (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
-	 atom_accept_rate_sum += atom_accept_rate
-	 cell_accept_rate_sum += cell_accept_rate
+	 accept_rate_n += 1
+	 if atom_accept_rate is not None:
+	    if atom_accept_rate_sum is None:
+	       atom_accept_rate_sum = atom_accept_rate
+	    else:
+	       atom_accept_rate_sum += atom_accept_rate
+	 if cell_accept_rate is not None:
+	    if cell_accept_rate_sum is None:
+	       cell_accept_rate_sum = cell_accept_rate
+	    else:
+	       cell_accept_rate_sum += cell_accept_rate
 	 # this status will be set only on this MPI task
 	 status[rank,r_i] = 'e_w'
 
-      MC_adjust_n_iters += 1
       if i_ns_step % movement_args['MC_adjust_step_interval'] == movement_args['MC_adjust_step_interval']-1:
-	 adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, (max_n_cull_per_task+n_extra_walk_per_task)*size*MC_adjust_n_iters, comm)
-	 atom_accept_rate_sum = 0.0
-	 cell_accept_rate_sum = 0.0
-	 MC_adjust_n_iters = 0
+	 adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, accept_rate_n, comm)
+	 if atom_accept_rate_sum is not None:
+	    atom_accept_rate_sum = 0.0
+	 if cell_accept_rate_sum is not None:
+	    cell_accept_rate_sum = 0.0
+	 accept_rate_n = 0
 
 
       if ns_args['debug'] >= 2:
