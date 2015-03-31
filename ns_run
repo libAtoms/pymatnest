@@ -254,6 +254,7 @@ else: # doing a restart
       exit_error("need some non-quippy way of reading restart_file\n",3)
 
 for at in walkers:
+   at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
    at.set_calculator(pot)
 
 n_cull = ns_args['n_cull']
@@ -297,22 +298,25 @@ def do_MD_atom_walk(at, movement_args, Emax):
    if movement_args['MD_atom_n_steps'] <= 0:
       return
 
-   #DEBUG print rank, ": do_MD_atom_walk with Emax ", Emax
+   #DEBUG print rank, ": do_MD_atom_walk with Emax ", Emax # DEBUG
 
    #DEBUG print rank, ": initial positions ", at.get_positions()[0]
    #DEBUG if at.get_velocities() is not None:
       #DEBUG print rank, ": initial velo ", at.get_velocities()[0]
    #DEBUG else:
       #DEBUG print rank, ": initial velo ", None
-   #DEBUG print rank, ": initial energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy()
+   #DEBUG print rank, ": initial energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
 
    old_pos = at.get_positions()
    old_velo = at.get_velocities()
+   if old_velo is None:
+      old_velo = np.zeros( (len(at), 3) )
 
    masses = at.get_masses()
    unit_rv = np.random.standard_normal( (len(at), 3) )
    unit_rv /= np.linalg.norm(unit_rv)
-   mag_rv = np.random.uniform()**(1.0/(3.0*len(at)-1.0))
+   # mag_rv should have prob distrib p(r) = r^(3N-1) using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^{3N-1} and p(x) = 1
+   mag_rv = np.random.uniform()**(1.0/(3.0*len(at)))
    pot_energy = at.get_potential_energy()
    # from Baldock thesis Eq. 11.10 
    #     p^{**} = r \mathbf{S} \hat{\mathbf{r}}
@@ -333,7 +337,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DEBUG print rank, ": KE ",at.get_kinetic_energy()
    #DEBUG print rank, ": mag_rv * mag_KE (eV) ", mag_rv**2 * (Emax-pot_energy)
 
-   #DEBUG print rank, ": mid energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy()
+   #DEBUG print rank, ": mid energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
 
    # propagate in time
    if have_quippy:
@@ -341,13 +345,13 @@ def do_MD_atom_walk(at, movement_args, Emax):
    else:
       exit_error("Need some non-quippy way of doing MD\n",3)
 
-   if eval_energy(at) >= Emax+movement_args['MD_atom_energy_fuzz']:
-      print rank, ": WARNING reject MD traj "
+   tot_e = eval_energy(at)
+   if tot_e >= Emax+movement_args['MD_atom_energy_fuzz']:
+      print rank, ": WARNING reject MD traj Emax ", Emax, " total energy ", tot_e
       at.set_positions(old_pos)
-      if old_velo is not None:
-	 at.set_velocities(old_velo)
+      at.set_velocities(old_velo)
 
-   #DEBUG print rank, ": final energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy()
+   #DEBUG print rank, ": final energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() #DEBUG
    #DEBUG print rank, ": final positions ", at.get_positions()[0]
    #DEBUG print rank, ": final velo ", at.get_velocities()[0]
 
@@ -402,7 +406,7 @@ def walk_single_walker(at, movement_args, Emax):
    #DEBUG print rank, ": walk_single_walker final E", eval_energy(at)
    return (atom_accept_rate, cell_accept_rate)
 
-def max_energy(walkers, n):
+def max_energy(walkers, n, Emax_of_step):
    # do local max
    energies_loc = np.array([ eval_energy(at)+np.random.uniform(-1.0,0.0)*ns_args['energy_perturbation'] for at in walkers])
    energies = np.array(comm.allgather(energies_loc)).flatten()
@@ -413,6 +417,10 @@ def max_energy(walkers, n):
    Emax = energies[Emax_ind]
    # WARNING: currently assumes that each node has equal number of walkers
    rank_of_max = np.floor(Emax_ind/len(walkers)).astype(int)
+
+   if Emax_of_step is not None and rank == 0 and np.amax(energies) > Emax_of_step+movement_args['MD_atom_energy_fuzz']:
+      print "WARNING: some energy above Emax ", Emax_of_step
+      print "WARNING: bad energy list ", energies[np.where(energies > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
 
    return (Emax[0:-1], np.mod(Emax_ind[0:-1],len(walkers)), rank_of_max[0:-1], Emax[-1])
 
@@ -553,6 +561,8 @@ def do_ns_loop():
 
    prev_time = -1
 
+   Emax_of_step = None
+
    global print_prefix #####
    for i_ns_step in range(ns_args['n_iter']):
       print_prefix="%d" % i_ns_step
@@ -573,7 +583,7 @@ def do_ns_loop():
 	 #DEBUG print rank, ": top 10 energy indices ", cull_ind
 
       # do NS config dropping/forming
-      (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, n_cull)
+      (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, n_cull, Emax_of_step)
 
       cull_list=[None] * size
       for r in range(size):
@@ -583,6 +593,8 @@ def do_ns_loop():
       #DEBUG print rank, ": got Emax ", Emax
       #DEBUG print rank, ": orig cull list ", cull_list
 
+      if (i_ns_step > 0 and Emax_next >= Emax_of_step) and rank == 0:
+	 print "WARNING: Emax not decreasing ",Emax_of_step, Emax_next
       Emax_of_step=Emax_next
       if rank == 0 and (time.time() > prev_time+60 or (i_ns_step % max(int(ns_args['n_iter']/1000),1) or i_ns_step == ns_args['n_iter']) == 0):
         print i_ns_step, "Emax_of_step ", Emax_of_step
@@ -722,6 +734,7 @@ def do_ns_loop():
       #DEBUG print rank, ": send_ind ", send_ind
       # create sending/receiving buffers
       pos_send_buf=[None] * size
+      vel_send_buf=[None] * size
       cell_send_buf=[None] * size
       for i in np.where(send_rank == rank)[0]:
 	 r_recv = recv_rank[i]
@@ -729,31 +742,37 @@ def do_ns_loop():
 	 #DEBUG print rank, ": sending to ",r_recv," from index ",i_send
 	 if pos_send_buf[r_recv] is None:
 	    pos_send_buf[r_recv] = []
+	 if vel_send_buf[r_recv] is None:
+	    vel_send_buf[r_recv] = []
 	 if cell_send_buf[r_recv] is None:
 	    cell_send_buf[r_recv] = []
 	 pos_send_buf[r_recv].append(walkers[i_send].get_positions())
+	 vel_send_buf[r_recv].append(walkers[i_send].get_velocities())
 	 cell_send_buf[r_recv].append(walkers[i_send].get_cell())
 
       #DEBUG print rank, ": pos_send_buf ", pos_send_buf
+      #DEBUG print rank, ": vel_send_buf ", vel_send_buf
       #DEBUG print rank, ": cell_send_buf ", cell_send_buf
 
       # do communication
       pos_recv_buf = comm.alltoall(pos_send_buf)
+      vel_recv_buf = comm.alltoall(vel_send_buf)
       cell_recv_buf = comm.alltoall(cell_send_buf)
 
       # copy from receive buffers into walkers structure
       my_recv_ind = np.array(recv_ind)[np.where(np.array(recv_rank) == rank)[0]]
       #DEBUG print rank, ": my_recv_ind ", my_recv_ind
       recv_i = 0
-      for (pos_array, cell_array) in zip(pos_recv_buf, cell_recv_buf):
+      for (pos_array, vel_array, cell_array) in zip(pos_recv_buf, vel_recv_buf, cell_recv_buf):
 	 #DEBUG print rank, ": received pos_array from rank", pos_array 
 	 #DEBUG print rank, ": received cell_array from rank", cell_array 
 	 if pos_array is not None:
-	    for (pos_entry, cell_entry) in zip(pos_array, cell_array):
+	    for (pos_entry, vel_entry, cell_entry) in zip(pos_array, vel_array, cell_array):
 	       #DEBUG print rank, ": pos_entry ",pos_entry
 	       #DEBUG print rank, ": cell_entry ",cell_entry
 	       #DEBUG print rank, ": copying received config to index ",my_recv_ind[recv_i]
 	       walkers[my_recv_ind[recv_i]].set_positions(pos_entry)
+	       walkers[my_recv_ind[recv_i]].set_velocities(vel_entry)
 	       walkers[my_recv_ind[recv_i]].set_cell(cell_entry)
 	       recv_i += 1
 
