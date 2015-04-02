@@ -20,10 +20,10 @@ debug = opt.verbose
 
 inputs = fileinput.input(files=args)
 
-(n_walkers, n_cull, n_DOF) = inputs.readline().split()
+(n_walkers, n_cull, n_Extra_DOF) = inputs.readline().split()
 n_walkers = int(n_walkers)
 n_cull = int(n_cull)
-n_DOF = int(n_DOF)
+n_Extra_DOF = int(n_Extra_DOF)
 
 # check this
 alpha = float(n_walkers)/float(n_walkers+n_cull)
@@ -68,9 +68,9 @@ def analyse(Es, T):
    Z = math.fsum(Z_term)
 
    U_term_sum = math.fsum(U_term)
-   U = n_DOF/(2.0*beta) + U_term_sum/Z
+   U = n_Extra_DOF/(2.0*beta) + U_term_sum/Z
 
-   Cv = n_DOF*k_Boltzmann/2.0 - one_over_kTsq * (U_term_sum/Z)**2 + one_over_kTsq * math.fsum(Es*U_term)/Z
+   Cv = n_Extra_DOF*k_Boltzmann/2.0 - one_over_kTsq * (U_term_sum/Z)**2 + one_over_kTsq * math.fsum(Es*U_term)/Z
 
    return (Z, U, Cv)
 
