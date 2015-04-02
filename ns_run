@@ -326,9 +326,18 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    masses = at.get_masses()
    unit_rv = np.random.standard_normal( (len(at), 3) )
+   if movement_args['2D']:
+      unit_rv[:,2] = 0.0
+      nDOF = 2.0
+   else:
+      nDOF = 3.0
    unit_rv /= np.linalg.norm(unit_rv)
-   # mag_rv should have prob distrib p(r) = r^(3N-1) using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^{3N-1} and p(x) = 1
-   mag_rv = np.random.uniform()**(1.0/(3.0*len(at)))
+   # In 3D mag_rv should have prob distrib p(r) = r^(3N-1). 
+   # Using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^{3N-1} and p(x) = 1,
+   #       one gets dx/dy = y^{3N-1}
+   #                x = y^{3N}
+   #                y = x^{1/3N}
+   mag_rv = np.random.uniform()**(1.0/(nDOF*len(at)))
    pot_energy = at.get_potential_energy()
    # from Baldock thesis Eq. 11.10 
    #     p^{**} = r \mathbf{S} \hat{\mathbf{r}}
@@ -476,7 +485,11 @@ def do_ns_loop():
       if movement_args['2D']:
 	 nD = 2
       if ns_args['restart_file'] == '':
-	 energy_io.write("%d %d %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], len(walkers[0])*nD) )
+	 if movement_args['MD_atom_n_steps_expected'] > 0:
+	    nExtraDOF = 0
+	 else:
+	    nExtraDOF = len(walkers[0])*nD
+	 energy_io.write("%d %d %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF) )
 
    # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
    if ns_args['delta_random_seed'] > 0:
