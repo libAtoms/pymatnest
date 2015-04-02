@@ -9,6 +9,7 @@ if len(sys.argv) != 1:
   sys.stderr.write("input:\n")
   sys.stderr.write("start_file=path_to_file.xyz (mutually exclusive with restart_file, one is required)\n")
   sys.stderr.write("restart_file=path_to_file.xyz (mutually exclusive with start_file, one is required)\n")
+  sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from, required if restart_file is specified)\n")
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int (0)\n")
@@ -121,6 +122,7 @@ except:
 
 ns_args['start_file'] = args.pop('start_file', '')
 ns_args['restart_file'] = args.pop('restart_file', '')
+ns_args['restart_first_iter'] = int(args.pop('restart_first_iter', -1))
 if ((ns_args['start_file'] == '' and ns_args['restart_file'] == '') or
     (ns_args['start_file'] != '' and ns_args['restart_file'] != '')):
    exit_error("Got neither or both (conflicting) start_file and restart_file\n", 3)
@@ -238,7 +240,10 @@ if ns_args['restart_file'] == '': # start from scratch
       init_atoms.params['n_walks'] = 0
    for i_walker in range(n_walkers):
      walkers.append(init_atoms.copy())
+   ns_args['restart_first_iter'] = 0
 else: # doing a restart
+   if ns_args['restart_first_iter'] < 0:
+      exit_error("Got restart_file='%s' and restart_first_iter=%d < 0" % (ns_args['restart_file'], ns_args['restart_first_iter']), 4)
    if have_quippy:
       if rank == 0: # read on head task and send to other tasks
 	 l_walkers=[]
@@ -571,7 +576,7 @@ def do_ns_loop():
    Emax_of_step = None
 
    verbose=False
-   for i_ns_step in range(ns_args['n_iter']):
+   for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
       print_prefix="%d %d" % (rank, i_ns_step)
 
       #DEBUG if rank == 0: # DEBUG
