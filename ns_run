@@ -123,7 +123,7 @@ ns_args['start_file'] = args.pop('start_file', '')
 ns_args['restart_file'] = args.pop('restart_file', '')
 if ((ns_args['start_file'] == '' and ns_args['restart_file'] == '') or
     (ns_args['start_file'] != '' and ns_args['restart_file'] != '')):
-   exit_error("Got both start_file and restart_file, conflicting\n", 3)
+   exit_error("Got neither or both (conflicting) start_file and restart_file\n", 3)
 
 ns_args['out_file_prefix'] = args.pop('out_file_prefix', '')
 if ns_args['out_file_prefix'] != '':
@@ -242,8 +242,8 @@ else: # doing a restart
    if have_quippy:
       if rank == 0: # read on head task and send to other tasks
 	 l_walkers=[]
-	 traj_io = quippy.CInOutput(ns_args['restart_file'], action=quippy.INPUT)
-	 ar_iter = quippy.AtomsReader(traj_io).iterframes()
+	 restart_io = quippy.CInOutput(ns_args['restart_file'], action=quippy.INPUT)
+	 ar_iter = quippy.AtomsReader(restart_io).iterframes()
 	 for r in range(size):
 	    at_list=[]
 	    for i in range(n_walkers):
@@ -253,7 +253,7 @@ else: # doing a restart
 		  at_list.append(ar_iter.next())
 	    if r > 0:
 	       comm.send(at_list, dest=r, tag=1)
-	 traj_io.close()
+	 restart_io.close()
       else: # receive from head task
 	 walkers = comm.recv(source=0, tag=1)
    else:
@@ -470,7 +470,8 @@ def do_ns_loop():
       nD = 3
       if movement_args['2D']:
 	 nD = 2
-      energy_io.write("%d %d %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], len(walkers[0])*nD) )
+      if ns_args['restart_file'] == '':
+	 energy_io.write("%d %d %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], len(walkers[0])*nD) )
 
    # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
    if ns_args['delta_random_seed'] > 0:
