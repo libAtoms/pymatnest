@@ -26,7 +26,7 @@ if len(sys.argv) != 1:
   sys.stderr.write("\n")
   sys.stderr.write("MC_adjust_step_interval=int\n")
   sys.stderr.write("\n")
-  sys.stderr.write("MD_atom_n_steps_expected=int ))\n")
+  sys.stderr.write("MD_atom_n_steps_expected=int (0)\n")
   sys.stderr.write("MD_atom_n_steps=int (if not specified, set from expected #)\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-12)\n")
@@ -34,10 +34,11 @@ if len(sys.argv) != 1:
   sys.stderr.write("energy_perturbation=float (0.0)\n")
   sys.stderr.write("profile=rank_to_profile\n")
   sys.stderr.write("2D=[ T | F ]\n")
-  sys.stderr.write("debug=debug_level (<= 0 for no debugging tests/prints)\n")
-  sys.stderr.write("delta_random_seed=seed_shift (< 0 for seed from /dev/urandom)\n")
+  sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
+  sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
+  sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
 
-import re, math, time
+import re, math, time, os
 import numpy as np, ase
 try:
    import quippy
@@ -81,6 +82,8 @@ if rank == 0:
 	 if re.match("\s*(#.*)?$", line):
 	    continue
 	 matches = re.match("\s*(\S+)\s*=\s*(.*\S)", line)
+	 if matches is None:
+	    exit_error("Failed to parse line '%s'" % line, 1)
 	 args[matches.group(1)] = matches.group(2)
 else:
    args = None
@@ -123,8 +126,11 @@ if ((ns_args['start_file'] == '' and ns_args['restart_file'] == '') or
    exit_error("Got both start_file and restart_file, conflicting\n", 3)
 
 ns_args['out_file_prefix'] = args.pop('out_file_prefix', '')
+if ns_args['out_file_prefix'] != '':
+   ns_args['out_file_prefix'] += '.'
 ns_args['profile'] = int(args.pop('profile', -1))
 ns_args['debug'] = int(args.pop('debug', -1))
+ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
 ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 ns_args['energy_perturbation'] = float(args.pop('energy_perturbation', 1.0e-14))
@@ -454,6 +460,7 @@ def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm)
 
    #### if cell_accept_rate is not None:
 
+prev_snapshot = None
 # do NS
 def do_ns_loop():
 
@@ -862,20 +869,26 @@ def do_ns_loop():
 	 for r in range(len(status)):
 	    print print_prefix, ": final status ", r, [ s for s in status[r,:] ]
 
+      if ns_args['snapshot_interval'] > 0 and i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
+	 if have_quippy:
+	    snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (i_ns_step,rank), action=quippy.OUTPUT)
+	    for at in walkers:
+		  at.write(snapshot_io)
+	    snapshot_io.close()
+	 else:
+	    exit_error("Need some non-quippy way of writing trajectory\n",3)
+	 global prev_snapshot
+	 if prev_snapshot is not None:
+	    os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot, rank))
+	 prev_snapshot = i_ns_step
+
       #DEBUG for at in walkers:
 	#DEBUG print print_prefix, ": post-move walkers", at.get_positions()[0]
       #DEBUG print print_prefix, ": post-move energies", [ eval_energy(at) for at in walkers ]
 
-if ns_args['out_file_prefix'] == "":
-   traj_io = quippy.CInOutput("traj.%d.xyz" % rank, action=quippy.OUTPUT)
-else:
-   traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'.traj.%d.xyz' % rank, action=quippy.OUTPUT)
-
+traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.xyz' % rank, action=quippy.OUTPUT)
 if rank == 0:
-   if ns_args['out_file_prefix'] == "":
-      energy_io = open("energies", "w")
-   else:
-      energy_io = open(ns_args['out_file_prefix']+'.energies', 'w')
+   energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
 
 if ns_args['profile'] == rank:
    import cProfile
@@ -883,19 +896,22 @@ if ns_args['profile'] == rank:
 else:
    do_ns_loop()
 
+# cleanup post loop
+if have_quippy:
+   snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.final.%d.xyz' % rank, action=quippy.OUTPUT)
+   for at in walkers:
+	 at.write(snapshot_io)
+   snapshot_io.close()
+else:
+   exit_error("Need some non-quippy way of writing trajectory\n",3)
+if prev_snapshot is not None:
+   os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot, rank))
+
 for at in walkers:
    print rank, ": final energy ", eval_energy(at)
 
 if rank == 0:
    energy_io.close()
-traj_io.close()
-
-if ns_args['out_file_prefix'] == "":
-   traj_io = quippy.CInOutput("final.%d.xyz" % rank, action=quippy.OUTPUT)
-else:
-   traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'.final.%d.xyz' % rank, action=quippy.OUTPUT)
-for at in walkers:
-   at.write(traj_io)
 traj_io.close()
 
 MPI.Finalize()
