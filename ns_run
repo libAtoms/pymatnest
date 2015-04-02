@@ -583,8 +583,7 @@ def do_ns_loop():
       # do NS config dropping/forming
       (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, n_cull)
       if Emax_of_step is not None and rank == 0 and Emax[0] > Emax_of_step+movement_args['MD_atom_energy_fuzz']:
-	 print print_prefix, "WARNING: energy above Emax ", Emax_of_step, " bad energies: ",
-	       Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
+	 print print_prefix, "WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
 
       cull_list=[None] * size
       for r in range(size):
