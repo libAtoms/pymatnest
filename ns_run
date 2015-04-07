@@ -38,6 +38,7 @@ if len(sys.argv) != 1:
   sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
   sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
   sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
+  sys.stderr.write("energy_calculator= ( quip | lammps | internal ) (quip)\n")
 
 import re, math, time, os
 import numpy as np, ase
@@ -92,9 +93,9 @@ if comm is not None:
    args = comm.bcast(args,root=0)
 
 # parse args
+ns_args={}
 
 # convert from strings to actual args
-ns_args={}
 try:
   ns_args['n_walkers'] = int(args.pop('n_walkers'))
 except:
@@ -111,14 +112,6 @@ try:
   ns_args['initial_energy_ceiling'] = float(args.pop('initial_energy_ceiling'))
 except:
   exit_error("need energy ceiling for initial distribution of configs initial_energy_ceiling\n",1)
-try:
-  ns_args['QUIP_pot_args'] = args.pop('QUIP_pot_args')
-except:
-  exit_error("need QUIP potential args QUIP_pot_args\n",1)
-try:
-  ns_args['QUIP_pot_params_file'] = args.pop('QUIP_pot_params_file')
-except:
-  exit_error("need QUIP potential params file QUIP_pot_params_file\n",1)
 
 ns_args['start_file'] = args.pop('start_file', '')
 ns_args['restart_file'] = args.pop('restart_file', '')
@@ -136,6 +129,32 @@ ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
 ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 ns_args['energy_perturbation'] = float(args.pop('energy_perturbation', 1.0e-14))
+
+ns_args['energy_calculator'] = args.pop('energy_calculator', 'quip')
+do_calc_quip = False
+do_calc_lammps = False
+do_calc_internal = False
+if ns_args['energy_calculator'] == 'quip':
+   if not have_quippy:
+      exit_error("Got energy_calculator=quip but not quippy module\n", 3)
+   do_calc_quip=True
+elif ns_args['energy_calculator'] == 'lammps':
+   exit_error("energy_calculator=lammps not implemented yet\n", 3)
+   do_calc_lammps=True
+elif ns_args['energy_calculator'] == 'internal':
+   pass
+   do_calc_internal=True
+else:
+   exit_error("energy_calculator=%s unknown\n" % ns_args['energy_calculator'], 3)
+if do_calc_quip:
+   try:
+     ns_args['QUIP_pot_args'] = args.pop('QUIP_pot_args')
+   except:
+     exit_error("need QUIP potential args QUIP_pot_args\n",1)
+   try:
+     ns_args['QUIP_pot_params_file'] = args.pop('QUIP_pot_params_file')
+   except:
+     exit_error("need QUIP potential params file QUIP_pot_params_file\n",1)
 
 movement_args={}
 
@@ -179,10 +198,14 @@ if rank == 0:
    print "movement_args ",movement_args
 
 # initialise potential
-if have_quippy:
+if do_calc_quip:
    pot = quippy.Potential(ns_args['QUIP_pot_args'], param_str=ns_args['QUIP_pot_params'], calculation_always_required=True, cutoff_skin=1.0)
+elif do_calc_internal:
+   pass
+elif do_calc_lammps:
+   exit_error("no lammps initialization of potential implemented yet\n", 3)
 else:
-   exit_error("Need some non-quippy way of initializing calculator\n",3)
+   exit_error("Need some way of initializing calculator\n",3)
 
 # figure out numbers of local walkers
 rank_of_walker = [0]*ns_args['n_walkers']
@@ -231,7 +254,8 @@ if ns_args['restart_file'] == '': # start from scratch
 	    init_atoms.write("stdout")
       if comm is not None:
 	 init_atoms = comm.bcast(init_atoms, root=0)
-      init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
+      if do_calc_quip:
+	 init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
    else:
       exit_error("need some non-quippy way of reading input configuration\n",3)
 
@@ -266,17 +290,42 @@ else: # doing a restart
 
 for at in walkers:
    at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
-   at.set_calculator(pot)
+   if do_calc_quip or do_calc_lammps:
+      at.set_calculator(pot)
 
 n_cull = ns_args['n_cull']
 n_extra_walk_per_task = ns_args['n_extra_walk_per_task']
 
+
+# internal model, LJ eps=1, sigma=1, cutoff=3,  with PBC cube l = pbc[0,0]
+internal_cutoff = 3.0
+def internal_Vlj(pos_mat_mag, Eshift):
+   return (np.sum(pos_mat_mag**-12 - pos_mat_mag**-6) - Eshift)
+Eshift = internal_Vlj(internal_cutoff,0.0)
+def energy_internal(at):
+   pos = at.get_positions()
+   pbc = at.get_cell()
+   l = pbc[0,0]
+   dr_list = np.zeros( (len(at)*(len(at)-1)/2,3) )
+   offset=0
+   for i in range(len(at)):
+      dr_list[offset:offset+(len(at)-i-1),0] = pos[i,0] - pos[i+1:,0]
+      dr_list[offset:offset+(len(at)-i-1),1] = pos[i,1] - pos[i+1:,1]
+      dr_list[offset:offset+(len(at)-i-1),2] = pos[i,2] - pos[i+1:,2]
+      offset += len(at)-i-1
+   dr_list[:,:] -= l*np.floor(dr_list[:,:]/l+0.5)
+   dr_list_mag = np.sqrt(np.sum(dr_list*dr_list,axis=1))
+
+   return np.sum(internal_Vlj(dr_list_mag[np.where(dr_list_mag < internal_cutoff)],Eshift))
+
 def eval_energy(at, PE_only=False):
   # potential
-  if have_quippy:
+  if do_calc_quip or do_calc_lammps:
       energy = at.get_potential_energy()
+  elif do_calc_internal:
+      energy = energy_internal(at)
   else:
-      sys.stderr.write("Need some non-quippy way to do eval_energy")
+      sys.stderr.write("No way to eval_energy()\n", 5)
 
   # confining
   if confining_pot_args['mag'] > 0.0:
