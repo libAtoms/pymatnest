@@ -299,9 +299,9 @@ n_extra_walk_per_task = ns_args['n_extra_walk_per_task']
 
 # internal model, LJ eps=1, sigma=1, cutoff=3,  with PBC cube l = pbc[0,0]
 internal_cutoff = 3.0
-def internal_Vlj(pos_mat_mag, Eshift):
-   return (np.sum(pos_mat_mag**-12 - pos_mat_mag**-6) - Eshift)
-Eshift = internal_Vlj(internal_cutoff,0.0)
+def internal_Vlj(dr_vec, Eshift=0.0):
+   return (np.sum(dr_vec**-12 - dr_vec**-6) - Eshift*len(dr_vec))
+Eshift = internal_cutoff**-12 - internal_cutoff**-6
 def energy_internal(at):
    pos = at.get_positions()
    pbc = at.get_cell()
