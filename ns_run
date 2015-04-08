@@ -30,7 +30,7 @@ if len(sys.argv) != 1:
   sys.stderr.write("MD_atom_n_steps_expected=int (0)\n")
   sys.stderr.write("MD_atom_n_steps=int (if not specified, set from expected #)\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
-  sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-12)\n")
+  sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-8)\n")
   sys.stderr.write("\n")
   sys.stderr.write("energy_perturbation=float (0.0)\n")
   sys.stderr.write("profile=rank_to_profile\n")
@@ -166,7 +166,7 @@ movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max',
 movement_args['MD_atom_n_steps_expected'] = int(args.pop('MD_atom_n_steps_expected', 0))
 movement_args['MD_atom_n_steps'] = int(args.pop('MD_atom_n_steps', 0))
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 1.0))
-movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-12))
+movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-8))
 
 movement_args['MC_adjust_step_interval'] = int(args.pop('MC_adjust_step_interval', 10))
 
@@ -347,7 +347,15 @@ def quippy_propagate(at, dt, n_steps):
 	 at.add_property('velo', 0.0, n_cols=3)
       at.velo[:,:] = old_velo.transpose()/(ase.units.Ang/ase.units.fs)
    ds=quippy.DynamicalSystem(at)
-   ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=0, connect_interval=1, write_interval=0, save_interval=0)
+
+   #DEBUG print "initial config, using dt ", dt/ase.units.fs
+   #DEBUG ds.atoms.write("stdout")
+
+   if ns_args['debug'] >= 1:
+      ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=1, connect_interval=1, write_interval=0, save_interval=0)
+   else:
+      ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=0, connect_interval=1, write_interval=0, save_interval=0)
+
    at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
 
 def do_MD_atom_walk(at, movement_args, Emax):
@@ -398,7 +406,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       velocities = mag_rv * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
    else: # should never happen - maybe it's happening because of MD_atom_energy_fuzz
       if rank == 0:
-	 print "WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in do_MD_atom_walk"
+	 print print_prefix, ": WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in do_MD_atom_walk"
       velocities = 0.0 * unit_rv
    at.set_velocities(velocities)
 
@@ -409,15 +417,18 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    #DEBUG print print_prefix, ": mid energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
 
+   initial_e = eval_energy(at)
+
    # propagate in time
    if have_quippy:
       quippy_propagate(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['MD_atom_n_steps']) 
    else:
       exit_error("Need some non-quippy way of doing MD\n",3)
 
-   tot_e = eval_energy(at)
-   if tot_e >= Emax+movement_args['MD_atom_energy_fuzz']:
-      print print_prefix, ": WARNING reject MD traj Emax ", Emax, " total energy ", tot_e
+   final_e = eval_energy(at)
+   print print_prefix, ": MD trajectory energy changed ", initial_e, final_e, final_e - initial_e
+   if final_e >= Emax+movement_args['MD_atom_energy_fuzz']:
+      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_e
       at.set_positions(old_pos)
       at.set_velocities(old_velo)
 
@@ -658,7 +669,7 @@ def do_ns_loop():
       # do NS config dropping/forming
       (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, n_cull)
       if Emax_of_step is not None and rank == 0 and Emax[0] > Emax_of_step+movement_args['MD_atom_energy_fuzz']:
-	 print print_prefix, "WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
+	 print print_prefix, ": WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
 
       cull_list=[None] * size
       for r in range(size):
@@ -888,7 +899,7 @@ def do_ns_loop():
 		  print "initial_PE ", initial_PE
 		  print "final_PE ", final_PE
 		  print "final_status ", final_status
-		  print "WARNING energy that should have been unchanged ", e," missing from final energies"
+		  print "WARNING: energy that should have been unchanged ", e," missing from final energies"
 	    for e in initial_changed:
 	       if e in final_PE:
 		  print "initial_PE ", initial_PE
