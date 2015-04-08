@@ -299,24 +299,30 @@ n_extra_walk_per_task = ns_args['n_extra_walk_per_task']
 
 # internal model, LJ eps=1, sigma=1, cutoff=3,  with PBC cube l = pbc[0,0]
 internal_cutoff = 3.0
+Eshift = internal_cutoff**-12 - internal_cutoff**-6
 def internal_Vlj(dr_vec, Eshift=0.0):
    return (np.sum(dr_vec**-12 - dr_vec**-6) - Eshift*len(dr_vec))
-Eshift = internal_cutoff**-12 - internal_cutoff**-6
-def energy_internal(at):
-   pos = at.get_positions()
-   pbc = at.get_cell()
-   l = pbc[0,0]
-   dr_list = np.zeros( (len(at)*(len(at)-1)/2,3) )
+
+# pos is Nx3, l is a scalar box size
+def energy_internal_pos(pos, l):
+   n_at=np.size(pos,0)
+   dr_list = np.zeros( (n_at*(n_at-1)/2,3) )
    offset=0
-   for i in range(len(at)):
-      dr_list[offset:offset+(len(at)-i-1),0] = pos[i,0] - pos[i+1:,0]
-      dr_list[offset:offset+(len(at)-i-1),1] = pos[i,1] - pos[i+1:,1]
-      dr_list[offset:offset+(len(at)-i-1),2] = pos[i,2] - pos[i+1:,2]
-      offset += len(at)-i-1
+   # calc relative pos vector
+   for i in range(n_at):
+      dr_list[offset:offset+(n_at-i-1),0] = pos[i,0] - pos[i+1:,0]
+      dr_list[offset:offset+(n_at-i-1),1] = pos[i,1] - pos[i+1:,1]
+      dr_list[offset:offset+(n_at-i-1),2] = pos[i,2] - pos[i+1:,2]
+      offset += n_at-i-1
+   # apply min image
    dr_list[:,:] -= l*np.floor(dr_list[:,:]/l+0.5)
+   # magnitude of vectors
    dr_list_mag = np.sqrt(np.sum(dr_list*dr_list,axis=1))
 
    return np.sum(internal_Vlj(dr_list_mag[np.where(dr_list_mag < internal_cutoff)],Eshift))
+
+def energy_internal(at):
+   return energy_internal_pos(at.get_positions(), at.get_cell()[0,0])
 
 def eval_energy(at, PE_only=False):
   # potential
