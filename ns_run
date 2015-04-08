@@ -32,7 +32,7 @@ if len(sys.argv) != 1:
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-8)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("energy_perturbation=float (0.0)\n")
+  sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
   sys.stderr.write("profile=rank_to_profile\n")
   sys.stderr.write("2D=[ T | F ]\n")
   sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
@@ -128,7 +128,7 @@ ns_args['debug'] = int(args.pop('debug', -1))
 ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
 ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
-ns_args['energy_perturbation'] = float(args.pop('energy_perturbation', 1.0e-14))
+ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
 
 ns_args['energy_calculator'] = args.pop('energy_calculator', 'quip')
 do_calc_quip = False
@@ -495,7 +495,7 @@ def walk_single_walker(at, movement_args, Emax):
 
 def max_energy(walkers, n):
    # do local max
-   energies_loc = np.array([ eval_energy(at)+np.random.uniform(-1.0,0.0)*ns_args['energy_perturbation'] for at in walkers])
+   energies_loc = np.array([ eval_energy(at)+np.random.uniform(-1.0,0.0)*ns_args['random_energy_perturbation'] for at in walkers])
    energies = np.array(comm.allgather(energies_loc)).flatten()
    #DEBUG print print_prefix , ": max_energies energies ",energies
    #DEBUG print print_prefix , ": max_energies energies.argsort() ",energies.argsort()
