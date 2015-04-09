@@ -192,7 +192,8 @@ if 'QUIP_pot_params_file' in ns_args:
    except:
       exit_error("Failed to read params file '%s'\n" % ns_args['QUIP_pot_params_file'], 1)
 else:
-   sys.stderr.write("Got no *_pot_params_file")
+   if ns_args['energy_calculator'] != 'internal':
+      sys.stderr.write("Got no *_pot_params_file")
 
 if len(args) > 0:
   exit_error(str(args)+"\nUnknown arguments read in\n", 2)
@@ -342,11 +343,8 @@ def eval_energy(at, PE_only=False):
       energy += confining_pot_args['mag']*(np.linalg.norm(at.pos)**2)
 
   # kinetic
-  if not PE_only:
-     velocities = at.get_velocities()
-     masses = at.get_masses()
-     if velocities is not None and masses is not None:
-	 energy += at.get_kinetic_energy()
+  if not PE_only and at.has('momenta') and at.has('masses'):
+     energy += at.get_kinetic_energy()
 
   return energy
 
@@ -504,6 +502,11 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DEBUG print print_prefix, ": final positions ", at.get_positions()[0]
    #DEBUG print print_prefix, ": final velo ", at.get_velocities()[0]
 
+def do_MC_atom_walk_julia(at, movement_args, Emax):
+   (new_pos, n_accept) = julia_walk(np.transpose(at.get_positions()), Emax, movement_args['MC_atom_n_steps'], movement_args['MC_atom_step_size'])
+   at.set_positions(np.transpose(new_pos))
+   return float(n_accept)/float(movement_args['MC_atom_n_steps'])
+
 def do_MC_atom_walk(at, movement_args, Emax):
    if movement_args['MC_atom_n_steps'] <= 0: 
       return None
@@ -602,10 +605,9 @@ def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm)
 
    #### if cell_accept_rate is not None:
 
-prev_snapshot = None
+prev_snapshot_iter = None
 # do NS
 def do_ns_loop():
-
    global print_prefix
 
    if rank == 0:
@@ -795,6 +797,7 @@ def do_ns_loop():
 
       for r in range(size):
 	 #DEBUG print print_prefix, ": load balance for rank ", r
+	 # maybe remote_r should be chosen completely randomly, rather than close to task of extra culled configs
 	 for dr in np.array(zip(np.array(range(1,size)), -np.array(range(1,size)))).flatten():
 	    if n_cull_of_rank[r] <= max_n_cull_per_task: # not too many to be culled on this rank
 	       break
@@ -1024,10 +1027,11 @@ def do_ns_loop():
 	    snapshot_io.close()
 	 else:
 	    exit_error("Need some non-quippy way of writing trajectory\n",3)
-	 global prev_snapshot
-	 if prev_snapshot is not None:
-	    os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot, rank))
-	 prev_snapshot = i_ns_step
+	 global prev_snapshot_iter
+	 if prev_snapshot_iter is not None:
+	    os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot_iter, rank))
+	    os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz.idx' % (prev_snapshot_iter, rank))
+	 prev_snapshot_iter = i_ns_step
 
       #DEBUG for at in walkers:
 	#DEBUG print print_prefix, ": post-move walkers", at.get_positions()[0]
@@ -1039,7 +1043,7 @@ if rank == 0:
 
 if ns_args['profile'] == rank:
    import cProfile
-   cProfile.run('do_ns_loop')
+   cProfile.run('do_ns_loop()','stats')
 else:
    do_ns_loop()
 
@@ -1051,8 +1055,8 @@ if have_quippy:
    snapshot_io.close()
 else:
    exit_error("Need some non-quippy way of writing trajectory\n",3)
-if prev_snapshot is not None:
-   os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot, rank))
+if prev_snapshot_iter is not None:
+   os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot_iter, rank))
 
 for at in walkers:
    print rank, ": final energy ", eval_energy(at)
