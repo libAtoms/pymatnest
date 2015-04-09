@@ -29,6 +29,8 @@ if len(sys.argv) != 1:
   sys.stderr.write("\n")
   sys.stderr.write("MD_atom_n_steps_expected=int (0)\n")
   sys.stderr.write("MD_atom_n_steps=int (if not specified, set from expected #)\n")
+  sys.stderr.write("MD_atom_n_substeps=int (10)\n")
+  sys.stderr.write("MD_atom_velo_perturb=float (0.1)\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-8)\n")
   sys.stderr.write("\n")
@@ -165,6 +167,8 @@ movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max',
 
 movement_args['MD_atom_n_steps_expected'] = int(args.pop('MD_atom_n_steps_expected', 0))
 movement_args['MD_atom_n_steps'] = int(args.pop('MD_atom_n_steps', 0))
+movement_args['MD_atom_n_substeps'] = int(args.pop('MD_atom_n_substeps', 10))
+movement_args['MD_atom_velo_perturb'] = float(args.pop('MD_atom_velo_perturb', 0.1))
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 1.0))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-8))
 
@@ -364,6 +368,83 @@ def quippy_propagate(at, dt, n_steps):
 
    at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
 
+
+def velo_rv_mag(at, Emax):
+   if movement_args['2D']:
+      unit_rv[:,2] = 0.0
+      nDOF = 2.0
+   else:
+      nDOF = 3.0
+   # In 3D rv_mag should have prob distrib p(r) = r^(3N-1). 
+   # Using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^{3N-1} and p(x) = 1,
+   #       one gets dx/dy = y^{3N-1}
+   #                x = y^{3N}
+   #                y = x^{1/3N}
+   return np.random.uniform()**(1.0/(nDOF*len(at)))
+
+def velo_unit_rv(at):
+   unit_rv = np.random.standard_normal( (len(at), 3) )
+   unit_rv /= np.linalg.norm(unit_rv)
+   return unit_rv
+
+def gen_random_velo(at, Emax, unit_rv=None):
+   if unit_rv is None:
+      unit_rv = velo_unit_rv(at)
+   rv_mag = velo_rv_mag(at, Emax)
+
+   # from Baldock thesis Eq. 11.10 
+   #     p^{**} = r \mathbf{S} \hat{\mathbf{r}}
+   # and 11.11 
+   #     S_{ij} = \delta_{ij} (2 m_i [ E_{lim} - U(q))])^{1/2}
+   # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
+   # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
+
+   pot_energy = at.get_potential_energy()
+   if Emax > pot_energy:
+      masses = at.get_masses()
+      velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
+   else: # should never happen - maybe it's happening because of MD_atom_energy_fuzz
+      if rank == 0:
+	 print print_prefix, ": WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in do_MD_atom_walk"
+      velocities = 0.0 * unit_rv
+
+   return velocities
+
+from itertools import izip
+def pairwise(iterable):
+   a = iter(iterable)
+   return izip(a, a)
+
+def perturb_velo(at, Emax):
+   if movement_args['MD_atom_velo_perturb'] == 0.0:
+      return
+   elif movement_args['MD_atom_velo_perturb'] < 0.0:
+      # randomize completely
+      at.set_velocities(gen_random_velo(at, Emax))
+   else: # perturb
+      velo = at.get_velocities()
+      velo_mag = np.linalg.norm(velo)
+      if velo_mag == 0.0:
+	 at.set_velocities(gen_random_velo(at, Emax))
+	 return
+      # pick new random magnitude - count on dimensionality to make change small
+      velo = gen_random_velo(at, Emax, velo/velo_mag)
+
+      # apply random rotations
+      indices = range(len(at))
+      np.random.shuffle(indices)
+      for (ind_1_i, ind_2_i) in pairwise(indices):
+	 ind_1_j = np.random.randint(3)
+	 ind_2_j = np.random.randint(3)
+	 ang = np.random.uniform(-movement_args['MD_atom_velo_perturb']*3.14159,movement_args['MD_atom_velo_perturb']*3.14159)
+	 c_ang = np.cos(ang)
+	 s_ang = np.sin(ang)
+	 v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
+	 v_2 = -velo[ind_1_i,ind_1_j] * s_ang + velo[ind_2_i,ind_2_j] * c_ang
+	 velo[ind_1_i,ind_1_j] = v_1
+	 velo[ind_2_i,ind_2_j] = v_2
+      at.set_velocities(velo)
+
 def do_MD_atom_walk(at, movement_args, Emax):
 
    if confining_pot_args['mag'] > 0.0:
@@ -382,61 +463,42 @@ def do_MD_atom_walk(at, movement_args, Emax):
       #DEBUG print print_prefix, ": initial velo ", None
    #DEBUG print print_prefix, ": initial energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
 
-   old_pos = at.get_positions()
-   old_velo = at.get_velocities()
-   if old_velo is None:
-      old_velo = np.zeros( (len(at), 3) )
+   #DEBUG print print_prefix, "MD_atom pre loop ",eval_energy(at), Emax
 
-   masses = at.get_masses()
-   unit_rv = np.random.standard_normal( (len(at), 3) )
-   if movement_args['2D']:
-      unit_rv[:,2] = 0.0
-      nDOF = 2.0
-   else:
-      nDOF = 3.0
-   unit_rv /= np.linalg.norm(unit_rv)
-   # In 3D mag_rv should have prob distrib p(r) = r^(3N-1). 
-   # Using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^{3N-1} and p(x) = 1,
-   #       one gets dx/dy = y^{3N-1}
-   #                x = y^{3N}
-   #                y = x^{1/3N}
-   mag_rv = np.random.uniform()**(1.0/(nDOF*len(at)))
-   pot_energy = at.get_potential_energy()
-   # from Baldock thesis Eq. 11.10 
-   #     p^{**} = r \mathbf{S} \hat{\mathbf{r}}
-   # and 11.11 
-   #     S_{ij} = \delta_{ij} (2 m_i [ E_{lim} - U(q))])^{1/2}
-   # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
-   # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
-   if Emax > pot_energy:
-      velocities = mag_rv * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
-   else: # should never happen - maybe it's happening because of MD_atom_energy_fuzz
-      if rank == 0:
-	 print print_prefix, ": WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in do_MD_atom_walk"
-      velocities = 0.0 * unit_rv
-   at.set_velocities(velocities)
+   for i_step in range(movement_args['MD_atom_n_steps']):
+      old_pos = at.get_positions()
+      old_velo = at.get_velocities()
 
-   #DEBUG print print_prefix, ": masses for KE ",masses
-   #DEBUG print print_prefix, ": velocities for KE ",at.get_velocities()
-   #DEBUG print print_prefix, ": KE ",at.get_kinetic_energy()
-   #DEBUG print print_prefix, ": mag_rv * mag_KE (eV) ", mag_rv**2 * (Emax-pot_energy)
+      #DEBUG print print_prefix, "MD_atom loop start ",eval_energy(at), Emax
 
-   #DEBUG print print_prefix, ": mid energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
 
-   initial_e = eval_energy(at)
+      perturb_velo(at, Emax)
 
-   # propagate in time
-   if have_quippy:
-      quippy_propagate(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['MD_atom_n_steps']) 
-   else:
-      exit_error("Need some non-quippy way of doing MD\n",3)
+      #DEBUG print print_prefix, "MD_atom loop post perturb ",eval_energy(at)
 
-   final_e = eval_energy(at)
-   print print_prefix, ": MD trajectory energy changed ", initial_e, final_e, final_e - initial_e
-   if final_e >= Emax+movement_args['MD_atom_energy_fuzz']:
-      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_e
-      at.set_positions(old_pos)
-      at.set_velocities(old_velo)
+      #DEBUG print print_prefix, ": masses for KE ",masses
+      #DEBUG print print_prefix, ": velocities for KE ",at.get_velocities()
+      #DEBUG print print_prefix, ": KE ",at.get_kinetic_energy()
+      #DEBUG print print_prefix, ": mag_rv * mag_KE (eV) ", mag_rv**2 * (Emax-pot_energy)
+
+      #DEBUG print print_prefix, ": mid energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
+
+      initial_e = eval_energy(at)
+
+      # propagate in time
+      if have_quippy:
+	 quippy_propagate(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['MD_atom_n_substeps']) 
+      else:
+	 exit_error("Need some non-quippy way of doing MD\n",3)
+
+      #DEBUG print print_prefix, "MD_atom loop post propagate ",eval_energy(at)
+
+      final_e = eval_energy(at)
+      # print print_prefix, ": MD trajectory energy changed ", initial_e, final_e, final_e - initial_e
+      if final_e >= Emax+movement_args['MD_atom_energy_fuzz']:
+	 print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_e
+	 at.set_positions(old_pos)
+	 at.set_velocities(old_velo)
 
    #DEBUG print print_prefix, ": final energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() #DEBUG
    #DEBUG print print_prefix, ": final positions ", at.get_positions()[0]
