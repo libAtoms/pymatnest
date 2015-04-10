@@ -111,10 +111,6 @@ try:
   ns_args['n_iter'] = int(args.pop('n_iter'))
 except:
   exit_error("need number of NS iterations n_iter\n",1)
-try:
-  ns_args['initial_energy_ceiling'] = float(args.pop('initial_energy_ceiling'))
-except:
-  exit_error("need energy ceiling for initial distribution of configs initial_energy_ceiling\n",1)
 
 ns_args['start_file'] = args.pop('start_file', '')
 ns_args['restart_file'] = args.pop('restart_file', '')
@@ -122,6 +118,12 @@ ns_args['restart_first_iter'] = int(args.pop('restart_first_iter', -1))
 if ((ns_args['start_file'] == '' and ns_args['restart_file'] == '') or
     (ns_args['start_file'] != '' and ns_args['restart_file'] != '')):
    exit_error("Got neither or both (conflicting) start_file and restart_file\n", 3)
+
+if ns_args['restart_file'] == '':
+   try:
+     ns_args['initial_energy_ceiling'] = float(args.pop('initial_energy_ceiling'))
+   except:
+     exit_error("need energy ceiling for initial distribution of configs initial_energy_ceiling\n",1)
 
 ns_args['out_file_prefix'] = args.pop('out_file_prefix', '')
 if ns_args['out_file_prefix'] != '':
@@ -213,6 +215,24 @@ elif do_calc_lammps:
    exit_error("no lammps initialization of potential implemented yet\n", 3)
 else:
    exit_error("Need some way of initializing calculator\n",3)
+
+# Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
+if ns_args['delta_random_seed'] > 0:
+   np.random.seed(rank+ns_args['delta_random_seed'])
+else:
+   np.random.seed()
+if rank == 0: # share a common random state
+   common_random_state = np.random.get_state()
+   common_random_state = comm.bcast(common_random_state, root=0)
+   # now back to local unique seed for rank=0
+   if ns_args['delta_random_seed'] > 0:
+      np.random.seed(size+ns_args['delta_random_seed'])
+   else:
+      np.random.seed()
+else:
+   # share a common random state
+   common_random_state = None
+   common_random_state = comm.bcast(common_random_state, root=0)
 
 # figure out numbers of local walkers
 rank_of_walker = [0]*ns_args['n_walkers']
@@ -632,7 +652,7 @@ def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm)
 prev_snapshot_iter = None
 # do NS
 def do_ns_loop():
-   global print_prefix
+   global print_prefix, common_random_state
 
    if rank == 0:
       nD = 3
@@ -644,24 +664,6 @@ def do_ns_loop():
 	 else:
 	    nExtraDOF = len(walkers[0])*nD
 	 energy_io.write("%d %d %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF) )
-
-   # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
-   if ns_args['delta_random_seed'] > 0:
-      np.random.seed(rank+ns_args['delta_random_seed'])
-   else:
-      np.random.seed()
-   if rank == 0: # share a common random state
-      common_random_state = np.random.get_state()
-      common_random_state = comm.bcast(common_random_state, root=0)
-      # now back to local unique seed for rank=0
-      if ns_args['delta_random_seed'] > 0:
-	 np.random.seed(size+ns_args['delta_random_seed'])
-      else:
-	 np.random.seed()
-   else:
-      # share a common random state
-      common_random_state = None
-      common_random_state = comm.bcast(common_random_state, root=0)
 
    ## print print_prefix, ": random state ", np.random.get_state()
    ## if rank == 0:
