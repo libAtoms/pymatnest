@@ -216,6 +216,7 @@ elif do_calc_lammps:
 else:
    exit_error("Need some way of initializing calculator\n",3)
 
+#initialise rng
 # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG
 if ns_args['delta_random_seed'] > 0:
    np.random.seed(rank+ns_args['delta_random_seed'])
@@ -254,75 +255,6 @@ else:
 	 my_last_walker = last_walker
       if last_walker > first_walker:
 	 rank_of_walker[first_walker:last_walker] = [i_rank]*(last_walker-first_walker)
-
-walkers=[]
-if ns_args['restart_file'] == '': # start from scratch
-   # read initial config
-   if have_quippy:
-      init_atoms = None
-      if rank == 0:
-	 if re.search('.xyz$', ns_args['start_file']) is not None:
-	    # read config from an xyz file
-	    init_atoms = quippy.Atoms(ns_args['start_file'])
-	 else:
-	    # create atoms structs from a list of atomic numbers and numbers of atoms
-	    start_io=open(ns_args['start_file'],'r')
-	    lattice=quippy.fzeros( (3,3) )
-	    lattice[:,1] = [ float(s) for s in start_io.readline().split() ]
-	    lattice[:,2] = [ float(s) for s in start_io.readline().split() ]
-	    lattice[:,3] = [ float(s) for s in start_io.readline().split() ]
-	    init_atoms=quippy.Atoms()
-	    init_atoms.set_lattice(lattice)
-	    for l in start_io.readlines():
-	       Z = int(l.split()[0])
-	       n = int(l.split()[1])
-	       init_atoms.add_atoms([ [0.0]* n ] * 3, [Z]*n)
-	    print "initial atoms created from a list"
-	    init_atoms.write("stdout")
-      if comm is not None:
-	 init_atoms = comm.bcast(init_atoms, root=0)
-      if do_calc_quip:
-	 init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
-   else:
-      exit_error("need some non-quippy way of reading input configuration\n",3)
-
-   # clone initial config into array of walkers
-   if ns_args['debug'] >= 1 and have_quippy and size <= 1:
-      init_atoms.params['n_walks'] = 0
-   for i_walker in range(n_walkers):
-     walkers.append(init_atoms.copy())
-   ns_args['restart_first_iter'] = 0
-else: # doing a restart
-   if ns_args['restart_first_iter'] < 0:
-      exit_error("Got restart_file='%s' and restart_first_iter=%d < 0" % (ns_args['restart_file'], ns_args['restart_first_iter']), 4)
-   if have_quippy:
-      if rank == 0: # read on head task and send to other tasks
-	 l_walkers=[]
-	 restart_io = quippy.CInOutput(ns_args['restart_file'], action=quippy.INPUT)
-	 ar_iter = quippy.AtomsReader(restart_io).iterframes()
-	 for r in range(size):
-	    at_list=[]
-	    for i in range(n_walkers):
-	       if comm is None or r == 0:
-		  walkers.append(ar_iter.next())
-	       else:
-		  at_list.append(ar_iter.next())
-	    if r > 0:
-	       comm.send(at_list, dest=r, tag=1)
-	 restart_io.close()
-      else: # receive from head task
-	 walkers = comm.recv(source=0, tag=1)
-   else:
-      exit_error("need some non-quippy way of reading restart_file\n",3)
-
-for at in walkers:
-   at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
-   if do_calc_quip or do_calc_lammps:
-      at.set_calculator(pot)
-
-n_cull = ns_args['n_cull']
-n_extra_walk_per_task = ns_args['n_extra_walk_per_task']
-
 
 # internal model, LJ eps=1, sigma=1, cutoff=3,  with PBC cube l = pbc[0,0]
 internal_cutoff = 3.0
@@ -487,7 +419,9 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    for i_step in range(movement_args['MD_atom_n_steps']):
       old_pos = at.get_positions()
+      old_cell = at.get_cell()
       old_velo = at.get_velocities()
+      old_energy = at.info['ns_energy']
 
       #DEBUG print print_prefix, "MD_atom loop start ",eval_energy(at), Emax
 
@@ -503,8 +437,6 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
       #DEBUG print print_prefix, ": mid energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
 
-      initial_e = eval_energy(at)
-
       # propagate in time
       if have_quippy:
 	 quippy_propagate(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['MD_atom_n_substeps']) 
@@ -514,20 +446,19 @@ def do_MD_atom_walk(at, movement_args, Emax):
       #DEBUG print print_prefix, "MD_atom loop post propagate ",eval_energy(at)
 
       final_e = eval_energy(at)
-      # print print_prefix, ": MD trajectory energy changed ", initial_e, final_e, final_e - initial_e
+      at.info['ns_energy'] = final_e
+      # print print_prefix, ": MD trajectory energy changed ", energy, final_e, final_e - energy
       if final_e >= Emax+movement_args['MD_atom_energy_fuzz']:
 	 print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_e
 	 at.set_positions(old_pos)
+	 at.set_cell(old_cell)
 	 at.set_velocities(old_velo)
+	 at.info['ns_energy'] = old_energy
+
 
    #DEBUG print print_prefix, ": final energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() #DEBUG
    #DEBUG print print_prefix, ": final positions ", at.get_positions()[0]
    #DEBUG print print_prefix, ": final velo ", at.get_velocities()[0]
-
-def do_MC_atom_walk_julia(at, movement_args, Emax):
-   (new_pos, n_accept) = julia_walk(np.transpose(at.get_positions()), Emax, movement_args['MC_atom_n_steps'], movement_args['MC_atom_step_size'])
-   at.set_positions(np.transpose(new_pos))
-   return float(n_accept)/float(movement_args['MC_atom_n_steps'])
 
 def do_MC_atom_walk(at, movement_args, Emax):
    if movement_args['MC_atom_n_steps'] <= 0: 
@@ -537,7 +468,6 @@ def do_MC_atom_walk(at, movement_args, Emax):
    step_size = movement_args['MC_atom_step_size']
    #DEBUG print print_prefix, ": do_MC_atom_walk step_size ", step_size
    accept_num=0
-   energy = eval_energy(at)
    #DEBUG print print_prefix, ": MC_walk initial energy, Emax ", energy, Emax # DEBUG
    dz=0.0
    for i_MC_step in range(n_steps):
@@ -550,7 +480,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 dy = np.random.normal(0.0, step_size)
 	 if not movement_args['2D']:
 	    dz = np.random.normal(0.0, step_size)
-	 old_energy = energy
+	 old_energy = at.info['ns_energy']
 	 old_pos = at.get_positions()
 	 new_pos = old_pos.copy()
 	 new_pos[i_at,:] += (dx, dy,dz)
@@ -564,6 +494,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	    accept_num += 1
    #DEBUG last_energy = eval_energy(at)
    #DEBUG print print_prefix, ": MC_walk final energy, accept_rate ", energy, last_energy, float(accept_num)/float(n_steps*len(at)) #DEBUG
+   at.info['ns_energy'] = energy
    return float(accept_num)/float(n_steps*len(at))
 
 def walk_single_walker(at, movement_args, Emax):
@@ -578,11 +509,12 @@ def walk_single_walker(at, movement_args, Emax):
       at.n_walks += 1
    #DEBUG print print_prefix, ": walk_single_walker acc rates ", atom_accept_rate, cell_accept_rate
    #DEBUG print print_prefix, ": walk_single_walker final E", eval_energy(at) # DEBUG
+
    return (atom_accept_rate, cell_accept_rate)
 
 def max_energy(walkers, n):
    # do local max
-   energies_loc = np.array([ eval_energy(at)+np.random.uniform(-1.0,0.0)*ns_args['random_energy_perturbation'] for at in walkers])
+   energies_loc = np.array([ at.info['ns_energy']+np.random.uniform(-1.0,0.0)*ns_args['random_energy_perturbation'] for at in walkers])
    energies = np.array(comm.allgather(energies_loc)).flatten()
    #DEBUG print print_prefix , ": max_energies energies ",energies
    #DEBUG print print_prefix , ": max_energies energies.argsort() ",energies.argsort()
@@ -648,6 +580,89 @@ def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm)
 	 print "adjust MC_atom_step_size ",atom_dir," to ", movement_args['MC_atom_step_size']
 
    #### if cell_accept_rate is not None:
+
+
+walkers=[]
+if ns_args['restart_file'] == '': # start from scratch
+   # read initial config
+   if have_quippy:
+      init_atoms = None
+      if rank == 0:
+	 if re.search('.xyz$', ns_args['start_file']) is not None:
+	    # read config from an xyz file
+	    init_atoms = quippy.Atoms(ns_args['start_file'])
+	 else:
+	    # create atoms structs from a list of atomic numbers and numbers of atoms
+	    start_io=open(ns_args['start_file'],'r')
+	    lattice=quippy.fzeros( (3,3) )
+	    lattice[:,1] = [ float(s) for s in start_io.readline().split() ]
+	    lattice[:,2] = [ float(s) for s in start_io.readline().split() ]
+	    lattice[:,3] = [ float(s) for s in start_io.readline().split() ]
+	    init_atoms=quippy.Atoms()
+	    init_atoms.set_lattice(lattice)
+	    for l in start_io.readlines():
+	       Z = int(l.split()[0])
+	       n = int(l.split()[1])
+	       init_atoms.add_atoms([ [0.0]* n ] * 3, [Z]*n)
+	    print "initial atoms created from a list"
+	    init_atoms.write("stdout")
+      if comm is not None:
+	 init_atoms = comm.bcast(init_atoms, root=0)
+      if do_calc_quip:
+	 init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
+   else:
+      exit_error("need some non-quippy way of reading input configuration\n",3)
+
+   # clone initial config into array of walkers
+   if ns_args['debug'] >= 1 and have_quippy and size <= 1:
+      init_atoms.params['n_walks'] = 0
+   for i_walker in range(n_walkers):
+     walkers.append(init_atoms.copy())
+   ns_args['restart_first_iter'] = 0
+
+   for at in walkers:
+      at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
+      if do_calc_quip or do_calc_lammps:
+	 at.set_calculator(pot)
+
+   # initial positions are just random, up to an energy ceiling
+   for at in walkers:
+      at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
+      energy = eval_energy(at)
+      while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
+	 at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
+	 energy = eval_energy(at)
+      at.info['ns_energy'] = energy
+else: # doing a restart
+   if ns_args['restart_first_iter'] < 0:
+      exit_error("Got restart_file='%s' and restart_first_iter=%d < 0" % (ns_args['restart_file'], ns_args['restart_first_iter']), 4)
+   if have_quippy:
+      if rank == 0: # read on head task and send to other tasks
+	 l_walkers=[]
+	 restart_io = quippy.CInOutput(ns_args['restart_file'], action=quippy.INPUT)
+	 ar_iter = quippy.AtomsReader(restart_io).iterframes()
+	 for r in range(size):
+	    at_list=[]
+	    for i in range(n_walkers):
+	       if comm is None or r == 0:
+		  walkers.append(ar_iter.next())
+	       else:
+		  at_list.append(ar_iter.next())
+	    if r > 0:
+	       comm.send(at_list, dest=r, tag=1)
+	 restart_io.close()
+      else: # receive from head task
+	 walkers = comm.recv(source=0, tag=1)
+   else:
+      exit_error("need some non-quippy way of reading restart_file\n",3)
+
+   for at in walkers:
+      if do_calc_quip or do_calc_lammps:
+	 at.set_calculator(pot)
+      at.info['ns_energy'] = eval_energy(at)
+
+n_cull = ns_args['n_cull']
+n_extra_walk_per_task = ns_args['n_extra_walk_per_task']
 
 prev_snapshot_iter = None
 # do NS
@@ -724,17 +739,8 @@ def do_ns_loop():
       print "Using calculated number of MC_atom_n_steps ", movement_args['MC_atom_n_steps']
       print "Using calculated number of MD_atom_n_steps ", movement_args['MD_atom_n_steps']
 
-   if ns_args['restart_file'] == '': # not a restart
-      # initial positions are just random
-      for at in walkers:
-	 at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
-	 energy = eval_energy(at)
-	 while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
-	    at.set_scaled_positions( np.random.uniform(0.0, 1.0, (len(at),3) ) )
-	    energy = eval_energy(at)
-
    for at in walkers:
-      print rank, ": initial energy ", eval_energy(at)
+      print rank, ": initial energy ", at.info['ns_energy']
 
    atom_accept_rate_sum = None
    cell_accept_rate_sum = None
@@ -954,6 +960,7 @@ def do_ns_loop():
 	       walkers[my_recv_ind[recv_i]].set_positions(pos_entry)
 	       walkers[my_recv_ind[recv_i]].set_velocities(vel_entry)
 	       walkers[my_recv_ind[recv_i]].set_cell(cell_entry)
+	       walkers[my_recv_ind[recv_i]].info['ns_energy'] = eval_energy(walkers[my_recv_ind[recv_i]])
 	       recv_i += 1
 
       if ns_args['debug'] >= 2:
@@ -1036,7 +1043,6 @@ def do_ns_loop():
 
       if ns_args['debug'] >= 2:
 	 print print_prefix, ": LOOP_PE END 30 ",i_ns_step, [ eval_energy(at,True) for at in walkers ]
-      if ns_args['debug'] >= 2:
 	 print print_prefix, ": LOOP_TE END 31 ",i_ns_step, [ eval_energy(at) for at in walkers ]
 
       if ns_args['debug'] >= 3:
@@ -1083,7 +1089,7 @@ if prev_snapshot_iter is not None:
    os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot_iter, rank))
 
 for at in walkers:
-   print rank, ": final energy ", eval_energy(at)
+   print rank, ": final energy ", at.info['ns_energy']
 
 if rank == 0:
    energy_io.close()
