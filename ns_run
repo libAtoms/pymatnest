@@ -35,12 +35,13 @@ if len(sys.argv) != 1:
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-8)\n")
   sys.stderr.write("\n")
   sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
-  sys.stderr.write("profile=rank_to_profile\n")
-  sys.stderr.write("2D=[ T | F ]\n")
+  sys.stderr.write("profile=rank_to_profile (-1)\n")
+  sys.stderr.write("2D=[ T | F ] (F)\n")
   sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
   sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
   sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
   sys.stderr.write("energy_calculator= ( quip | lammps | internal ) (quip)\n")
+  sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
 
 import re, math, time, os
 import numpy as np, ase
@@ -157,6 +158,7 @@ if do_calc_quip:
      ns_args['QUIP_pot_params_file'] = args.pop('QUIP_pot_params_file')
    except:
      exit_error("need QUIP potential params file QUIP_pot_params_file\n",1)
+ns_args['no_extra_walks_at_all'] = args.pop('no_extra_walks_at_all', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
 movement_args={}
 
@@ -574,12 +576,34 @@ def max_energy(walkers, n):
 
 def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm):
    atom_accept_rate=None
-   if atom_accept_rate_sum is not None:
-      atom_accept_rate = comm.allreduce(atom_accept_rate_sum,MPI.SUM)/float(n_entries*size)
+   if ns_args['no_extra_walks_at_all']:
+      if atom_accept_rate_sum is None:
+	 contrib=0
+      else:
+	 contrib=n_entries
+      n_contrib = comm.allreduce(contrib, MPI.SUM)
+      if n_contrib > 0:
+	 if atom_accept_rate_sum is None:
+	    atom_accept_rate_sum = 0.0
+	 atom_accept_rate = comm.allreduce(atom_accept_rate_sum,MPI.SUM)/float(n_contrib)
+   else:
+      if atom_accept_rate_sum is not None:
+	 atom_accept_rate = comm.allreduce(atom_accept_rate_sum,MPI.SUM)/float(n_entries*size)
 
    cell_accept_rate=None
-   if cell_accept_rate_sum is not None:
-      cell_accept_rate = comm.allreduce(cell_accept_rate_sum,MPI.SUM)/float(n_entries*size)
+   if ns_args['no_extra_walks_at_all']:
+      if cell_accept_rate_sum is None:
+	 contrib=0
+      else:
+	 contrib=n_entries
+      n_contrib = comm.allreduce(contrib, MPI.SUM)
+      if n_contrib > 0:
+	 if cell_accept_rate_sum is None:
+	    cell_accept_rate_sum = 0.0
+	 cell_accept_rate = comm.allreduce(cell_accept_rate_sum,MPI.SUM)/float(n_contrib)
+   else:
+      if cell_accept_rate_sum is not None:
+	 cell_accept_rate = comm.allreduce(cell_accept_rate_sum,MPI.SUM)/float(n_entries*size)
 
    if rank == 0:
       if atom_accept_rate is not None or cell_accept_rate is not None:
@@ -736,7 +760,7 @@ def do_ns_loop():
 	 #DEBUG print print_prefix, ": top 10 energies ", Emax
 	 #DEBUG print print_prefix, ": top 10 energy indices ", cull_ind
 
-      # do NS config dropping/forming
+      # get list of highest energy configs
       (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, n_cull)
       if Emax_of_step is not None and rank == 0 and Emax[0] > Emax_of_step+movement_args['MD_atom_energy_fuzz']:
 	 print print_prefix, ": WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
@@ -799,7 +823,7 @@ def do_ns_loop():
 	 #DEBUG print print_prefix, ": load balance for rank ", r
 	 # maybe remote_r should be chosen completely randomly, rather than close to task of extra culled configs
 	 for dr in np.array(zip(np.array(range(1,size)), -np.array(range(1,size)))).flatten():
-	    if n_cull_of_rank[r] <= max_n_cull_per_task: # not too many to be culled on this rank
+	    if n_cull_of_rank[r] <= max_n_cull_per_task: # not too many that need to be culled on this rank
 	       break
 	    # this rank has too many to cull, must receive replacement from another node
 	    remote_r = (r+dr) % size
@@ -830,10 +854,8 @@ def do_ns_loop():
 	 #DEBUG print print_prefix, ": finding clones for rank ",r
 	 list_clone_target = np.where(status[r,:] == 'c_t')[0]
 	 #DEBUG print print_prefix, ": list_clone_target ", list_clone_target
-	 n_clone_target = len(list_clone_target)
-	 n_avail = sum(status[r,:] == '')
-	 # do remote clones
-	 n_remaining_clones = n_clone_target
+	 # assign clones
+	 n_remaining_clones = len(list_clone_target)
 	 while n_remaining_clones > 0:
 	    remote_r = np.random.randint(size)
 	    n_avail_remote = sum(status[remote_r,:] == '')
@@ -860,7 +882,6 @@ def do_ns_loop():
 		  r_is.append(r_i)
 	       send_ind.extend(r_is)
 
-	       list_clone_target = np.where(status[r,:] == 'c_t')[0]
 	       status[r,list_clone_target[0:n_transfer]] = 'c_t_a'
 	       recv_ind.extend(list_clone_target[0:n_transfer])
 
@@ -982,25 +1003,26 @@ def do_ns_loop():
       #DEBUG print print_prefix, ": before extra walks status ", status[rank, r_i]
 
       # walk extras
-      for ii in range(max_n_cull_per_task - len(clone_walk_ind)+n_extra_walk_per_task):
-	 r_i = np.random.randint(0, n_walkers)
-	 while status[rank,r_i] != '' and status[rank,r_i] != 'c_s':
+      if not ns_args['no_extra_walks_at_all']:
+	 for ii in range(max_n_cull_per_task - len(clone_walk_ind)+n_extra_walk_per_task):
 	    r_i = np.random.randint(0, n_walkers)
-	 #DEBUG print print_prefix, ": walk extra ", r_i # DEBUG
-	 (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
-	 accept_rate_n += 1
-	 if atom_accept_rate is not None:
-	    if atom_accept_rate_sum is None:
-	       atom_accept_rate_sum = atom_accept_rate
-	    else:
-	       atom_accept_rate_sum += atom_accept_rate
-	 if cell_accept_rate is not None:
-	    if cell_accept_rate_sum is None:
-	       cell_accept_rate_sum = cell_accept_rate
-	    else:
-	       cell_accept_rate_sum += cell_accept_rate
-	 # this status will be set only on this MPI task
-	 status[rank,r_i] = 'e_w'
+	    while status[rank,r_i] != '' and status[rank,r_i] != 'c_s':
+	       r_i = np.random.randint(0, n_walkers)
+	    #DEBUG print print_prefix, ": walk extra ", r_i # DEBUG
+	    (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
+	    accept_rate_n += 1
+	    if atom_accept_rate is not None:
+	       if atom_accept_rate_sum is None:
+		  atom_accept_rate_sum = atom_accept_rate
+	       else:
+		  atom_accept_rate_sum += atom_accept_rate
+	    if cell_accept_rate is not None:
+	       if cell_accept_rate_sum is None:
+		  cell_accept_rate_sum = cell_accept_rate
+	       else:
+		  cell_accept_rate_sum += cell_accept_rate
+	    # this status will be set only on this MPI task
+	    status[rank,r_i] = 'e_w'
 
       if i_ns_step % movement_args['MC_adjust_step_interval'] == movement_args['MC_adjust_step_interval']-1:
 	 adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, accept_rate_n, comm)
