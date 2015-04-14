@@ -256,6 +256,13 @@ else:
       if last_walker > first_walker:
 	 rank_of_walker[first_walker:last_walker] = [i_rank]*(last_walker-first_walker)
 
+# figure out number of configs that will be culled on each task
+n_cull = ns_args['n_cull']
+n_extra_walk_per_task = ns_args['n_extra_walk_per_task']
+max_n_cull_per_task = int(n_cull/size)
+if max_n_cull_per_task * size != n_cull:
+   max_n_cull_per_task += 1
+
 # internal model, LJ eps=1, sigma=1, cutoff=3,  with PBC cube l = pbc[0,0]
 internal_cutoff = 3.0
 Eshift = internal_cutoff**-12 - internal_cutoff**-6
@@ -581,6 +588,46 @@ def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm)
 
    #### if cell_accept_rate is not None:
 
+# figure out n_steps to walk on each iteration to get correct expected number
+def set_n_steps(prop):
+   if movement_args[prop+'_expected'] > 0:
+      if movement_args[prop] > 0:
+	 exit_error("Got both "+prop+" and "+prop+"_expected, conflict\n", 5)
+
+      if max_n_cull_per_task*size == n_cull and n_extra_walk_per_task == 0: # no extra walkers
+	 movement_args[prop] = movement_args[prop+'_expected']
+	 if rank == 0:
+	    print "Calculating n_walks, trivial since there are no extra walkers"
+      else:
+	 # f_c = n_c/n_t [ fraction of total that are culled (and walked once)]
+	 # f_e = n_e/(n_t-n_c) [fraction of ones that aren't culled that are also walked ]
+
+	 # n(1) <- f_c n_t + (1-f_c)*(1-f_e) n(1)
+	 # n(l >= 2) <- (1-f_c)(1-f_e) n(l) + (1-f_c) f_e n(l-1)
+
+	 # f = (1-f_c)f_e / (f_c+f_e-f_c f_e)
+
+	 # n(1)/n_t = f_c/(1-(1-f_c)(1-f_e)) = f_c/(f_c+f_e-f_c f_e)
+	 # n(l >= 2)/n_t = f n(l-1) = f^(l-1) n(1)/n_t
+	 # n_walks = n(1)/n_t + sum_{l=2}^\infty l n(l)/n_t
+	 #         = n(1)/n_t (1 + sum_{l=2}^\infty l f^{l-1})
+	 #         = n(1)/n_t (1 + \sum{l=1}^\infty (l+1) f^l)
+	 #         = n(1)/n_t (1 + \sum f^l + sum l f^l)
+	 #         = n(1)/n_t (1 + f/(1-f) + f/(1-f)**2
+
+	 f_cull = float(n_cull)/float(ns_args['n_walkers'])
+	 f_extra = float( (max_n_cull_per_task*size-n_cull) + n_extra_walk_per_task*size ) / float(ns_args['n_walkers']-n_cull)
+	 f = (1.0-f_cull)*f_extra/(f_cull+f_extra-f_cull*f_extra)
+
+	 n_walks = f_cull/(f_cull+f_extra-f_cull*f_extra) * (1.0 + f/(1.0-f) + f/(1.0-f)**2)
+	 if rank == 0:
+	    print "Calculated n_walks =",n_walks, " from f_cull ",f_cull," f_extra ",f_extra
+	 movement_args[prop] = int(math.ceil(movement_args[prop+'_expected']/n_walks))
+	 
+   else:
+      if movement_args[prop] > 0 and rank == 0:
+	 print "WARNING: using absolute number of "+prop
+
 
 walkers=[]
 if ns_args['restart_file'] == '': # start from scratch
@@ -661,8 +708,6 @@ else: # doing a restart
 	 at.set_calculator(pot)
       at.info['ns_energy'] = eval_energy(at)
 
-n_cull = ns_args['n_cull']
-n_extra_walk_per_task = ns_args['n_extra_walk_per_task']
 
 prev_snapshot_iter = None
 # do NS
@@ -687,57 +732,13 @@ def do_ns_loop():
    if ns_args['debug'] >= 10 and size <= 1:
       n_walks_history = []
 
-   max_n_cull_per_task = int(n_cull/size)
-   if max_n_cull_per_task * size != n_cull:
-      max_n_cull_per_task += 1
    #DEBUG print print_prefix, ": max_n_cull_per_task ", max_n_cull_per_task
-
-   # figure out n_steps to walk on each iteration to get correct expected number
-   def set_n_steps(prop):
-      if movement_args[prop+'_expected'] > 0:
-	 if movement_args[prop] > 0:
-	    exit_error("Got both "+prop+" and "+prop+"_expected, conflict\n", 5)
-
-	 if max_n_cull_per_task*size == n_cull and n_extra_walk_per_task == 0: # no extra walkers
-	    movement_args[prop] = movement_args[prop+'_expected']
-	    if rank == 0:
-	       print "Calculating n_walks, trivial since there are no extra walkers"
-	 else:
-	    # f_c = n_c/n_t [ fraction of total that are culled (and walked once)]
-	    # f_e = n_e/(n_t-n_c) [fraction of ones that aren't culled that are also walked ]
-
-	    # n(1) <- f_c n_t + (1-f_c)*(1-f_e) n(1)
-	    # n(l >= 2) <- (1-f_c)(1-f_e) n(l) + (1-f_c) f_e n(l-1)
-
-	    # f = (1-f_c)f_e / (f_c+f_e-f_c f_e)
-
-	    # n(1)/n_t = f_c/(1-(1-f_c)(1-f_e)) = f_c/(f_c+f_e-f_c f_e)
-	    # n(l >= 2)/n_t = f n(l-1) = f^(l-1) n(1)/n_t
-	    # n_walks = n(1)/n_t + sum_{l=2}^\infty l n(l)/n_t
-	    #         = n(1)/n_t (1 + sum_{l=2}^\infty l f^{l-1})
-	    #         = n(1)/n_t (1 + \sum{l=1}^\infty (l+1) f^l)
-	    #         = n(1)/n_t (1 + \sum f^l + sum l f^l)
-	    #         = n(1)/n_t (1 + f/(1-f) + f/(1-f)**2
-
-	    f_cull = float(n_cull)/float(ns_args['n_walkers'])
-	    f_extra = float( (max_n_cull_per_task*size-n_cull) + n_extra_walk_per_task*size ) / float(ns_args['n_walkers']-n_cull)
-	    f = (1.0-f_cull)*f_extra/(f_cull+f_extra-f_cull*f_extra)
-
-	    n_walks = f_cull/(f_cull+f_extra-f_cull*f_extra) * (1.0 + f/(1.0-f) + f/(1.0-f)**2)
-	    if rank == 0:
-	       print "Calculated n_walks =",n_walks, " from f_cull ",f_cull," f_extra ",f_extra
-	    movement_args[prop] = int(math.ceil(movement_args[prop+'_expected']/n_walks))
-	    
-      else:
-	 if movement_args[prop] > 0 and rank == 0:
-	    print "WARNING: using absolute number of "+prop
-
    set_n_steps('MC_atom_n_steps')
    set_n_steps('MD_atom_n_steps')
 
    if  rank == 0:
-      print "Using calculated number of MC_atom_n_steps ", movement_args['MC_atom_n_steps']
-      print "Using calculated number of MD_atom_n_steps ", movement_args['MD_atom_n_steps']
+      print "Using MC_atom_n_steps = ", movement_args['MC_atom_n_steps']
+      print "Using MD_atom_n_steps = ", movement_args['MD_atom_n_steps']
 
    for at in walkers:
       print rank, ": initial energy ", at.info['ns_energy']
@@ -972,13 +973,13 @@ def do_ns_loop():
 
       # walk clone targets
       #DEBUG print print_prefix, ": status[rank,:] ",status[rank,:]
-      if ns_args['debud'] >= 5:
+      if ns_args['debug'] >= 5:
 	 for i in np.where(status[rank,:] == 'c_s')[0]:
 	    print "WALK source ", rank, i
       clone_walk_ind = np.where(status[rank,:] == 'c_t_a')[0]
       for i_at in clone_walk_ind:
 	 #DEBUG print print_prefix, ": walk clone ", i_at
-	 if ns_args['debud'] >= 5:
+	 if ns_args['debug'] >= 5:
 	    print "WALK target ", rank, i_at
 	 (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
 	 accept_rate_n += 1
@@ -1022,7 +1023,7 @@ def do_ns_loop():
 	    while status[rank,r_i] != '' and status[rank,r_i] != 'c_s':
 	       r_i = np.random.randint(0, n_walkers)
 	    #DEBUG print print_prefix, ": walk extra ", r_i # DEBUG
-	    if ns_args['debud'] >= 5:
+	    if ns_args['debug'] >= 5:
 	       print "WALK extra ",rank, r_i
 	    (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
 	    accept_rate_n += 1
