@@ -23,9 +23,10 @@ if len(sys.argv) != 1:
   sys.stderr.write("MC_atom_n_steps_expected=int (0)\n")
   sys.stderr.write("MC_atom_n_steps=int (if not specified, set from expected #)\n")
   sys.stderr.write("MC_atom_step_size=float (0.1)\n")
-  sys.stderr.write("MC_atom_step_size_max=float (1.0\n")
+  sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("MC_adjust_step_interval=int\n")
+  sys.stderr.write("MC_adjust_step_interval=int (10, negative for only using last iteration)\n")
+  sys.stderr.write("MC_adjust_step_factor=int (1.2)\n")
   sys.stderr.write("\n")
   sys.stderr.write("MD_atom_n_steps_expected=int (0)\n")
   sys.stderr.write("MD_atom_n_steps=int (if not specified, set from expected #)\n")
@@ -177,6 +178,7 @@ movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 1.0))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-8))
 
 movement_args['MC_adjust_step_interval'] = int(args.pop('MC_adjust_step_interval', 10))
+movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.2))
 
 movement_args['2D'] = args.pop('2D', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
@@ -483,9 +485,12 @@ def do_MC_atom_walk(at, movement_args, Emax):
       np.random.shuffle(at_list)
       for i_at in at_list:
 	 #DEBUG print "i_at ",i_at
-	 dx = np.random.normal(0.0, step_size)
-	 dy = np.random.normal(0.0, step_size)
+	 dx = np.random.uniform(2.0*step_size) - step_size
+	 dy = np.random.uniform(2.0*step_size) - step_size
+	 # dx = np.random.normal(0.0, step_size)
+	 # dy = np.random.normal(0.0, step_size)
 	 if not movement_args['2D']:
+	    dz = np.random.uniform(2.0*step_size) - step_size
 	    dz = np.random.normal(0.0, step_size)
 	 old_energy = at.info['ns_energy']
 	 old_pos = at.get_positions()
@@ -571,10 +576,10 @@ def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm)
    if atom_accept_rate is not None:
       atom_dir=''
       if atom_accept_rate < 0.25:
-	 movement_args['MC_atom_step_size'] /= 1.2
+	 movement_args['MC_atom_step_size'] /= movement_args['MC_adjust_step_factor']
 	 atom_dir='down'
       if atom_accept_rate > 0.75:
-	 movement_args['MC_atom_step_size'] *= 1.2
+	 movement_args['MC_atom_step_size'] *= movement_args['MC_adjust_step_factor']
 	 atom_dir='up'
       ## need to do cell steps
 
@@ -754,6 +759,11 @@ def do_ns_loop():
    verbose=False
    for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
       print_prefix="%d %d" % (rank, i_ns_step)
+
+      if movement_args['MC_adjust_step_interval'] < 0:
+	 atom_accept_rate_sum = None
+	 cell_accept_rate_sum = None
+	 accept_rate_n = 0
 
       #DEBUG if rank == 0: # DEBUG
 	 #DEBUG print "starting ns loop ",i_ns_step # DEBUG
