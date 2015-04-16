@@ -1050,7 +1050,7 @@ def do_ns_loop():
 	    # this status will be set only on this MPI task
 	    status[rank,r_i] = 'e_w'
 
-      if i_ns_step % movement_args['MC_adjust_step_interval'] == movement_args['MC_adjust_step_interval']-1:
+      if i_ns_step % abs(movement_args['MC_adjust_step_interval']) == abs(movement_args['MC_adjust_step_interval'])-1:
 	 adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, accept_rate_n, comm)
 	 if atom_accept_rate_sum is not None:
 	    atom_accept_rate_sum = 0.0
