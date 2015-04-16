@@ -24,6 +24,7 @@ if len(sys.argv) != 1:
   sys.stderr.write("MC_atom_n_steps=int (if not specified, set from expected #)\n")
   sys.stderr.write("MC_atom_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
+  sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_adjust_step_interval=int (10, negative for only using last iteration)\n")
   sys.stderr.write("MC_adjust_step_factor=int (1.2)\n")
@@ -169,6 +170,7 @@ movement_args['MC_atom_n_steps_expected'] = int(args.pop('MC_atom_n_steps_expect
 movement_args['MC_atom_n_steps'] = int(args.pop('MC_atom_n_steps', 0))
 movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
 movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
+movement_args['MC_atom_uniform_rv'] = args.pop('MC_atom_uniform_rv', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
 movement_args['MD_atom_n_steps_expected'] = int(args.pop('MD_atom_n_steps_expected', 0))
 movement_args['MD_atom_n_steps'] = int(args.pop('MD_atom_n_steps', 0))
@@ -485,13 +487,16 @@ def do_MC_atom_walk(at, movement_args, Emax):
       np.random.shuffle(at_list)
       for i_at in at_list:
 	 #DEBUG print "i_at ",i_at
-	 dx = np.random.uniform(-step_size,step_size)
-	 dy = np.random.uniform(-step_size,step_size)
-	 # dx = np.random.normal(0.0, step_size)
-	 # dy = np.random.normal(0.0, step_size)
-	 if not movement_args['2D']:
-	    dz = np.random.uniform(-step_size,step_size)
-	    # dz = np.random.normal(0.0, step_size)
+	 if movement_args['MC_atom_uniform_rv']: 
+	    dx = np.random.uniform(-step_size,step_size)
+	    dy = np.random.uniform(-step_size,step_size)
+	    if not movement_args['2D']:
+	       dz = np.random.uniform(-step_size,step_size)
+	 else:
+	    dx = np.random.normal(0.0, step_size)
+	    dy = np.random.normal(0.0, step_size)
+	    if not movement_args['2D']:
+	       dz = np.random.normal(0.0, step_size)
 	 old_energy = at.info['ns_energy']
 	 old_pos = at.get_positions()
 	 new_pos = old_pos.copy()
