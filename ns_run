@@ -491,7 +491,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 # dy = np.random.normal(0.0, step_size)
 	 if not movement_args['2D']:
 	    dz = np.random.uniform(2.0*step_size) - step_size
-	    dz = np.random.normal(0.0, step_size)
+	    # dz = np.random.normal(0.0, step_size)
 	 old_energy = at.info['ns_energy']
 	 old_pos = at.get_positions()
 	 new_pos = old_pos.copy()
