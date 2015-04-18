@@ -1,4 +1,4 @@
-class ns_rng:
+class NsRng:
    def int_uniform(self, low, high):
       raise("int_uniform not implemented")
    def float_uniform(self, low, high, size=None):
@@ -9,8 +9,7 @@ class ns_rng:
       raise("shuffle_in_place not implemented")
 
 import numpy as np
-
-class ns_rng_numpy(ns_rng):
+class NsRngNumpy(NsRng):
    def int_uniform(self, low, high):
       return np.random.randint(low,high)
    def float_uniform(self, low, high, size=None):
@@ -20,7 +19,7 @@ class ns_rng_numpy(ns_rng):
    def shuffle_in_place(self, list):
       np.random.shuffle(list)
 
-class ns_rng_julia(ns_rng):
+class NsRngJulia(NsRng):
    def __init__(self, j):
       self.j=j
    def int_uniform(self, low, high):
@@ -33,16 +32,20 @@ class ns_rng_julia(ns_rng):
    # def normal(std_dev):
    #
    def shuffle_in_place(self, list):
-      self.j.shuffle_b(list)
+      list[:] = self.j.shuffle(list)
 
-class ns_rng_internal(ns_rng):
+import random, sys
+class NsRngInternal(NsRng):
    def int_uniform(self, low, high):
       return random.randint(low,high-1)
    def float_uniform(self, low,high, size=None):
       if size is not None:
-	 sys.stderr.write("ns_rng_internal size not implemented for float_uniform\n")
-	 sys.exit(1)
-      return random.uniform(low,high)
+	 out = np.zeros (size)
+	 for x in np.nditer(out, op_flags=['readwrite']):
+	    x[...] = random.uniform(low,high)
+	 return out
+      else:
+	 return random.uniform(low,high)
    def normal(self, std_dev):
       return random.normalvariate(0.0, std_dev)
    def shuffle_in_place(self, list):
