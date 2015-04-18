@@ -187,12 +187,12 @@ elif ns_args['rng'] == 'julia':
    import julia
    j = julia.Julia()
    rng = ns_rng.NsRngJulia(j)
-elif ns_Args['rng'] == 'rndstream':
+elif ns_args['rng'] == 'rndstream':
    exit_error("rng=rndstream not implemented yet\n", 3)
    rng = ns_rng.NsRngRndstream()
 elif ns_args['rng'] == 'internal':
    import random
-   rng = ns_rng.NsRng_internal()
+   rng = ns_rng.NsRngInternal()
 else:
    exit_error("rng=%s unknown\n" % ns_args['rng'], 3)
 
