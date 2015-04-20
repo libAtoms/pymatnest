@@ -558,12 +558,12 @@ def max_energy(walkers, n):
    #DEBUG print print_prefix , ": max_energies energies ",energies
    #DEBUG print print_prefix , ": max_energies energies.argsort() ",energies.argsort()
 
-   Emax_ind = energies.argsort()[-1:-n-2:-1]
+   Emax_ind = energies.argsort()[-1:-n-1:-1]
    Emax = energies[Emax_ind]
-   # WARNING: currently assumes that each node has equal number of walkers
+   # WARNING: assumes that each node has equal number of walkers
    rank_of_max = np.floor(Emax_ind/len(walkers)).astype(int)
 
-   return (Emax[0:-1], np.mod(Emax_ind[0:-1],len(walkers)), rank_of_max[0:-1], Emax[-1])
+   return (Emax, np.mod(Emax_ind,len(walkers)), rank_of_max)
 
 def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm):
    atom_accept_rate=None
@@ -722,10 +722,6 @@ if ns_args['restart_file'] == '': # start from scratch
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
 
-   def a(x, y, z=None):
-      print x
-      print y
-      print z
    # initial positions are just random, up to an energy ceiling
    for at in walkers:
       at.set_scaled_positions( rng.float_uniform (0.0, 1.0, (len(at), 3) ) )
@@ -828,7 +824,8 @@ def do_ns_loop():
 	 #DEBUG print print_prefix, ": top 10 energy indices ", cull_ind
 
       # get list of highest energy configs
-      (Emax, cull_ind, cull_rank, Emax_next) = max_energy(walkers, n_cull)
+      (Emax, cull_ind, cull_rank) = max_energy(walkers, n_cull)
+      Emax_next = Emax[-1]
       if Emax_of_step is not None and rank == 0 and Emax[0] > Emax_of_step+movement_args['MD_atom_energy_fuzz']:
 	 print print_prefix, ": WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
 
