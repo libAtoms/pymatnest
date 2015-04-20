@@ -191,7 +191,6 @@ elif ns_args['rng'] == 'rndstream':
    exit_error("rng=rndstream not implemented yet\n", 3)
    rng = ns_rng.NsRngRndstream()
 elif ns_args['rng'] == 'internal':
-   import random
    rng = ns_rng.NsRngInternal()
 else:
    exit_error("rng=%s unknown\n" % ns_args['rng'], 3)
@@ -360,10 +359,10 @@ def velo_rv_mag(at, Emax):
    #       one gets dx/dy = y^{3N-1}
    #                x = y^{3N}
    #                y = x^{1/3N}
-   return np.random.uniform()**(1.0/(nDOF*len(at)))
+   return rng.float_uniform()**(1.0/(nDOF*len(at)))
 
 def velo_unit_rv(at):
-   unit_rv = np.random.standard_normal( (len(at), 3) )
+   unit_rv = rng.float_normal( 1.0, (len(at), 3) )
    unit_rv /= np.linalg.norm(unit_rv)
    return unit_rv
 
@@ -412,11 +411,11 @@ def perturb_velo(at, Emax):
 
       # apply random rotations
       indices = range(len(at))
-      np.random.shuffle(indices)
+      rng.shuffle_in_place(indices)
       for (ind_1_i, ind_2_i) in pairwise(indices):
 	 ind_1_j = rng.int_uniform(0,3)
 	 ind_2_j = rng.int_uniform(0,3)
-	 ang = np.random.uniform(-movement_args['MD_atom_velo_perturb']*3.14159,movement_args['MD_atom_velo_perturb']*3.14159)
+	 ang = rng.float_uniform(-movement_args['MD_atom_velo_perturb']*3.14159,movement_args['MD_atom_velo_perturb']*3.14159)
 	 c_ang = np.cos(ang)
 	 s_ang = np.sin(ang)
 	 v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
@@ -474,7 +473,8 @@ def do_MD_atom_walk(at, movement_args, Emax):
       #DEBUG print print_prefix, "MD_atom loop post propagate ",eval_energy(at)
 
       final_e = eval_energy(at)
-      at.info['ns_energy'] = final_e
+      # perturb final energy
+      at.info['ns_energy'] = final_e + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
       # print print_prefix, ": MD trajectory energy changed ", energy, final_e, final_e - energy
       if final_e >= Emax+movement_args['MD_atom_energy_fuzz']:
 	 print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_e
@@ -482,7 +482,6 @@ def do_MD_atom_walk(at, movement_args, Emax):
 	 at.set_cell(old_cell)
 	 at.set_velocities(old_velo)
 	 at.info['ns_energy'] = old_energy
-
 
    #DEBUG print print_prefix, ": final energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() #DEBUG
    #DEBUG print print_prefix, ": final positions ", at.get_positions()[0]
@@ -527,6 +526,9 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 else:
 	    accept_num += 1
 	 at.info['ns_energy'] = energy
+
+   if accept_num > 0: # new energy, perturb
+      at.info['ns_energy'] += rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
    #DEBUG last_energy = eval_energy(at)
    #DEBUG print print_prefix, ": MC_walk final energy, accept_rate ", energy, last_energy, float(accept_num)/float(n_steps*len(at)) #DEBUG
    return float(accept_num)/float(n_steps*len(at))
@@ -548,7 +550,7 @@ def walk_single_walker(at, movement_args, Emax):
 
 def max_energy(walkers, n):
    # do local max
-   energies_loc = np.array([ at.info['ns_energy']+np.random.uniform(-1.0,0.0)*ns_args['random_energy_perturbation'] for at in walkers])
+   energies_loc = np.array([ at.info['ns_energy'] for at in walkers])
    if comm is not None:
       energies = np.array(comm.allgather(energies_loc)).flatten()
    else:
