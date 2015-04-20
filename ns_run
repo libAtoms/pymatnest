@@ -923,7 +923,6 @@ def do_ns_loop():
 	 n_remaining_clones = len(list_clone_target)
 	 while n_remaining_clones > 0:
 	    remote_r = rng.int_uniform(0,size)
-	    print rank, i_ns_step, n_remaining_clones, ": COMMON ", remote_r #DEBUG
 	    n_avail_remote = sum(status[remote_r,:] == '')
 	    #DEBUG print print_prefix, ": check transfer to rank ", remote_r, " remote status ", status[remote_r,:], " n_avail_remote ",n_avail_remote
 	    if n_avail_remote > 0: # something is available on remote_r
