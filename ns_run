@@ -253,27 +253,8 @@ else:
    exit_error("Need some way of initializing calculator\n",3)
 
 #initialise rng
+rng.seed_init(ns_args['delta_random_seed'], comm)
 # Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG like SPRNG or RndStream
-if ns_args['delta_random_seed'] > 0:
-   # unique but deterministic seed for each rank
-   np.random.seed(rank+ns_args['delta_random_seed'])
-else:
-   np.random.seed()
-if comm is None:
-   common_random_state = None
-else:
-   if rank == 0: # share a common random state
-      common_random_state = np.random.get_state()
-      common_random_state = comm.bcast(common_random_state, root=0)
-      # now back to local unique seed for rank=0
-      if ns_args['delta_random_seed'] > 0:
-	 np.random.seed(size+ns_args['delta_random_seed'])
-      else:
-	 np.random.seed()
-   else:
-      # get common random state from root
-      common_random_state = None
-      common_random_state = comm.bcast(common_random_state, root=0)
 
 # figure out numbers of local walkers
 rank_of_walker = [0]*ns_args['n_walkers']
@@ -783,7 +764,7 @@ else: # doing a restart
 prev_snapshot_iter = None
 # do NS
 def do_ns_loop():
-   global print_prefix, common_random_state
+   global print_prefix
 
    if rank == 0:
       nD = 3
@@ -931,9 +912,7 @@ def do_ns_loop():
 	 #DEBUG print print_prefix, ": post-cull-load-balance status ", r, status[r]
 
       # save local random state, and switch to common one
-      if common_random_state is not None:
-	 local_random_state = np.random.get_state()
-	 np.random.set_state(common_random_state)
+      rng.switch_to_common()
 
       # select clones
       for r in range(size):
@@ -944,6 +923,7 @@ def do_ns_loop():
 	 n_remaining_clones = len(list_clone_target)
 	 while n_remaining_clones > 0:
 	    remote_r = rng.int_uniform(0,size)
+	    print rank, i_ns_step, n_remaining_clones, ": COMMON ", remote_r #DEBUG
 	    n_avail_remote = sum(status[remote_r,:] == '')
 	    #DEBUG print print_prefix, ": check transfer to rank ", remote_r, " remote status ", status[remote_r,:], " n_avail_remote ",n_avail_remote
 	    if n_avail_remote > 0: # something is available on remote_r
@@ -984,9 +964,7 @@ def do_ns_loop():
       recv_ind = np.array(recv_ind)
 
       # save new common state, and restore to local state
-      if common_random_state is not None:
-	 common_random_state = np.random.get_state()
-	 np.random.set_state(local_random_state)
+      rng.switch_to_local()
 
       #DEBUG for r in range(len(status)):
 	 #DEBUG print print_prefix, ": post-cloning status ", r, status[r]
@@ -1186,5 +1164,6 @@ if rank == 0:
    energy_io.close()
 traj_io.close()
 
-MPI.Finalize()
+if comm is not None:
+   MPI.Finalize()
 sys.exit(0)
