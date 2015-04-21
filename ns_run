@@ -391,6 +391,8 @@ def pairwise(iterable):
    return izip(a, a)
 
 def perturb_velo(at, Emax):
+
+   orig_KE = at.get_kinetic_energy()
    if movement_args['MD_atom_velo_perturb'] == 0.0:
       return
    elif movement_args['MD_atom_velo_perturb'] < 0.0:
@@ -401,24 +403,26 @@ def perturb_velo(at, Emax):
       velo_mag = np.linalg.norm(velo)
       if velo_mag == 0.0:
 	 at.set_velocities(gen_random_velo(at, Emax))
-	 return
-      # pick new random magnitude - count on dimensionality to make change small
-      velo = gen_random_velo(at, Emax, velo/velo_mag)
+      else:
+	 # pick new random magnitude - count on dimensionality to make change small
+	 velo = gen_random_velo(at, Emax, velo/velo_mag)
 
-      # apply random rotations
-      indices = range(len(at))
-      rng.shuffle_in_place(indices)
-      for (ind_1_i, ind_2_i) in pairwise(indices):
-	 ind_1_j = rng.int_uniform(0,3)
-	 ind_2_j = rng.int_uniform(0,3)
-	 ang = rng.float_uniform(-movement_args['MD_atom_velo_perturb']*3.14159,movement_args['MD_atom_velo_perturb']*3.14159)
-	 c_ang = np.cos(ang)
-	 s_ang = np.sin(ang)
-	 v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
-	 v_2 = -velo[ind_1_i,ind_1_j] * s_ang + velo[ind_2_i,ind_2_j] * c_ang
-	 velo[ind_1_i,ind_1_j] = v_1
-	 velo[ind_2_i,ind_2_j] = v_2
-      at.set_velocities(velo)
+	 # apply random rotations
+	 indices = range(len(at))
+	 rng.shuffle_in_place(indices)
+	 for (ind_1_i, ind_2_i) in pairwise(indices):
+	    ind_1_j = rng.int_uniform(0,3)
+	    ind_2_j = rng.int_uniform(0,3)
+	    ang = rng.float_uniform(-movement_args['MD_atom_velo_perturb']*3.14159,movement_args['MD_atom_velo_perturb']*3.14159)
+	    c_ang = np.cos(ang)
+	    s_ang = np.sin(ang)
+	    v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
+	    v_2 = -velo[ind_1_i,ind_1_j] * s_ang + velo[ind_2_i,ind_2_j] * c_ang
+	    velo[ind_1_i,ind_1_j] = v_1
+	    velo[ind_2_i,ind_2_j] = v_2
+	 at.set_velocities(velo)
+   new_KE = at.get_kinetic_energy()
+   at.info['ns_energy'] += new_KE-orig_KE
 
 def do_MD_atom_walk(at, movement_args, Emax):
 
@@ -446,12 +450,12 @@ def do_MD_atom_walk(at, movement_args, Emax):
       old_velo = at.get_velocities()
       old_energy = at.info['ns_energy']
 
-      #DEBUG print print_prefix, "MD_atom loop start ",eval_energy(at), Emax
-
+      #DEBUG print print_prefix, "MD_atom loop start energy, Emax ",old_energy, Emax #DEBUG
 
       perturb_velo(at, Emax)
 
-      #DEBUG print print_prefix, "MD_atom loop post perturb ",eval_energy(at)
+      #DEBUG print print_prefix, "MD_atom loop post perturb cached energy ",at.info['ns_energy'] #DEBUG
+      #DEBUG print print_prefix, "MD_atom loop post perturb actual energy ",eval_energy(at) #DEBUG
 
       #DEBUG print print_prefix, ": masses for KE ",masses
       #DEBUG print print_prefix, ": velocities for KE ",at.get_velocities()
@@ -471,7 +475,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       final_e = eval_energy(at)
       # perturb final energy
       at.info['ns_energy'] = final_e + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
-      # print print_prefix, ": MD trajectory energy changed ", energy, final_e, final_e - energy
+      #DEBUG print print_prefix, ": MD trajectory energy changed orig, new, difference ", old_energy, final_e, final_e - old_energy #DEBUG
       if final_e >= Emax+movement_args['MD_atom_energy_fuzz']:
 	 print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_e
 	 at.set_positions(old_pos)
@@ -726,6 +730,18 @@ if ns_args['restart_file'] == '': # start from scratch
 	 at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
 	 energy = eval_energy(at)
       at.info['ns_energy'] = energy
+
+   # make sure masses are set if MD is going to be used
+   if movement_args['MD_atom_n_steps'] > 0 or movement_args['MD_atom_n_steps_expected'] > 0 and not at.has('masses'):
+      for at in walkers:
+	 if have_quippy:
+	    if not hasattr(at,'mass'):
+	       at.add_property('mass', 0.0)
+	       at.mass[:] = quippy.ElementMass[at.Z]
+	    at.set_masses(at.mass/quippy.MASSCONVERT)
+	 else:
+	    exit_error("need some non-quippy way of setting masses when MD is active\n", 3)
+
 else: # doing a restart
    if ns_args['restart_first_iter'] < 0:
       exit_error("Got restart_file='%s' and restart_first_iter=%d < 0" % (ns_args['restart_file'], ns_args['restart_first_iter']), 4)
