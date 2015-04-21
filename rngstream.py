@@ -1,5 +1,6 @@
 #load RngStream dll library
 from ctypes import *
+import os
 
 #def corresponding structure
 class RngStream_InfoState(Structure):
@@ -12,7 +13,7 @@ class RngStream_InfoState(Structure):
 
 class RngStream():
    def __init__(self):
-      self.lib = CDLL("RngStream.so")
+      self.lib = CDLL(os.path.dirname(__file__)+"/RngStream.so")
 
       #initialize with pointer
       self.lib.RngStream_CreateStream.restype = POINTER(RngStream_InfoState)
@@ -35,7 +36,7 @@ class RngStream():
    def set_package_seed(self,s):
       return self.lib.RngStream_SetPackageSeed(s)
    def create_stream(self):
-      return self.lib.RngStream_CreateStream()
+      return self.lib.RngStream_CreateStream(None)
    def float_uniform_01(self,g):
       return self.lib.RngStream_RandU01(g)
    def int_uniform(self,g,l,h):
