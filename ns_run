@@ -355,10 +355,10 @@ def velo_rv_mag(at, Emax):
    #       one gets dx/dy = y^{3N-1}
    #                x = y^{3N}
    #                y = x^{1/3N}
-   return rng.float_uniform()**(1.0/(nDOF*len(at)))
+   return rng.float_uniform(0.0,1.0)**(1.0/(nDOF*len(at)))
 
 def velo_unit_rv(at):
-   unit_rv = rng.float_normal( 1.0, (len(at), 3) )
+   unit_rv = rng.normal( 1.0, (len(at), 3) )
    unit_rv /= np.linalg.norm(unit_rv)
    return unit_rv
 

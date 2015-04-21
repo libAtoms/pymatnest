@@ -3,7 +3,7 @@ class NsRng:
       raise("int_uniform not implemented")
    def float_uniform(self, low, high, size=None):
       raise("float_uniform not implemented")
-   def normal(self, std_dev):
+   def normal(self, std_dev, size):
       raise("normal not implemented")
    def shuffle_in_place(self, list):
       raise("shuffle_in_place not implemented")
@@ -37,8 +37,8 @@ class NsRngNumpy(NsRng):
       return np.random.randint(low,high)
    def float_uniform(self, low, high, size=None):
       return np.random.uniform(low, high, size)
-   def normal(self, std_dev):
-      return np.random.normal(0.0,std_dev)
+   def normal(self, std_dev, size):
+      return np.random.normal(0.0,std_dev, size)
    def shuffle_in_place(self, list):
       np.random.shuffle(list)
 
@@ -88,15 +88,21 @@ class NsRngInternal(NsRng):
    def int_uniform(self, low, high):
       return random.randint(low,high-1)
    def float_uniform(self, low,high, size=None):
-      if size is not None:
+      if size is None:
+	 return random.uniform(low,high)
+      else:
 	 out = np.zeros (size)
 	 for x in np.nditer(out, op_flags=['readwrite']):
 	    x[...] = random.uniform(low,high)
 	 return out
+   def normal(self, std_dev, size):
+      if size is None:
+	 return random.normalvariate(0.0, std_dev)
       else:
-	 return random.uniform(low,high)
-   def normal(self, std_dev):
-      return random.normalvariate(0.0, std_dev)
+	 out = np.zeros (size)
+	 for x in np.nditer(out, op_flags=['readwrite']):
+	    x[...] = random.normalvariate(0.0, std_dev)
+	 return out
    def shuffle_in_place(self, list):
       random.shuffle(list)
    def switch_to_common(self):
@@ -190,7 +196,7 @@ class NsRngStream(NsRng):
 	 for x in np.nditer(out, op_flags=['readwrite']):
 	    x[...] = self.r.float_uniform_01(self.rng) * (high-low)+low
 	 return out
-   def normal(self, std_dev):
+   def normal_variate(self, std_dev):
       if self.saved_normal_rv is None:
 	 rsq = 0.0
 	 while rsq > 1.0 or rsq == 0.0:
@@ -204,5 +210,13 @@ class NsRngStream(NsRng):
 	 rv = self.saved_normal_rv
 	 self.saved_normal_rv = None
 	 return rv
+   def normal(self, std_dev, size):
+      if size is none:
+	 return self.normal_variate(std_dev)
+      else:
+	 out = np.zeros(size)
+	 for x in np.nditer(out, op_flags=['readwrite']):
+	    x[...] = self.normal_variate(std_dev)
+	 return out
    def shuffle_in_place(self, list):
       random.shuffle(list, lambda : self.r.float_uniform_01(self.rng) )
