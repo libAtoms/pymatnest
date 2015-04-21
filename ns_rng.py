@@ -113,7 +113,7 @@ def unpack_uint32(bytes):
    return tup[0]
 
 # import rngstream
-import rngstream, ctypes, os, struct
+import rngstream, ctypes, os, struct, math
 class NsRngStream(NsRng):
 
    def set_package_seed(self, delta_seed):
@@ -122,27 +122,26 @@ class NsRngStream(NsRng):
 	 if delta_seed > 0:
 	    seed.append(delta_seed)
 	 else:
-	    rand_bytes = os.urandom(4)
-	    seed.append(unpack_uint32(rand_bytes))
+	    i_rv = unpack_uint32(os.urandom(4))
+	    while i_rv == 0 or (i <= 2 and i_rv >= 4294967087) or (i >= 3 and i_rv >= 4294944443):
+	       i_rv = unpack_uint32(os.urandom(4))
+	    seed.append(i_rv)
       self.r.set_package_seed((ctypes.c_ulong*6)(*seed))
 
    def __init__(self, delta_seed=-1, comm=None):
       self.r = rngstream.RngStream()
 
       self.set_package_seed(delta_seed)
-      rng = self.r.create_stream()
+      seed = (ctypes.c_ulong * 6)()
       if comm is None:
-	 self.rng = rng
+	 self.rng = self.r.create_stream()
 	 self.l_rng = None
 	 self.g_rng = None
       else:
-	 seed = (ctypes.c_ulong * 6)()
-	 seed_new = (ctypes.c_ulong * 6)()
 	 if comm.rank == 0:
-	    self.g_rng = rng
+	    self.g_rng = self.r.create_stream()
 	    self.r.get_state(self.g_rng,seed)
-	    seed_comm = list(seed)
-	    seed_comm = comm.bcast(seed_comm, root=0)
+	    seed_comm = comm.bcast(list(seed), root=0)
 	 else:
 	    seed_comm = None
 	    seed_comm = comm.bcast(seed_comm, root=0)
@@ -150,32 +149,35 @@ class NsRngStream(NsRng):
 	    self.r.set_package_seed(seed)
 	    self.g_rng = self.r.create_stream()
 	 if comm.rank == 0:
-	    for i in range(comm.size):
+	    self.l_rng = self.r.create_stream()
+	    seed_new = (ctypes.c_ulong * 6)()
+	    for i in range(1,comm.size):
 	       t_rng = self.r.create_stream()
 	       self.r.get_state(t_rng,seed_new)
-	       if i == 0:
-		  self.r.set_package_seed(seed_new)
-		  self.l_rng = self.r.create_stream()
-	       else:
-		  seed_new_comm = list(seed_new)
-		  comm.send(seed_new_comm, i, tag=1)
+	       comm.send(list(seed_new), i, tag=i)
 	 else:
-	    seed_new_comm = comm.recv(source=0, tag=1)
-	    seed_new = (ctypes.c_ulong * 6)(*seed_new_comm)
-	    self.r.set_package_seed(seed_new)
+	    seed_new_comm = comm.recv(source=0, tag=comm.rank)
+	    self.r.set_package_seed((ctypes.c_ulong * 6)(*seed_new_comm))
 	    self.l_rng = self.r.create_stream()
 	 self.rng = self.l_rng
-      self.r.get_state(self.l_rng,seed)
-      print comm.rank, "end of init l_rng ", list(seed)
-      self.r.get_state(self.g_rng,seed)
-      print comm.rank, "end of init g_rng ", list(seed)
+      if comm is None:
+	 self.r.get_state(self.rng,seed)
+	 print "end of init rng ", list(seed)
+      else:
+	 self.r.get_state(self.l_rng,seed)
+	 print comm.rank, "end of init l_rng ", list(seed)
+	 self.r.get_state(self.g_rng,seed)
+	 print comm.rank, "end of init g_rng ", list(seed)
+      self.saved_normal_rv = None
 
    def switch_to_common(self):
       if self.g_rng is not None:
 	 self.rng = self.g_rng
+	 self.saved_normal_rv = None
    def switch_to_local(self):
       if self.l_rng is not None:
 	 self.rng = self.l_rng
+	 self.saved_normal_rv = None
 
    def int_uniform(self, low, high):
       return self.r.int_uniform(self.rng, ctypes.c_int(low), ctypes.c_int(high-1) )
@@ -187,6 +189,19 @@ class NsRngStream(NsRng):
 	 for x in np.nditer(out, op_flags=['readwrite']):
 	    x[...] = self.r.float_uniform_01(self.rng) * (high-low)+low
 	 return out
-   # def normal(self, std_dev):
+   def normal(self, std_dev):
+      if self.saved_normal_rv is None:
+	 rsq = 0.0
+	 while rsq > 1.0 or rsq == 0.0:
+	    v1 = 2.0*self.r.float_uniform_01(self.rng)-1.0
+	    v2 = 2.0*self.r.float_uniform_01(self.rng)-1.0
+	    rsq = v1*v1+v2*v2
+	 fac = math.sqrt(-2.0*math.log(rsq)/rsq)
+	 self.saved_normal_rv = v1*fac
+	 return v2*fac
+      else:
+	 rv = self.saved_normal_rv
+	 self.saved_normal_rv = None
+	 return rv
    def shuffle_in_place(self, list):
       random.shuffle(list, lambda : self.r.float_uniform_01(self.rng) )

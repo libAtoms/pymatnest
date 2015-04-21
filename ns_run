@@ -44,7 +44,7 @@ def usage():
   sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
   sys.stderr.write("energy_calculator= ( quip | lammps | internal ) (quip)\n")
   sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
-  sys.stderr.write("rng=( numpy | internal | rndstream ) (numpy)\n") # julia
+  sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
 
 if len(sys.argv) != 1 and len(sys.argv) != 2:
    usage()
@@ -187,9 +187,9 @@ if ns_args['rng'] == 'numpy':
 #    import julia
 #    j = julia.Julia()
 #    rng = ns_rng.NsRngJulia(j)
-elif ns_args['rng'] == 'rndstream':
-   exit_error("rng=rndstream not implemented yet\n", 3)
-   rng = ns_rng.NsRngRndstream(ns_args['delta_random_seed'],comm)
+elif ns_args['rng'] == 'rngstream':
+   import rngstream
+   rng = ns_rng.NsRngStream(ns_args['delta_random_seed'],comm)
 elif ns_args['rng'] == 'internal':
    rng = ns_rng.NsRngInternal(ns_args['delta_random_seed'],comm)
 else:
