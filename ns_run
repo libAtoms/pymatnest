@@ -44,7 +44,7 @@ def usage():
   sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
   sys.stderr.write("energy_calculator= ( quip | lammps | internal ) (quip)\n")
   sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
-  sys.stderr.write("rng=( numpy | julia | internal | rndstream ) (numpy)\n")
+  sys.stderr.write("rng=( numpy | internal | rndstream ) (numpy)\n") # julia
 
 if len(sys.argv) != 1 and len(sys.argv) != 2:
    usage()
@@ -182,16 +182,16 @@ ns_args['no_extra_walks_at_all'] = args.pop('no_extra_walks_at_all', "F") in [ "
 ns_args['rng'] = args.pop('rng', 'numpy')
 import ns_rng
 if ns_args['rng'] == 'numpy':
-   rng = ns_rng.NsRngNumpy()
-elif ns_args['rng'] == 'julia':
-   import julia
-   j = julia.Julia()
-   rng = ns_rng.NsRngJulia(j)
+   rng = ns_rng.NsRngNumpy(ns_args['delta_random_seed'],comm)
+# elif ns_args['rng'] == 'julia':
+#    import julia
+#    j = julia.Julia()
+#    rng = ns_rng.NsRngJulia(j)
 elif ns_args['rng'] == 'rndstream':
    exit_error("rng=rndstream not implemented yet\n", 3)
-   rng = ns_rng.NsRngRndstream()
+   rng = ns_rng.NsRngRndstream(ns_args['delta_random_seed'],comm)
 elif ns_args['rng'] == 'internal':
-   rng = ns_rng.NsRngInternal()
+   rng = ns_rng.NsRngInternal(ns_args['delta_random_seed'],comm)
 else:
    exit_error("rng=%s unknown\n" % ns_args['rng'], 3)
 
@@ -250,10 +250,6 @@ elif do_calc_lammps:
    exit_error("no lammps initialization of potential implemented yet\n", 3)
 else:
    exit_error("Need some way of initializing calculator\n",3)
-
-#initialise rng
-rng.seed_init(ns_args['delta_random_seed'], comm)
-# Counting on conventional RNG and /dev/urandom here.  Should at least use a real parallel RNG like SPRNG or RndStream
 
 # figure out numbers of local walkers
 rank_of_walker = [0]*ns_args['n_walkers']
