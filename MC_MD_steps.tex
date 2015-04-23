@@ -1,0 +1,54 @@
+\documentclass{article}
+\title{pymatnest MC/MD steps}
+\author{Noam Bernstein}
+
+\begin{document}
+\maketitle
+
+walker
+\begin{itemize}
+   \item do MC cell
+   \item do MC atom
+   \item do MD atom
+\end{itemize}
+
+MC cell
+\begin{itemize}
+   \item in random order:
+   \begin{itemize}
+      \item w/ some prob. propose volume step (metropolized on acceptance prob, max vol, Emax)
+      \item w/ some prob. propose shear step (metropolized on aspect ratio [check], Emax)
+      \item w/ some prob. propose stretch step (metropolized on aspect ratio [check], Emax)
+   \end{itemize}
+   \item randomize momenta magnitudes (no rotate, rejection free)
+\end{itemize}
+
+MC atom
+\begin{itemize}
+   \item repeat $N_\mathrm{steps}$ times
+   \begin{itemize}
+      \item loop over atoms in random order
+      \begin{itemize}
+	 \item propose single atom move (metropolized on Emax)
+      \end{itemize}
+   \end{itemize}
+\end{itemize}
+
+MD atom
+\begin{itemize}
+   \item repeat $N_\mathrm{steps}$ times
+   \begin{itemize}
+      \item perturb velocity
+      \begin{itemize}
+	 \item pick random new velocity magnitude (rejection free)
+	 \item loop over all atom pairs in random order
+	 \begin{itemize}
+	    \item pick two random cartesian components, angle
+	 \end{itemize}
+      \end{itemize}
+      \item do $N_\mathrm{substeps}$ MD (metropolized on Emax, should always pass)
+   \end{itemize}
+\end{itemize}
+
+
+\end{document}

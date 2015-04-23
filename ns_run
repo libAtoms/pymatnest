@@ -26,14 +26,30 @@ def usage():
   sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("MC_adjust_step_interval=int (10, negative for only using last iteration)\n")
-  sys.stderr.write("MC_adjust_step_factor=int (1.2)\n")
+  sys.stderr.write("MC_cell=[T | F] (F)\n")
+  sys.stderr.write("MC_cell_interval=int (1)\n")
+  sys.stderr.write("MC_cell_volume_step_size=float (0.01)\n")
+  sys.stderr.write("MC_cell_volume_step_size_max=float (0.05)\n")
+  sys.stderr.write("MC_cell_volume_prob=float (0.01)\n")
+  sys.stderr.write("MC_cell_stretch_step_size=float (0.01)\n")
+  sys.stderr.write("MC_cell_stretch_step_size_max=float (0.05)\n")
+  sys.stderr.write("MC_cell_stretch_prob=float (0.01)\n")
+  sys.stderr.write("MC_cell_shear_step_size=float (0.01)\n")
+  sys.stderr.write("MC_cell_shear_step_size_max=float (0.05)\n")
+  sys.stderr.write("MC_cell_shear_prob=float (0.01)\n")
+  sys.stderr.write("MC_cell_min_dot_prod=float (0.5)\n")
+  sys.stderr.write("MC_cell_max_volume_per_atom=float (1e3)\n")
+  sys.stderr.write("\n")
+  sys.stderr.write("MC_adjust_step_interval=int (-10, negative for only using last iteration)\n")
+  sys.stderr.write("MC_adjust_step_factor=int (2.0)\n")
+  sys.stderr.write("MD_adjust_step_factor=int (1.2)\n")
   sys.stderr.write("\n")
   sys.stderr.write("MD_atom_n_steps_expected=int (0)\n")
   sys.stderr.write("MD_atom_n_steps=int (if not specified, set from expected #)\n")
   sys.stderr.write("MD_atom_n_substeps=int (10)\n")
-  sys.stderr.write("MD_atom_velo_perturb=float (0.1)\n")
+  sys.stderr.write("MD_atom_velo_perturb=float (0.1, < 0 for completely randomizing rather than perturbing)\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
+  sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-8)\n")
   sys.stderr.write("\n")
   sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
@@ -203,15 +219,31 @@ movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
 movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
 movement_args['MC_atom_uniform_rv'] = args.pop('MC_atom_uniform_rv', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
+movement_args['MC_cell'] = args.pop('MC_cell', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['MC_cell_interval'] = int(args.pop('MC_cell_interval', 1))
+movement_args['MC_cell_volume_step_size'] = float(args.pop('MC_cell_volume_step_size', 0.01))
+movement_args['MC_cell_volume_step_size_max'] = float(args.pop('MC_cell_volume_step_size_max', 0.05))
+movement_args['MC_cell_volume_prob'] = float(args.pop('MC_cell_volume_prob', 0.01))
+movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.01))
+movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 0.05))
+movement_args['MC_cell_stretch_prob'] = float(args.pop('MC_cell_stretch_prob', 0.01))
+movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.01))
+movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 0.05))
+movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 0.01))
+movement_args['MC_cell_min_dot_prod'] = float(args.pop('MC_cell_min_dot_prod', 0.5))
+movement_args['MC_cell_max_volume_per_atom'] = float(args.pop('MC_cell_max_volume_per_atom', 1.0e3))
+
 movement_args['MD_atom_n_steps_expected'] = int(args.pop('MD_atom_n_steps_expected', 0))
 movement_args['MD_atom_n_steps'] = int(args.pop('MD_atom_n_steps', 0))
 movement_args['MD_atom_n_substeps'] = int(args.pop('MD_atom_n_substeps', 10))
 movement_args['MD_atom_velo_perturb'] = float(args.pop('MD_atom_velo_perturb', 0.1))
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 1.0))
+movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 2.0))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-8))
 
-movement_args['MC_adjust_step_interval'] = int(args.pop('MC_adjust_step_interval', 10))
-movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.2))
+movement_args['MC_adjust_step_interval'] = int(args.pop('MC_adjust_step_interval', -10))
+movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 2.0))
+movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.2))
 
 movement_args['2D'] = args.pop('2D', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
@@ -380,7 +412,7 @@ def gen_random_velo(at, Emax, unit_rv=None):
       velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
    else: # should never happen - maybe it's happening because of MD_atom_energy_fuzz
       if rank == 0:
-	 print print_prefix, ": WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in do_MD_atom_walk"
+	 print print_prefix, ": WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in gen_random_velo"
       velocities = 0.0 * unit_rv
 
    return velocities
@@ -390,12 +422,13 @@ def pairwise(iterable):
    a = iter(iterable)
    return izip(a, a)
 
-def perturb_velo(at, Emax):
+def perturb_velo(at, Emax, rotate=True):
 
-   orig_KE = at.get_kinetic_energy()
    if movement_args['MD_atom_velo_perturb'] == 0.0:
       return
-   elif movement_args['MD_atom_velo_perturb'] < 0.0:
+
+   orig_KE = at.get_kinetic_energy()
+   if movement_args['MD_atom_velo_perturb'] < 0.0:
       # randomize completely
       at.set_velocities(gen_random_velo(at, Emax))
    else: # perturb
@@ -407,19 +440,21 @@ def perturb_velo(at, Emax):
 	 # pick new random magnitude - count on dimensionality to make change small
 	 velo = gen_random_velo(at, Emax, velo/velo_mag)
 
-	 # apply random rotations
-	 indices = range(len(at))
-	 rng.shuffle_in_place(indices)
-	 for (ind_1_i, ind_2_i) in pairwise(indices):
-	    ind_1_j = rng.int_uniform(0,3)
-	    ind_2_j = rng.int_uniform(0,3)
-	    ang = rng.float_uniform(-movement_args['MD_atom_velo_perturb']*3.14159,movement_args['MD_atom_velo_perturb']*3.14159)
-	    c_ang = np.cos(ang)
-	    s_ang = np.sin(ang)
-	    v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
-	    v_2 = -velo[ind_1_i,ind_1_j] * s_ang + velo[ind_2_i,ind_2_j] * c_ang
-	    velo[ind_1_i,ind_1_j] = v_1
-	    velo[ind_2_i,ind_2_j] = v_2
+	 if rotate:
+	    # apply random rotations
+	    indices = range(len(at))
+	    rng.shuffle_in_place(indices)
+	    for (ind_1_i, ind_2_i) in pairwise(indices):
+	       ind_1_j = rng.int_uniform(0,3)
+	       ind_2_j = rng.int_uniform(0,3)
+	       ang = rng.float_uniform(-movement_args['MD_atom_velo_perturb']*3.14159,movement_args['MD_atom_velo_perturb']*3.14159)
+	       c_ang = np.cos(ang)
+	       s_ang = np.sin(ang)
+	       v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
+	       v_2 = -velo[ind_1_i,ind_1_j] * s_ang + velo[ind_2_i,ind_2_j] * c_ang
+	       velo[ind_1_i,ind_1_j] = v_1
+	       velo[ind_2_i,ind_2_j] = v_2
+
 	 at.set_velocities(velo)
    new_KE = at.get_kinetic_energy()
    at.info['ns_energy'] += new_KE-orig_KE
@@ -430,7 +465,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       exit_error("Can't do_MD_atom_walk with confining potential > 0.0\n", 4)
 
    if movement_args['MD_atom_n_steps'] <= 0:
-      return
+      return {}
 
    #DEBUG global print_prefix
    #DEBUG print print_prefix, ": do_MD_atom_walk with Emax ", Emax # DEBUG
@@ -443,6 +478,8 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DEBUG print print_prefix, ": initial energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
 
    #DEBUG print print_prefix, "MD_atom pre loop ",eval_energy(at), Emax
+
+   n_accept = 0
 
    for i_step in range(movement_args['MD_atom_n_steps']):
       old_pos = at.get_positions()
@@ -482,19 +519,161 @@ def do_MD_atom_walk(at, movement_args, Emax):
 	 at.set_cell(old_cell)
 	 at.set_velocities(old_velo)
 	 at.info['ns_energy'] = old_energy
+      else:
+	 n_accept += 1
 
    #DEBUG print print_prefix, ": final energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() #DEBUG
    #DEBUG print print_prefix, ": final positions ", at.get_positions()[0]
    #DEBUG print print_prefix, ": final velo ", at.get_velocities()[0]
 
+   return {'MD_atom' : (movement_args['MD_atom_n_steps'], n_accept) }
+
+def propose_volume_step(at, step_size):
+   dV = rng.normal(step_size)
+   orig_V = at.get_volume()
+   new_V = orig_V + dV
+   transform = np.identity(3)*(new_V/orig_V)**(1.0/3.0)
+   p_accept = min(1.0, (new_V/orig_V)**len(at))
+   return (p_accept, transform)
+
+def propose_shear_step(at, step_size):
+   # pick random vector
+   rnd_vec_ind = rng.int_uniform(0, 3)
+   # turn other two into orthonormal pair
+   other_vec_ind = range(3)
+   other_vec_ind.remove(rnd_vec_ind)
+   orig_cell = at.get_cell()
+   v1 = orig_cell[other_vec_ind[0],:]
+   v2 = orig_cell[other_vec_ind[1],:]
+   v1 /= np.sqrt(np.dot(v1,v1))
+   v2 -= v1*np.dot(v1,v2)
+   v2 /= np.sqrt(np.dot(v2,v2))
+   # pick random magnitudes
+   rv1 = rng.normal(step_size)
+   rv2 = rng.normal(step_size)
+   # create new cell and transformation matrix
+   new_cell = orig_cell.copy()
+   new_cell[rnd_vec_ind,:] += rv1*v1 + rv2*v2
+   transform = np.dot(new_cell, np.linalg.inv(orig_cell))
+   return (1.0, transform)
+
+def propose_stretch_step(at, step_size):
+   rnd_v1_ind = rng.int_uniform(0, 3)
+   rnd_v2_ind = rng.int_uniform(0, 3)
+   if rnd_v1_ind == rnd_v2_ind:
+      rnd_v2_ind = (rnd_v2_ind+1) % 3
+
+   rv = rng.normal(step_size)
+   transform = np.identity(3)
+   transform[rnd_v1_ind,:] *= np.exp(rv)
+   transform[rnd_v2_ind,:] *= np.exp(-rv)
+   return (1.0, transform)
+
+def min_height(vol, cell):
+   size_scale = vol**(1.0/3.0)
+   min_height = sys.float_info.max
+   for i in range(3):
+      vi = cell[i,:]
+      vnorm_hat = np.cross(cell[(i+1)%3,:],cell[(i+2)%3,:])
+      vnorm_hat /= np.sqrt(np.dot(vnorm_hat,vnorm_hat))
+      min_height = min(min_height, np.dot(vnorm_hat,vi)/size_scale)
+   return min_height
+
+def min_dot_prod(vol, cell):
+   min_dot_prod = sys.float_info.max
+   for i in range(3):
+      vi = cell[i,:]
+      vi /= np.sqrt(np.dot(vi,vi))
+      vnorm_hat = np.cross(cell[(i+1)%3,:],cell[(i+2)%3,:])
+      vnorm_hat /= np.sqrt(np.dot(vnorm_hat,vnorm_hat))
+      min_dot_prod = min(min_dot_prod, np.dot(vnorm_hat,vi))
+   return min_dot_prod
+
+def do_cell_step(at, Emax, p_accept, transform):
+   if p_accept < 1.0 and rng.float_uniform(0.0,1.0) > p_accept:
+      return 0
+
+   # save old config and apply transformation
+   orig_cell = at.get_cell()
+   #DEBUG print "do_cell_step orig ", orig_cell, at.get_volume() #DEBUG
+   orig_pos = at.get_positions()
+   new_cell = np.dot(orig_cell,transform)
+   at.set_cell(new_cell, scale_atoms=True)
+   if at.has('momenta'):
+      orig_velo = at.get_velocities()
+      new_velo = np.dot(orig_velo,transform)
+      at.set_velocities(new_velo)
+   #DEBUG print "do_cell_step new ", new_cell, at.get_volume() #DEBUG
+   # check size and shape constraints
+   new_volume = at.get_volume()
+   if new_volume > movement_args['MC_cell_max_volume_per_atom']*len(at):
+      #DEBUG print "reject based on vol max" #DEBUG
+      at.set_cell(orig_cell,scale_atoms=False)
+      at.set_positions(orig_pos)
+      at.set_velocities(orig_velo)
+      return 0
+   if min_dot_prod(new_volume, new_cell) < movement_args['MC_cell_min_dot_prod']:
+      #DEBUG print "reject based on dot prod" #DEBUG
+      at.set_cell(orig_cell,scale_atoms=False)
+      at.set_positions(orig_pos)
+      at.set_velocities(orig_velo)
+      return 0
+
+   # calculate new energy
+   new_energy = eval_energy(at)
+   # accept or reject
+   if new_energy < Emax: # accept
+      at.info['ns_energy'] = new_energy
+      return 1
+   else: # reject and revert
+      #DEBUG print "reject based on Emax" #DEBUG
+      at.set_cell(orig_cell,scale_atoms=False)
+      at.set_positions(orig_pos)
+      at.set_velocities(orig_velo)
+      return 0
+
+
+def do_MC_cell_walk(at, movement_args, Emax):
+   if not movement_args['MC_cell']:
+      return {}
+
+   out = {}
+
+   # this could probably be done in a more pythonic way, maybe via a dict
+   order = range(3)
+   rng.shuffle_in_place(order)
+   for move_type in order:
+      step_rv = rng.float_uniform(0.0, 1.0)
+      if move_type == 0:
+	 if step_rv < movement_args['MC_cell_volume_prob']:
+	    #DEBUG print "propose volume step" #DEBUG
+	    (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_step_size'])
+	    out['MC_cell_volume'] = (1,do_cell_step(at, Emax, p_accept, transform))
+      elif move_type == 1:
+	 if step_rv < movement_args['MC_cell_shear_prob']:
+	    #DEBUG print "propose shear step" #DEBUG
+	    (p_accept, transform) = propose_shear_step(at, movement_args['MC_cell_shear_step_size'])
+	    out['MC_cell_shear'] = (do_cell_step(at, Emax, p_accept, transform),1)
+      elif move_type == 2:
+	 if step_rv < movement_args['MC_cell_stretch_prob']:
+	    #DEBUG print "propose stretch step" #DEBUG
+	    (p_accept, transform) = propose_stretch_step(at, movement_args['MC_cell_stretch_step_size'])
+	    out['MC_cell_stretch'] = (do_cell_step(at, Emax, p_accept, transform),1)
+
+   if at.has('momenta'):
+      perturb_velo(at, Emax, rotate=False)
+
+   #DEBUG print "do_MC_cell_walk returning ", out #DEBUG
+   return out
+
 def do_MC_atom_walk(at, movement_args, Emax):
    if movement_args['MC_atom_n_steps'] <= 0: 
-      return None
+      return {}
    #DEBUG print print_prefix, ": do_MC_atom_walk"
    n_steps = movement_args['MC_atom_n_steps']
    step_size = movement_args['MC_atom_step_size']
    #DEBUG print print_prefix, ": do_MC_atom_walk step_size ", step_size
-   accept_num=0
+   n_accept=0
    #DEBUG print print_prefix, ": MC_walk initial energy, Emax ", energy, Emax # DEBUG
    dz=0.0
    for i_MC_step in range(n_steps):
@@ -524,29 +703,28 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	    at.set_positions(old_pos)
 	    energy = old_energy
 	 else:
-	    accept_num += 1
+	    n_accept += 1
 	 at.info['ns_energy'] = energy
 
-   if accept_num > 0: # new energy, perturb
+   if n_accept > 0: # new energy, perturb
       at.info['ns_energy'] += rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
    #DEBUG last_energy = eval_energy(at)
-   #DEBUG print print_prefix, ": MC_walk final energy, accept_rate ", energy, last_energy, float(accept_num)/float(n_steps*len(at)) #DEBUG
-   return float(accept_num)/float(n_steps*len(at))
+   #DEBUG print print_prefix, ": MC_walk final energy, accept_rate ", energy, last_energy, float(n_accept)/float(n_steps*len(at)) #DEBUG
+   return {'MC_atom': (n_steps*len(at), n_accept)}
 
 def walk_single_walker(at, movement_args, Emax):
    #DEBUG print print_prefix, ": walk_single_walker initial E", eval_energy(at) # DEBUG
-   atom_accept_rate = do_MC_atom_walk(at, movement_args, Emax)
+   out = do_MC_cell_walk(at, movement_args, Emax)
+   out.update(do_MC_atom_walk(at, movement_args, Emax))
    #DEBUG print print_prefix, ": walk_single_walker mid E", eval_energy(at) # DEBUG
-   do_MD_atom_walk(at, movement_args, Emax)
-   ## cell_accept_rate = do_MC_cell_step(at, movement_args, Emax)
-   cell_accept_rate = None
+   out.update(do_MD_atom_walk(at, movement_args, Emax))
    ##
    if hasattr(at, 'n_walks') and size <= 1:
       at.n_walks += 1
    #DEBUG print print_prefix, ": walk_single_walker acc rates ", atom_accept_rate, cell_accept_rate
    #DEBUG print print_prefix, ": walk_single_walker final E", eval_energy(at) # DEBUG
 
-   return (atom_accept_rate, cell_accept_rate)
+   return out
 
 def max_energy(walkers, n):
    # do local max
@@ -565,78 +743,51 @@ def max_energy(walkers, n):
 
    return (Emax, np.mod(Emax_ind,len(walkers)), rank_of_max)
 
-def adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, n_entries, comm):
-   atom_accept_rate=None
-   if ns_args['no_extra_walks_at_all']:
-      if atom_accept_rate_sum is None:
-	 contrib=0
-      else:
-	 contrib=n_entries
+def adjust_step_sizes(walk_stats, movement_args, comm):
+   #DEBUG print comm.rank, ": adjust_step_sizes got ",walk_stats #DEBUG
+   for key in walk_stats:
+      (n_try, n_accept) = walk_stats[key]
+      #DEBUG print comm.rank, ": adjust_step_sizes for key '%s' %d %d" % (key, n_try, n_accept) #DEBUG
       if comm is not None:
-	 n_contrib = comm.allreduce(contrib, MPI.SUM)
-      else:
-	 n_contrib = contrib
-      if n_contrib > 0:
-	 if atom_accept_rate_sum is None:
-	    atom_accept_rate_sum = 0.0
-	 if comm is not None:
-	    atom_accept_rate = comm.allreduce(atom_accept_rate_sum,MPI.SUM)/float(n_contrib)
+	 n_try = comm.allreduce(n_try, MPI.SUM)
+	 n_accept = comm.allreduce(n_accept, MPI.SUM)
+
+      if n_try > 0:
+	 rate = float(n_accept)/float(n_try)
+
+	 if comm.rank == 0:
+	    print "accept rate for %s = %f" % (key, rate)
+
+	 if key.find("MC") == 0:
+	    min_rate = 0.25
+	    max_rate = 0.75
+	    suffix="step_size"
+	 elif key.find("MD") == 0:
+	    min_rate = 0.95
+	    max_rate = 0.99
+	    suffix="timestep"
 	 else:
-	    atom_accept_rate = atom_accept_rate_sum/float(n_contrib)
-   else:
-      if atom_accept_rate_sum is not None:
-	 if comm is not None:
-	    atom_accept_rate = comm.allreduce(atom_accept_rate_sum,MPI.SUM)/float(n_entries*size)
-	 else:
-	    atom_accept_rate = atom_accept_rate_sum/float(n_entries*size)
+	    exit_error("adjust_step_size got key '%s', neither MC nor MD\n" % key, 5)
 
-   cell_accept_rate=None
-   if ns_args['no_extra_walks_at_all']:
-      if cell_accept_rate_sum is None:
-	 contrib=0
-      else:
-	 contrib=n_entries
-      if comm is not None:
-	 n_contrib = comm.allreduce(contrib, MPI.SUM)
-      else:
-	 n_contrib = contrib
-      if n_contrib > 0:
-	 if cell_accept_rate_sum is None:
-	    cell_accept_rate_sum = 0.0
-	 if comm is not None:
-	    cell_accept_rate = comm.allreduce(cell_accept_rate_sum,MPI.SUM)/float(n_contrib)
-	 else:
-	    cell_accept_rate = cell_accept_rate_sum/float(n_contrib)
-   else:
-      if cell_accept_rate_sum is not None:
-	 if comm is not None:
-	    cell_accept_rate = comm.allreduce(cell_accept_rate_sum,MPI.SUM)/float(n_entries*size)
-	 else:
-	    cell_accept_rate = cell_accept_rate_sum/float(n_entries*size)
+	 dir = None
+	 exp = 0.0
+	 if rate < min_rate:
+	    exp = -1.0
+	    dir = "down"
+	 elif rate > max_rate:
+	    exp = 1.0
+	    dir = "up"
 
-   if rank == 0:
-      if atom_accept_rate is not None or cell_accept_rate is not None:
-	 print "adjust_MC_steps mean rates atom ", atom_accept_rate, " cell ", cell_accept_rate
+	 if dir is not None:
+	    movement_args[key+"_"+suffix] *= movement_args['MC_adjust_step_factor']**exp
+	    if movement_args[key+"_"+suffix] > movement_args[key+"_"+suffix+"_max"]:
+	       movement_args[key+"_"+suffix] = movement_args[key+"_"+suffix+"_max"]
+	       dir = None
 
-   if atom_accept_rate is not None:
-      atom_dir=''
-      if atom_accept_rate < 0.25:
-	 movement_args['MC_atom_step_size'] /= movement_args['MC_adjust_step_factor']
-	 atom_dir='down'
-      if atom_accept_rate > 0.75:
-	 movement_args['MC_atom_step_size'] *= movement_args['MC_adjust_step_factor']
-	 atom_dir='up'
-      ## need to do cell steps
+	 if dir is not None and comm.rank == 0:
+	    print "adjust_step_sizes adjusted %s %s to %f" % (key, dir, movement_args[key+"_"+suffix])
 
-      if movement_args['MC_atom_step_size'] > movement_args['MC_atom_step_size_max']:
-	 movement_args['MC_atom_step_size'] = movement_args['MC_atom_step_size_max']
-	 if rank == 0:
-	    print "adjust_MC_steps maxed out MC_atom_step_size=", movement_args['MC_atom_step_size'] 
-
-      if atom_dir != "" and rank == 0:
-	 print "adjust MC_atom_step_size ",atom_dir," to ", movement_args['MC_atom_step_size']
-
-   #### if cell_accept_rate is not None:
+   #DEBUG print comm.rank, ": adjust_step_sizes returning" #DEBUG
 
 # figure out n_steps to walk on each iteration to get correct expected number
 def set_n_steps(prop):
@@ -771,6 +922,19 @@ else: # doing a restart
       at.info['ns_energy'] = eval_energy(at)
 
 
+def zero_stats(d, movement_args):
+   for key in movement_args:
+      m = re.search('(.*)_step_size$', key)
+      if m is not None:
+	 d[m.group(1)] = (0, 0)
+
+def accumulate_stats(d, d_cumul):
+   for key in d:
+      if key in d_cumul:
+	 d_cumul[key] = tuple([i1+i2 for i1,i2 in zip(d[key],d_cumul[key])])
+      else:
+	 d_cumul[key] = d[key]
+
 prev_snapshot_iter = None
 # do NS
 def do_ns_loop():
@@ -805,9 +969,8 @@ def do_ns_loop():
    for at in walkers:
       print rank, ": initial energy ", at.info['ns_energy']
 
-   atom_accept_rate_sum = None
-   cell_accept_rate_sum = None
-   accept_rate_n = 0
+   walk_stats_cumul={}
+   zero_stats(walk_stats_cumul, movement_args)
 
    prev_time = -1
 
@@ -818,9 +981,7 @@ def do_ns_loop():
       print_prefix="%d %d" % (rank, i_ns_step)
 
       if movement_args['MC_adjust_step_interval'] < 0:
-	 atom_accept_rate_sum = None
-	 cell_accept_rate_sum = None
-	 accept_rate_n = 0
+	 zero_stats(walk_stats_cumul, movement_args)
 
       #DEBUG if rank == 0: # DEBUG
 	 #DEBUG print "starting ns loop ",i_ns_step # DEBUG
@@ -1053,18 +1214,8 @@ def do_ns_loop():
 	 #DEBUG print print_prefix, ": walk clone ", i_at
 	 if ns_args['debug'] >= 5:
 	    print "WALK target ", rank, i_at
-	 (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
-	 accept_rate_n += 1
-	 if atom_accept_rate is not None:
-	    if atom_accept_rate_sum is None:
-	       atom_accept_rate_sum = atom_accept_rate
-	    else:
-	       atom_accept_rate_sum += atom_accept_rate
-	 if cell_accept_rate is not None:
-	    if cell_accept_rate_sum is None:
-	       cell_accept_rate_sum = cell_accept_rate
-	    else:
-	       cell_accept_rate_sum += cell_accept_rate
+	 walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
+	 accumulate_stats(walk_stats, walk_stats_cumul)
 
       # check that everything that should have been changed has, and things that shouldn't have, haven't
       if ns_args['debug'] >= 10:
@@ -1097,28 +1248,12 @@ def do_ns_loop():
 	    #DEBUG print print_prefix, ": walk extra ", r_i # DEBUG
 	    if ns_args['debug'] >= 5:
 	       print "WALK extra ",rank, r_i
-	    (atom_accept_rate, cell_accept_rate) = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
-	    accept_rate_n += 1
-	    if atom_accept_rate is not None:
-	       if atom_accept_rate_sum is None:
-		  atom_accept_rate_sum = atom_accept_rate
-	       else:
-		  atom_accept_rate_sum += atom_accept_rate
-	    if cell_accept_rate is not None:
-	       if cell_accept_rate_sum is None:
-		  cell_accept_rate_sum = cell_accept_rate
-	       else:
-		  cell_accept_rate_sum += cell_accept_rate
-	    # this status will be set only on this MPI task
-	    status[rank,r_i] = 'e_w'
+	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
+	    accumulate_stats(walk_stats, walk_stats_cumul)
 
       if i_ns_step % abs(movement_args['MC_adjust_step_interval']) == abs(movement_args['MC_adjust_step_interval'])-1:
-	 adjust_MC_steps(atom_accept_rate_sum, cell_accept_rate_sum, accept_rate_n, comm)
-	 if atom_accept_rate_sum is not None:
-	    atom_accept_rate_sum = 0.0
-	 if cell_accept_rate_sum is not None:
-	    cell_accept_rate_sum = 0.0
-	 accept_rate_n = 0
+	 adjust_step_sizes(walk_stats_cumul, movement_args, comm)
+	 zero_stats(walk_stats_cumul, movement_args)
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, ": LOOP_PE END 30 ",i_ns_step, [ eval_energy(at,True) for at in walkers ]
