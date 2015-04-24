@@ -373,9 +373,9 @@ def quippy_propagate(at, dt, n_steps):
    #DEBUG ds.atoms.write("stdout")
 
    if ns_args['debug'] >= 10:
-      ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=1, connect_interval=1, write_interval=0, save_interval=0)
+      ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=1, write_interval=0, save_interval=0)
    else:
-      ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=0, connect_interval=1, write_interval=0, save_interval=0)
+      ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=0, write_interval=0, save_interval=0)
 
    at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
 
@@ -642,7 +642,7 @@ def do_MC_cell_walk(at, movement_args, Emax):
    for key, func in items:
       step_rv = rng.float_uniform(0.0, 1.0)
       if step_rv < movement_args[key+"_prob"]:
-	 print "cell propose ",key #DEBUG
+	 #DEBUG print "cell propose ",key #DEBUG
 	 (p_accept, transform) = func(at, movement_args[key+"_step_size"])
 	 out[key] = (1, do_cell_step(at, Emax, p_accept, transform))
 
@@ -705,7 +705,7 @@ def walk_single_walker(at, movement_args, Emax):
    rng.shuffle_in_place(possible_moves)
    out = {}
    for move in possible_moves:
-      print "walker propose ",move #DEBUG
+      #DEBUG print "walker propose ",move #DEBUG
       if move == 'atom':
 	 if movement_args['MD_atom_n_steps'] > 0:
 	    out.update(do_MD_atom_walk(at, movement_args, Emax))

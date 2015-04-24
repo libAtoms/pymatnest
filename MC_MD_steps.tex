@@ -5,14 +5,21 @@
 \begin{document}
 \maketitle
 
-walker
+for each walker
 \begin{itemize}
-   \item do MC cell
-   \item do MC atom
-   \item do MD atom
+   \item in random order
+      \begin{itemize}
+	 \item do MC cell step
+	 \item do atom step, one of (user-determined):
+	 \begin{itemize}
+	    \item do MC atom
+	    \item do MD atom
+	 \end{itemize}
+      \end{itemize}
 \end{itemize}
 
-MC cell
+\vspace*{\baselineskip}
+MC cell:
 \begin{itemize}
    \item in random order:
    \begin{itemize}
@@ -23,7 +30,8 @@ MC cell
    \item randomize momenta magnitudes (no rotate, rejection free)
 \end{itemize}
 
-MC atom
+\vspace*{\baselineskip}
+MC atom:
 \begin{itemize}
    \item repeat $N_\mathrm{steps}$ times
    \begin{itemize}
@@ -34,7 +42,8 @@ MC atom
    \end{itemize}
 \end{itemize}
 
-MD atom
+\vspace*{\baselineskip}
+MD atom:
 \begin{itemize}
    \item repeat $N_\mathrm{steps}$ times
    \begin{itemize}
