@@ -426,20 +426,29 @@ def pairwise(iterable):
    return izip(a, a)
 
 def perturb_velo(at, Emax, rotate=True):
+#DOC 
+#DOC \vspace*{\baselineskip}
+#DOC perturb\_velo
+#DOC \begin{itemize}
    # perturb_velo expects at.info['ns_energy'] to be set correctly initially
 
    if movement_args['MD_atom_velo_perturb'] == 0.0:
       return
 
    orig_KE = at.get_kinetic_energy()
+   #DOC \item if MD\_atom\_velo\_perturb < 0 pick random velocities consistent with Emax
    if movement_args['MD_atom_velo_perturb'] < 0.0:
       # randomize completely
       at.set_velocities(gen_random_velo(at, Emax))
+   #DOC \item else perturb velocities
+   #DOC \begin{itemize}
    else: # perturb
       velo = at.get_velocities()
       velo_mag = np.linalg.norm(velo)
+      #DOC \item if current velocity=0, pick random velocities consistent with Emax
       if velo_mag == 0.0:
 	 at.set_velocities(gen_random_velo(at, Emax))
+      #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction
       else:
 	 # pick new random magnitude - count on dimensionality to make change small
 	 velo = gen_random_velo(at, Emax, velo/velo_mag)
@@ -462,8 +471,14 @@ def perturb_velo(at, Emax, rotate=True):
 	 at.set_velocities(velo)
    new_KE = at.get_kinetic_energy()
    at.info['ns_energy'] += new_KE-orig_KE
+   #DOC \end{itemize}
+#DOC \end{itemize}
 
 def do_MD_atom_walk(at, movement_args, Emax):
+#DOC 
+#DOC \vspace*{\baselineskip}
+#DOC do\_MC\_cell\_walk
+#DOC \begin{itemize}
 
    if not movement_args['MD_atom']:
       return {}
@@ -484,6 +499,8 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DEBUG print print_prefix, "MD_atom pre loop ",eval_energy(at), Emax
 
    n_accept = 0
+   #DOC \item loop MD\_atom\_n\_steps times
+   #DOC \begin{itemize}
 
    for i_step in range(movement_args['MD_atom_n_steps']):
       old_pos = at.get_positions()
@@ -493,6 +510,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
       #DEBUG print print_prefix, "MD_atom loop start energy, Emax ",old_energy, Emax #DEBUG
 
+      #DOC \item perturb\_velo, magnitude and rotation
       perturb_velo(at, Emax)
 
       #DEBUG print print_prefix, "MD_atom loop post perturb cached energy ",at.info['ns_energy'] #DEBUG
@@ -505,6 +523,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
       #DEBUG print print_prefix, ": mid energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() # DEBUG
 
+      #DOC \item propagate in time MD\_atom\_n\_substeps time steps
       # propagate in time
       if have_quippy:
 	 quippy_propagate(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['MD_atom_n_substeps']) 
@@ -513,10 +532,12 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
       #DEBUG print print_prefix, "MD_atom loop post propagate ",eval_energy(at)
 
+      #DOC \item perturb energy by random\_energy\_perturbation
       final_e = eval_energy(at)
       # perturb final energy
       at.info['ns_energy'] = final_e + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
       #DEBUG print print_prefix, ": MD trajectory energy changed orig, new, difference ", old_energy, final_e, final_e - old_energy #DEBUG
+      #DOC \item accept/reject on E < Emax+MD\_atom\_energy\_fuzz
       if final_e >= Emax+movement_args['MD_atom_energy_fuzz']:
 	 print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_e
 	 at.set_positions(old_pos)
@@ -525,11 +546,13 @@ def do_MD_atom_walk(at, movement_args, Emax):
 	 at.info['ns_energy'] = old_energy
       else:
 	 n_accept += 1
+   #DOC \end{itemize}
 
    #DEBUG print print_prefix, ": final energy ", at.get_potential_energy(), at.get_kinetic_energy(), at.get_potential_energy()+ at.get_kinetic_energy() #DEBUG
    #DEBUG print print_prefix, ": final positions ", at.get_positions()[0]
    #DEBUG print print_prefix, ": final velo ", at.get_velocities()[0]
 
+#DOC \end{itemize}
    return {'MD_atom' : (movement_args['MD_atom_n_steps'], n_accept) }
 
 def propose_volume_step(at, step_size):
@@ -628,6 +651,10 @@ def do_cell_step(at, Emax, p_accept, transform):
 
 
 def do_MC_cell_walk(at, movement_args, Emax):
+#DOC 
+#DOC \vspace*{\baselineskip}
+#DOC do\_MC\_cell\_walk
+#DOC \begin{itemize}
    if not movement_args['MC_cell']:
       return {}
 
@@ -636,26 +663,39 @@ def do_MC_cell_walk(at, movement_args, Emax):
       'MC_cell_shear': propose_shear_step,
       'MC_cell_stretch': propose_stretch_step }
 
+   #DOC \item pick random order for volume, shear, stretch moves
+   #DOC \item for each move
+   #DOC \begin{itemize}
    items = possible_moves.items()
    rng.shuffle_in_place(items)
    out = {}
    for key, func in items:
+      #DOC \item do move if rv < acceptance probability
       step_rv = rng.float_uniform(0.0, 1.0)
       if step_rv < movement_args[key+"_prob"]:
 	 #DEBUG print "cell propose ",key #DEBUG
 	 (p_accept, transform) = func(at, movement_args[key+"_step_size"])
 	 out[key] = (1, do_cell_step(at, Emax, p_accept, transform))
+   #DOC \end{itemize}
 
+   #DOC \item perturb\_velo if momenta and masses are set, magnitude only
    if at.has('momenta') and at.has('masses'):
       perturb_velo(at, Emax, rotate=False)
 
+#DOC \end{itemize}
    #DEBUG print "do_MC_cell_walk returning ", out #DEBUG
    return out
 
 def do_MC_atom_walk(at, movement_args, Emax):
    if not movement_args['MC_atom']:
       return {}
+#DOC 
+#DOC \vspace*{\baselineskip}
+#DOC do\_MC\_atom\_walk
+#DOC \begin{itemize}
 
+   #DOC \item loop MC\_atom\_n\_steps times
+   #DOC \begin{itemize}
    #DEBUG print print_prefix, ": do_MC_atom_walk"
    n_steps = movement_args['MC_atom_n_steps']
    step_size = movement_args['MC_atom_step_size']
@@ -665,10 +705,13 @@ def do_MC_atom_walk(at, movement_args, Emax):
    dz=0.0
    for i_MC_step in range(n_steps):
       #DEBUG print "i_MC_step ",i_MC_step
+      #DOC \item loop over atoms in random order
+      #DOC \begin{itemize}
       at_list=list(range(len(at)))
       rng.shuffle_in_place(at_list)
       for i_at in at_list:
 	 #DEBUG print "i_at ",i_at
+	 #DOC \item propose single atom move
 	 if movement_args['MC_atom_uniform_rv']: 
 	    dx = rng.float_uniform(-step_size,step_size)
 	    dy = rng.float_uniform(-step_size,step_size)
@@ -684,6 +727,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 new_pos = old_pos.copy()
 	 new_pos[i_at,:] += (dx, dy,dz)
 	 at.set_positions(new_pos)
+	 #DOC \item accept/reject on E < Emax
 	 energy = eval_energy(at)
 	 if energy >= Emax:
 	    # reject move
@@ -692,28 +736,50 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 else:
 	    n_accept += 1
 	 at.info['ns_energy'] = energy
+      #DOC \end{itemize}
 
+   #DOC \end{itemize}
+
+   #DOC \item perturb final energy by random\_energy\_perturbation
    if n_accept > 0: # new energy, perturb
       at.info['ns_energy'] += rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+
+   #DOC \item perturb\_velo if momenta and masses are set, magnitude only
+   if at.has('momenta') and at.has('masses'):
+      perturb_velo(at, Emax, rotate=False)
    #DEBUG last_energy = eval_energy(at)
    #DEBUG print print_prefix, ": MC_walk final energy, accept_rate ", energy, last_energy, float(n_accept)/float(n_steps*len(at)) #DEBUG
+#DOC \end{itemize}
    return {'MC_atom': (n_steps*len(at), n_accept)}
 
 def walk_single_walker(at, movement_args, Emax):
    #DEBUG print print_prefix, ": walk_single_walker initial E", eval_energy(at) # DEBUG
    possible_moves = ['atom', 'cell']
 
+#DOC 
+#DOC \vspace*{\baselineskip}
+#DOC walk\_single\_ walker
+#DOC \begin{itemize}
+   #DOC \item do in random order
+   #DOC \begin{itemize}
    rng.shuffle_in_place(possible_moves)
    out = {}
    for move in possible_moves:
       #DEBUG print "walker propose ",move #DEBUG
       if move == 'atom':
+	 #DOC \item do atom move, exactly one of
+	 #DOC \begin{itemize}
 	 if movement_args['MD_atom_n_steps'] > 0:
+	    #DOC \item do\_MD\_atom\_walk
 	    out.update(do_MD_atom_walk(at, movement_args, Emax))
 	 elif movement_args['MC_atom_n_steps'] > 0:
+	    #DOC \item do\_MC\_atom\_walk
 	    out.update(do_MC_atom_walk(at, movement_args, Emax))
+	 #DOC \end{itemize}
       else:
+	 #DOC \item do\_MC\_cell\_walk
 	 out.update(do_MC_cell_walk(at, movement_args, Emax))
+   #DOC \end{itemize}
 
    #DEBUG print print_prefix, ": walk_single_walker mid E", eval_energy(at) # DEBUG
 
@@ -722,6 +788,7 @@ def walk_single_walker(at, movement_args, Emax):
    #DEBUG print print_prefix, ": walk_single_walker acc rates ", atom_accept_rate, cell_accept_rate
    #DEBUG print print_prefix, ": walk_single_walker final E", eval_energy(at) # DEBUG
 
+#DOC \end{itemize}
    return out
 
 def max_energy(walkers, n):
@@ -827,6 +894,11 @@ def set_n_steps(prop):
       if movement_args[prop] > 0 and rank == 0:
 	 print "WARNING: using absolute number of "+prop
 
+set_n_steps('MC_atom_n_steps')
+set_n_steps('MD_atom_n_steps')
+if  rank == 0:
+   print "Using MC_atom_n_steps = ", movement_args['MC_atom_n_steps']
+   print "Using MD_atom_n_steps = ", movement_args['MD_atom_n_steps']
 
 walkers=[]
 if ns_args['restart_file'] == '': # start from scratch
@@ -958,12 +1030,6 @@ def do_ns_loop():
       n_walks_history = []
 
    #DEBUG print print_prefix, ": max_n_cull_per_task ", max_n_cull_per_task
-   set_n_steps('MC_atom_n_steps')
-   set_n_steps('MD_atom_n_steps')
-
-   if  rank == 0:
-      print "Using MC_atom_n_steps = ", movement_args['MC_atom_n_steps']
-      print "Using MD_atom_n_steps = ", movement_args['MD_atom_n_steps']
 
    for at in walkers:
       print rank, ": initial energy ", at.info['ns_energy']
