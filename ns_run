@@ -250,9 +250,8 @@ movement_args['2D'] = args.pop('2D', "F") in [ "t", "T", "true", "True", "TRUE",
 confining_pot_args={}
 confining_pot_args['mag'] = float(args.pop('confining_potential_mag', 0.0))
 
-if ((movement_args['MC_atom_n_steps'] > 0 or movement_args['MC_atom_n_steps_expected'] > 0) and
-    (movement_args['MD_atom_n_steps'] > 0 or movement_args['MD_atom_n_steps_expected'] > 0)):
-   exit_error("Got both MC and MD n_steps > 0, can't do both\n", 3)
+movement_args['MD_atom'] = movement_args['MD_atom_n_steps'] > 0 or movement_args['MD_atom_n_steps_expected'] > 0
+movement_args['MC_atom'] = movement_args['MC_atom_n_steps'] > 0 or movement_args['MC_atom_n_steps_expected'] > 0
 
 if 'QUIP_pot_params_file' in ns_args:
    if not have_quippy:
@@ -427,6 +426,7 @@ def pairwise(iterable):
    return izip(a, a)
 
 def perturb_velo(at, Emax, rotate=True):
+   # perturb_velo expects at.info['ns_energy'] to be set correctly initially
 
    if movement_args['MD_atom_velo_perturb'] == 0.0:
       return
@@ -465,11 +465,11 @@ def perturb_velo(at, Emax, rotate=True):
 
 def do_MD_atom_walk(at, movement_args, Emax):
 
+   if not movement_args['MD_atom']:
+      return {}
+
    if confining_pot_args['mag'] > 0.0:
       exit_error("Can't do_MD_atom_walk with confining potential > 0.0\n", 4)
-
-   if movement_args['MD_atom_n_steps'] <= 0:
-      return {}
 
    #DEBUG global print_prefix
    #DEBUG print print_prefix, ": do_MD_atom_walk with Emax ", Emax # DEBUG
@@ -646,15 +646,16 @@ def do_MC_cell_walk(at, movement_args, Emax):
 	 (p_accept, transform) = func(at, movement_args[key+"_step_size"])
 	 out[key] = (1, do_cell_step(at, Emax, p_accept, transform))
 
-   if at.has('momenta'):
+   if at.has('momenta') and at.has('masses'):
       perturb_velo(at, Emax, rotate=False)
 
    #DEBUG print "do_MC_cell_walk returning ", out #DEBUG
    return out
 
 def do_MC_atom_walk(at, movement_args, Emax):
-   if movement_args['MC_atom_n_steps'] <= 0: 
+   if not movement_args['MC_atom']:
       return {}
+
    #DEBUG print print_prefix, ": do_MC_atom_walk"
    n_steps = movement_args['MC_atom_n_steps']
    step_size = movement_args['MC_atom_step_size']
@@ -870,17 +871,8 @@ if ns_args['restart_file'] == '': # start from scratch
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
 
-   # initial positions are just random, up to an energy ceiling
-   for at in walkers:
-      at.set_scaled_positions( rng.float_uniform (0.0, 1.0, (len(at), 3) ) )
-      energy = eval_energy(at)
-      while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
-	 at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
-	 energy = eval_energy(at)
-      at.info['ns_energy'] = energy
-
    # make sure masses are set if MD is going to be used
-   if movement_args['MD_atom_n_steps'] > 0 or movement_args['MD_atom_n_steps_expected'] > 0 and not at.has('masses'):
+   if movement_args['MD_atom'] and not at.has('masses'):
       for at in walkers:
 	 if have_quippy:
 	    if not hasattr(at,'mass'):
@@ -889,6 +881,16 @@ if ns_args['restart_file'] == '': # start from scratch
 	    at.set_masses(at.mass/quippy.MASSCONVERT)
 	 else:
 	    exit_error("need some non-quippy way of setting masses when MD is active\n", 3)
+
+   # initial positions are just random, up to an energy ceiling
+   for at in walkers:
+      energy = ns_args['initial_energy_ceiling'] + 1.0
+      while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
+	 at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
+	 energy = eval_energy(at)
+	 at.info['ns_energy'] = energy
+      if movement_args['MD_atom']:
+	 perturb_velo(at, ns_args['initial_energy_ceiling'])
 
 else: # doing a restart
    if ns_args['restart_first_iter'] < 0:
