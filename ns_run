@@ -694,9 +694,10 @@ def do_MC_atom_walk(at, movement_args, Emax):
 #DOC do\_MC\_atom\_walk
 #DOC \begin{itemize}
 
+   # print print_prefix, ": do_MC_atom_walk" #DEBUG
+
    #DOC \item loop MC\_atom\_n\_steps times
    #DOC \begin{itemize}
-   #DEBUG print print_prefix, ": do_MC_atom_walk"
    n_steps = movement_args['MC_atom_n_steps']
    step_size = movement_args['MC_atom_step_size']
    #DEBUG print print_prefix, ": do_MC_atom_walk step_size ", step_size
@@ -795,7 +796,10 @@ def max_energy(walkers, n):
    # do local max
    energies_loc = np.array([ at.info['ns_energy'] for at in walkers])
    if comm is not None:
-      energies = np.array(comm.allgather(energies_loc)).flatten()
+      energies = np.zeros( (comm.size*len(energies_loc)) )
+      # comm.barrier() #BARRIER
+      comm.Allgather( [ energies_loc, MPI.DOUBLE ], [ energies, MPI.DOUBLE ] )
+      energies = energies.flatten()
    else:
       energies = energies_loc
    #DEBUG print print_prefix , ": max_energies energies ",energies
@@ -814,8 +818,17 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
       (n_try, n_accept) = walk_stats[key]
       #DEBUG print comm.rank, ": adjust_step_sizes for key '%s' %d %d" % (key, n_try, n_accept) #DEBUG
       if comm is not None:
-	 n_try = comm.allreduce(n_try, MPI.SUM)
-	 n_accept = comm.allreduce(n_accept, MPI.SUM)
+	 n_try_s = np.zeros( (1), dtype=np.int) 
+	 n_try_g = np.zeros( (1), dtype=np.int) 
+	 n_accept_s = np.zeros( (1), dtype=np.int) 
+	 n_accept_g = np.zeros( (1), dtype=np.int) 
+	 n_try_s[0] =  n_try
+	 n_accept_s[0] =n_accept
+	 # comm.barrier() #BARRIER
+	 comm.Allreduce([n_try_s, MPI.INT], [n_try_g, MPI.INT], MPI.SUM)
+	 comm.Allreduce([n_accept_s, MPI.INT], [n_accept_g, MPI.INT], MPI.SUM)
+	 n_try = n_try_g[0]
+	 n_accept = n_accept_g[0]
 
       if n_try > 0:
 	 rate = float(n_accept)/float(n_try)
@@ -1121,29 +1134,30 @@ def do_ns_loop():
       send_rank=[]
       cull_inds_to_remove=[]
 
-      # CHECK FOR RANDOM ISSUES
-      for r in range(size):
-	 #DEBUG print print_prefix, ": load balance for rank ", r
-	 # maybe remote_r should be chosen completely randomly, rather than close to task of extra culled configs
-	 for dr in np.array(zip(np.array(range(1,size)), -np.array(range(1,size)))).flatten():
-	    if n_cull_of_rank[r] <= max_n_cull_per_task: # not too many that need to be culled on this rank
-	       break
-	    # this rank has too many to cull, must receive replacement from another node
-	    remote_r = (r+dr) % size
-	    #DEBUG print print_prefix, ": check tranfer to ", remote_r
-	    if n_cull_of_rank[remote_r] < max_n_cull_per_task: # send from r+dr to r
-	       n_transfer = min(n_cull_of_rank[r]-max_n_cull_per_task, max_n_cull_per_task-n_cull_of_rank[remote_r])
-	       #DEBUG print print_prefix, ": got n_tranfer ", n_transfer
-	       recv_rank.extend([r]*n_transfer)
-	       send_rank.extend([remote_r]*n_transfer)
-	       local_ind = np.where(status[r,:] == 'c_t')[0][0:n_transfer]
-	       recv_ind.extend(local_ind)
-	       remote_ind = np.where(status[remote_r,:] == '')[0][0:n_transfer]
-	       send_ind.extend(remote_ind)
-	       status[r,local_ind] = 'c_s'
-	       status[remote_r,remote_ind] = 'c_t_a'
-	       n_cull_of_rank[r] -= n_transfer
-	       n_cull_of_rank[remote_r] += n_transfer
+      if n_cull > 1:
+	 # CHECK FOR RANDOMNESS ISSUES AND WHICH NODES ARE USED FOR CLONES
+	 for r in range(size):
+	    #DEBUG print print_prefix, ": load balance for rank ", r
+	    # maybe remote_r should be chosen completely randomly, rather than close to task of extra culled configs
+	    for dr in np.array(zip(np.array(range(1,size)), -np.array(range(1,size)))).flatten():
+	       if n_cull_of_rank[r] <= max_n_cull_per_task: # not too many that need to be culled on this rank
+		  break
+	       # this rank has too many to cull, must receive replacement from another node
+	       remote_r = (r+dr) % size
+	       #DEBUG print print_prefix, ": check tranfer to ", remote_r
+	       if n_cull_of_rank[remote_r] < max_n_cull_per_task: # send from r+dr to r
+		  n_transfer = min(n_cull_of_rank[r]-max_n_cull_per_task, max_n_cull_per_task-n_cull_of_rank[remote_r])
+		  #DEBUG print print_prefix, ": got n_tranfer ", n_transfer
+		  recv_rank.extend([r]*n_transfer)
+		  send_rank.extend([remote_r]*n_transfer)
+		  local_ind = np.where(status[r,:] == 'c_t')[0][0:n_transfer]
+		  recv_ind.extend(local_ind)
+		  remote_ind = np.where(status[remote_r,:] == '')[0][0:n_transfer]
+		  send_ind.extend(remote_ind)
+		  status[r,local_ind] = 'c_s'
+		  status[remote_r,remote_ind] = 'c_t_a'
+		  n_cull_of_rank[r] -= n_transfer
+		  n_cull_of_rank[remote_r] += n_transfer
 
       #DEBUG for r in range(len(status)):
 	 #DEBUG print print_prefix, ": post-cull-load-balance status ", r, status[r]
@@ -1206,60 +1220,88 @@ def do_ns_loop():
 	 #DEBUG print print_prefix, ": post-cloning status ", r, status[r]
 
 
-      # create sending/receiving buffers
-      #DEBUG print print_prefix, ": recv_rank ", recv_rank
-      #DEBUG print print_prefix, ": recv_ind ", recv_ind
-      #DEBUG print print_prefix, ": send_rank ", send_rank
-      #DEBUG print print_prefix, ": send_ind ", send_ind
-      # create sending/receiving buffers
-      pos_send_buf=[None] * size
-      vel_send_buf=[None] * size
-      cell_send_buf=[None] * size
-      for i in np.where(send_rank == rank)[0]:
-	 r_recv = recv_rank[i]
-	 i_send = send_ind[i]
-	 #DEBUG print print_prefix, ": sending to ",r_recv," from index ",i_send
-	 if pos_send_buf[r_recv] is None:
-	    pos_send_buf[r_recv] = []
-	 if vel_send_buf[r_recv] is None:
-	    vel_send_buf[r_recv] = []
-	 if cell_send_buf[r_recv] is None:
-	    cell_send_buf[r_recv] = []
-	 pos_send_buf[r_recv].append(walkers[i_send].get_positions())
-	 vel_send_buf[r_recv].append(walkers[i_send].get_velocities())
-	 cell_send_buf[r_recv].append(walkers[i_send].get_cell())
+      if n_cull == 1:
+	 # print print_prefix, ": special code path for n_cull=1" #DEBUG
+	 if send_rank[0] == recv_rank[0] and send_rank[0] == rank:
+	    # print print_prefix, " send/rec from same node, local copy" #DEBUG
+	    walkers[recv_ind[0]].set_positions(walkers[send_ind[0]].get_positions())
+	    walkers[recv_ind[0]].set_cell(walkers[send_ind[0]].get_cell())
+	    if movement_args['MD_atom']:
+	       walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
+	 else:
+	    n_send = len(at) + 3
+	    if movement_args['MD_atom']:
+	       n_send += len(at)
+	    buf = np.zeros ( (n_send, 3) )
+	    if send_rank[0] == rank: # only one config is sent/received
+	       buf[0:len(at),:] = walkers[send_ind[0]].get_positions()
+	       buf[len(at):len(at)+3,:] = walkers[send_ind[0]].get_cell()
+	       if movement_args['MD_atom']:
+		  buf[len(at)+3:,:] = walkers[send_ind[0]].get_velocities()
+	       # print print_prefix, ": sending ", buf #DEBUG
+	       comm.Send([buf,  MPI.DOUBLE], dest=recv_rank[0], tag=100)
+	    elif recv_rank[0] == rank:
+	       comm.Recv([buf, MPI.DOUBLE], source=send_rank[0], tag=100)
+	       # print print_prefix, ": received ", buf #DEBUG
+	       walkers[recv_ind[0]].set_positions(buf[0:len(at),:])
+	       walkers[recv_ind[0]].set_cell(buf[len(at):len(at)+3,:])
+	       if movement_args['MD_atom']:
+		  walkers[recv_ind[0]].set_velocities(buf[len(at)+3,:])
+      else: # should switch to comm.Alltoall, faster, but more manual massaging of data structures
+	 # create sending/receiving buffers
+	 #DEBUG print print_prefix, ": recv_rank ", recv_rank
+	 #DEBUG print print_prefix, ": recv_ind ", recv_ind
+	 #DEBUG print print_prefix, ": send_rank ", send_rank
+	 #DEBUG print print_prefix, ": send_ind ", send_ind
+	 # create sending/receiving buffers
+	 pos_send_buf=[None] * size
+	 vel_send_buf=[None] * size
+	 cell_send_buf=[None] * size
+	 for i in np.where(send_rank == rank)[0]:
+	    r_recv = recv_rank[i]
+	    i_send = send_ind[i]
+	    #DEBUG print print_prefix, ": sending to ",r_recv," from index ",i_send
+	    if pos_send_buf[r_recv] is None:
+	       pos_send_buf[r_recv] = []
+	    if vel_send_buf[r_recv] is None:
+	       vel_send_buf[r_recv] = []
+	    if cell_send_buf[r_recv] is None:
+	       cell_send_buf[r_recv] = []
+	    pos_send_buf[r_recv].append(walkers[i_send].get_positions())
+	    vel_send_buf[r_recv].append(walkers[i_send].get_velocities())
+	    cell_send_buf[r_recv].append(walkers[i_send].get_cell())
 
-      #DEBUG print print_prefix, ": pos_send_buf ", pos_send_buf
-      #DEBUG print print_prefix, ": vel_send_buf ", vel_send_buf
-      #DEBUG print print_prefix, ": cell_send_buf ", cell_send_buf
+	 #DEBUG print print_prefix, ": pos_send_buf ", pos_send_buf
+	 #DEBUG print print_prefix, ": vel_send_buf ", vel_send_buf
+	 #DEBUG print print_prefix, ": cell_send_buf ", cell_send_buf
 
-      # do communication
-      if comm is not None:
-	 pos_recv_buf = comm.alltoall(pos_send_buf)
-	 vel_recv_buf = comm.alltoall(vel_send_buf)
-	 cell_recv_buf = comm.alltoall(cell_send_buf)
-      else:
-	 pos_recv_buf = pos_send_buf
-	 vel_recv_buf = vel_send_buf
-	 cell_recv_buf = cell_send_buf
+	 # do communication
+	 if comm is not None:
+	    pos_recv_buf = comm.alltoall(pos_send_buf)
+	    vel_recv_buf = comm.alltoall(vel_send_buf)
+	    cell_recv_buf = comm.alltoall(cell_send_buf)
+	 else:
+	    pos_recv_buf = pos_send_buf
+	    vel_recv_buf = vel_send_buf
+	    cell_recv_buf = cell_send_buf
 
-      # copy from receive buffers into walkers structure
-      my_recv_ind = np.array(recv_ind)[np.where(np.array(recv_rank) == rank)[0]]
-      #DEBUG print print_prefix, ": my_recv_ind ", my_recv_ind
-      recv_i = 0
-      for (pos_array, vel_array, cell_array) in zip(pos_recv_buf, vel_recv_buf, cell_recv_buf):
-	 #DEBUG print print_prefix, ": received pos_array from rank", pos_array 
-	 #DEBUG print print_prefix, ": received cell_array from rank", cell_array 
-	 if pos_array is not None:
-	    for (pos_entry, vel_entry, cell_entry) in zip(pos_array, vel_array, cell_array):
-	       #DEBUG print print_prefix, ": pos_entry ",pos_entry
-	       #DEBUG print print_prefix, ": cell_entry ",cell_entry
-	       #DEBUG print print_prefix, ": copying received config to index ",my_recv_ind[recv_i]
-	       walkers[my_recv_ind[recv_i]].set_positions(pos_entry)
-	       walkers[my_recv_ind[recv_i]].set_velocities(vel_entry)
-	       walkers[my_recv_ind[recv_i]].set_cell(cell_entry)
-	       walkers[my_recv_ind[recv_i]].info['ns_energy'] = eval_energy(walkers[my_recv_ind[recv_i]])
-	       recv_i += 1
+	 # copy from receive buffers into walkers structure
+	 my_recv_ind = np.array(recv_ind)[np.where(np.array(recv_rank) == rank)[0]]
+	 #DEBUG print print_prefix, ": my_recv_ind ", my_recv_ind
+	 recv_i = 0
+	 for (pos_array, vel_array, cell_array) in zip(pos_recv_buf, vel_recv_buf, cell_recv_buf):
+	    #DEBUG print print_prefix, ": received pos_array from rank", pos_array 
+	    #DEBUG print print_prefix, ": received cell_array from rank", cell_array 
+	    if pos_array is not None:
+	       for (pos_entry, vel_entry, cell_entry) in zip(pos_array, vel_array, cell_array):
+		  #DEBUG print print_prefix, ": pos_entry ",pos_entry
+		  #DEBUG print print_prefix, ": cell_entry ",cell_entry
+		  #DEBUG print print_prefix, ": copying received config to index ",my_recv_ind[recv_i]
+		  walkers[my_recv_ind[recv_i]].set_positions(pos_entry)
+		  walkers[my_recv_ind[recv_i]].set_velocities(vel_entry)
+		  walkers[my_recv_ind[recv_i]].set_cell(cell_entry)
+		  walkers[my_recv_ind[recv_i]].info['ns_energy'] = eval_energy(walkers[my_recv_ind[recv_i]])
+		  recv_i += 1
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, ": LOOP_PE POST_CLONE 20 ",i_ns_step, [ eval_energy(at, True) for at in walkers ]
