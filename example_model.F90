@@ -106,8 +106,8 @@ implicit none
    do j=1,N
       if (j == i) cycle
 
-      dr0 = pos(:,i)-pos(:,j)
-      dr1 = d_pos(:)-pos(:,j)
+      dr0 = pos(:,i) - pos(:,j)
+      dr1 = (pos(:,i)+d_pos(:)) - pos(:,j)
 
       dr0_l = matmul(cell_inv, dr0)
       dr0_l = dr0_l - floor(dr0_l+0.5)

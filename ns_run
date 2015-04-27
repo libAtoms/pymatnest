@@ -919,7 +919,7 @@ if ns_args['restart_file'] == '': # start from scratch
       while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
 	 at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
 	 energy = eval_energy(at)
-	 at.info['ns_energy'] = energy
+	 at.info['ns_energy'] = energy + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
       if movement_args['atom_algorithm'] == 'MD':
 	 perturb_velo(at, ns_args['initial_energy_ceiling'])
 
@@ -949,7 +949,7 @@ else: # doing a restart
    for at in walkers:
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
-      at.info['ns_energy'] = eval_energy(at)
+      at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
 
 
 def zero_stats(d, movement_args):
