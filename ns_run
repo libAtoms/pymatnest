@@ -438,7 +438,7 @@ def perturb_velo(at, Emax, rotate=True):
       return
 
    orig_KE = at.get_kinetic_energy()
-   #DOC \item if MD\_atom\_velo\_perturb < 0 pick random velocities consistent with Emax
+   #DOC \item if MD\_atom\_velo\_perturb $<$ 0 pick random velocities consistent with Emax
    if movement_args['MD_atom_velo_perturb'] < 0.0:
       # randomize completely
       at.set_velocities(gen_random_velo(at, Emax))
@@ -539,7 +539,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       # perturb final energy
       at.info['ns_energy'] = final_e + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
       #DEBUG print print_prefix, ": MD trajectory energy changed orig, new, difference ", old_energy, final_e, final_e - old_energy #DEBUG
-      #DOC \item accept/reject on E < Emax+MD\_atom\_energy\_fuzz
+      #DOC \item accept/reject on E $<$ Emax+MD\_atom\_energy\_fuzz
       if final_e >= Emax+movement_args['MD_atom_energy_fuzz']:
 	 print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_e
 	 at.set_positions(old_pos)
@@ -672,7 +672,7 @@ def do_MC_cell_walk(at, movement_args, Emax):
    rng.shuffle_in_place(items)
    out = {}
    for key, func in items:
-      #DOC \item do move if rv < acceptance probability
+      #DOC \item do move if rv $<$ acceptance probability
       step_rv = rng.float_uniform(0.0, 1.0)
       if step_rv < movement_args[key+"_prob"]:
 	 #DEBUG print "cell propose ",key #DEBUG
@@ -730,7 +730,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 new_pos = old_pos.copy()
 	 new_pos[i_at,:] += (dx, dy,dz)
 	 at.set_positions(new_pos)
-	 #DOC \item accept/reject on E < Emax
+	 #DOC \item accept/reject on E $<$ Emax
 	 energy = eval_energy(at)
 	 if energy >= Emax:
 	    # reject move
@@ -836,7 +836,7 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	 rate = float(n_accept)/float(n_try)
 
 	 if comm.rank == 0:
-	    print "accept rate for %s = %f" % (key, rate)
+	    print "accept rate for %s = %f (%d)" % (key, rate, n_try)
 
 	 if key.find("MC") == 0:
 	    min_rate = 0.25
