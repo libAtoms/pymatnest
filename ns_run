@@ -494,7 +494,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 #DOC do\_MD\_atom\_walk
 #DOC \begin{itemize}
 
-   orig_energy = at.info['ns_energy']
+   orig_E = at.info['ns_energy']
    orig_pos = at.get_positions()
    orig_velo = at.get_velocities()
 
@@ -509,10 +509,10 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    #DOC \item accept/reject entire move on E $<$ Emax
    final_E = eval_energy(at)
-   if final_E > Emax: # reject
+   if final_E >= Emax: # reject
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
-      at.info['ns_energy'] = orig_energy
+      at.info['ns_energy'] = orig_E
       return {'MD_atom' : (1, 0) }
    else:
       at.info['ns_energy'] = final_E
@@ -700,8 +700,8 @@ def do_MC_cell_walk(at, movement_args, Emax):
    if at.has('momenta') and at.has('masses'):
       perturb_velo(at, Emax, rotate=False)
 
-#DOC \end{itemize}
    return out
+#DOC \end{itemize}
 
 def do_atom_walk(at, movement_args, Emax):
    if movement_args['atom_algorithm'] == 'MC':
