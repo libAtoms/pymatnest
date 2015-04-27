@@ -23,19 +23,18 @@ class fortran_MC_MD:
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
 	 ctypes.c_void_p, # n_steps
 	 ctypes.c_void_p, # step_size
-	 ctypes.c_void_p] # Emax
+	 ctypes.c_void_p, # Emax
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS")] # final_E
 
    def eval_energy(self, at):
-      print "eval_energy calling ll_eval_energy_()"
       n = ctypes.c_int(len(at))
       return self.model_lib.ll_eval_energy_(ctypes.byref(n), at.get_positions(), at.get_cell())
 
-   def MC_walk(self, at, n_steps, step_size, Emax):
+   def MC_walk(self, at, n_steps, step_size, Emax, final_E):
       n = ctypes.c_int(len(at))
       n_steps = ctypes.c_int(n_steps)
       step_size = ctypes.c_double(step_size)
       Emax = ctypes.c_double(Emax)
       return self.lib.fortran_mc_(ctypes.byref(n), 
 	 at.get_positions(), at.get_cell(),
-	 ctypes.byref(n_steps), ctypes.byref(step_size), ctypes.byref(Emax))
-
+	 ctypes.byref(n_steps), ctypes.byref(step_size), ctypes.byref(Emax), final_E)

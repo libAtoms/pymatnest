@@ -19,6 +19,7 @@ def usage():
   sys.stderr.write("\n")
   sys.stderr.write("QUIP_pot_args=str (MANDATORY)\n")
   sys.stderr.write("QUIP_pot_params_file=str (MANDATORY)\n")
+  sys.stderr.write("FORTRAN_model=str (MANDATORY)\n")
   sys.stderr.write("\n")
   sys.stderr.write("atom_n_steps_expected=int (0, this or atom_n_steps required)\n")
   sys.stderr.write("atom_n_steps=int (0, this or atom_n_steps_expected required)\n")
@@ -56,7 +57,7 @@ def usage():
   sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
   sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
   sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
-  sys.stderr.write("energy_calculator= ( quip | lammps | internal ) (quip)\n")
+  sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (quip)\n")
   sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
   sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
 
@@ -166,22 +167,16 @@ ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
 
+# parse energy_calculator
 ns_args['energy_calculator'] = args.pop('energy_calculator', 'quip')
 do_calc_quip = False
 do_calc_lammps = False
 do_calc_internal = False
+do_calc_fortran = False
 if ns_args['energy_calculator'] == 'quip':
    if not have_quippy:
       exit_error("Got energy_calculator=quip but not quippy module\n", 3)
    do_calc_quip=True
-elif ns_args['energy_calculator'] == 'lammps':
-   exit_error("energy_calculator=lammps not implemented yet\n", 3)
-   do_calc_lammps=True
-elif ns_args['energy_calculator'] == 'internal':
-   do_calc_internal=True
-else:
-   exit_error("energy_calculator=%s unknown\n" % ns_args['energy_calculator'], 3)
-if do_calc_quip:
    try:
      ns_args['QUIP_pot_args'] = args.pop('QUIP_pot_args')
    except:
@@ -190,6 +185,21 @@ if do_calc_quip:
      ns_args['QUIP_pot_params_file'] = args.pop('QUIP_pot_params_file')
    except:
      exit_error("need QUIP potential params file QUIP_pot_params_file\n",1)
+elif ns_args['energy_calculator'] == 'lammps':
+   exit_error("energy_calculator=lammps not implemented yet\n", 3)
+   do_calc_lammps=True
+elif ns_args['energy_calculator'] == 'internal':
+   do_calc_internal=True
+elif ns_args['energy_calculator'] == 'fortran':
+   import fortranMCMDpy
+   do_calc_fortran=True
+   try:
+     ns_args['FORTRAN_model'] = args.pop('FORTRAN_model')
+   except:
+     exit_error("need FORTRAN model FORTRAN_model\n",1)
+   f_MC_MD = fortranMCMDpy.fortran_MC_MD(ns_args['FORTRAN_model'])
+else:
+   exit_error("energy_calculator=%s unknown\n" % ns_args['energy_calculator'], 3)
 
 ns_args['no_extra_walks_at_all'] = args.pop('no_extra_walks_at_all', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
@@ -278,7 +288,7 @@ if rank == 0:
 # initialise potential
 if do_calc_quip:
    pot = quippy.Potential(ns_args['QUIP_pot_args'], param_str=ns_args['QUIP_pot_params'], calculation_always_required=True, cutoff_skin=1.0)
-elif do_calc_internal:
+elif do_calc_internal or do_calc_fortran:
    pass
 elif do_calc_lammps:
    exit_error("no lammps initialization of potential implemented yet\n", 3)
@@ -346,6 +356,8 @@ def eval_energy(at, PE_only=False):
       energy = at.get_potential_energy()
   elif do_calc_internal:
       energy = energy_internal(at)
+  elif do_calc_fortran:
+      energy = f_MC_MD.eval_energy(at)
   else:
       sys.stderr.write("No way to eval_energy()\n", 5)
 
@@ -518,40 +530,46 @@ def do_MC_atom_walk(at, movement_args, Emax):
    n_steps = movement_args['atom_n_substeps']
    step_size = movement_args['MC_atom_step_size']
    n_accept=0
-   dz=0.0
-   for i_MC_step in range(n_steps):
-      #DOC \item loop over atoms in random order
-      #DOC \begin{itemize}
-      at_list=list(range(len(at)))
-      rng.shuffle_in_place(at_list)
-      for i_at in at_list:
-	 #DOC \item propose single atom move
-	 if movement_args['MC_atom_uniform_rv']: 
-	    dx = rng.float_uniform(-step_size,step_size)
-	    dy = rng.float_uniform(-step_size,step_size)
-	    if not movement_args['2D']:
-	       dz = rng.float_uniform(-step_size,step_size)
-	 else:
-	    dx = rng.normal(step_size)
-	    dy = rng.normal(step_size)
-	    if not movement_args['2D']:
-	       dz = rng.normal(step_size)
-	 orig_energy = at.info['ns_energy']
-	 orig_pos = at.get_positions()
-	 new_pos = orig_pos.copy()
-	 new_pos[i_at,:] += (dx, dy,dz)
-	 at.set_positions(new_pos)
-	 #DOC \item accept/reject on E $<$ Emax
-	 energy = eval_energy(at)
-	 if energy >= Emax:
-	    # reject move
-	    at.set_positions(orig_pos)
-	    energy = orig_energy
-	 else:
-	    n_accept += 1
-	 at.info['ns_energy'] = energy
+
+   if do_calc_fortran:
+      final_E = np.zeros( (1) )
+      n_accept = f_MC_MD.MC_walk(at, n_steps, step_size, Emax, final_E)
+      at.info['ns_energy'] = final_E[0]
+   else:
+      dz=0.0
+      for i_MC_step in range(n_steps):
+	 #DOC \item loop over atoms in random order
+	 #DOC \begin{itemize}
+	 at_list=list(range(len(at)))
+	 rng.shuffle_in_place(at_list)
+	 for i_at in at_list:
+	    #DOC \item propose single atom move
+	    if movement_args['MC_atom_uniform_rv']: 
+	       dx = rng.float_uniform(-step_size,step_size)
+	       dy = rng.float_uniform(-step_size,step_size)
+	       if not movement_args['2D']:
+		  dz = rng.float_uniform(-step_size,step_size)
+	    else:
+	       dx = rng.normal(step_size)
+	       dy = rng.normal(step_size)
+	       if not movement_args['2D']:
+		  dz = rng.normal(step_size)
+	    orig_energy = at.info['ns_energy']
+	    orig_pos = at.get_positions()
+	    new_pos = orig_pos.copy()
+	    new_pos[i_at,:] += (dx, dy,dz)
+	    at.set_positions(new_pos)
+	    #DOC \item accept/reject on E $<$ Emax
+	    energy = eval_energy(at)
+	    if energy >= Emax:
+	       # reject move
+	       at.set_positions(orig_pos)
+	       energy = orig_energy
+	    else:
+	       n_accept += 1
+	    at.info['ns_energy'] = energy
+	 #DOC \end{itemize}
       #DOC \end{itemize}
-   #DOC \end{itemize}
 
    #DOC \item perturb\_velo
    perturb_velo(at, Emax, rotate=False)
