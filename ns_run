@@ -479,7 +479,7 @@ def perturb_velo(at, Emax, rotate=True):
 def do_MD_atom_walk(at, movement_args, Emax):
 #DOC 
 #DOC \vspace*{\baselineskip}
-#DOC do\_MC\_cell\_walk
+#DOC do\_MD\_atom\_walk
 #DOC \begin{itemize}
 
    if not movement_args['MD_atom']:
@@ -761,7 +761,7 @@ def walk_single_walker(at, movement_args, Emax):
 
 #DOC 
 #DOC \vspace*{\baselineskip}
-#DOC walk\_single\_ walker
+#DOC walk\_single\_walker
 #DOC \begin{itemize}
    #DOC \item do in random order
    #DOC \begin{itemize}
@@ -844,7 +844,7 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	    suffix="step_size"
 	 elif key.find("MD") == 0:
 	    min_rate = 0.95
-	    max_rate = 0.99
+	    max_rate = 1.00
 	    suffix="timestep"
 	 else:
 	    exit_error("adjust_step_size got key '%s', neither MC nor MD\n" % key, 5)
