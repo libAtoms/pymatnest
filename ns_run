@@ -217,8 +217,8 @@ movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
 movement_args['atom_algorithm'] = args.pop('atom_algorithm', 'MC')
 if movement_args['atom_n_steps_expected'] == 0 and movement_args['atoms_n_steps'] == 0:
    exit_error("Got both atoms_n_steps_expected and atoms_n_steps == 0\n", 3)
-if movement_args['atom_algorithm'] != 'MC' and movement_args['atoms_algorithm'] != 'MD':
-   exit_error("Got unknown atoms_algorithm '%s'\n" % movement_args['atoms_algorith,'], 3)
+if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD':
+   exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorith,'], 3)
 
 movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
 movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
