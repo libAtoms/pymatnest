@@ -275,7 +275,7 @@ if 'QUIP_pot_params_file' in ns_args:
    except:
       exit_error("Failed to read params file '%s'\n" % ns_args['QUIP_pot_params_file'], 1)
 else:
-   if ns_args['energy_calculator'] != 'internal':
+   if ns_args['energy_calculator'] != 'internal' and ns_args['energy_calculator'] != 'fortran' and rank == 0:
       sys.stderr.write("Got no *_pot_params_file")
 
 if len(args) > 0:
@@ -1150,6 +1150,7 @@ def do_ns_loop():
 	    walkers[recv_ind[0]].set_cell(walkers[send_ind[0]].get_cell())
 	    if movement_args['atom_algorithm'] == 'MD':
 	       walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
+	    walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 	 else:
 	    n_send = len(at) + 3
 	    if movement_args['atom_algorithm'] == 'MD':
@@ -1167,6 +1168,7 @@ def do_ns_loop():
 	       walkers[recv_ind[0]].set_cell(buf[len(at):len(at)+3,:])
 	       if movement_args['atom_algorithm'] == 'MD':
 		  walkers[recv_ind[0]].set_velocities(buf[len(at)+3,:])
+	       walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
       else: # should switch to comm.Alltoall, faster, but more manual massaging of data structures
 	 # create sending/receiving buffers
 	 # create sending/receiving buffers

@@ -43,6 +43,9 @@ class fortran_MC_MD:
       n_steps = ctypes.c_int(n_steps)
       step_size = ctypes.c_double(step_size)
       Emax = ctypes.c_double(Emax)
-      return self.lib.fortran_mc_(ctypes.byref(n), 
-	 at.get_positions(), at.get_cell(),
+      pos = at.get_positions()
+      n_accept = self.lib.fortran_mc_(ctypes.byref(n), 
+	 pos, at.get_cell(),
 	 ctypes.byref(n_steps), ctypes.byref(step_size), ctypes.byref(Emax), final_E)
+      at.set_positions(pos)
+      return n_accept

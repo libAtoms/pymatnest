@@ -24,10 +24,11 @@ function fortran_MC(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_ac
       d_pos = 2.0*step_size*(d_pos-0.5)
       dE = ll_eval_energy_1(N, pos, cell, d_i, d_pos)
       if (E + dE < Emax) then
-	 pos(1:3,d_i) = pos(1:3,d_i) + d_pos
+	 pos(1:3,d_i) = pos(1:3,d_i) + d_pos(1:3)
 	 E = E + dE
 	 n_accept = n_accept + 1
       endif
+      if (E > Emax) print *, "fortran_MC detected E > Emax ", E, Emax !DEBUG
    end do
    end do
 
