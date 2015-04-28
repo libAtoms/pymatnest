@@ -1,3 +1,22 @@
+! publically accessible things required for interface to pymatnest
+!
+! double precision function ll_eval_energy(N, pos, cell)
+!    integer :: N ! number of atoms
+!    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
+!    returns energy
+!
+! double precision function ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
+!    integer :: N ! number of atoms
+!    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
+!    integer :: d_i ! index of atom to be perturbed, 1-based (called from fortran_MC())
+!    double precision :: d_pos(3) ! displacement of perturbed atom
+!    returns energy change
+!
+! function ll_eval_forces(N, pos, cell, forces) result(energy)
+!    integer :: N ! number of atoms
+!    double precision :: pos(3,N), cell(3,3), forces(3,N) ! positions, cell vectors, forces
+!    returns energy
+
 module mat_mod
 implicit none
 private
