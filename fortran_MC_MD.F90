@@ -35,3 +35,39 @@ function fortran_MC(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_ac
    final_E = E
 
 end function fortran_MC
+
+subroutine fortran_MD_NVE(N, pos, vel, mass, cell, n_steps, timestep, final_E)
+   implicit none
+   integer :: N
+   double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
+   integer :: n_steps
+   double precision :: timestep, final_E
+
+   integer i_step, i
+   double precision :: forces(3,N), acc(3,N)
+
+   double precision, external :: ll_eval_forces, ll_eval_energy
+
+   ! initialize accelerations
+   final_E = ll_eval_forces(N, pos, cell, forces)
+   do i=1, 3
+      acc(i,:) = forces(i,:) / mass(:)
+   end do
+
+   do i_step=1, n_steps
+      ! Verlet part 1
+      vel = vel + 0.5*timestep*acc
+      pos = pos + timestep*vel
+
+      ! new forces
+      final_E = ll_eval_forces(N, pos, cell, forces)
+      do i=1, 3
+	 acc(i,:) = forces(i,:) / mass(:)
+      end do
+
+      ! Verlet part 2
+      vel = vel + 0.5*timestep*acc
+   end do
+
+   final_E = ll_eval_energy(N, pos, cell)
+end subroutine fortran_MD_NVE

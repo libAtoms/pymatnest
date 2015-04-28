@@ -420,7 +420,7 @@ def gen_random_velo(at, Emax, unit_rv=None):
    # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
    # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
 
-   pot_energy = at.get_potential_energy()
+   pot_energy = eval_energy(at, PE_only=True)
    if Emax > pot_energy:
       masses = at.get_masses()
       velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
@@ -505,13 +505,17 @@ def do_MD_atom_walk(at, movement_args, Emax):
    perturb_velo(at, Emax)
 
    #DOC \item propagate in time atom\_n\_substeps time steps of length MD\_atom\_timestep
-   if have_quippy:
+   if do_calc_quip:
       propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_n_substeps']) 
+      final_E = eval_energy(at)
+   elif do_calc_fortran:
+      final_E = np.zeros( (1) )
+      f_MC_MD.MD_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E)
+      final_E = final_E[0]
    else:
       exit_error("Need some non-quippy way of doing MD\n",3)
 
    #DOC \item accept/reject entire move on E $<$ Emax
-   final_E = eval_energy(at)
    if final_E >= Emax + movement_args['MD_atom_energy_fuzz']: # reject
       print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_E
       at.set_positions(orig_pos)

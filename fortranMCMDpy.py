@@ -35,6 +35,15 @@ class fortran_MC_MD:
 	 ctypes.c_void_p, # Emax
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS")] # final_E
 
+      self.lib.fortran_md_nve_.argtypes = [ctypes.c_void_p, # N
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # vel
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # mass
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
+	 ctypes.c_void_p, # n_steps
+	 ctypes.c_void_p, # timestep
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS")] # final_E
+
    def eval_energy(self, at):
       n = ctypes.c_int(len(at))
       return self.model_lib.ll_eval_energy_(ctypes.byref(n), at.get_positions(), at.get_cell())
@@ -59,3 +68,15 @@ class fortran_MC_MD:
 	 ctypes.byref(n_steps), ctypes.byref(step_size), ctypes.byref(Emax), final_E)
       at.set_positions(pos)
       return n_accept
+
+   def MD_NVE_walk(self, at, n_steps, timestep, final_E):
+      n = ctypes.c_int(len(at))
+      n_steps = ctypes.c_int(n_steps)
+      timestep = ctypes.c_double(timestep)
+      pos = at.get_positions()
+      vel = at.get_velocities()
+      n_accept = self.lib.fortran_md_nve_(ctypes.byref(n), 
+	 pos, vel, at.get_masses(), at.get_cell(),
+	 ctypes.byref(n_steps), ctypes.byref(timestep), final_E)
+      at.set_positions(pos)
+      at.set_velocities(vel)
