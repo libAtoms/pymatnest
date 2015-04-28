@@ -923,8 +923,12 @@ if ns_args['restart_file'] == '': # start from scratch
 
    # initial positions are just random, up to an energy ceiling
    for at in walkers:
+      n_try = 0
       energy = ns_args['initial_energy_ceiling'] + 1.0
       while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
+	 if n_try > 10:
+	    exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['initial_energy_ceiling'], 4)
+	 n_try += 1
 	 at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
 	 energy = eval_energy(at)
 	 at.info['ns_energy'] = energy + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
