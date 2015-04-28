@@ -498,6 +498,9 @@ def do_MD_atom_walk(at, movement_args, Emax):
    orig_pos = at.get_positions()
    orig_velo = at.get_velocities()
 
+   if orig_E >= Emax + movement_args['MD_atom_energy_fuzz']: 
+      print print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax
+
    #DOC \item perturb\_velo, magnitude and rotation
    perturb_velo(at, Emax)
 
@@ -514,10 +517,12 @@ def do_MD_atom_walk(at, movement_args, Emax):
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
       at.info['ns_energy'] = orig_E
-      return {'MD_atom' : (1, 0) }
+      n_accept = 0
    else:
       at.info['ns_energy'] = final_E
-      return {'MD_atom' : (1, 1) }
+      n_accept = 1
+
+   return {'MD_atom' : (1, n_accept) }
 #DOC \end{itemize}
 
 def do_MC_atom_walk(at, movement_args, Emax):
@@ -723,7 +728,6 @@ def walk_single_walker(at, movement_args, Emax):
    possible_moves = [do_atom_walk, do_MC_cell_walk]
    out = {}
 
-   n_accept = 0
    #DOC \item loop atom\_n\_steps times
    #DOC \begin{itemize}
    for i_step in range(movement_args['atom_n_steps']):
@@ -733,7 +737,7 @@ def walk_single_walker(at, movement_args, Emax):
       for move in possible_moves:
 	 #DOC \item do\_(MC $|$ MD)\_atom\_walk
 	 #DOC \item do\_MC\_cell\_walk
-	 out.update(move(at, movement_args, Emax))
+	 accumulate_stats(out, move(at, movement_args, Emax))
       #DOC \end{itemize}
    #DOC \end{itemize}
 
@@ -768,12 +772,10 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
    for key in walk_stats:
       (n_try, n_accept) = walk_stats[key]
       if comm is not None:
-	 n_try_s = np.zeros( (1), dtype=np.int) 
+	 n_try_s = np.array( [n_try], dtype = np.int)
+	 n_accept_s = np.array( [n_accept], dtype = np.int)
 	 n_try_g = np.zeros( (1), dtype=np.int) 
-	 n_accept_s = np.zeros( (1), dtype=np.int) 
 	 n_accept_g = np.zeros( (1), dtype=np.int) 
-	 n_try_s[0] =  n_try
-	 n_accept_s[0] =n_accept
 	 # comm.barrier() #BARRIER
 	 comm.Allreduce([n_try_s, MPI.INT], [n_try_g, MPI.INT], MPI.SUM)
 	 comm.Allreduce([n_accept_s, MPI.INT], [n_accept_g, MPI.INT], MPI.SUM)
@@ -952,6 +954,7 @@ else: # doing a restart
 	 at.set_calculator(pot)
       at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
 
+n_atoms = len(walkers[0])
 
 def zero_stats(d, movement_args):
    for key in movement_args:
@@ -959,7 +962,7 @@ def zero_stats(d, movement_args):
       if m is not None:
 	 d[m.group(1)] = (0, 0)
 
-def accumulate_stats(d, d_cumul):
+def accumulate_stats(d_cumul, d):
    for key in d:
       if key in d_cumul:
 	 d_cumul[key] = tuple([i1+i2 for i1,i2 in zip(d[key],d_cumul[key])])
@@ -979,7 +982,7 @@ def do_ns_loop():
 	 if movement_args['atom_algorithm'] == 'MD':
 	    nExtraDOF = 0
 	 else:
-	    nExtraDOF = len(walkers[0])*nD
+	    nExtraDOF = n_atoms*nD
 	 energy_io.write("%d %d %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF) )
 
    ## print print_prefix, ": random state ", np.random.get_state()
@@ -1018,7 +1021,8 @@ def do_ns_loop():
       (Emax, cull_ind, cull_rank) = max_energy(walkers, n_cull)
       Emax_next = Emax[-1]
       if Emax_of_step is not None and rank == 0 and Emax[0] > Emax_of_step+movement_args['MD_atom_energy_fuzz']:
-	 print print_prefix, ": WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
+	 print print_prefix, ": ERROR: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
+	 exit_error("Energy above Emax\n", 5)
 
       cull_list=[None] * size
       for r in range(size):
@@ -1142,8 +1146,6 @@ def do_ns_loop():
       # save new common state, and restore to local state
       rng.switch_to_local()
 
-
-
       if n_cull == 1:
 	 if send_rank[0] == recv_rank[0] and send_rank[0] == rank:
 	    walkers[recv_ind[0]].set_positions(walkers[send_ind[0]].get_positions())
@@ -1152,22 +1154,22 @@ def do_ns_loop():
 	       walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
 	    walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 	 else:
-	    n_send = len(at) + 3
+	    n_send = n_atoms + 3
 	    if movement_args['atom_algorithm'] == 'MD':
-	       n_send += len(at)
+	       n_send += n_atoms
 	    buf = np.zeros ( (n_send, 3) )
 	    if send_rank[0] == rank: # only one config is sent/received
-	       buf[0:len(at),:] = walkers[send_ind[0]].get_positions()
-	       buf[len(at):len(at)+3,:] = walkers[send_ind[0]].get_cell()
+	       buf[0:n_atoms,:] = walkers[send_ind[0]].get_positions()
+	       buf[n_atoms:n_atoms+3,:] = walkers[send_ind[0]].get_cell()
 	       if movement_args['atom_algorithm'] == 'MD':
-		  buf[len(at)+3:,:] = walkers[send_ind[0]].get_velocities()
+		  buf[n_atoms+3:,:] = walkers[send_ind[0]].get_velocities()
 	       comm.Send([buf,  MPI.DOUBLE], dest=recv_rank[0], tag=100)
 	    elif recv_rank[0] == rank:
 	       comm.Recv([buf, MPI.DOUBLE], source=send_rank[0], tag=100)
-	       walkers[recv_ind[0]].set_positions(buf[0:len(at),:])
-	       walkers[recv_ind[0]].set_cell(buf[len(at):len(at)+3,:])
+	       walkers[recv_ind[0]].set_positions(buf[0:n_atoms,:])
+	       walkers[recv_ind[0]].set_cell(buf[n_atoms:n_atoms+3,:])
 	       if movement_args['atom_algorithm'] == 'MD':
-		  walkers[recv_ind[0]].set_velocities(buf[len(at)+3,:])
+		  walkers[recv_ind[0]].set_velocities(buf[n_atoms+3:,:])
 	       walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
       else: # should switch to comm.Alltoall, faster, but more manual massaging of data structures
 	 # create sending/receiving buffers
@@ -1225,7 +1227,7 @@ def do_ns_loop():
 	 if ns_args['debug'] >= 5:
 	    print "WALK target ", rank, i_at
 	 walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
-	 accumulate_stats(walk_stats, walk_stats_cumul)
+	 accumulate_stats(walk_stats_cumul, walk_stats)
 
       # check that everything that should have been changed has, and things that shouldn't have, haven't
       if ns_args['debug'] >= 10:
@@ -1256,7 +1258,7 @@ def do_ns_loop():
 	    if ns_args['debug'] >= 5:
 	       print "WALK extra ",rank, r_i
 	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
-	    accumulate_stats(walk_stats, walk_stats_cumul)
+	    accumulate_stats(walk_stats_cumul, walk_stats)
 
       if i_ns_step % abs(movement_args['MC_adjust_step_interval']) == abs(movement_args['MC_adjust_step_interval'])-1:
 	 adjust_step_sizes(walk_stats_cumul, movement_args, comm)
