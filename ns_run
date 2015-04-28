@@ -509,7 +509,8 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    #DOC \item accept/reject entire move on E $<$ Emax
    final_E = eval_energy(at)
-   if final_E >= Emax: # reject
+   if final_E >= Emax + movement_args['MD_atom_energy_fuzz']: # reject
+      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_E
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
       at.info['ns_energy'] = orig_E
