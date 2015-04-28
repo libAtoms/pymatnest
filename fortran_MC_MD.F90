@@ -12,14 +12,26 @@ function fortran_MC(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_ac
 
    double precision, external :: ll_eval_energy, ll_eval_denergy_1
 
-   integer i_step, i_at
+   integer :: i_step, i_at, t_i
+   integer :: order(N)
+
+   do i_at=1, N
+      order(i_at) = i_at
+   end do
+   do i_at=1, N-1
+      call random_number(d_r); d_i = floor(d_r*N)+1
+      if (d_i /= i_at) then
+	 t_i = order(i_at)
+	 order(i_at) = order(d_i)
+	 order(d_i) = t_i
+      endif
+   end do
 
    n_accept = 0
    E = ll_eval_energy(N, pos, cell)
    do i_step=1, n_steps
    do i_at=1, N
-      call random_number(d_r)
-      d_i = floor(d_r*N)+1
+      d_i = order(i_at)
       call random_number(d_pos)
       d_pos = 2.0*step_size*(d_pos-0.5)
       dE = ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
