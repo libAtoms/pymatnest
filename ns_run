@@ -13,7 +13,7 @@ def usage():
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int (0)\n")
-  sys.stderr.write("n_iter=int (MANDATORY)\n")
+  sys.stderr.write("n_iter_per_walker=int (MANDATORY)\n")
   sys.stderr.write("initial_energy_ceiling=float (MANDATORY)\n")
   sys.stderr.write("out_file_prefix=str (None)\n")
   sys.stderr.write("\n")
@@ -140,9 +140,10 @@ try:
 except:
   exit_error("need number to cull n_cull\n",1)
 try:
-  ns_args['n_iter'] = int(args.pop('n_iter'))
+  ns_args['n_iter_per_walker'] = int(args.pop('n_iter_per_walker'))
 except:
   exit_error("need number of NS iterations n_iter\n",1)
+ns_args['n_iter'] = ns_args['ns_iter_per_walker']*ns_args['n_walkers']
 
 ns_args['start_file'] = args.pop('start_file', '')
 ns_args['restart_file'] = args.pop('restart_file', '')
