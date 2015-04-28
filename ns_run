@@ -814,10 +814,15 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	    dir = "up"
 
 	 if dir is not None:
+	    # try to adjust
 	    movement_args[key+"_"+suffix] *= movement_args['MC_adjust_step_factor']**exp
+	    # if exceeded maximum, cap change
 	    if movement_args[key+"_"+suffix] > movement_args[key+"_"+suffix+"_max"]:
+	       # is already at max, didn't really change, unset dir
+	       if movement_args[key+"_"+suffix] == movement_args[key+"_"+suffix+"_max"]:
+		  dir = None
+	       # apply cap
 	       movement_args[key+"_"+suffix] = movement_args[key+"_"+suffix+"_max"]
-	       dir = None
 
 	 if dir is not None and comm.rank == 0:
 	    print "adjust_step_sizes adjusted %s %s to %f" % (key, dir, movement_args[key+"_"+suffix])
