@@ -10,7 +10,7 @@ function fortran_MC(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_ac
    integer :: d_i
    double precision :: d_r, E, dE, d_pos(3)
 
-   double precision, external :: ll_eval_energy, ll_eval_energy_1
+   double precision, external :: ll_eval_energy, ll_eval_denergy_1
 
    integer i_step, i_at
 
@@ -22,7 +22,7 @@ function fortran_MC(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_ac
       d_i = floor(d_r*N)+1
       call random_number(d_pos)
       d_pos = 2.0*step_size*(d_pos-0.5)
-      dE = ll_eval_energy_1(N, pos, cell, d_i, d_pos)
+      dE = ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
       if (E + dE < Emax) then
 	 pos(1:3,d_i) = pos(1:3,d_i) + d_pos(1:3)
 	 E = E + dE

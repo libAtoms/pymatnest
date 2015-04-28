@@ -85,7 +85,7 @@ implicit none
 
 end function ll_eval_energy
 
-double precision function ll_eval_energy_1(N, pos, cell, d_i, d_pos)
+double precision function ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
 use mat_mod
 implicit none
    integer :: N
@@ -101,7 +101,7 @@ implicit none
 
    call matrix3x3_inverse(cell, cell_inv)
 
-   ll_eval_energy_1 = 0.0
+   ll_eval_denergy_1 = 0.0
    i=d_i
    do j=1,N
       if (j == i) cycle
@@ -119,13 +119,46 @@ implicit none
       dr1_mag = sqrt(sum(dr1*dr1))
 
       if (dr0_mag < 3.0) then
-	 ll_eval_energy_1 = ll_eval_energy_1 - ((1.0/dr0_mag**12 - 1.0/dr0_mag**6) - E_offset)
+	 ll_eval_denergy_1 = ll_eval_denergy_1 - ((1.0/dr0_mag**12 - 1.0/dr0_mag**6) - E_offset)
       endif
       if (dr1_mag < 3.0) then
-	 ll_eval_energy_1 = ll_eval_energy_1 + ((1.0/dr1_mag**12 - 1.0/dr1_mag**6) - E_offset)
+	 ll_eval_denergy_1 = ll_eval_denergy_1 + ((1.0/dr1_mag**12 - 1.0/dr1_mag**6) - E_offset)
       endif
 
    end do
 
+end function ll_eval_denergy_1
 
-end function ll_eval_energy_1
+function ll_eval_forces(N, pos, cell, forces) result(energy)
+use mat_mod
+implicit none
+   integer :: N
+   double precision :: pos(3,N), cell(3,3), forces(3,N)
+   double precision :: energy ! result
+
+   integer :: i, j
+   double precision :: dr(3), dr_mag, dr_l(3)
+   double precision :: cell_inv(3,3)
+
+   double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6
+
+   call matrix3x3_inverse(cell, cell_inv)
+
+   energy = 0.0
+   forces = 0.0
+   do i=1, N
+   do j=i+1, N
+      dr = pos(:,i)-pos(:,j)
+      dr_l = matmul(cell_inv, dr)
+      dr_l = dr_l - floor(dr_l+0.5)
+      dr = matmul(cell, dr_l)
+      dr_mag = sqrt(sum(dr*dr))
+      if (dr_mag < 3.0) then
+	 energy = energy + ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	 forces(:,i) = forces(:,i) - (-12.0/dr_mag**13 + 6.0/dr_mag**7)*(dr/dr_mag)
+	 forces(:,j) = forces(:,j) + (-12.0/dr_mag**13 + 6.0/dr_mag**7)*(dr/dr_mag)
+      endif
+   end do
+   end do
+
+end function ll_eval_forces
