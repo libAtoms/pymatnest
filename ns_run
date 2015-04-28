@@ -142,7 +142,7 @@ except:
 try:
   ns_args['n_iter_per_walker'] = int(args.pop('n_iter_per_walker'))
 except:
-  exit_error("need number of NS iterations n_iter\n",1)
+  exit_error("need number of NS iterations n_iter_per_walker\n",1)
 ns_args['n_iter'] = ns_args['ns_iter_per_walker']*ns_args['n_walkers']
 
 ns_args['start_file'] = args.pop('start_file', '')
