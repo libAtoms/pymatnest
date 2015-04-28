@@ -260,9 +260,6 @@ movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor',
 
 movement_args['2D'] = args.pop('2D', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
-confining_pot_args={}
-confining_pot_args['mag'] = float(args.pop('confining_potential_mag', 0.0))
-
 if 'QUIP_pot_params_file' in ns_args:
    if not have_quippy:
       exit_error("Got QUIP_pot_params but no quippy module\n", 3)
@@ -351,28 +348,28 @@ def energy_internal_pos(pos, l):
 def energy_internal(at):
    return energy_internal_pos(at.get_positions(), at.get_cell()[0,0])
 
-def eval_energy(at, PE_only=False):
-  # potential
-  if do_calc_quip or do_calc_lammps:
-      energy = at.get_potential_energy()
-  elif do_calc_internal:
-      energy = energy_internal(at)
-  elif do_calc_fortran:
-      energy = f_MC_MD.eval_energy(at)
-  else:
-      sys.stderr.write("No way to eval_energy()\n", 5)
+def eval_energy(at, do_PE=True, do_KE=True, do_PV=True):
+   # potential
+   if do_PE:
+      if do_calc_quip or do_calc_lammps:
+	 energy = at.get_potential_energy()
+      elif do_calc_internal:
+	 energy = energy_internal(at)
+      elif do_calc_fortran:
+	 energy = f_MC_MD.eval_energy(at)
+      else:
+	 sys.stderr.write("No way to eval_energy()\n", 5)
+   else:
+      energy = 0.0
 
-  # confining
-  if confining_pot_args['mag'] > 0.0:
-      energy += confining_pot_args['mag']*(np.linalg.norm(at.pos)**2)
+   # kinetic
+   if do_KE and at.has('momenta') and at.has('masses'):
+      energy += at.get_kinetic_energy()
 
-  # kinetic
-  if not PE_only and at.has('momenta') and at.has('masses'):
-     energy += at.get_kinetic_energy()
+   if do_PV:
+      energy += movement_args['MC_cell_P']*at.get_volume()
 
-  energy += movement_args['MC_cell_P']*at.get_volume()
-
-  return energy
+   return energy
 
 def propagate_NVE_quippy(at, dt, n_steps):
    old_velo = at.get_velocities()
@@ -421,7 +418,7 @@ def gen_random_velo(at, Emax, unit_rv=None):
    # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
    # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
 
-   pot_energy = eval_energy(at, PE_only=True)
+   pot_energy = eval_energy(at, do_KE=False)
    if Emax > pot_energy:
       masses = at.get_masses()
       velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
@@ -512,7 +509,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
    elif do_calc_fortran:
       final_E = np.zeros( (1) )
       f_MC_MD.MD_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E)
-      final_E = final_E[0] + at.get_kinetic_energy()
+      final_E = final_E[0] + eval_energy(at,do_PE=False)
    else:
       exit_error("Need some non-quippy way of doing MD\n",3)
 
@@ -544,8 +541,8 @@ def do_MC_atom_walk(at, movement_args, Emax):
 
    if do_calc_fortran:
       final_E = np.zeros( (1) )
-      n_accept = f_MC_MD.MC_walk(at, n_steps, step_size, Emax, final_E)
-      at.info['ns_energy'] = final_E[0]
+      n_accept = f_MC_MD.MC_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=True, do_PV=True), final_E)
+      at.info['ns_energy'] = final_E[0] + eval_energy(at, do_PE=False, do_KE=True, do_PV=True)
    else:
       dz=0.0
       for i_MC_step in range(n_steps):
@@ -730,6 +727,7 @@ def walk_single_walker(at, movement_args, Emax):
 #DOC walk\_single\_walker
 #DOC \begin{itemize}
 
+   #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
    possible_moves = [do_atom_walk, do_MC_cell_walk]
    out = {}
 
@@ -749,6 +747,8 @@ def walk_single_walker(at, movement_args, Emax):
    #DOC \item perturb final energy of random\_energy\_perturbation
    # perturb final energy
    at.info['ns_energy'] += rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+
+   #DEBUG print "walk_single_walker end ", eval_energy(at, do_PE=False), eval_energy(at) #DEBUG
 
    return out
 #DOC \end{itemize}
@@ -1027,7 +1027,7 @@ def do_ns_loop():
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
-	 print print_prefix, ": LOOP_PE START 01 ",i_ns_step, [ eval_energy(at, PE_only=True) for at in walkers ]
+	 print print_prefix, ": LOOP_PE START 01 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
 
 
 
@@ -1073,7 +1073,7 @@ def do_ns_loop():
 	 status[r,cull_ind[np.where(cull_rank == r)[0]]] = 'c_t'
 
       if ns_args['debug'] >= 10:
-	 initial_PE_loc = [ eval_energy(at, PE_only=True) for at in walkers ]
+	 initial_PE_loc = [ eval_energy(at, do_KE=False) for at in walkers ]
 	 initial_PE = np.array(comm.allgather(initial_PE_loc)).flatten()
 	 initial_changed = initial_PE[np.where(status.flatten() == 'c_t')]
 	 initial_unchanged = initial_PE[np.where(status.flatten() == '')]
@@ -1149,7 +1149,7 @@ def do_ns_loop():
 	       n_remaining_clones -= n_transfer
 
       if ns_args['debug'] >= 20:
-	 print print_prefix, ": LOOP_PE POST_LOC_CLONE 15 ",i_ns_step, [ eval_energy(at, PE_only=True) for at in walkers ]
+	 print print_prefix, ": LOOP_PE POST_LOC_CLONE 15 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
 
       # make into numpy arrays so that mathematical operations will work
       send_rank = np.array(send_rank)
@@ -1228,7 +1228,7 @@ def do_ns_loop():
 		  recv_i += 1
 
       if ns_args['debug'] >= 20:
-	 print print_prefix, ": LOOP_PE POST_CLONE 20 ",i_ns_step, [ eval_energy(at, PE_only=True) for at in walkers ]
+	 print print_prefix, ": LOOP_PE POST_CLONE 20 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
 
       # move cloned walkers
 
@@ -1245,7 +1245,7 @@ def do_ns_loop():
 
       # check that everything that should have been changed has, and things that shouldn't have, haven't
       if ns_args['debug'] >= 10:
-	 final_PE_loc = [ eval_energy(at, PE_only=True) for at in walkers ]
+	 final_PE_loc = [ eval_energy(at, do_KE=False) for at in walkers ]
 	 final_PE = np.array(comm.allgather(final_PE_loc)).flatten()
 	 if rank == 0:
 	    final_status = status.flatten()
@@ -1279,7 +1279,7 @@ def do_ns_loop():
 	 zero_stats(walk_stats_cumul, movement_args)
 
       if ns_args['debug'] >= 20:
-	 print print_prefix, ": LOOP_PE END 30 ",i_ns_step, [ eval_energy(at,PE_only=True) for at in walkers ]
+	 print print_prefix, ": LOOP_PE END 30 ",i_ns_step, [ eval_energy(at,do_KE=False) for at in walkers ]
 	 print print_prefix, ": LOOP_TE END 31 ",i_ns_step, [ eval_energy(at) for at in walkers ]
 
       if ns_args['debug'] >= 30:
