@@ -511,7 +511,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
    elif do_calc_fortran:
       final_E = np.zeros( (1) )
       f_MC_MD.MD_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E)
-      final_E = final_E[0]
+      final_E = final_E[0] + at.get_kinetic_energy()
    else:
       exit_error("Need some non-quippy way of doing MD\n",3)
 
