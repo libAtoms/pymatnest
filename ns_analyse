@@ -41,36 +41,25 @@ Es -= np.amin(Es)
 
 
 def analyse(Es, T):
-   log_a = math.log(alpha)
-   log_1_min_a = math.log(1.0-alpha)
+   n_iter = len(Es)
    beta = 1.0/(k_Boltzmann*T)
-   one_over_kTsq = beta/T
-   log_w = np.zeros( (len(Es)) )
-   for i_E in range(len(Es)):
-      n = int(i_E/n_cull)
-      log_w[i_E] = n*log_a + log_1_min_a
+   log_a = math.log(alpha)
 
-   # Z = sum_n (a^n - a^(n+1)) exp(-beta E_j)
-   #   = sum_n a^n (1-a) exp(-beta E_j)
-   #   = sum_n exp(n log(a)+log(1-a))exp(-beta E_j)
-   #   = sum_n exp(n log(a)+log(1-a)-beta E_j)
-   Z_term = np.exp(log_w - beta*Es)
-   # U = 3N/2 beta + 1/Z sum_n w_n E_n exp(-beta E_n)
-   #   = 3N/2 beta + 1/Z sum_n exp( log(w) + log(E) - beta E)
-   U_term = Es*Z_term
-   # Cv = 3N/2 k + 1/Z^2 [ sum_n w_n E_n exp(-beta E_n)/kT^2 ] [ \sum_n w_n E_n exp(-beta E_n) ] + 1/Z [ sum_n w_n E_n^2 exp(-beta E_n)/kT^2 ]
+   shift = np.amax(np.arange(1,n_iter+1)*log_a - beta*Es[:])
+   Z_term = np.exp(np.arange(1,n_iter+1)*log_a - beta*Es[:] - shift)
 
    if debug:
       for i in range(len(Z_term)):
 	 print "Z_term ", T, Es[i], Z_term[i]
       print "Z_term"
       print "Z_term"
+
    Z = math.fsum(Z_term)
 
-   U_term_sum = math.fsum(U_term)
-   U = n_Extra_DOF/(2.0*beta) + U_term_sum/Z
+   U_pot = math.fsum(Z_term*Es)/Z
+   U = n_Extra_DOF/(2.0*beta) + U_pot
 
-   Cv = n_Extra_DOF*k_Boltzmann/2.0 - one_over_kTsq * (U_term_sum/Z)**2 + one_over_kTsq * math.fsum(Es*U_term)/Z
+   Cv = n_Extra_DOF*k_Boltzmann/2.0 + beta*beta * (math.fsum(Z_term * Es**2)/Z - U_pot**2)
 
    return (Z, U, Cv)
 
