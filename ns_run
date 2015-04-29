@@ -148,7 +148,10 @@ except:
   exit_error("need number of iterations n_iter_per_walker\n",1)
 ns_args['n_iter'] = ns_args['n_iter_per_walker']*ns_args['n_walkers']
 
-ns_args['min_Emax'] = float(args.pop('min_Emax', None))
+try:
+   ns_args['min_Emax'] = float(args.pop('min_Emax'))
+except:
+   ns_args['min_Emax'] = None
 
 ns_args['start_file'] = args.pop('start_file', '')
 ns_args['restart_file'] = args.pop('restart_file', '')
@@ -204,6 +207,7 @@ elif ns_args['energy_calculator'] == 'fortran':
    except:
      exit_error("need FORTRAN model FORTRAN_model\n",1)
    f_MC_MD = fortranMCMDpy.fortran_MC_MD(ns_args['FORTRAN_model'])
+   f_MC_MD.init_model()
 else:
    exit_error("energy_calculator=%s unknown\n" % ns_args['energy_calculator'], 3)
 
@@ -877,6 +881,24 @@ def set_n_steps(prop):
       if movement_args[prop] > 0 and rank == 0:
 	 print "WARNING: using absolute number of "+prop
 
+def init_config(at, Emax):
+   pos = at.get_positions()
+   for i_at in range(1,len(at)):
+      at_new = at[0:i_at+1]
+      at_new.set_positions(pos[0:i_at+1,:])
+      success = False
+      for i_try in range(10):
+	 pos[i_at,:] = np.dot(at_new.get_cell(), rng.float_uniform(0.0, 1.0, (3) ))
+	 at_new.set_positions(pos[0:i_at+1,:])
+	 energy = eval_energy(at_new)
+	 if energy < Emax:
+	    success = True
+	    break
+      if not success:
+	 exit_error("Failed 10 times to insert atom %d with Emax %f" % (i_at, Emax), 7)
+   at.set_positions(pos)
+   return energy
+
 set_n_steps('atom_n_steps')
 if  rank == 0:
    print "Using atom_n_steps = ", movement_args['atom_n_steps']
@@ -935,17 +957,21 @@ if ns_args['restart_file'] == '': # start from scratch
 	 else:
 	    exit_error("need some non-quippy way of setting masses when MD is active\n", 3)
 
+   ns_args['initial_energy_ceiling'] += movement_args['MC_cell_P']*init_atoms.get_volume()
    # initial positions are just random, up to an energy ceiling
    for at in walkers:
+      at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
+      if do_calc_fortran:
+	 f_MC_MD.init_config(at, ns_args['initial_energy_ceiling'])
+      energy = eval_energy(at)
       n_try = 0
-      energy = ns_args['initial_energy_ceiling'] + 1.0
       while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
 	 if n_try > 10:
 	    exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['initial_energy_ceiling'], 4)
+	 energy = init_config(at, ns_args['initial_energy_ceiling'])
 	 n_try += 1
-	 at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
-	 energy = eval_energy(at)
-	 at.info['ns_energy'] = energy + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+      at.info['ns_energy'] = energy + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+
       if movement_args['atom_algorithm'] == 'MD':
 	 perturb_velo(at, ns_args['initial_energy_ceiling'])
 

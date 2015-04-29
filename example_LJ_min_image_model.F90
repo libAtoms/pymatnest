@@ -1,5 +1,12 @@
 ! publically accessible things required for interface to pymatnest
 !
+! subroutine ll_init_model() 
+!    initializes potential
+!
+! subroutine ll_init_config(N, pos, cell, Emax) 
+!    initializes a configuration with energy < Emax
+!    config will be tested for failure after return
+!
 ! double precision function ll_eval_energy(N, pos, cell)
 !    integer :: N ! number of atoms
 !    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
@@ -12,7 +19,7 @@
 !    double precision :: d_pos(3) ! displacement of perturbed atom
 !    returns energy change
 !
-! function ll_eval_forces(N, pos, cell, forces) result(energy)
+! double precision function ll_eval_forces(N, pos, cell, forces)
 !    integer :: N ! number of atoms
 !    double precision :: pos(3,N), cell(3,3), forces(3,N) ! positions, cell vectors, forces
 !    returns energy
@@ -73,6 +80,15 @@ contains
    end subroutine matrix3x3_inverse
 end module mat_mod
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+subroutine ll_init_model()
+   return
+end subroutine ll_init_model
+
+subroutine ll_init_config()
+   return
+end subroutine ll_init_config
 
 double precision function ll_eval_energy(N, pos, cell)
 use mat_mod

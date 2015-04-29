@@ -6,6 +6,11 @@ class fortran_MC_MD:
    def __init__(self, model_so):
       self.model_lib = ctypes.CDLL(os.path.dirname(__file__)+"/"+model_so, mode=ctypes.RTLD_GLOBAL)
 
+      self.model_lib.ll_init_config_.argtypes = [ctypes.c_void_p, # N
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
+	 ctypes.c_void_p ] # Emax
+
       self.model_lib.ll_eval_energy_.restype = ctypes.c_double
       self.model_lib.ll_eval_energy_.argtypes = [ctypes.c_void_p, # N
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
@@ -43,6 +48,14 @@ class fortran_MC_MD:
 	 ctypes.c_void_p, # n_steps
 	 ctypes.c_void_p, # timestep
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS")] # final_E
+
+   def init_model(self):
+      self.model_lib.ll_init_model_()
+
+   def init_config(self, at, Emax):
+      n = ctypes.c_int(len(at))
+      Emax = ctypes.c_double(Emax)
+      self.model_lib.ll_init_config_(ctypes.byref(n), at.get_positions(), at.get_cell(), ctypes.byref(Emax))
 
    def eval_energy(self, at):
       n = ctypes.c_int(len(at))
