@@ -14,6 +14,7 @@ def usage():
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int (0)\n")
   sys.stderr.write("n_iter_per_walker=int (MANDATORY)\n")
+  sys.stderr.write("min_Emax=float (None)\n")
   sys.stderr.write("initial_energy_ceiling=float (MANDATORY)\n")
   sys.stderr.write("out_file_prefix=str (None)\n")
   sys.stderr.write("\n")
@@ -135,15 +136,19 @@ try:
   ns_args['n_walkers'] = int(args.pop('n_walkers'))
 except:
   exit_error("need number of walkers n_walkers\n",1)
+
 try:
   ns_args['n_cull'] = int(args.pop('n_cull'))
 except:
   exit_error("need number to cull n_cull\n",1)
+
 try:
   ns_args['n_iter_per_walker'] = int(args.pop('n_iter_per_walker'))
 except:
-  exit_error("need number of NS iterations n_iter_per_walker\n",1)
+  exit_error("need number of iterations n_iter_per_walker\n",1)
 ns_args['n_iter'] = ns_args['n_iter_per_walker']*ns_args['n_walkers']
+
+ns_args['min_Emax'] = float(args.pop('min_Emax', None))
 
 ns_args['start_file'] = args.pop('start_file', '')
 ns_args['restart_file'] = args.pop('restart_file', '')
@@ -589,7 +594,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
 def propose_volume_step(at, step_size):
    dV = rng.normal(step_size)
    orig_V = at.get_volume()
-   new_V = orig_V + dV
+   new_V = orig_V*(1.0+dV)
    transform = np.identity(3)*(new_V/orig_V)**(1.0/3.0)
    p_accept = min(1.0, (new_V/orig_V)**len(at))
    return (p_accept, transform)
@@ -1017,11 +1022,12 @@ def do_ns_loop():
    walk_stats_cumul={}
    zero_stats(walk_stats_cumul, movement_args)
 
-   prev_time = -1
+   prev_time = time.time()
 
    Emax_of_step = None
 
    verbose=False
+   i_ns_step = 0
    for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
       print_prefix="%d %d" % (rank, i_ns_step)
 
@@ -1051,9 +1057,17 @@ def do_ns_loop():
       if (i_ns_step > 0 and Emax_next >= Emax_of_step) and rank == 0:
 	 print "WARNING: Emax not decreasing ",Emax_of_step, Emax_next
       Emax_of_step=Emax_next
-      if rank == 0 and (time.time() > prev_time+60 or (i_ns_step % max(int(ns_args['n_iter']/1000),1) or i_ns_step == ns_args['n_iter']) == 0):
-        print i_ns_step, "Emax_of_step ", Emax_of_step
-	prev_time = time.time()
+
+      if ns_args['min_Emax'] is not None and Emax_of_step < ns_args['min_Emax']:
+	 if rank == 0:
+	    print "Leaving loop because Emax=",Emax_of_step," < min_Emax =",ns_args['min_Emax']
+	 break
+
+      if rank == 0:
+	 cur_time=time.time()
+	 if (cur_time > prev_time+60 or i_ns_step == 0 or i_ns_step == ns_args['n_iter'] or (ns_args['n_iter'] > 0 and i_ns_step % max(int(ns_args['n_iter']/1000),1) == 0)):
+	    print i_ns_step, "Emax_of_step ", Emax_of_step, cur_time-prev_time
+	    prev_time = cur_time
 
       # record Emax walkers energies and configurations
       if rank == 0:
