@@ -25,10 +25,11 @@ n_walkers = int(n_walkers)
 n_cull = int(n_cull)
 n_Extra_DOF = int(n_Extra_DOF)
 
-# check this
-alpha = float(n_walkers)/float(n_walkers+n_cull)
+# check this: a = N_w/(N_w+N_c)
+# maybe should be (N_w-N_c)/N_w, e.g.
+log_a = math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
 
-print "# n_walkers ",n_walkers," n_cull ",n_cull," alpha ",alpha
+print "# n_walkers ",n_walkers," n_cull ",n_cull," log(alpha) ",log_a
 
 Es=[]
 for line in inputs:
@@ -43,7 +44,7 @@ Es -= np.amin(Es)
 def analyse(Es, T):
    n_iter = len(Es)
    beta = 1.0/(k_Boltzmann*T)
-   log_a = math.log(alpha)
+   log_a = math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
 
    shift = np.amax(np.arange(1,n_iter+1)*log_a - beta*Es[:])
    Z_term = np.exp(np.arange(1,n_iter+1)*log_a - beta*Es[:] - shift)
@@ -61,12 +62,14 @@ def analyse(Es, T):
 
    Cv = n_Extra_DOF*k_Boltzmann/2.0 + beta*beta * (math.fsum(Z_term * Es**2)/Z - U_pot**2)
 
-   return (Z, U, Cv)
+   log_Z = math.log(Z)+shift
 
-print "# T      Z(T)               U(T)          Cv(T)"
+   return (log_Z, U, Cv)
+
+print "# T      log_Z(T)               U(T)          Cv(T)"
 #      0.05 1.88949677673e-75 8.88841272769 56975.5011109
 
 for i_T in range(n_T):
    T = T_min + i_T * dT
-   (Z, U, Cv) = analyse(Es, T)
-   print T, Z, U, Cv
+   (log_Z, U, Cv) = analyse(Es, T)
+   print T, Z_log, U, Cv
