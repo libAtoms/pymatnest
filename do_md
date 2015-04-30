@@ -1,4 +1,0 @@
-#!/bin/bash
-
-time md atoms_in_file=start.xyz  pot_init_args='IP LJ' n_steps=10000 dt=0.01 summary_interval=100
-

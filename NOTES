@@ -1,9 +1,0 @@
-find N_c top E
-pick floor(N_c/P) on each node + N_c%P globally to be cloned
-sendrecv / eliminate max E, replace with clone(s)
-   walk same number on each node = max(number of cloned per node)
-      walk: multiple iterations of:
-	 randomize cell
-	 randomize vel (dep on new PE from new cell)
-	 propagate MD
-
