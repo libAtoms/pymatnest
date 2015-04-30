@@ -200,7 +200,7 @@ implicit none
    double precision :: cell_inv(3,3)
    integer :: dj1, dj2, dj3
 
-   double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6
+   double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6, E_term
 
    call matrix3x3_inverse(cell, cell_inv)
    pos_l = matmul(cell_inv, pos)
@@ -223,7 +223,9 @@ implicit none
 	 dr = matmul(cell, dr_l)
 	 dr_mag = sqrt(sum(dr*dr))
 	 if (dr_mag < 3.0) then
-	    energy = energy + ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	    E_term = ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	    if (i == j) E_term = E_term * 0.5
+	    energy = energy + E_term
 	    if (i /= j) then
 	       forces(:,i) = forces(:,i) - (-12.0/dr_mag**13 + 6.0/dr_mag**7)*(dr/dr_mag)
 	       forces(:,j) = forces(:,j) + (-12.0/dr_mag**13 + 6.0/dr_mag**7)*(dr/dr_mag)
