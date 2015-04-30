@@ -1351,7 +1351,7 @@ if rank == 0:
 
 if ns_args['profile'] == rank:
    import cProfile
-   cProfile.run('do_ns_loop()','stats')
+   cProfile.run('do_ns_loop()','ns_run.stats')
 else:
    do_ns_loop()
 
