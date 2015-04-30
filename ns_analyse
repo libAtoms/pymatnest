@@ -72,4 +72,4 @@ print "# T      log_Z(T)               U(T)          Cv(T)"
 for i_T in range(n_T):
    T = T_min + i_T * dT
    (log_Z, U, Cv) = analyse(Es, T)
-   print T, Z_log, U, Cv
+   print T, log_Z, U, Cv
