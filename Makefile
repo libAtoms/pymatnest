@@ -12,4 +12,7 @@ MC_MD_steps.pdf: MC_MD_steps.tex ns_run
 RngStream.so: RngStream.c RngStream.h
 	gcc -O -fPIC -shared RngStream.c -o RngStream.so
 
+%.so : %.F90
+	gfortran -g -O -fPIC -shared $< -o $@
+
 -include Makefile.model

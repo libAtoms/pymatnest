@@ -1,2 +1,0 @@
-example_LJ_min_image_model.so: example_LJ_min_image_model.F90
-	gfortran -g -O -fPIC -shared example_LJ_min_image_model.F90 -o example_LJ_min_image_model.so
