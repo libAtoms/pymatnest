@@ -1003,7 +1003,6 @@ else: # doing a restart
 	 at.set_calculator(pot)
       at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
 
-n_atoms = len(walkers[0])
 
 def zero_stats(d, movement_args):
    for key in movement_args:
@@ -1018,6 +1017,21 @@ def accumulate_stats(d_cumul, d):
       else:
 	 d_cumul[key] = d[key]
 
+def save_snapshot(id):
+   if have_quippy:
+      snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.xyz' % (id,rank), action=quippy.OUTPUT)
+      for at in walkers:
+	    at.write(snapshot_io)
+      snapshot_io.close()
+   else:
+      exit_error("Need some non-quippy way of writing trajectory\n",3)
+
+def clean_prev_snapshot(prev_snapshot_iter):
+   if prev_snapshot_iter is not None:
+      os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot_iter, rank))
+      os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz.idx' % (prev_snapshot_iter, rank))
+
+n_atoms = len(walkers[0])
 prev_snapshot_iter = None
 # do NS
 def do_ns_loop():
@@ -1331,19 +1345,10 @@ def do_ns_loop():
 	    print print_prefix, ": final status ", r, [ s for s in status[r,:] ]
 
       if ns_args['snapshot_interval'] > 0 and i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
-	 if have_quippy:
-	    snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (i_ns_step,rank), action=quippy.OUTPUT)
-	    for at in walkers:
-		  at.write(snapshot_io)
-	    snapshot_io.close()
-	 else:
-	    exit_error("Need some non-quippy way of writing trajectory\n",3)
 	 global prev_snapshot_iter
-	 if prev_snapshot_iter is not None:
-	    os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot_iter, rank))
-	    os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz.idx' % (prev_snapshot_iter, rank))
+	 save_snapshot("%d" % i_ns_step)
+	 clean_prev_snapshot(prev_snapshot_iter)
 	 prev_snapshot_iter = i_ns_step
-
 
 traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.xyz' % rank, action=quippy.OUTPUT)
 if rank == 0:
@@ -1356,15 +1361,8 @@ else:
    do_ns_loop()
 
 # cleanup post loop
-if have_quippy:
-   snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.final.%d.xyz' % rank, action=quippy.OUTPUT)
-   for at in walkers:
-	 at.write(snapshot_io)
-   snapshot_io.close()
-else:
-   exit_error("Need some non-quippy way of writing trajectory\n",3)
-if prev_snapshot_iter is not None:
-   os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot_iter, rank))
+save_snapshot("final")
+clean_prev_snapshot(prev_snapshot_iter)
 
 for at in walkers:
    print rank, ": final energy ", at.info['ns_energy']
