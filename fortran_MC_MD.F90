@@ -1,4 +1,4 @@
-function fortran_MC(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_accept)
+function fortran_MC_atom(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_accept)
    implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
@@ -40,15 +40,15 @@ function fortran_MC(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_ac
 	 E = E + dE
 	 n_accept = n_accept + 1
       endif
-      if (E > Emax) print *, "fortran_MC detected E > Emax ", E, Emax !DEBUG
+      if (E > Emax) print *, "fortran_MC_atom detected E > Emax ", E, Emax !DEBUG
    end do
    end do
 
    final_E = E
 
-end function fortran_MC
+end function fortran_MC_atom
 
-subroutine fortran_MD_NVE(N, pos, vel, mass, cell, n_steps, timestep, final_E)
+subroutine fortran_MD_atom_NVE(N, pos, vel, mass, cell, n_steps, timestep, final_E)
    implicit none
    integer :: N
    double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
@@ -82,4 +82,4 @@ subroutine fortran_MD_NVE(N, pos, vel, mass, cell, n_steps, timestep, final_E)
    end do
 
    final_E = ll_eval_energy(N, pos, cell)
-end subroutine fortran_MD_NVE
+end subroutine fortran_MD_atom_NVE

@@ -517,7 +517,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       final_E = eval_energy(at)
    elif do_calc_fortran:
       final_E = np.zeros( (1) )
-      f_MC_MD.MD_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E)
+      f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E)
       final_E = final_E[0] + eval_energy(at,do_PE=False)
    else:
       exit_error("Need some non-quippy way of doing MD\n",3)
@@ -550,7 +550,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
 
    if do_calc_fortran:
       final_E = np.zeros( (1) )
-      n_accept = f_MC_MD.MC_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=True, do_PV=True), final_E)
+      n_accept = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=True, do_PV=True), final_E)
       at.info['ns_energy'] = final_E[0] + eval_energy(at, do_PE=False, do_KE=True, do_PV=True)
    else:
       dz=0.0

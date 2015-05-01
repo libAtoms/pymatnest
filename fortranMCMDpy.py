@@ -31,8 +31,8 @@ class fortran_MC_MD:
 
       self.lib = ctypes.CDLL(os.path.dirname(__file__)+"/fortran_MC_MD.so")
 
-      self.lib.fortran_mc_.restype = ctypes.c_int
-      self.lib.fortran_mc_.argtypes = [ctypes.c_void_p, # N
+      self.lib.fortran_mc_atom_.restype = ctypes.c_int
+      self.lib.fortran_mc_atom_.argtypes = [ctypes.c_void_p, # N
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
 	 ctypes.c_void_p, # n_steps
@@ -40,7 +40,7 @@ class fortran_MC_MD:
 	 ctypes.c_void_p, # Emax
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS")] # final_E
 
-      self.lib.fortran_md_nve_.argtypes = [ctypes.c_void_p, # N
+      self.lib.fortran_md_atom_nve_.argtypes = [ctypes.c_void_p, # N
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # vel
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # mass
@@ -70,25 +70,25 @@ class fortran_MC_MD:
       n = ctypes.c_int(len(at))
       return self.model_lib.ll_eval_forces_(ctypes.byref(n), at.get_positions(), at.get_cell(), forces)
 
-   def MC_walk(self, at, n_steps, step_size, Emax, final_E):
+   def MC_atom_walk(self, at, n_steps, step_size, Emax, final_E):
       n = ctypes.c_int(len(at))
       n_steps = ctypes.c_int(n_steps)
       step_size = ctypes.c_double(step_size)
       Emax = ctypes.c_double(Emax)
       pos = at.get_positions()
-      n_accept = self.lib.fortran_mc_(ctypes.byref(n), 
+      n_accept = self.lib.fortran_mc_atom_(ctypes.byref(n), 
 	 pos, at.get_cell(),
 	 ctypes.byref(n_steps), ctypes.byref(step_size), ctypes.byref(Emax), final_E)
       at.set_positions(pos)
       return n_accept
 
-   def MD_NVE_walk(self, at, n_steps, timestep, final_E):
+   def MD_atom_NVE_walk(self, at, n_steps, timestep, final_E):
       n = ctypes.c_int(len(at))
       n_steps = ctypes.c_int(n_steps)
       timestep = ctypes.c_double(timestep)
       pos = at.get_positions()
       vel = at.get_velocities()
-      n_accept = self.lib.fortran_md_nve_(ctypes.byref(n), 
+      n_accept = self.lib.fortran_md_atom_nve_(ctypes.byref(n), 
 	 pos, vel, at.get_masses(), at.get_cell(),
 	 ctypes.byref(n_steps), ctypes.byref(timestep), final_E)
       at.set_positions(pos)
