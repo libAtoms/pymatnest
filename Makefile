@@ -1,4 +1,4 @@
-F90_MODELS = *_model.F90
+F90_MODELS = $(wildcard *_model.F90)
 
 all: doc RngStream.so fortran_MC_MD.so $(F90_MODELS:.F90=.so)
 
@@ -13,9 +13,9 @@ RngStream.so: RngStream.c RngStream.h
 
 # rules for making .so from .F90 and from .c
 %.so : %.F90
-	gfortran -g -O -fPIC -shared $< -o $@
+	gfortran -g -O3 -fPIC -shared $< -o $@
 
 %.so : %.c
-	gcc -g -O -fPIC -shared $< -o $@
+	gcc -g -O3 -fPIC -shared $< -o $@
 
 -include Makefile.model
