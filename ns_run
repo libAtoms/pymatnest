@@ -1124,6 +1124,10 @@ def do_ns_loop():
       if cull_list[rank] is not None:
 	 for i in cull_list[rank]:
 	    if have_quippy:
+	       walkers[i].info['volume'] = walkers[i].get_volume()
+	       walkers[i].info['ns_P'] = movement_args['MC_cell_P']
+	       if walkers[i].has('masses') and walkers[i].has('momenta'):
+		  walkers[i].info['ns_KE'] = walkers[i].get_kinetic_energy()
 	       walkers[i].write(traj_io)
 	    else:
 	       exit_error("Need some non-quippy way of writing trajectory\n",3)
