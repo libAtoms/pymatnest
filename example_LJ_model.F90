@@ -146,7 +146,7 @@ implicit none
    double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6
 
    integer :: i, j
-   double precision :: dr(3), drp(3), dr_l(3), drp_l(3), dr_l0(3), drp_l0(3), dr_mag, drp_mag, pos_l(3,N)
+   double precision :: dr(3), drp(3), dr_l(3), drp_l(3), dr_l0(3), drp_l0(3), dr_mag, drp_mag, pos_l(3,N), d_pos_l(3)
 
    double precision :: cell_inv(3,3) 
    integer :: dj1, dj2, dj3
@@ -154,6 +154,7 @@ implicit none
    call matrix3x3_inverse(cell, cell_inv)
    ! into lattice coodinates 
    pos_l = matmul(cell_inv, pos)
+   d_pos_l = matmul(cell_inv, d_pos)
 
    ll_eval_denergy_1 = 0.0
    i=d_i
@@ -162,15 +163,22 @@ implicit none
 
       dr_l0 = pos_l(:,i) - pos_l(:,j)
       dr_l0 = dr_l0 - floor(dr_l0+0.5)
+
+      drp_l0 = pos_l(:,i)+d_pos_l(:) - pos_l(:,j)
+      drp_l0 = drp_l0 - floor(drp_l0+0.5)
+
       do dj1=-1,1
       dr_l(1) = dr_l0(1) + real(dj1, 8)
+      drp_l(1) = drp_l0(1) + real(dj1, 8)
       do dj2=-1,1
       dr_l(2) = dr_l0(2) + real(dj2, 8)
+      drp_l(2) = drp_l0(2) + real(dj2, 8)
       do dj3=-1,1
       dr_l(3) = dr_l0(3) + real(dj3, 8)
+      drp_l(3) = drp_l0(3) + real(dj3, 8)
 
 	 dr = matmul(cell, dr_l)
-	 drp = dr + d_pos
+	 drp = matmul(cell, drp_l)
 	 dr_mag = sqrt(sum(dr*dr))
 	 drp_mag = sqrt(sum(drp*drp))
 
