@@ -10,13 +10,13 @@ import quippy
 all_at=[]
 i=0
 for f in sys.argv[1:]:
-   sys.stderr.write("%s\n" %  f)
+   sys.stderr.write("read %s\n" %  f)
    al = quippy.AtomsReader(f)
    for at in al:
       all_at.append(at)
       i += 1
       if i%1000 == 0:
-	 sys.stderr.write(".")
+	 sys.stderr.write("%d" % ((i/1000)%10))
 
 sys.stderr.write("\n")
 
