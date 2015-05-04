@@ -114,24 +114,25 @@ class NsRngInternal(NsRng):
 	 self.common_random_state = random.getstate()
 	 random.setstate(self.local_random_state)
 
-def unpack_uint32(bytes):
-   tup = struct.unpack("I", bytes)
-   return tup[0]
+def os_random_uint32(n, max):
+   seed = []
+   for i in range(n):
+      i_rv = struct.unpack("I",os.urandom(4))[0]
+      while i_rv == 0 or i_rv >= max:
+	 i_rv = struct.unpack("I",os.urandom(4))[0]
+      seed.append(i_rv)
 
 # import rngstream
 import rngstream, ctypes, os, struct, math
 class NsRngStream(NsRng):
 
    def set_package_seed(self, delta_seed):
-      seed = []
-      for i in range(6):
-	 if delta_seed > 0:
-	    seed.append(delta_seed)
-	 else:
-	    i_rv = unpack_uint32(os.urandom(4))
-	    while i_rv == 0 or (i <= 2 and i_rv >= 4294967087) or (i >= 3 and i_rv >= 4294944443):
-	       i_rv = unpack_uint32(os.urandom(4))
-	    seed.append(i_rv)
+
+      if delta_seed > 0:
+	 seed = [ ctypes.c_ulong(delta_seed) ] * 6
+      else:
+	 seed.extend(os_random_uint32(3, 4294967087))
+	 seed.extend(os_random_uint32(3, 4294944443))
       self.r.set_package_seed((ctypes.c_ulong*6)(*seed))
 
    def __init__(self, delta_seed=-1, comm=None):

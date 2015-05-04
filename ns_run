@@ -229,6 +229,13 @@ elif ns_args['rng'] == 'internal':
 else:
    exit_error("rng=%s unknown\n" % ns_args['rng'], 3)
 
+if do_calc_fortran:
+   l_seed = f_MC_MD.seed_size()
+   seed = np.array( [0] * l_seed , dtype=np.int32)
+   for i in range(l_seed):
+      seed[i] = rng.int_uniform(1,sys.maxint)
+   f_MC_MD.set_seed(seed)
+
 movement_args={}
 
 movement_args['atom_n_steps_expected'] = int(args.pop('atom_n_steps_expected', 0))

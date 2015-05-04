@@ -1,3 +1,15 @@
+function fortran_seed_size()
+   integer :: fortran_seed_size
+
+   call random_seed(size=fortran_seed_size)
+end function fortran_seed_size
+
+subroutine fortran_set_seed(n_seed, seed)
+   integer :: seed(n_seed)
+
+   call random_seed(put=seed)
+end subroutine fortran_set_seed
+
 function fortran_MC_atom(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_accept)
    implicit none
    integer :: N
@@ -19,7 +31,7 @@ function fortran_MC_atom(N, pos, cell, n_steps, step_size, Emax, final_E) result
       order(i_at) = i_at
    end do
    do i_at=1, N-1
-      call random_number(d_r); d_i = floor(d_r*N)+1
+      call random_number(d_r); d_i = floor(d_r*(N-i_at+1))+i_at
       if (d_i /= i_at) then
 	 t_i = order(i_at)
 	 order(i_at) = order(d_i)
@@ -40,7 +52,6 @@ function fortran_MC_atom(N, pos, cell, n_steps, step_size, Emax, final_E) result
 	 E = E + dE
 	 n_accept = n_accept + 1
       endif
-      if (E > Emax) print *, "fortran_MC_atom detected E > Emax ", E, Emax !DEBUG
    end do
    end do
 
