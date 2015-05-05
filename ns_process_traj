@@ -76,7 +76,7 @@ if opt.trajectory:
    for at in reversed(data):
       at.write("stdout")
 else:
-   print "# i E V KE"
+   print "# i     H      V        KE"
    data.sort(key = lambda d: d[0])
    i=0
    for d in reversed(data):
