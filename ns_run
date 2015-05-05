@@ -49,7 +49,7 @@ def usage():
   sys.stderr.write("MC_cell_min_aspect_ratio=float (0.5)\n")
   sys.stderr.write("MC_cell_max_volume_per_atom=float (1.0e3)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("MC_adjust_step_interval=int (-10, negative for only using last iteration)\n")
+  sys.stderr.write("adjust_step_interval=int (-10, negative for only using last iteration)\n")
   sys.stderr.write("MC_adjust_step_factor=int (2.0)\n")
   sys.stderr.write("MD_adjust_step_factor=int (1.5)\n")
   sys.stderr.write("\n")
@@ -280,7 +280,7 @@ movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.5))
 movement_args['MC_cell_max_volume_per_atom'] = float(args.pop('MC_cell_max_volume_per_atom', 1.0e3))
 
-movement_args['MC_adjust_step_interval'] = int(args.pop('MC_adjust_step_interval', -10))
+movement_args['adjust_step_interval'] = int(args.pop('adjust_step_interval', -10))
 movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 2.0))
 movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.5))
 
@@ -1081,7 +1081,7 @@ def do_ns_loop():
    for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
       print_prefix="%d %d" % (rank, i_ns_step)
 
-      if movement_args['MC_adjust_step_interval'] < 0:
+      if movement_args['adjust_step_interval'] < 0:
 	 zero_stats(walk_stats_cumul, movement_args)
 
 
@@ -1346,7 +1346,7 @@ def do_ns_loop():
 	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
 	    accumulate_stats(walk_stats_cumul, walk_stats)
 
-      if i_ns_step % abs(movement_args['MC_adjust_step_interval']) == abs(movement_args['MC_adjust_step_interval'])-1:
+      if i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
 	 adjust_step_sizes(walk_stats_cumul, movement_args, comm)
 	 zero_stats(walk_stats_cumul, movement_args)
 
