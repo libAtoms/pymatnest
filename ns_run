@@ -262,8 +262,8 @@ movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max',
 movement_args['MC_atom_uniform_rv'] = args.pop('MC_atom_uniform_rv', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
 movement_args['MD_atom_velo_perturb'] = float(args.pop('MD_atom_velo_perturb', 0.1))
-movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 1.0))
-movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 2.0))
+movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
+movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-8))
 
 movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
