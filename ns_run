@@ -7,15 +7,16 @@ print_prefix=""
 def usage():
   sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
-  sys.stderr.write("start_file=path_to_file.xyz (mutually exclusive with restart_file, one is required)\n")
-  sys.stderr.write("restart_file=path_to_file.xyz (mutually exclusive with start_file, one is required)\n")
-  sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from, required if restart_file is specified)\n")
+  sys.stderr.write("start_volume=float (initial simulation box volume, mutually exclusive with restart_file, one is required)\n")
+  sys.stderr.write("start_species=[int int] * int ([atomic_number multiplicity] * number of spceies, required iff start_volume is set\n")
+  sys.stderr.write("start_energy_ceiling=float (max energy for initial configs, required iff start_volume is set)\n")
+  sys.stderr.write("restart_file=path_to_file.xyz (file for restart configs, mutually exclusive with start_volume, one is required)\n")
+  sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from, required iff restart_file is specified)\n")
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int (0)\n")
   sys.stderr.write("n_iter_per_walker=int (MANDATORY)\n")
   sys.stderr.write("min_Emax=float (None)\n")
-  sys.stderr.write("initial_energy_ceiling=float (MANDATORY)\n")
   sys.stderr.write("out_file_prefix=str (None)\n")
   sys.stderr.write("\n")
   sys.stderr.write("QUIP_pot_args=str (MANDATORY)\n")
@@ -153,18 +154,27 @@ try:
 except:
    ns_args['min_Emax'] = None
 
-ns_args['start_file'] = args.pop('start_file', '')
+ns_args['start_volume'] = float(args.pop('start_volume', 0.0))
 ns_args['restart_file'] = args.pop('restart_file', '')
-ns_args['restart_first_iter'] = int(args.pop('restart_first_iter', -1))
-if ((ns_args['start_file'] == '' and ns_args['restart_file'] == '') or
-    (ns_args['start_file'] != '' and ns_args['restart_file'] != '')):
-   exit_error("Got neither or both (conflicting) start_file and restart_file\n", 3)
+if ((ns_args['start_volume'] == 0.0 and ns_args['restart_file'] == '') or
+    (ns_args['start_volume'] != 0.0 and ns_args['restart_file'] != '')):
+   exit_error("Got neither or both (conflicting) start_volume and restart_file\n", 3)
 
-if ns_args['restart_file'] == '':
+if ns_args['start_volume'] != 0.0:
    try:
-     ns_args['initial_energy_ceiling'] = float(args.pop('initial_energy_ceiling'))
+     ns_args['start_species'] = args.pop('start_species')
    except:
-     exit_error("need energy ceiling for initial distribution of configs initial_energy_ceiling\n",1)
+     exit_error("need species for initial configs start_species\n",1)
+   try:
+     ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling'))
+   except:
+     exit_error("need energy ceiling for initial distribution of configs start_energy_ceiling\n",1)
+
+if ns_args['restart_file'] != '':
+   try:
+     ns_args['restart_first_iter'] = int(args.pop('restart_first_iter'))
+   except:
+     exit_error("need initial iteration restart_first_iter\n",1)
 
 ns_args['out_file_prefix'] = args.pop('out_file_prefix', '')
 if ns_args['out_file_prefix'] != '':
@@ -912,34 +922,27 @@ if  rank == 0:
 
 walkers=[]
 if ns_args['restart_file'] == '': # start from scratch
-   # read initial config
-   if have_quippy:
-      init_atoms = None
-      if rank == 0:
-	 if re.search('.xyz$', ns_args['start_file']) is not None:
-	    # read config from an xyz file
-	    init_atoms = quippy.Atoms(ns_args['start_file'])
-	 else:
-	    # create atoms structs from a list of atomic numbers and numbers of atoms
-	    start_io=open(ns_args['start_file'],'r')
-	    lattice=quippy.fzeros( (3,3) )
-	    lattice[:,1] = [ float(s) for s in start_io.readline().split() ]
-	    lattice[:,2] = [ float(s) for s in start_io.readline().split() ]
-	    lattice[:,3] = [ float(s) for s in start_io.readline().split() ]
-	    init_atoms=quippy.Atoms()
-	    init_atoms.set_lattice(lattice)
-	    for l in start_io.readlines():
-	       Z = int(l.split()[0])
-	       n = int(l.split()[1])
-	       init_atoms.add_atoms([ [0.0]* n ] * 3, [Z]*n)
-	    print "initial atoms created from a list"
-	    init_atoms.write("stdout")
-      if comm is not None:
-	 init_atoms = comm.bcast(init_atoms, root=0)
-      if do_calc_quip:
-	 init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
+   # create initial config
+   if rank == 0:
+      # create atoms structs from a list of atomic numbers and numbers of atoms
+      lc = ns_args['start_volume']**(1.0/3.0)
+      init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
+      species = ns_args['start_species'].split()
+      for i in range(0,len(species),2):
+	 init_atoms += ase.Atoms([int(species[i])] * int(species[i+1]))
+      if have_quippy:
+	 init_atoms = quippy.Atoms(init_atoms)
+	 print "initial atoms created from a list"
+	 init_atoms.write("stdout")
+      else:
+	 exit_error("Need some non-quippy way of printing initial atoms object\n", 5)
    else:
-      exit_error("need some non-quippy way of reading input configuration\n",3)
+      init_atoms = None
+
+   if comm is not None:
+      init_atoms = comm.bcast(init_atoms, root=0)
+   if do_calc_quip:
+      init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
 
    # clone initial config into array of walkers
    if ns_args['debug'] >= 10 and have_quippy and size <= 1:
@@ -964,23 +967,23 @@ if ns_args['restart_file'] == '': # start from scratch
 	 else:
 	    exit_error("need some non-quippy way of setting masses when MD is active\n", 3)
 
-   ns_args['initial_energy_ceiling'] += movement_args['MC_cell_P']*init_atoms.get_volume()
+   ns_args['start_energy_ceiling'] += movement_args['MC_cell_P']*init_atoms.get_volume()
    # initial positions are just random, up to an energy ceiling
    for at in walkers:
       at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
       if do_calc_fortran:
-	 f_MC_MD.init_config(at, ns_args['initial_energy_ceiling'])
+	 f_MC_MD.init_config(at, ns_args['start_energy_ceiling'])
       energy = eval_energy(at)
       n_try = 0
-      while math.isnan(energy) or energy > ns_args['initial_energy_ceiling']:
+      while math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
 	 if n_try > 10:
-	    exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['initial_energy_ceiling'], 4)
-	 energy = init_config(at, ns_args['initial_energy_ceiling'])
+	    exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['start_energy_ceiling'], 4)
+	 energy = init_config(at, ns_args['start_energy_ceiling'])
 	 n_try += 1
       at.info['ns_energy'] = energy + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
 
       if movement_args['atom_algorithm'] == 'MD':
-	 perturb_velo(at, ns_args['initial_energy_ceiling'])
+	 perturb_velo(at, ns_args['start_energy_ceiling'])
 
 else: # doing a restart
    if ns_args['restart_first_iter'] < 0:
