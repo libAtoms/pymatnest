@@ -1,28 +1,84 @@
 #!/usr/bin/env python
 
-import sys
+import optparse
 
-if len(sys.argv) < 2:
-   sys.stderr.write("Usage: %s file1 [ file2 ... ]\n" % sys.argv[0])
-   sys.exit(1)
+p = optparse.OptionParser(usage='%prog [options] <infile> [ <infile> ... ]')
+p.add_option('-n','--no-headers', action='store_true', help="""process a file with V and KE missing from headers""")
+p.add_option('-t','--trajectory', action='store_true', help="""produce combined trajectory""")
 
-import quippy
-all_at=[]
-i=0
-for f in sys.argv[1:]:
-   sys.stderr.write("read %s\n" %  f)
-   al = quippy.AtomsReader(f)
-   for at in al:
-      all_at.append(at)
-      i += 1
+opt, args = p.parse_args()
+
+import sys, re, subprocess
+if opt.trajectory or opt.no_headers:
+   import quippy
+
+re_e =      re.compile('ns_energy=([^ ]*)')
+re_volume = re.compile('volume=([^ ]*)')
+re_KE =     re.compile('ns_KE=([^ ]*)')
+
+def process_headers(file):
+   sys.stderr.write("read %s\n" %  file)
+   proc = subprocess.Popen(['fgrep','Lattice',file],stdout=subprocess.PIPE)
+   i=0
+   data = []
+   for l in proc.stdout:
+
+      r_e = re_e.search(l)
+      if r_e is not None:
+	 r_e = float(r_e.group(1))
+
+      r_volume = re_volume.search(l)
+      if r_volume is not None:
+	 r_volume = float(r_volume.group(1))
+
+      r_KE = re_KE.search(l)
+      if r_KE is not None:
+	 r_KE = float(r_KE.group(1))
+
+      data.append([r_e, r_volume, r_KE])
       if i%1000 == 0:
 	 sys.stderr.write("%d" % ((i/1000)%10))
+      i += 1
+   sys.stderr.write("\n")
+   return data
+
+def process_traj(file):
+   sys.stderr.write("read %s\n" %  file)
+   ar = quippy.AtomsReader(file)
+   data = []
+   i = 0
+   for at in ar:
+      if opt.trajectory:
+	 data.append(at)
+      else:
+	 if at.has('masses') and at.has('momenta'):
+	    KE = at.get_kinetic_energy()
+	 else:
+	    KE = None
+	 data.append([at.info['ns_energy'], at.get_volume(), KE])
+      if i%1000 == 0:
+	 sys.stderr.write("%d" % ((i/1000)%10))
+      i += 1
+   sys.stderr.write("\n")
+   return data
+
+data=[]
+for file in args:
+   if opt.trajectory or opt.no_headers:
+      data.extend(process_traj(file))
+   else:
+      data.extend(process_headers(file))
 
 sys.stderr.write("\n")
 
-print "# i E E-KE V"
-all_at.sort(key = lambda at: -at.info['ns_energy'])
-i=0
-for at in all_at:
-   print i, at.info['ns_energy'], at.info['ns_energy']-at.get_kinetic_energy(), at.get_volume()
-   i += 1
+if opt.trajectory:
+   data.sort(key = lambda d: d.info['ns_energy'] )
+   for at in reversed(data):
+      at.write("stdout")
+else:
+   print "# i E V KE"
+   data.sort(key = lambda d: d[0])
+   i=0
+   for d in reversed(data):
+      print i, d[0], d[1], d[2]
+      i += 1
