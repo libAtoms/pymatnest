@@ -17,7 +17,7 @@ re_volume = re.compile('volume=([^ ]*)')
 re_KE =     re.compile('ns_KE=([^ ]*)')
 
 def process_headers(file):
-   sys.stderr.write("read %s\n" %  file)
+   sys.stderr.write("read %s " %  file)
    proc = subprocess.Popen(['fgrep','Lattice',file],stdout=subprocess.PIPE)
    i=0
    data = []
@@ -43,7 +43,7 @@ def process_headers(file):
    return data
 
 def process_traj(file):
-   sys.stderr.write("read %s\n" %  file)
+   sys.stderr.write("read %s " %  file)
    ar = quippy.AtomsReader(file)
    data = []
    i = 0
