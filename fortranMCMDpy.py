@@ -62,7 +62,8 @@ class fortran_MC_MD:
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
 	 ctypes.c_void_p, # n_steps
 	 ctypes.c_void_p, # timestep
-	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS")] # final_E
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # final_E
+	 ctypes.c_void_p] # debug
 
 # MODEL ###############################################################################
 
@@ -107,14 +108,15 @@ class fortran_MC_MD:
       at.set_positions(pos)
       return n_accept
 
-   def MD_atom_NVE_walk(self, at, n_steps, timestep, final_E):
+   def MD_atom_NVE_walk(self, at, n_steps, timestep, final_E, debug):
       n = ctypes.c_int(len(at))
       n_steps = ctypes.c_int(n_steps)
       timestep = ctypes.c_double(timestep)
       pos = at.get_positions()
       vel = at.get_velocities()
+      debug = ctypes.c_int(debug)
       n_accept = self.lib.fortran_md_atom_nve_(ctypes.byref(n), 
 	 pos, vel, at.get_masses(), at.get_cell(),
-	 ctypes.byref(n_steps), ctypes.byref(timestep), final_E)
+	 ctypes.byref(n_steps), ctypes.byref(timestep), final_E, ctypes.byref(debug))
       at.set_positions(pos)
       at.set_velocities(vel)
