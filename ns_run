@@ -537,7 +537,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E)
       final_E = final_E[0] + eval_energy(at,do_PE=False)
    else:
-      exit_error("Need some non-quippy way of doing MD\n",3)
+      exit_error("Need some non-quippy, non-fortran way of doing MD\n",3)
 
    #DOC \item accept/reject entire move on E $<$ Emax
    if final_E >= Emax + movement_args['MD_atom_energy_fuzz']: # reject
@@ -837,7 +837,7 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	 if rate < min_rate:
 	    exp = -1.0
 	    dir = "down"
-	 elif rate > max_rate:
+	 elif rate >= max_rate:
 	    exp = 1.0
 	    dir = "up"
 
@@ -932,10 +932,6 @@ if ns_args['restart_file'] == '': # start from scratch
 	 init_atoms += ase.Atoms([int(species[i])] * int(species[i+1]))
       if have_quippy:
 	 init_atoms = quippy.Atoms(init_atoms)
-	 print "initial atoms created from a list"
-	 init_atoms.write("stdout")
-      else:
-	 exit_error("Need some non-quippy way of printing initial atoms object\n", 5)
    else:
       init_atoms = None
 
@@ -945,8 +941,6 @@ if ns_args['restart_file'] == '': # start from scratch
       init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
 
    # clone initial config into array of walkers
-   if ns_args['debug'] >= 10 and have_quippy and size <= 1:
-      init_atoms.params['n_walks'] = 0
    for i_walker in range(n_walkers):
      walkers.append(init_atoms.copy())
    ns_args['restart_first_iter'] = 0
@@ -986,27 +980,21 @@ if ns_args['restart_file'] == '': # start from scratch
 	 perturb_velo(at, ns_args['start_energy_ceiling'])
 
 else: # doing a restart
-   if ns_args['restart_first_iter'] < 0:
-      exit_error("Got restart_file='%s' and restart_first_iter=%d < 0" % (ns_args['restart_file'], ns_args['restart_first_iter']), 4)
-   if have_quippy:
-      if rank == 0: # read on head task and send to other tasks
-	 l_walkers=[]
-	 restart_io = quippy.CInOutput(ns_args['restart_file'], action=quippy.INPUT)
-	 ar_iter = quippy.AtomsReader(restart_io).iterframes()
-	 for r in range(size):
-	    at_list=[]
-	    for i in range(n_walkers):
-	       if comm is None or r == 0:
-		  walkers.append(ar_iter.next())
-	       else:
-		  at_list.append(ar_iter.next())
-	    if r > 0:
-	       comm.send(at_list, dest=r, tag=1)
-	 restart_io.close()
-      else: # receive from head task
-	 walkers = comm.recv(source=0, tag=1)
-   else:
-      exit_error("need some non-quippy way of reading restart_file\n",3)
+   if rank == 0: # read on head task and send to other tasks
+      i_at = 0
+      for r in range(size):
+	 at_list=[]
+	 for i_walker in range(n_walkers):
+	    print "read i_at ",i_at, " from ",ns_args['restart_file']
+	    if comm is None or r == 0:
+	       walkers.append(ase.io.read(ns_args['restart_file'], i_at))
+	    else:
+	       at_list.append(ase.io.read(ns_args['restart_file'], i_at))
+	    i_at += 1
+	 if r > 0:
+	    comm.send(at_list, dest=r, tag=1)
+   else: # receive from head task
+      walkers = comm.recv(source=0, tag=1)
 
    for at in walkers:
       if do_calc_quip or do_calc_lammps:
@@ -1028,18 +1016,24 @@ def accumulate_stats(d_cumul, d):
 	 d_cumul[key] = d[key]
 
 def save_snapshot(id):
-   if have_quippy:
-      snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.xyz' % (id,rank), action=quippy.OUTPUT)
-      for at in walkers:
-	    at.write(snapshot_io)
-      snapshot_io.close()
-   else:
-      exit_error("Need some non-quippy way of writing trajectory\n",3)
+   #QUIP_IO snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.xyz' % (id,rank), action=quippy.OUTPUT)
+   try:
+      snapshot_file=ns_args['out_file_prefix']+'snapshot.'+('%d' % id)+'.%05d.'+('%04d' % rank)+'.extxyz'
+   except:
+      snapshot_file=ns_args['out_file_prefix']+'snapshot.'+id+'.%05d.'+('%04d' % rank)+'.extxyz'
+
+   i_at = 0
+   for at in walkers:
+      #QUIP_IO at.write(snapshot_io)
+      ase.io.write(snapshot_file % i_at, ase.Atoms(at))
+      i_at += 1
+   #QUIP_IO snapshot_io.close()
 
 def clean_prev_snapshot(prev_snapshot_iter):
    if prev_snapshot_iter is not None:
-      os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz' % (prev_snapshot_iter, rank))
-      os.remove(ns_args['out_file_prefix']+'snapshot.%d.%d.xyz.idx' % (prev_snapshot_iter, rank))
+      for i_at in range(len(walkers)):
+	 os.remove(ns_args['out_file_prefix']+'snapshot.%d.%05d.%04d.extxyz' % (prev_snapshot_iter, i_at, rank))
+	 #QUIP_IO os.remove(ns_args['out_file_prefix']+'snapshot.%d.%05d.%04d.xyz.idx' % (prev_snapshot_iter, i_at, rank))
 
 n_atoms = len(walkers[0])
 prev_snapshot_iter = None
@@ -1104,7 +1098,7 @@ def do_ns_loop():
 	 cull_list[r] = cull_ind[entries_for_this_rank]
 
 
-      if (i_ns_step > 0 and Emax_next >= Emax_of_step) and rank == 0:
+      if rank == 0 and (i_ns_step > ns_args['restart_first_iter'] and Emax_next >= Emax_of_step):
 	 print "WARNING: Emax not decreasing ",Emax_of_step, Emax_next
       Emax_of_step=Emax_next
 
@@ -1126,14 +1120,12 @@ def do_ns_loop():
 	 energy_io.flush()
       if cull_list[rank] is not None:
 	 for i in cull_list[rank]:
-	    if have_quippy:
-	       walkers[i].info['volume'] = walkers[i].get_volume()
-	       walkers[i].info['ns_P'] = movement_args['MC_cell_P']
-	       if walkers[i].has('masses') and walkers[i].has('momenta'):
-		  walkers[i].info['ns_KE'] = walkers[i].get_kinetic_energy()
-	       walkers[i].write(traj_io)
-	    else:
-	       exit_error("Need some non-quippy way of writing trajectory\n",3)
+	    walkers[i].info['volume'] = walkers[i].get_volume()
+	    walkers[i].info['ns_P'] = movement_args['MC_cell_P']
+	    if walkers[i].has('masses') and walkers[i].has('momenta'):
+	       walkers[i].info['ns_KE'] = walkers[i].get_kinetic_energy()
+	    #QUIP_IO walkers[i].write(traj_io)
+	    ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
 
       # calculate how many will be culled on each rank
       n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -1360,11 +1352,12 @@ def do_ns_loop():
 
       if ns_args['snapshot_interval'] > 0 and i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
 	 global prev_snapshot_iter
-	 save_snapshot("%d" % i_ns_step)
+	 save_snapshot(i_ns_step)
 	 clean_prev_snapshot(prev_snapshot_iter)
 	 prev_snapshot_iter = i_ns_step
 
-traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.xyz' % rank, action=quippy.OUTPUT)
+#QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.xyz' % rank, action=quippy.OUTPUT)
+traj_file = ns_args['out_file_prefix']+'traj.%08d.'+('%04d' % rank)+'.extxyz'
 if rank == 0:
    energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
 
@@ -1383,7 +1376,7 @@ for at in walkers:
 
 if rank == 0:
    energy_io.close()
-traj_io.close()
+#QUIP_IO traj_io.close()
 
 if comm is not None:
    MPI.Finalize()
