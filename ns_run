@@ -528,16 +528,21 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DOC \item perturb\_velo, magnitude and rotation
    perturb_velo(at, Emax)
 
+   pre_MD_E = at.info['ns_energy']
+
    #DOC \item propagate in time atom\_n\_substeps time steps of length MD\_atom\_timestep
    if do_calc_quip:
       propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_n_substeps']) 
       final_E = eval_energy(at)
    elif do_calc_fortran:
       final_E = np.zeros( (1) )
-      f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E)
+      f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E, debug=ns_args['debug'])
       final_E = final_E[0] + eval_energy(at,do_PE=False)
    else:
       exit_error("Need some non-quippy, non-fortran way of doing MD\n",3)
+
+   if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']:
+      print print_prefix, ": WARNING: MD drift > fuzz ", pre_MD_E, final_E, final_E-pre_MD_E
 
    #DOC \item accept/reject entire move on E $<$ Emax
    if final_E >= Emax + movement_args['MD_atom_energy_fuzz']: # reject
@@ -1016,24 +1021,36 @@ def accumulate_stats(d_cumul, d):
 	 d_cumul[key] = d[key]
 
 def save_snapshot(id):
-   #QUIP_IO snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.xyz' % (id,rank), action=quippy.OUTPUT)
+   #QUIP_IO if have_quippy:
+      #QUIP_IO snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.xyz' % (id,rank), action=quippy.OUTPUT)
+   #QUIP_IO else:
+      #QUIP_IO try:
+	 #QUIP_IO snapshot_file=ns_args['out_file_prefix']+'snapshot.'+('%d' % id)+'.%05d.'+('%04d' % rank)+'.extxyz'
+      #QUIP_IO except:
+	 #QUIP_IO snapshot_file=ns_args['out_file_prefix']+'snapshot.'+id+'.%05d.'+('%04d' % rank)+'.extxyz'
    try:
-      snapshot_file=ns_args['out_file_prefix']+'snapshot.'+('%d' % id)+'.%05d.'+('%04d' % rank)+'.extxyz'
+      snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%s.%d.extxyz' % (id,rank), "w")
    except:
-      snapshot_file=ns_args['out_file_prefix']+'snapshot.'+id+'.%05d.'+('%04d' % rank)+'.extxyz'
+      snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%d.%d.extxyz' % (id,rank), "w")
 
    i_at = 0
    for at in walkers:
-      #QUIP_IO at.write(snapshot_io)
-      ase.io.write(snapshot_file % i_at, ase.Atoms(at))
+      #QUIP_IO if have_quippy:
+	 #QUIP_IO at.write(snapshot_io)
+      #QUIP_IO else:
+	 #QUIP_IO ase.io.write(snapshot_file % i_at, ase.Atoms(at))
+      ase.io.write(snapshot_io, ase.Atoms(at), format='extxyz')
       i_at += 1
-   #QUIP_IO snapshot_io.close()
+
+   snapshot_io.close()
 
 def clean_prev_snapshot(prev_snapshot_iter):
    if prev_snapshot_iter is not None:
-      for i_at in range(len(walkers)):
-	 os.remove(ns_args['out_file_prefix']+'snapshot.%d.%05d.%04d.extxyz' % (prev_snapshot_iter, i_at, rank))
-	 #QUIP_IO os.remove(ns_args['out_file_prefix']+'snapshot.%d.%05d.%04d.xyz.idx' % (prev_snapshot_iter, i_at, rank))
+      snapshot_file=ns_args['out_file_prefix']+'snapshot.%d.%d.extxyz' % (prev_snapshot_iter, rank)
+      try:
+	 os.remove(snapshot_file)
+      except:
+	 print print_prefix, ": WARNING: Failed to delete '%s'" % snapshot_file
 
 n_atoms = len(walkers[0])
 prev_snapshot_iter = None
@@ -1124,8 +1141,11 @@ def do_ns_loop():
 	    walkers[i].info['ns_P'] = movement_args['MC_cell_P']
 	    if walkers[i].has('masses') and walkers[i].has('momenta'):
 	       walkers[i].info['ns_KE'] = walkers[i].get_kinetic_energy()
-	    #QUIP_IO walkers[i].write(traj_io)
-	    ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
+	    #QUIP_IO if have_quippy:
+	       #QUIP_IO walkers[i].write(traj_io)
+	    #QUIP_IO else:
+	       #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
+	    ase.io.write(traj_io, ase.Atoms(walkers[i]), format='extxyz')
 
       # calculate how many will be culled on each rank
       n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -1356,8 +1376,12 @@ def do_ns_loop():
 	 clean_prev_snapshot(prev_snapshot_iter)
 	 prev_snapshot_iter = i_ns_step
 
-#QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.xyz' % rank, action=quippy.OUTPUT)
-traj_file = ns_args['out_file_prefix']+'traj.%08d.'+('%04d' % rank)+'.extxyz'
+#QUIP_IO if have_quippy:
+   #QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.xyz' % rank, action=quippy.OUTPUT)
+#QUIP_IO else:
+   #QUIP_IO traj_file = ns_args['out_file_prefix']+'traj.%08d.'+('%04d' % rank)+'.extxyz'
+traj_io = open(ns_args['out_file_prefix']+'traj.%d.xyz' % rank, "w")
+
 if rank == 0:
    energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
 
@@ -1376,7 +1400,7 @@ for at in walkers:
 
 if rank == 0:
    energy_io.close()
-#QUIP_IO traj_io.close()
+traj_io.close()
 
 if comm is not None:
    MPI.Finalize()

@@ -59,12 +59,13 @@ function fortran_MC_atom(N, pos, cell, n_steps, step_size, Emax, final_E) result
 
 end function fortran_MC_atom
 
-subroutine fortran_MD_atom_NVE(N, pos, vel, mass, cell, n_steps, timestep, final_E)
+subroutine fortran_MD_atom_NVE(N, pos, vel, mass, cell, n_steps, timestep, final_E, debug)
    implicit none
    integer :: N
    double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
    integer :: n_steps
    double precision :: timestep, final_E
+   integer :: debug
 
    integer i_step, i
    double precision :: forces(3,N), acc(3,N)
@@ -77,6 +78,9 @@ subroutine fortran_MD_atom_NVE(N, pos, vel, mass, cell, n_steps, timestep, final
       acc(i,:) = forces(i,:) / mass(:)
    end do
 
+   if (debug > 0) print *, "initial PE KE E ", final_E, 0.5*sum(spread(mass,1,3)*vel**2), &
+      final_E+0.5*sum(spread(mass,1,3)*vel**2), 0.5*sum(vel**2)*mass(1)
+
    do i_step=1, n_steps
       ! Verlet part 1
       vel = vel + 0.5*timestep*acc
@@ -84,6 +88,8 @@ subroutine fortran_MD_atom_NVE(N, pos, vel, mass, cell, n_steps, timestep, final
 
       ! new forces
       final_E = ll_eval_forces(N, pos, cell, forces)
+      if (debug > 0) print *, "step PE KE E ", i_step, final_E, 0.5*sum(spread(mass,1,3)*vel**2), &
+	 final_E+0.5*sum(spread(mass,1,3)*vel**2)
       do i=1, 3
 	 acc(i,:) = forces(i,:) / mass(:)
       end do
@@ -92,5 +98,4 @@ subroutine fortran_MD_atom_NVE(N, pos, vel, mass, cell, n_steps, timestep, final
       vel = vel + 0.5*timestep*acc
    end do
 
-   final_E = ll_eval_energy(N, pos, cell)
 end subroutine fortran_MD_atom_NVE
