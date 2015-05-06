@@ -860,7 +860,20 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	    dir=None
 
 	 if dir is not None and comm.rank == 0:
-	    print "adjust_step_sizes adjusted %s %s to %f" % (key, dir, movement_args[key+"_"+suffix])
+	    print print_prefix, "adjust_step_sizes adjusted %s %s to %f" % (key, dir, movement_args[key+"_"+suffix])
+
+def zero_stats(d, movement_args):
+   for key in movement_args:
+      m = re.search('(.*)_(step_size|timestep)$', key)
+      if m is not None:
+        d[m.group(1)] = (0, 0)
+
+def accumulate_stats(d_cumul, d):
+   for key in d:
+      if key in d_cumul:
+	 d_cumul[key] = tuple([i1+i2 for i1,i2 in zip(d[key],d_cumul[key])])
+      else:
+	 d_cumul[key] = d[key]
 
 
 # figure out n_steps to walk on each iteration to get correct expected number
@@ -1007,13 +1020,6 @@ else: # doing a restart
       at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
 
 
-def accumulate_stats(d_cumul, d):
-   for key in d:
-      if key in d_cumul:
-	 d_cumul[key] = tuple([i1+i2 for i1,i2 in zip(d[key],d_cumul[key])])
-      else:
-	 d_cumul[key] = d[key]
-
 def save_snapshot(id):
    #QUIP_IO if have_quippy:
       #QUIP_IO snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.xyz' % (id,rank), action=quippy.OUTPUT)
@@ -1033,7 +1039,7 @@ def save_snapshot(id):
 	 #QUIP_IO at.write(snapshot_io)
       #QUIP_IO else:
 	 #QUIP_IO ase.io.write(snapshot_file % i_at, ase.Atoms(at))
-      ase.io.write(snapshot_io, ase.Atoms(at), format='extxyz')
+      ase.io.write(snapshot_io, at, format='extxyz')
       i_at += 1
 
    snapshot_io.close()
@@ -1075,6 +1081,7 @@ def do_ns_loop():
       print rank, ": initial energy ", at.info['ns_energy']
 
    walk_stats_cumul={}
+   zero_stats(walk_stats_cumul, movement_args)
 
    prev_time = time.time()
 
@@ -1086,7 +1093,7 @@ def do_ns_loop():
       print_prefix="%d %d" % (rank, i_ns_step)
 
       if movement_args['adjust_step_interval'] < 0:
-	 walk_stats_cumul = {}
+	 zero_stats(walk_stats_cumul, movement_args)
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
@@ -1135,7 +1142,7 @@ def do_ns_loop():
 	       #QUIP_IO walkers[i].write(traj_io)
 	    #QUIP_IO else:
 	       #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
-	    ase.io.write(traj_io, ase.Atoms(walkers[i]), format='extxyz')
+	    ase.io.write(traj_io, walkers[i], format='extxyz')
 
       # calculate how many will be culled on each rank
       n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -1350,7 +1357,7 @@ def do_ns_loop():
 
       if i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
 	 adjust_step_sizes(walk_stats_cumul, movement_args, comm)
-	 walk_stats_cumul = {}
+	 zero_stats(walk_stats_cumul, movement_args)
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, ": LOOP_PE END 30 ",i_ns_step, [ eval_energy(at,do_KE=False) for at in walkers ]
