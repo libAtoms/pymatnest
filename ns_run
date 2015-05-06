@@ -546,7 +546,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    #DOC \item accept/reject entire move on E $<$ Emax
    if final_E >= Emax + movement_args['MD_atom_energy_fuzz']: # reject
-      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " total energy ", final_E
+      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
       at.info['ns_energy'] = orig_E
@@ -1007,12 +1007,6 @@ else: # doing a restart
       at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
 
 
-def zero_stats(d, movement_args):
-   for key in movement_args:
-      m = re.search('(.*)_step_size$', key)
-      if m is not None:
-	 d[m.group(1)] = (0, 0)
-
 def accumulate_stats(d_cumul, d):
    for key in d:
       if key in d_cumul:
@@ -1081,7 +1075,6 @@ def do_ns_loop():
       print rank, ": initial energy ", at.info['ns_energy']
 
    walk_stats_cumul={}
-   zero_stats(walk_stats_cumul, movement_args)
 
    prev_time = time.time()
 
@@ -1093,14 +1086,11 @@ def do_ns_loop():
       print_prefix="%d %d" % (rank, i_ns_step)
 
       if movement_args['adjust_step_interval'] < 0:
-	 zero_stats(walk_stats_cumul, movement_args)
-
+	 walk_stats_cumul = {}
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
 	 print print_prefix, ": LOOP_PE START 01 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
-
-
 
       # get list of highest energy configs
       (Emax, cull_ind, cull_rank) = max_energy(walkers, n_cull)
@@ -1360,7 +1350,7 @@ def do_ns_loop():
 
       if i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
 	 adjust_step_sizes(walk_stats_cumul, movement_args, comm)
-	 zero_stats(walk_stats_cumul, movement_args)
+	 walk_stats_cumul = {}
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, ": LOOP_PE END 30 ",i_ns_step, [ eval_energy(at,do_KE=False) for at in walkers ]
