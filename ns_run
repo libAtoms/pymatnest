@@ -33,7 +33,7 @@ def usage():
   sys.stderr.write("MD_atom_velo_perturb=float (0.1, < 0 for completely randomizing rather than perturbing)\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
-  sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-8)\n")
+  sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2)\n")
   sys.stderr.write("\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_cell_P=float (0.0)\n")
@@ -264,7 +264,7 @@ movement_args['MC_atom_uniform_rv'] = args.pop('MC_atom_uniform_rv', "F") in [ "
 movement_args['MD_atom_velo_perturb'] = float(args.pop('MD_atom_velo_perturb', 0.1))
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
 movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
-movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-8))
+movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
 
 movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
 movement_args['MC_cell_volume_step_size'] = float(args.pop('MC_cell_volume_step_size', 0.01))
@@ -448,7 +448,7 @@ def gen_random_velo(at, Emax, unit_rv=None):
    if Emax > pot_energy:
       masses = at.get_masses()
       velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
-   else: # should never happen - maybe it's happening because of MD_atom_energy_fuzz
+   else: # should never happen
       if rank == 0:
 	 print print_prefix, ": WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in gen_random_velo"
       velocities = 0.0 * unit_rv
@@ -522,7 +522,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
    orig_pos = at.get_positions()
    orig_velo = at.get_velocities()
 
-   if orig_E >= Emax + movement_args['MD_atom_energy_fuzz']: 
+   if orig_E >= Emax:
       print print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax
 
    #DOC \item perturb\_velo, magnitude and rotation
@@ -545,7 +545,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       print print_prefix, ": WARNING: MD drift > fuzz ", pre_MD_E, final_E, final_E-pre_MD_E
 
    #DOC \item accept/reject entire move on E $<$ Emax
-   if final_E >= Emax + movement_args['MD_atom_energy_fuzz']: # reject
+   if final_E >= Emax: # reject
       print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
@@ -676,24 +676,21 @@ def do_cell_step(at, Emax, p_accept, transform):
    orig_pos = at.get_positions()
    new_cell = np.dot(orig_cell,transform)
    at.set_cell(new_cell, scale_atoms=True)
-   if at.has('momenta'):
-      orig_velo = at.get_velocities()
-      new_velo = np.dot(orig_velo,transform)
-      at.set_velocities(new_velo)
    # check size and shape constraints
    new_vol = at.get_volume()
    if new_vol > movement_args['MC_cell_max_volume_per_atom']*len(at):
       at.set_cell(orig_cell,scale_atoms=False)
       at.set_positions(orig_pos)
-      if at.has('momenta'):
-	 at.set_velocities(orig_velo)
       return 0
    if min_aspect_ratio(new_vol, new_cell) < movement_args['MC_cell_min_aspect_ratio']:
       at.set_cell(orig_cell,scale_atoms=False)
       at.set_positions(orig_pos)
-      if at.has('momenta'):
-	 at.set_velocities(orig_velo)
       return 0
+
+   if at.has('momenta'):
+      orig_velo = at.get_velocities()
+      new_velo = np.dot(orig_velo,transform)
+      at.set_velocities(new_velo)
 
    # calculate new energy
    new_energy = eval_energy(at)
@@ -1102,8 +1099,8 @@ def do_ns_loop():
       # get list of highest energy configs
       (Emax, cull_ind, cull_rank) = max_energy(walkers, n_cull)
       Emax_next = Emax[-1]
-      if Emax_of_step is not None and rank == 0 and Emax[0] > Emax_of_step+movement_args['MD_atom_energy_fuzz']:
-	 print print_prefix, ": ERROR: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step+movement_args['MD_atom_energy_fuzz'])]
+      if Emax_of_step is not None and rank == 0 and Emax[0] > Emax_of_step:
+	 print print_prefix, ": ERROR: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step)]
 	 exit_error("Energy above Emax\n", 5)
 
       cull_list=[None] * size
