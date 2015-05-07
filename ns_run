@@ -821,7 +821,7 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	 rate = float(n_accept)/float(n_try)
 
 	 if comm.rank == 0:
-	    print "accept rate for %s = %f (%d)" % (key, rate, n_try)
+	    print print_prefix, "accept rate for %s = %f (%d)" % (key, rate, n_try)
 
 	 if key.find("MC") == 0:
 	    min_rate = 0.25
