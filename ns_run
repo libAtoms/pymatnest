@@ -49,7 +49,7 @@ def usage():
   sys.stderr.write("MC_cell_min_aspect_ratio=float (0.5)\n")
   sys.stderr.write("MC_cell_max_volume_per_atom=float (1.0e3)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("adjust_step_interval=int (-10, negative for only using last iteration)\n")
+  sys.stderr.write("adjust_step_interval=int (-10, negative for only using last iteration, 0 for no adjust)\n")
   sys.stderr.write("MC_adjust_step_factor=int (2.0)\n")
   sys.stderr.write("MD_adjust_step_factor=int (1.5)\n")
   sys.stderr.write("\n")
@@ -542,7 +542,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       exit_error("Need some non-quippy, non-fortran way of doing MD\n",3)
 
    if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']:
-      print print_prefix, ": WARNING: MD drift > fuzz ", pre_MD_E, final_E, final_E-pre_MD_E
+      print print_prefix, ": WARNING: MD drift > fuzz. Pre-MD, post-MD, difference, KE ", pre_MD_E, final_E, final_E-pre_MD_E, eval_energy(at, do_PE=False, do_PV=False)
 
    #DOC \item accept/reject entire move on E $<$ Emax
    if final_E >= Emax: # reject
@@ -1352,7 +1352,7 @@ def do_ns_loop():
 	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
 	    accumulate_stats(walk_stats_cumul, walk_stats)
 
-      if i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
+      if movement_args['adjust_step_interval'] != 0 and i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
 	 adjust_step_sizes(walk_stats_cumul, movement_args, comm)
 	 zero_stats(walk_stats_cumul, movement_args)
 
