@@ -26,7 +26,7 @@ def usage():
   sys.stderr.write("atom_n_steps_expected=int (0, this or atom_n_steps required)\n")
   sys.stderr.write("atom_n_steps=int (0, this or atom_n_steps_expected required)\n")
   sys.stderr.write("atom_n_substeps=int (10)\n")
-  sys.stderr.write("atom_algorithm=[MC | MD] (MC)\n")
+  sys.stderr.write("atom_algorithm=[MC | MD] (MANDATORY)\n")
   sys.stderr.write("MC_atom_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
@@ -34,6 +34,7 @@ def usage():
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2)\n")
+  sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (F, use energy conservation violation (exceeding MD_atom_energy_fuzz) to reject MD trajectories)\n")
   sys.stderr.write("\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_cell_P=float (0.0)\n")
@@ -251,7 +252,10 @@ movement_args={}
 movement_args['atom_n_steps_expected'] = int(args.pop('atom_n_steps_expected', 0))
 movement_args['atom_n_steps'] = int(args.pop('atom_n_steps', 0))
 movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
-movement_args['atom_algorithm'] = args.pop('atom_algorithm', 'MC')
+try:
+   movement_args['atom_algorithm'] = args.pop('atom_algorithm')
+except:
+      exit_error("Failed to read algorithm for atom motion atom_algorithm", 1)
 if movement_args['atom_n_steps_expected'] == 0 and movement_args['atoms_n_steps'] == 0:
    exit_error("Got both atoms_n_steps_expected and atoms_n_steps == 0\n", 3)
 if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD':
@@ -265,6 +269,7 @@ movement_args['MD_atom_velo_perturb'] = float(args.pop('MD_atom_velo_perturb', 0
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
 movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
+movement_args['MD_atom_reject_energy_violation'] = args.pop('MD_atom_reject_energy_violation', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
 movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
 movement_args['MC_cell_volume_step_size'] = float(args.pop('MC_cell_volume_step_size', 0.01))
@@ -541,19 +546,33 @@ def do_MD_atom_walk(at, movement_args, Emax):
    else:
       exit_error("Need some non-quippy, non-fortran way of doing MD\n",3)
 
-   if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']:
-      print print_prefix, ": WARNING: MD drift > fuzz. Pre-MD, post-MD, difference, KE ", pre_MD_E, final_E, final_E-pre_MD_E, eval_energy(at, do_PE=False, do_PV=False)
+   reject_fuzz = False
+   KE = eval_energy(at, do_PE=False, do_PV=False)
+   #DOC \item optionally accept/reject entire move on E deviating by more than energy fuzz times kinetic energy
+   if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']*KE:
+      if movement_args['MD_atom_reject_energy_violation']:
+	 reject_fuzz = True
+      else:
+	 print print_prefix, ": WARNING: MD energy deviation > fuzz*KE. Pre-MD, post-MD, difference, KE ", pre_MD_E, final_E, final_E-pre_MD_E, KE
 
    #DOC \item accept/reject entire move on E $<$ Emax
-   if final_E >= Emax: # reject
-      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E
+   reject_Emax = (final_E >= Emax)
+
+   if reject_fuzz or reject_Emax:
+      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
       at.info['ns_energy'] = orig_E
-      n_accept = 0
    else:
       at.info['ns_energy'] = final_E
-      n_accept = 1
+
+   n_accept = 1
+   if movement_args['MD_atom_reject_energy_violation']:
+      if reject_fuzz:
+	 n_accept = 0
+   else:
+      if reject_Emax:
+	 n_accept = 0
 
    return {'MD_atom' : (1, n_accept) }
 #DOC \end{itemize}
@@ -1099,15 +1118,10 @@ def do_ns_loop():
       # get list of highest energy configs
       (Emax, cull_ind, cull_rank) = max_energy(walkers, n_cull)
       Emax_next = Emax[-1]
-      if Emax_of_step is not None and rank == 0 and Emax[0] > Emax_of_step:
-	 print print_prefix, ": ERROR: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step)]
-	 exit_error("Energy above Emax\n", 5)
-
-      cull_list=[None] * size
-      for r in range(size):
-	 entries_for_this_rank = np.where(cull_rank == r)[0]
-	 cull_list[r] = cull_ind[entries_for_this_rank]
-
+      if rank == 0 and Emax_of_step is not None and Emax[0] > Emax_of_step:
+	 print print_prefix, ": WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step)], cull_rank[np.where(Emax > Emax_of_step)], cull_ind[np.where(Emax > Emax_of_step)]
+	 # comm.barrier()
+	 # exit_error("Energy above Emax\n", 5)
 
       if rank == 0 and (i_ns_step > ns_args['restart_first_iter'] and Emax_next >= Emax_of_step):
 	 print "WARNING: Emax not decreasing ",Emax_of_step, Emax_next
@@ -1123,6 +1137,11 @@ def do_ns_loop():
 	 if (cur_time > prev_time+60 or i_ns_step == 0 or i_ns_step == ns_args['n_iter'] or (ns_args['n_iter'] > 0 and i_ns_step % max(int(ns_args['n_iter']/1000),1) == 0)):
 	    print i_ns_step, "Emax_of_step ", Emax_of_step, cur_time-prev_time
 	    prev_time = cur_time
+
+      cull_list=[None] * size
+      for r in range(size):
+	 entries_for_this_rank = np.where(cull_rank == r)[0]
+	 cull_list[r] = cull_ind[entries_for_this_rank]
 
       # record Emax walkers energies and configurations
       if rank == 0:
@@ -1313,11 +1332,11 @@ def do_ns_loop():
       # walk clone targets
       if ns_args['debug'] >= 5:
 	 for i in np.where(status[rank,:] == 'c_s')[0]:
-	    print "WALK source ", rank, i
+	    print print_prefix, "clone source ", rank, i
       clone_walk_ind = np.where(status[rank,:] == 'c_t_a')[0]
       for i_at in clone_walk_ind:
 	 if ns_args['debug'] >= 5:
-	    print "WALK target ", rank, i_at
+	    print print_prefix, "WALK clone_target ", rank, i_at
 	 walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
 	 accumulate_stats(walk_stats_cumul, walk_stats)
 
@@ -1348,7 +1367,7 @@ def do_ns_loop():
 	    while status[rank,r_i] != '' and status[rank,r_i] != 'c_s':
 	       r_i = rng.int_uniform(0, n_walkers)
 	    if ns_args['debug'] >= 5:
-	       print "WALK extra ",rank, r_i
+	       print print_prefix, "WALK extra ",rank, r_i
 	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
 	    accumulate_stats(walk_stats_cumul, walk_stats)
 
