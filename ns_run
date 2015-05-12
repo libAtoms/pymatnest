@@ -8,7 +8,7 @@ def usage():
   sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
   sys.stderr.write("start_volume=float (initial simulation box volume, mutually exclusive with restart_file, one is required)\n")
-  sys.stderr.write("start_species=[int int] * int ([atomic_number multiplicity] * number of spceies, required iff start_volume is set)\n")
+  sys.stderr.write("start_species=[int int float] * int ([atomic_number multiplicity mass] * number of spceies, required iff start_volume is set)\n")
   sys.stderr.write("start_energy_ceiling=float (max energy for initial configs, required iff start_volume is set. Initial P*V is added to this automatically)\n")
   sys.stderr.write("restart_file=path_to_file.xyz (file for restart configs, mutually exclusive with start_volume, one is required)\n")
   sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from, required iff restart_file is specified)\n")
@@ -77,7 +77,7 @@ if len(sys.argv) == 2:
       sys.exit(1)
 
 import re, math, time, os
-import numpy as np, ase
+import numpy as np, ase, ase.io
 try:
    import quippy
    have_quippy=True
@@ -962,8 +962,11 @@ if ns_args['restart_file'] == '': # start from scratch
       lc = ns_args['start_volume']**(1.0/3.0)
       init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
       species = ns_args['start_species'].split()
-      for i in range(0,len(species),2):
-	 init_atoms += ase.Atoms([int(species[i])] * int(species[i+1]))
+      for i in range(0,len(species),3):
+	 Z_type = int(species[i])
+	 n_type = int(species[i+1])
+	 mass_type = float(species[i+2])
+	 init_atoms += ase.Atoms([Z_type] * n_type, masses=[mass_type] * n_type)
       if have_quippy:
 	 init_atoms = quippy.Atoms(init_atoms)
    else:

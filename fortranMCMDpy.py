@@ -4,7 +4,6 @@ import os, ase
 
 class fortran_MC_MD:
    def __init__(self, model_so):
-      print "fortram_MC_MD init '%s'" % model_so
       if model_so.find("/") == 0:
 	 self.model_lib = ctypes.CDLL(model_so, mode=ctypes.RTLD_GLOBAL)
       else:
