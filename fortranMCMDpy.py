@@ -4,7 +4,15 @@ import os, ase
 
 class fortran_MC_MD:
    def __init__(self, model_so):
-      self.model_lib = ctypes.CDLL(os.path.dirname(__file__)+"/"+model_so, mode=ctypes.RTLD_GLOBAL)
+      print "fortram_MC_MD init '%s'" % model_so
+      if model_so.find("/") == 0:
+	 self.model_lib = ctypes.CDLL(model_so, mode=ctypes.RTLD_GLOBAL)
+      else:
+	 if 'PYMATNEST_PATH' in os.environ:
+	    self.model_lib = ctypes.CDLL(os.environ['PYMATNEST_PATH']+"/"+model_so, mode=ctypes.RTLD_GLOBAL)
+	 else:
+	    self.model_lib = ctypes.CDLL(os.path.dirname(__file__)+"/"+model_so, mode=ctypes.RTLD_GLOBAL)
+
 
       # ll_init_model
 
@@ -35,7 +43,10 @@ class fortran_MC_MD:
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS")] # forces
 
-      self.lib = ctypes.CDLL(os.path.dirname(__file__)+"/fortran_MC_MD.so")
+      if 'PYMATNEST_PATH' in os.environ:
+	 self.lib = ctypes.CDLL(os.environ['PYMATNEST_PATH']+"/fortran_MC_MD.so")
+      else:
+	 self.lib = ctypes.CDLL(os.path.dirname(__file__)+"/fortran_MC_MD.so")
 
       # fortran_seed_size
       self.lib.fortran_seed_size_.restype = ctypes.c_int

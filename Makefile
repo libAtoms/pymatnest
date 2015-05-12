@@ -1,6 +1,8 @@
 F90_MODELS = $(wildcard *_model.F90)
 
-all: doc RngStream.so fortran_MC_MD.so $(F90_MODELS:.F90=.so)
+all: doc RngStream.so libs
+
+libs: fortran_MC_MD.so $(F90_MODELS:.F90=.so)
 
 doc: MC_MD_steps.pdf
 
