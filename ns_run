@@ -688,24 +688,23 @@ def min_aspect_ratio(vol, cell):
 
 def do_cell_step(at, Emax, p_accept, transform):
    if p_accept < 1.0 and rng.float_uniform(0.0,1.0) > p_accept:
-      return 0
+      return False
 
    # save old config and apply transformation
    orig_cell = at.get_cell()
-   orig_pos = at.get_positions()
    new_cell = np.dot(orig_cell,transform)
-   at.set_cell(new_cell, scale_atoms=True)
+   new_vol = abs(np.dot(new_cell[0,:],np.cross(new_cell[1,:],new_cell[2,:])))
    # check size and shape constraints
-   new_vol = at.get_volume()
    if new_vol > movement_args['MC_cell_max_volume_per_atom']*len(at):
-      at.set_cell(orig_cell,scale_atoms=False)
-      at.set_positions(orig_pos)
-      return 0
+      return False
    if min_aspect_ratio(new_vol, new_cell) < movement_args['MC_cell_min_aspect_ratio']:
-      at.set_cell(orig_cell,scale_atoms=False)
-      at.set_positions(orig_pos)
-      return 0
+      return False
 
+   # orig_cell already saved previous value
+   orig_pos = at.get_positions()
+
+   # set new positions and velocities
+   at.set_cell(new_cell, scale_atoms=True)
    if at.has('momenta'):
       orig_velo = at.get_velocities()
       new_velo = np.dot(orig_velo,transform)
@@ -716,14 +715,13 @@ def do_cell_step(at, Emax, p_accept, transform):
    # accept or reject
    if new_energy < Emax: # accept
       at.info['ns_energy'] = new_energy
-      return 1
+      return True
    else: # reject and revert
       at.set_cell(orig_cell,scale_atoms=False)
       at.set_positions(orig_pos)
       if at.has('momenta'):
 	 at.set_velocities(orig_velo)
-      return 0
-
+      return False
 
 def do_MC_cell_walk(at, movement_args, Emax):
 #DOC 
@@ -738,23 +736,28 @@ def do_MC_cell_walk(at, movement_args, Emax):
       'MC_cell_shear': propose_shear_step,
       'MC_cell_stretch': propose_stretch_step }
 
+   did_any = False
    #DOC \item do in random order
    #DOC \begin{itemize}
    items = possible_moves.items()
    rng.shuffle_in_place(items)
    out = {}
-   for key, func in items:
+   for key, propose_step_func in items:
       #DOC \item volume move if rng $<$ acceptance probablity
       #DOC \item shear move if rng $<$ acceptance probablity
       #DOC \item stretch move if rng < acceptance probablity
       step_rv = rng.float_uniform(0.0, 1.0)
       if step_rv < movement_args[key+"_prob"]:
-	 (p_accept, transform) = func(at, movement_args[key+"_step_size"])
-	 out[key] = (1, do_cell_step(at, Emax, p_accept, transform))
+	 (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
+	 if do_cell_step(at, Emax, p_accept, transform):
+	    did_any = True
+	    out[key] = (1, 1)
+	 else:
+	    out[key] = (1, 0)
    #DOC \end{itemize}
 
    #DOC \item perturb\_velo
-   if at.has('momenta') and at.has('masses'):
+   if did_any:
       perturb_velo(at, Emax, rotate=False)
 
    return out
