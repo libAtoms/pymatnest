@@ -8,7 +8,7 @@ def usage():
   sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
   sys.stderr.write("start_volume=float (initial simulation box volume, mutually exclusive with restart_file, one is required)\n")
-  sys.stderr.write("start_species=[int int float] * int ([atomic_number multiplicity mass] * number of spceies, required iff start_volume is set)\n")
+  sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Required iff start_volume is set)\n")
   sys.stderr.write("start_energy_ceiling=float (max energy for initial configs, required iff start_volume is set. Initial P*V is added to this automatically)\n")
   sys.stderr.write("restart_file=path_to_file.xyz (file for restart configs, mutually exclusive with start_volume, one is required)\n")
   sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from, required iff restart_file is specified)\n")
@@ -961,14 +961,21 @@ if ns_args['restart_file'] == '': # start from scratch
       # create atoms structs from a list of atomic numbers and numbers of atoms
       lc = ns_args['start_volume']**(1.0/3.0)
       init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
-      species = ns_args['start_species'].split()
-      for i in range(0,len(species),3):
-	 Z_type = int(species[i])
-	 n_type = int(species[i+1])
-	 mass_type = float(species[i+2])
-	 init_atoms += ase.Atoms([Z_type] * n_type, masses=[mass_type] * n_type)
+      species = ns_args['start_species'].split(',')
+      for specie in species:
+	 specie_fields = specie.split()
+	 type_Z = int(specie_fields[0])
+	 type_n = int(specie_fields[1])
+	 if len(specie_fields) == 2:
+	    init_atoms += ase.Atoms([type_Z] * type_n)
+	 elif len(specie_fields) == 3:
+	    type_mass = float(specie_fields[2])
+	    init_atoms += ase.Atoms([type_Z] * type_n, masses=[type_mass] * type_n)
+	 else:
+	    exit_error("Each entry is start_species must include atomic number, multiplicity, and optionally mass", 5)
       if have_quippy:
 	 init_atoms = quippy.Atoms(init_atoms)
+      ase.io.write(sys.stdout, init_atoms, format="extxyz")
    else:
       init_atoms = None
 
@@ -976,6 +983,16 @@ if ns_args['restart_file'] == '': # start from scratch
       init_atoms = comm.bcast(init_atoms, root=0)
    if do_calc_quip:
       init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
+
+   # make sure masses are set if MD is going to be used
+   if movement_args['atom_algorithm'] == 'MD' and not init_atoms.has('masses'):
+      if have_quippy:
+	 if not hasattr(init_atoms,'mass'):
+	    init_atoms.add_property('mass', 0.0)
+	    init_atoms.mass[:] = quippy.ElementMass[init_atoms.Z]
+	 init_atoms.set_masses(init_atoms.mass/quippy.MASSCONVERT)
+      else:
+	 exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
 
    # clone initial config into array of walkers
    for i_walker in range(n_walkers):
@@ -986,17 +1003,6 @@ if ns_args['restart_file'] == '': # start from scratch
       at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
-
-   # make sure masses are set if MD is going to be used
-   if movement_args['atom_algorithm'] == 'MD' and not at.has('masses'):
-      for at in walkers:
-	 if have_quippy:
-	    if not hasattr(at,'mass'):
-	       at.add_property('mass', 0.0)
-	       at.mass[:] = quippy.ElementMass[at.Z]
-	    at.set_masses(at.mass/quippy.MASSCONVERT)
-	 else:
-	    exit_error("need some non-quippy way of setting masses when MD is active\n", 3)
 
    ns_args['start_energy_ceiling'] += movement_args['MC_cell_P']*init_atoms.get_volume()
    # initial positions are just random, up to an energy ceiling
