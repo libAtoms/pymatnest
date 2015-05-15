@@ -1,15 +1,17 @@
 start_volume_per_atom=1116
-start_species=1 64
-start_energy_ceiling=1.0e9
+
+start_species=1 64 1.0
+start_energy_ceiling=320.0
 
 n_walkers=128
 n_cull=1
-n_iter_per_walker=1200
-out_file_prefix=LJ64.MC.cell.00
+n_iter_per_walker=1700
+out_file_prefix=test.periodic.MC_velo
 
 ################################################################################
 atom_n_steps_expected=32
 atom_n_substeps=8
+cell_n_substeps=1
 
 atom_algorithm=MC
 
@@ -17,6 +19,11 @@ adjust_step_interval=-10
 
 MC_atom_step_size=5.0
 MC_atom_step_size_max=5.0
+
+MC_atom_velocities=T
+MC_atom_velo_step_size=0.1
+MC_atom_velo_step_size_max=0.1
+
 
 ################################################################################
 MC_cell_P=0.00675

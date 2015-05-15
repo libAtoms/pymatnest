@@ -1,0 +1,19 @@
+#!/bin/bash
+
+for f in test*cluster*energies; do
+   root=${f/.energies/}
+   if [[ ! -s $f.analysis || $f -nt $f.analysis ]]; then
+      echo analyze $f
+      ../ns_analyse -M 0.002 -D 0.002 -n 99 -k 1.0 $f > $f.analysis
+   fi
+done
+
+for f in test*periodic*energies; do
+   root=${f/.energies/}
+   if [[ ! -s $f.analysis || $f -nt $f.analysis ]]; then
+      echo analyze $f
+      ../ns_analyse  -M 0.0020 -D 0.0015625 -n 400 -k 1.0 $f > $f.analysis
+      root=${f/.energies/}
+      ../ns_process_traj ${root}.traj*xyz > $root.proc_traj
+   fi
+done

@@ -7,29 +7,35 @@ print_prefix=""
 def usage():
   sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
-  sys.stderr.write("start_volume=float (initial simulation box volume, mutually exclusive with restart_file, one is required)\n")
-  sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Required iff start_volume is set)\n")
-  sys.stderr.write("start_energy_ceiling=float (max energy for initial configs, required iff start_volume is set. Initial P*V is added to this automatically)\n")
-  sys.stderr.write("restart_file=path_to_file.xyz (file for restart configs, mutually exclusive with start_volume, one is required)\n")
-  sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from, required iff restart_file is specified)\n")
+  sys.stderr.write("start_volume_per_atom=float (initial simulation box volume per atom. Mutually exclusive with restart_*, one is required)\n")
+  sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required\n")
+  sys.stderr.write("start_energy_ceiling=float (max energy for initial configs.  Initial P*V is added to this automatically. Mutually exclusive with restart_*, one is required.)\n")
+  sys.stderr.write("restart_file=path_to_file.xyz (file for restart configs. Mutually exclusive with start_*, one is required)\n")
+  sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from. Mutually exclusive with start_*, one is required\n")
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
   sys.stderr.write("n_cull=int (MANDATORY)\n")
   sys.stderr.write("n_extra_walk_per_task=int (0)\n")
   sys.stderr.write("n_iter_per_walker=int (MANDATORY)\n")
-  sys.stderr.write("min_Emax=float (None)\n")
+  sys.stderr.write("min_Emax=float (None.  Termination condition based on Emax)\n")
   sys.stderr.write("out_file_prefix=str (None)\n")
-  sys.stderr.write("\n")
-  sys.stderr.write("QUIP_pot_args=str (MANDATORY)\n")
-  sys.stderr.write("QUIP_pot_params_file=str (MANDATORY)\n")
-  sys.stderr.write("FORTRAN_model=str (MANDATORY)\n")
+  sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
   sys.stderr.write("\n")
   sys.stderr.write("atom_n_steps_expected=int (0, this or atom_n_steps required)\n")
   sys.stderr.write("atom_n_steps=int (0, this or atom_n_steps_expected required)\n")
-  sys.stderr.write("atom_n_substeps=int (10)\n")
+  sys.stderr.write("atom_n_substeps=int (10, number of steps (MC sweeps or MD time steps in each segement))\n")
+  sys.stderr.write("cell_n_substeps=int (1, number of MC sweeps in each segement)\n")
+  sys.stderr.write("\n")
+  sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
   sys.stderr.write("atom_algorithm=[MC | MD] (MANDATORY)\n")
+  sys.stderr.write("\n")
+  sys.stderr.write("MC_atom_velocities=[T | F] (F, supported only for energy_calculator=fortran)\n")
+  sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F)\n")
   sys.stderr.write("MC_atom_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
+  sys.stderr.write("MC_atom_velo_step_size=float (0.1)\n")
+  sys.stderr.write("MC_atom_velo_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
+  sys.stderr.write("\n")
   sys.stderr.write("MD_atom_velo_perturb=float (0.1, < 0 for completely randomizing rather than perturbing)\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
@@ -54,15 +60,17 @@ def usage():
   sys.stderr.write("MC_adjust_step_factor=int (2.0)\n")
   sys.stderr.write("MD_adjust_step_factor=int (1.5)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
+  sys.stderr.write("QUIP_pot_args=str (MANDATORY if energy_calculator=QUIP)\n")
+  sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=QUIP)\n")
+  sys.stderr.write("FORTRAN_model=str (MANDATORY if energy_calculator=QUIP)\n")
+  sys.stderr.write("\n")
+  sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
   sys.stderr.write("profile=rank_to_profile (-1)\n")
-  sys.stderr.write("2D=[ T | F ] (F)\n")
+  sys.stderr.write("2D=[ T | F ] (F, unsupported)\n")
   sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
   sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
   sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
-  sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (quip)\n")
   sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
-  sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
 
 if len(sys.argv) != 1 and len(sys.argv) != 2:
    usage()
@@ -155,13 +163,13 @@ try:
 except:
    ns_args['min_Emax'] = None
 
-ns_args['start_volume'] = float(args.pop('start_volume', 0.0))
+ns_args['start_volume_per_atom'] = float(args.pop('start_volume_per_atom', 0.0))
 ns_args['restart_file'] = args.pop('restart_file', '')
-if ((ns_args['start_volume'] == 0.0 and ns_args['restart_file'] == '') or
-    (ns_args['start_volume'] != 0.0 and ns_args['restart_file'] != '')):
+if ((ns_args['start_volume_per_atom'] == 0.0 and ns_args['restart_file'] == '') or
+    (ns_args['start_volume_per_atom'] != 0.0 and ns_args['restart_file'] != '')):
    exit_error("Got neither or both (conflicting) start_volume and restart_file\n", 3)
 
-if ns_args['start_volume'] != 0.0:
+if ns_args['start_volume_per_atom'] != 0.0:
    try:
      ns_args['start_species'] = args.pop('start_species')
    except:
@@ -188,7 +196,7 @@ ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
 
 # parse energy_calculator
-ns_args['energy_calculator'] = args.pop('energy_calculator', 'quip')
+ns_args['energy_calculator'] = args.pop('energy_calculator', 'fortran')
 do_calc_quip = False
 do_calc_lammps = False
 do_calc_internal = False
@@ -252,6 +260,7 @@ movement_args={}
 movement_args['atom_n_steps_expected'] = int(args.pop('atom_n_steps_expected', 0))
 movement_args['atom_n_steps'] = int(args.pop('atom_n_steps', 0))
 movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
+movement_args['cell_n_substeps'] = int(args.pop('cell_n_substeps', 1))
 try:
    movement_args['atom_algorithm'] = args.pop('atom_algorithm')
 except:
@@ -261,9 +270,13 @@ if movement_args['atom_n_steps_expected'] == 0 and movement_args['atoms_n_steps'
 if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD':
    exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorith,'], 3)
 
+movement_args['MC_atom_velocities'] = args.pop('MC_atom_velocities', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
 movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
+movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 0.1))
+movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 1.0))
 movement_args['MC_atom_uniform_rv'] = args.pop('MC_atom_uniform_rv', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
 movement_args['MD_atom_velo_perturb'] = float(args.pop('MD_atom_velo_perturb', 0.1))
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
@@ -540,9 +553,8 @@ def do_MD_atom_walk(at, movement_args, Emax):
       propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_n_substeps']) 
       final_E = eval_energy(at)
    elif do_calc_fortran:
-      final_E = np.zeros( (1) )
-      f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], final_E = final_E, debug=ns_args['debug'])
-      final_E = final_E[0] + eval_energy(at,do_PE=False)
+      final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
+      final_E += eval_energy(at,do_PE=False, do_KE=False)
    else:
       exit_error("Need some non-quippy, non-fortran way of doing MD\n",3)
 
@@ -587,12 +599,17 @@ def do_MC_atom_walk(at, movement_args, Emax):
    #DOC \begin{itemize}
    n_steps = movement_args['atom_n_substeps']
    step_size = movement_args['MC_atom_step_size']
+   step_size_velo = movement_args['MC_atom_velo_step_size']
    n_accept=0
+   n_accept_velo = None
 
    if do_calc_fortran:
-      final_E = np.zeros( (1) )
-      n_accept = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=True, do_PV=True), final_E)
-      at.info['ns_energy'] = final_E[0] + eval_energy(at, do_PE=False, do_KE=True, do_PV=True)
+      if movement_args['MC_atom_velocities']:
+	 (n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), step_size_velo)
+	 at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
+      else:
+	 (n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
+	 at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
    else:
       dz=0.0
       for i_MC_step in range(n_steps):
@@ -629,10 +646,11 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 #DOC \end{itemize}
       #DOC \end{itemize}
 
-   #DOC \item perturb\_velo
-   perturb_velo(at, Emax, rotate=False)
-
-   return {'MC_atom': (n_steps*len(at), n_accept)}
+   out = {}
+   if n_accept_velo is not None:
+      out['MC_atom_velo'] = (n_steps*len(at), n_accept_velo)
+   out['MC_atom'] = (n_steps*len(at), n_accept)
+   return out
 #DOC \end{itemize}
 
 
@@ -651,8 +669,8 @@ def propose_shear_step(at, step_size):
    other_vec_ind = range(3)
    other_vec_ind.remove(rnd_vec_ind)
    orig_cell = at.get_cell()
-   v1 = orig_cell[other_vec_ind[0],:]
-   v2 = orig_cell[other_vec_ind[1],:]
+   v1 = orig_cell[other_vec_ind[0],:].copy()
+   v2 = orig_cell[other_vec_ind[1],:].copy()
    v1 /= np.sqrt(np.dot(v1,v1))
    v2 -= v1*np.dot(v1,v2)
    v2 /= np.sqrt(np.dot(v2,v2))
@@ -662,7 +680,7 @@ def propose_shear_step(at, step_size):
    # create new cell and transformation matrix
    new_cell = orig_cell.copy()
    new_cell[rnd_vec_ind,:] += rv1*v1 + rv2*v2
-   transform = np.dot(new_cell, np.linalg.inv(orig_cell))
+   transform = np.dot(np.linalg.inv(orig_cell), new_cell)
    return (1.0, transform)
 
 def propose_stretch_step(at, step_size):
@@ -673,8 +691,8 @@ def propose_stretch_step(at, step_size):
 
    rv = rng.normal(step_size)
    transform = np.identity(3)
-   transform[rnd_v1_ind,:] *= np.exp(rv)
-   transform[rnd_v2_ind,:] *= np.exp(-rv)
+   transform[rnd_v1_ind,rnd_v1_ind] = np.exp(rv)
+   transform[rnd_v2_ind,rnd_v2_ind] = np.exp(-rv)
    return (1.0, transform)
 
 def min_aspect_ratio(vol, cell):
@@ -705,10 +723,6 @@ def do_cell_step(at, Emax, p_accept, transform):
 
    # set new positions and velocities
    at.set_cell(new_cell, scale_atoms=True)
-   if at.has('momenta'):
-      orig_velo = at.get_velocities()
-      new_velo = np.dot(orig_velo,transform)
-      at.set_velocities(new_velo)
 
    # calculate new energy
    new_energy = eval_energy(at)
@@ -719,8 +733,6 @@ def do_cell_step(at, Emax, p_accept, transform):
    else: # reject and revert
       at.set_cell(orig_cell,scale_atoms=False)
       at.set_positions(orig_pos)
-      if at.has('momenta'):
-	 at.set_velocities(orig_velo)
       return False
 
 def do_MC_cell_walk(at, movement_args, Emax):
@@ -736,29 +748,27 @@ def do_MC_cell_walk(at, movement_args, Emax):
       'MC_cell_shear': propose_shear_step,
       'MC_cell_stretch': propose_stretch_step }
 
-   did_any = False
-   #DOC \item do in random order
-   #DOC \begin{itemize}
    items = possible_moves.items()
-   rng.shuffle_in_place(items)
-   out = {}
-   for key, propose_step_func in items:
-      #DOC \item volume move if rng $<$ acceptance probablity
-      #DOC \item shear move if rng $<$ acceptance probablity
-      #DOC \item stretch move if rng < acceptance probablity
-      step_rv = rng.float_uniform(0.0, 1.0)
-      if step_rv < movement_args[key+"_prob"]:
-	 (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
-	 if do_cell_step(at, Emax, p_accept, transform):
-	    did_any = True
-	    out[key] = (1, 1)
-	 else:
-	    out[key] = (1, 0)
+   #DOC \item loop cell\_n\_substeps times:
+   #DOC \begin{itemize}
+   for i in range(movement_args['cell_n_substeps']):
+      rng.shuffle_in_place(items)
+      out = {}
+      #DOC \item do in random order
+      #DOC \begin{itemize}
+      for key, propose_step_func in items:
+	 #DOC \item volume move if rng $<$ acceptance probablity
+	 #DOC \item shear move if rng $<$ acceptance probablity
+	 #DOC \item stretch move if rng < acceptance probablity
+	 step_rv = rng.float_uniform(0.0, 1.0)
+	 if step_rv < movement_args[key+"_prob"]:
+	    (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
+	    if do_cell_step(at, Emax, p_accept, transform):
+	       out[key] = (1, 1)
+	    else:
+	       out[key] = (1, 0)
+      #DOC \end{itemize}
    #DOC \end{itemize}
-
-   #DOC \item perturb\_velo
-   if did_any:
-      perturb_velo(at, Emax, rotate=False)
 
    return out
 #DOC \end{itemize}
@@ -962,7 +972,7 @@ if ns_args['restart_file'] == '': # start from scratch
    # create initial config
    if rank == 0:
       # create atoms structs from a list of atomic numbers and numbers of atoms
-      lc = ns_args['start_volume']**(1.0/3.0)
+      lc = ns_args['start_volume_per_atom']**(1.0/3.0)
       init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
       species = ns_args['start_species'].split(',')
       for specie in species:
@@ -976,6 +986,7 @@ if ns_args['restart_file'] == '': # start from scratch
 	    init_atoms += ase.Atoms([type_Z] * type_n, masses=[type_mass] * type_n)
 	 else:
 	    exit_error("Each entry is start_species must include atomic number, multiplicity, and optionally mass", 5)
+      init_atoms.set_cell(init_atoms.get_cell()*float(len(init_atoms))**(1.0/3.0), scale_atoms=True)
       if have_quippy:
 	 init_atoms = quippy.Atoms(init_atoms)
       ase.io.write(sys.stdout, init_atoms, format="extxyz")
@@ -988,7 +999,7 @@ if ns_args['restart_file'] == '': # start from scratch
       init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
 
    # make sure masses are set if MD is going to be used
-   if movement_args['atom_algorithm'] == 'MD' and not init_atoms.has('masses'):
+   if movement_args['do_velocities'] and not init_atoms.has('masses'):
       if have_quippy:
 	 if not hasattr(init_atoms,'mass'):
 	    init_atoms.add_property('mass', 0.0)
@@ -1022,7 +1033,8 @@ if ns_args['restart_file'] == '': # start from scratch
 	 n_try += 1
       at.info['ns_energy'] = energy + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
 
-      if movement_args['atom_algorithm'] == 'MD':
+      # set initial velocities, rejection free
+      if movement_args['do_velocities']:
 	 perturb_velo(at, ns_args['start_energy_ceiling'])
 
 else: # doing a restart
@@ -1046,7 +1058,6 @@ else: # doing a restart
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
       at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
-
 
 def save_snapshot(id):
    #QUIP_IO if have_quippy:
@@ -1091,7 +1102,7 @@ def do_ns_loop():
       if movement_args['2D']:
 	 nD = 2
       if ns_args['restart_file'] == '':
-	 if movement_args['atom_algorithm'] == 'MD':
+	 if movement_args['do_velocities']:
 	    nExtraDOF = 0
 	 else:
 	    nExtraDOF = n_atoms*nD
@@ -1111,12 +1122,12 @@ def do_ns_loop():
    walk_stats_cumul={}
    zero_stats(walk_stats_cumul, movement_args)
 
-   prev_time = time.time()
+   initial_time = time.time()
+   prev_time = initial_time
 
    Emax_of_step = None
 
    verbose=False
-   i_ns_step = 0
    for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
       print_prefix="%d %d" % (rank, i_ns_step)
 
@@ -1273,25 +1284,25 @@ def do_ns_loop():
 	 if send_rank[0] == recv_rank[0] and send_rank[0] == rank:
 	    walkers[recv_ind[0]].set_positions(walkers[send_ind[0]].get_positions())
 	    walkers[recv_ind[0]].set_cell(walkers[send_ind[0]].get_cell())
-	    if movement_args['atom_algorithm'] == 'MD':
+	    if movement_args['do_velocities']:
 	       walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
 	    walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 	 else:
 	    n_send = n_atoms + 3
-	    if movement_args['atom_algorithm'] == 'MD':
+	    if movement_args['do_velocities']:
 	       n_send += n_atoms
 	    buf = np.zeros ( (n_send, 3) )
 	    if send_rank[0] == rank: # only one config is sent/received
 	       buf[0:n_atoms,:] = walkers[send_ind[0]].get_positions()
 	       buf[n_atoms:n_atoms+3,:] = walkers[send_ind[0]].get_cell()
-	       if movement_args['atom_algorithm'] == 'MD':
+	       if movement_args['do_velocities']:
 		  buf[n_atoms+3:,:] = walkers[send_ind[0]].get_velocities()
 	       comm.Send([buf,  MPI.DOUBLE], dest=recv_rank[0], tag=100)
 	    elif recv_rank[0] == rank:
 	       comm.Recv([buf, MPI.DOUBLE], source=send_rank[0], tag=100)
 	       walkers[recv_ind[0]].set_positions(buf[0:n_atoms,:])
 	       walkers[recv_ind[0]].set_cell(buf[n_atoms:n_atoms+3,:])
-	       if movement_args['atom_algorithm'] == 'MD':
+	       if movement_args['do_velocities']:
 		  walkers[recv_ind[0]].set_velocities(buf[n_atoms+3:,:])
 	       walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
       else: # should switch to comm.Alltoall, faster, but more manual massaging of data structures
@@ -1400,6 +1411,8 @@ def do_ns_loop():
 	 save_snapshot(i_ns_step)
 	 clean_prev_snapshot(prev_snapshot_iter)
 	 prev_snapshot_iter = i_ns_step
+   cur_time = time.time()
+   print "LOOP TIME total ",cur_time-initial_time, " per iter ", (cur_time-initial_time)/(i_ns_step+1)
 
 #QUIP_IO if have_quippy:
    #QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.xyz' % rank, action=quippy.OUTPUT)

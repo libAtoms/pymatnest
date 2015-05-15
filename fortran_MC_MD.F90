@@ -10,22 +10,26 @@ subroutine fortran_set_seed(n_seed, seed)
    call random_seed(put=seed)
 end subroutine fortran_set_seed
 
-function fortran_MC_atom(N, pos, cell, n_steps, step_size, Emax, final_E) result(n_accept)
+subroutine fortran_MC_atom(N, pos, vel, mass, cell, n_steps, step_size_pos, step_size_vel, Emax, final_E, &
+			   n_accept_pos, n_accept_vel)
    implicit none
    integer :: N
-   double precision :: pos(3,N), cell(3,3)
+   double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
    integer :: n_steps
-   double precision :: step_size, Emax, final_E
-   ! result
-   integer :: n_accept
+   double precision :: step_size_pos, step_size_vel, Emax, final_E
+   integer :: n_accept_pos, n_accept_vel
 
+   logical :: do_vel
    integer :: d_i
-   double precision :: d_r, E, dE, d_pos(3)
+   double precision :: d_r, E, dE, d_pos(3), d_vel(3)
 
    double precision, external :: ll_eval_energy, ll_eval_denergy_1
 
    integer :: i_step, i_at, t_i
    integer :: order(N)
+   double precision :: vel_pos_rv
+
+   do_vel = (step_size_vel /= 0.0)
 
    do i_at=1, N
       order(i_at) = i_at
@@ -39,25 +43,55 @@ function fortran_MC_atom(N, pos, cell, n_steps, step_size, Emax, final_E) result
       endif
    end do
 
-   n_accept = 0
+   n_accept_pos = 0
+   n_accept_vel = 0
    E = ll_eval_energy(N, pos, cell)
+   if (do_vel) then
+      E = E + 0.5*sum(spread(mass,1,3)*vel**2)
+   endif
+
    do i_step=1, n_steps
    do i_at=1, N
       d_i = order(i_at)
+      if (do_vel) then
+	 call random_number(d_vel)
+	 d_vel = 2.0*step_size_vel*(d_vel-0.5)
+	 call random_number(vel_pos_rv)
+      endif
+
+      if (do_vel .and.  vel_pos_rv < 0.5) then
+	 dE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
+	 if (E + dE < Emax) then
+	    vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
+	    E = E + dE
+	    n_accept_vel = n_accept_vel + 1
+	 endif
+      endif
+
       call random_number(d_pos)
-      d_pos = 2.0*step_size*(d_pos-0.5)
+      d_pos = 2.0*step_size_pos*(d_pos-0.5)
       dE = ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
       if (E + dE < Emax) then
 	 pos(1:3,d_i) = pos(1:3,d_i) + d_pos(1:3)
 	 E = E + dE
-	 n_accept = n_accept + 1
+	 n_accept_pos = n_accept_pos + 1
       endif
+
+      if (do_vel .and.  vel_pos_rv >= 0.5) then
+	 dE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
+	 if (E + dE < Emax) then
+	    vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
+	    E = E + dE
+	    n_accept_vel = n_accept_vel + 1
+	 endif
+      endif
+
    end do
    end do
 
    final_E = E
 
-end function fortran_MC_atom
+end subroutine fortran_MC_atom
 
 subroutine fortran_MD_atom_NVE(N, pos, vel, mass, cell, n_steps, timestep, final_E, debug)
    implicit none
@@ -68,34 +102,38 @@ subroutine fortran_MD_atom_NVE(N, pos, vel, mass, cell, n_steps, timestep, final
    integer :: debug
 
    integer i_step, i
-   double precision :: forces(3,N), acc(3,N)
+   double precision :: forces(3,N), acc(3,N), PE
 
    double precision, external :: ll_eval_forces, ll_eval_energy
 
    ! initialize accelerations
-   final_E = ll_eval_forces(N, pos, cell, forces)
+   PE = ll_eval_forces(N, pos, cell, forces)
    do i=1, 3
       acc(i,:) = forces(i,:) / mass(:)
    end do
 
-   if (debug > 0) print *, "initial PE KE E ", final_E, 0.5*sum(spread(mass,1,3)*vel**2), &
-      final_E+0.5*sum(spread(mass,1,3)*vel**2), 0.5*sum(vel**2)*mass(1)
+   if (debug > 0) print *, "initial PE KE E ", PE, 0.5*sum(spread(mass,1,3)*vel**2), &
+      PE+0.5*sum(spread(mass,1,3)*vel**2)
 
    do i_step=1, n_steps
       ! Verlet part 1
       vel = vel + 0.5*timestep*acc
       pos = pos + timestep*vel
 
-      ! new forces
-      final_E = ll_eval_forces(N, pos, cell, forces)
-      if (debug > 0) print *, "step PE KE E ", i_step, final_E, 0.5*sum(spread(mass,1,3)*vel**2), &
-	 final_E+0.5*sum(spread(mass,1,3)*vel**2)
+      ! new accelerations at t+dt
+      PE = ll_eval_forces(N, pos, cell, forces)
       do i=1, 3
 	 acc(i,:) = forces(i,:) / mass(:)
       end do
 
       ! Verlet part 2
       vel = vel + 0.5*timestep*acc
+
+      if (debug > 0) print *, "step PE KE E ", i_step, PE, 0.5*sum(spread(mass,1,3)*vel**2), &
+	 PE+0.5*sum(spread(mass,1,3)*vel**2)
+
    end do
+
+   final_E = PE + 0.5*sum(spread(mass,1,3)*vel**2)
 
 end subroutine fortran_MD_atom_NVE

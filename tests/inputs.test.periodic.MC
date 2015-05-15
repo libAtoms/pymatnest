@@ -1,11 +1,12 @@
 start_volume_per_atom=1116
+
 start_species=1 64
 start_energy_ceiling=1.0e9
 
 n_walkers=128
 n_cull=1
 n_iter_per_walker=1200
-out_file_prefix=LJ64.MC.cell.00
+out_file_prefix=test.periodic.MC
 
 ################################################################################
 atom_n_steps_expected=32

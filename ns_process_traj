@@ -17,9 +17,8 @@ re_volume = re.compile('volume=([^ ]*)')
 re_KE =     re.compile('ns_KE=([^ ]*)')
 
 def process_headers(file):
-   sys.stderr.write("read %s " %  file)
+   sys.stderr.write(".")
    proc = subprocess.Popen(['fgrep','Lattice',file],stdout=subprocess.PIPE)
-   i=0
    data = []
    for l in proc.stdout:
 
@@ -36,10 +35,6 @@ def process_headers(file):
 	 r_KE = float(r_KE.group(1))
 
       data.append([r_e, r_volume, r_KE])
-      if i%1000 == 0:
-	 sys.stderr.write("%d" % ((i/1000)%10))
-      i += 1
-   sys.stderr.write("\n")
    return data
 
 def process_traj(file):
