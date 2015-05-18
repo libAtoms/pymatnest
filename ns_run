@@ -462,7 +462,7 @@ def gen_random_velo(at, Emax, unit_rv=None):
    # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
    # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
 
-   pot_energy = eval_energy(at, do_KE=False)
+   pot_energy = at.info['ns_energy'] - eval_energy(at, do_PE=False, do_PV=False)
    if Emax > pot_energy:
       masses = at.get_masses()
       velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
