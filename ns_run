@@ -10,7 +10,7 @@ def usage():
   sys.stderr.write("start_volume_per_atom=float (initial simulation box volume per atom. Mutually exclusive with restart_*, one is required)\n")
   sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required\n")
   sys.stderr.write("start_energy_ceiling=float (max energy for initial configs.  Initial P*V is added to this automatically. Mutually exclusive with restart_*, one is required.)\n")
-  sys.stderr.write("restart_file=path_to_file.extxyz (file for restart configs. Mutually exclusive with start_*, one is required)\n")
+  sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
   sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from. Mutually exclusive with start_*, one is required\n")
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
   sys.stderr.write("n_cull=int (MANDATORY)\n")
@@ -64,6 +64,7 @@ def usage():
   sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=QUIP)\n")
   sys.stderr.write("FORTRAN_model=str (MANDATORY if energy_calculator=QUIP)\n")
   sys.stderr.write("\n")
+  sys.stderr.write("config_file_format=str (extxyz)\n") # julia
   sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
   sys.stderr.write("profile=rank_to_profile (-1)\n")
   sys.stderr.write("2D=[ T | F ] (F, unsupported)\n")
@@ -231,6 +232,8 @@ else:
    exit_error("energy_calculator=%s unknown\n" % ns_args['energy_calculator'], 3)
 
 ns_args['no_extra_walks_at_all'] = args.pop('no_extra_walks_at_all', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+
+ns_args['config_file_format'] = args.pop('config_file_format', 'extxyz')
 
 ns_args['rng'] = args.pop('rng', 'numpy')
 import ns_rng
@@ -989,7 +992,7 @@ if ns_args['restart_file'] == '': # start from scratch
       init_atoms.set_cell(init_atoms.get_cell()*float(len(init_atoms))**(1.0/3.0), scale_atoms=True)
       if have_quippy:
 	 init_atoms = quippy.Atoms(init_atoms)
-      ase.io.write(sys.stdout, init_atoms, format="extxyz")
+      ase.io.write(sys.stdout, init_atoms, format=ns_args['config_file_format'])
    else:
       init_atoms = None
 
@@ -1068,9 +1071,9 @@ def save_snapshot(id):
       #QUIP_IO except:
 	 #QUIP_IO snapshot_file=ns_args['out_file_prefix']+'snapshot.'+id+'.%05d.'+('%04d' % rank)+'.extxyz'
    try:
-      snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%s.%d.extxyz' % (id,rank), "w")
+      snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%s.%d.%s' % (id,rank, ns_args['config_file_format']), "w")
    except:
-      snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%d.%d.extxyz' % (id,rank), "w")
+      snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (id,rank, ns_args['config_file_format']), "w")
 
    i_at = 0
    for at in walkers:
@@ -1078,14 +1081,14 @@ def save_snapshot(id):
 	 #QUIP_IO at.write(snapshot_io)
       #QUIP_IO else:
 	 #QUIP_IO ase.io.write(snapshot_file % i_at, ase.Atoms(at))
-      ase.io.write(snapshot_io, at, format='extxyz')
+      ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
       i_at += 1
 
    snapshot_io.close()
 
 def clean_prev_snapshot(prev_snapshot_iter):
    if prev_snapshot_iter is not None:
-      snapshot_file=ns_args['out_file_prefix']+'snapshot.%d.%d.extxyz' % (prev_snapshot_iter, rank)
+      snapshot_file=ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (prev_snapshot_iter, rank, ns_args['config_file_format'])
       try:
 	 os.remove(snapshot_file)
       except:
@@ -1181,7 +1184,7 @@ def do_ns_loop():
 	       #QUIP_IO walkers[i].write(traj_io)
 	    #QUIP_IO else:
 	       #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
-	    ase.io.write(traj_io, walkers[i], format='extxyz')
+	    ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
 
       # calculate how many will be culled on each rank
       n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -1419,7 +1422,7 @@ def do_ns_loop():
    #QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.extxyz' % rank, action=quippy.OUTPUT)
 #QUIP_IO else:
    #QUIP_IO traj_file = ns_args['out_file_prefix']+'traj.%08d.'+('%04d' % rank)+'.extxyz'
-traj_io = open(ns_args['out_file_prefix']+'traj.%d.extxyz' % rank, "w")
+traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
 
 if rank == 0:
    energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
