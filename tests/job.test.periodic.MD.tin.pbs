@@ -1,0 +1,21 @@
+#!/bin/bash
+#CCMS nprocs=128:network=fast:n2013
+#PBS -l walltime=48:00:00
+#PBS -N test.periodic.MD
+#PBS -o test.periodic.MD.stdout
+#PBS -e test.periodic.MD.stderr
+#PBS -S /bin/bash
+
+cd $PBS_O_WORKDIR
+startdir=$PWD
+
+if [ -f $HOME/.bashrc ]; then
+   . $HOME/.bashrc
+fi
+
+export WORK_DIR=$WORKDIR/$JOB_ID
+
+echo Running in `pwd` >> $startdir/test.periodic.MD.stdout.rundir
+echo Running on `hostname` >> $startdir/test.periodic.MD.stdout.rundir
+
+mpirun  ../ns_run < inputs.test.periodic.MD > test.periodic.MD.out
