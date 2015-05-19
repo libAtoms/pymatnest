@@ -29,14 +29,16 @@ def usage():
   sys.stderr.write("atom_algorithm=[MC | MD] (MANDATORY)\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_atom_velocities=[T | F] (F, supported only for energy_calculator=fortran)\n")
-  sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F)\n")
+  sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F, uses MD_atom_velo_perturb*)\n")
   sys.stderr.write("MC_atom_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_velo_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_velo_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("MD_atom_velo_perturb=float (0.1, < 0 for completely randomizing rather than perturbing)\n")
+  sys.stderr.write("MD_atom_velo_perturb=[T | F] (T. Perturb velocities before MD trajectory\n")
+  sys.stderr.write("MD_atom_velo_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
+  sys.stderr.write("MD_atom_velo_perturb_angle=float (0.1. Max angle for random rotations.)\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2)\n")
@@ -271,6 +273,7 @@ if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] !
    exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorith,'], 3)
 
 movement_args['MC_atom_velocities'] = args.pop('MC_atom_velocities', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['MC_atom_velocities_pre_perturb'] = args.pop('MC_atom_velocities_pre_perturb', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
 movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
 movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 0.1))
@@ -278,7 +281,10 @@ movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_
 movement_args['MC_atom_uniform_rv'] = args.pop('MC_atom_uniform_rv', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
-movement_args['MD_atom_velo_perturb'] = float(args.pop('MD_atom_velo_perturb', 0.1))
+movement_args['MD_atom_velo_perturb'] = args.pop('MD_atom_velo_perturb', "T") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['MD_atom_velo_randomize'] = args.pop('MD_atom_velo_randomize', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['MD_atom_velo_perturb_angle'] = float(args.pop('MD_atom_velo_perturb_angle', 0.1))
+
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
 movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
@@ -487,12 +493,12 @@ def perturb_velo(at, Emax, rotate=True):
    if not at.has('momenta') or not at.has('masses'):
       return
 
-   if movement_args['MD_atom_velo_perturb'] == 0.0:
+   if not movement_args['MD_atom_velo_perturb']:
       return
 
    orig_KE = at.get_kinetic_energy()
-   #DOC \item if MD\_atom\_velo\_perturb $<$ 0 pick random velocities consistent with Emax
-   if movement_args['MD_atom_velo_perturb'] < 0.0:
+   #DOC \item if MD\_atom\_velo\_randomize pick random velocities consistent with Emax
+   if movement_args['MD_atom_velo_randomize']:
       # randomize completely
       at.set_velocities(gen_random_velo(at, Emax))
    #DOC \item else perturb velocities
@@ -515,7 +521,7 @@ def perturb_velo(at, Emax, rotate=True):
 	    for (ind_1_i, ind_2_i) in pairwise(indices):
 	       ind_1_j = rng.int_uniform(0,3)
 	       ind_2_j = rng.int_uniform(0,3)
-	       ang = rng.float_uniform(-movement_args['MD_atom_velo_perturb']*3.14159,movement_args['MD_atom_velo_perturb']*3.14159)
+	       ang = rng.float_uniform(-movement_args['MD_atom_velo_perturb_angle']*np.pi,movement_args['MD_atom_velo_perturb_angle']*np.pi)
 	       c_ang = np.cos(ang)
 	       s_ang = np.sin(ang)
 	       v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
@@ -602,6 +608,9 @@ def do_MC_atom_walk(at, movement_args, Emax):
    step_size_velo = movement_args['MC_atom_velo_step_size']
    n_accept=0
    n_accept_velo = None
+
+   if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
+      perturb_velo(at, Emax)
 
    if do_calc_fortran:
       if movement_args['MC_atom_velocities']:
