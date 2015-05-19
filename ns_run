@@ -59,8 +59,12 @@ def usage():
   sys.stderr.write("MC_cell_max_volume_per_atom=float (1.0e3)\n")
   sys.stderr.write("\n")
   sys.stderr.write("adjust_step_interval=int (-10, negative for only using last iteration, 0 for no adjust)\n")
-  sys.stderr.write("MC_adjust_step_factor=int (2.0)\n")
-  sys.stderr.write("MD_adjust_step_factor=int (1.5)\n")
+  sys.stderr.write("MC_adjust_step_factor=float (2.0)\n")
+  sys.stderr.write("MC_adjust_min_rate=float (0.25)\n")
+  sys.stderr.write("MC_adjust_max_rate=float (0.75)\n")
+  sys.stderr.write("MD_adjust_step_factor=float (1.5)\n")
+  sys.stderr.write("MD_adjust_min_rate=float (0.95)\n")
+  sys.stderr.write("MD_adjust_max_rate=float (1.00)\n")
   sys.stderr.write("\n")
   sys.stderr.write("QUIP_pot_args=str (MANDATORY if energy_calculator=QUIP)\n")
   sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=QUIP)\n")
@@ -309,7 +313,11 @@ movement_args['MC_cell_max_volume_per_atom'] = float(args.pop('MC_cell_max_volum
 
 movement_args['adjust_step_interval'] = int(args.pop('adjust_step_interval', -10))
 movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 2.0))
+movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
+movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
 movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.5))
+movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.95))
+movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 1.00))
 
 movement_args['2D'] = args.pop('2D', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
 
@@ -868,12 +876,12 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	    print print_prefix, "accept rate for %s = %f (%d)" % (key, rate, n_try)
 
 	 if key.find("MC") == 0:
-	    min_rate = 0.25
-	    max_rate = 0.75
+	    min_rate = movement_args['MC_adjust_min_rate']
+	    max_rate = movement_args['MC_adjust_max_rate']
 	    suffix="step_size"
 	 elif key.find("MD") == 0:
-	    min_rate = 0.95
-	    max_rate = 1.00
+	    min_rate = movement_args['MD_adjust_min_rate']
+	    max_rate = movement_args['MD_adjust_max_rate']
 	    suffix="timestep"
 	 else:
 	    exit_error("adjust_step_size got key '%s', neither MC nor MD\n" % key, 5)
