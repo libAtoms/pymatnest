@@ -117,9 +117,9 @@ class fortran_MC_MD:
       n_steps = ctypes.c_int(n_steps)
       step_size_pos = ctypes.c_double(step_size_pos)
       if step_size_velo is None:
-	 step_size_velo = ctypes.c_double(0.0)
+	 step_size_velo_c = ctypes.c_double(0.0)
       else:
-	 step_size_velo = ctypes.c_double(step_size_velo)
+	 step_size_velo_c = ctypes.c_double(step_size_velo)
       Emax = ctypes.c_double(Emax)
       pos = at.get_positions()
       if step_size_velo is None:
@@ -130,7 +130,7 @@ class fortran_MC_MD:
       n_accept_velo = np.zeros( (1), dtype=np.int32)
       final_E = np.zeros( (1), dtype=np.float64) 
       self.lib.fortran_mc_atom_(ctypes.byref(n), pos, velo, at.get_masses(), at.get_cell(),
-	 ctypes.byref(n_steps), ctypes.byref(step_size_pos), ctypes.byref(step_size_velo), 
+	 ctypes.byref(n_steps), ctypes.byref(step_size_pos), ctypes.byref(step_size_velo_c),
 	 ctypes.byref(Emax), final_E, n_accept_pos, n_accept_velo)
       at.set_positions(pos)
       if step_size_velo is None:
