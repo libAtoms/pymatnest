@@ -594,21 +594,17 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DOC \item accept/reject entire move on E $<$ Emax
    reject_Emax = (final_E >= Emax)
 
-   if reject_fuzz or reject_Emax:
+   if reject_fuzz or reject_Emax: # reject
       print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
       at.info['ns_energy'] = orig_E
-   else:
+      n_accept = 0
+   else: # accept
+      # remember to reverse velocities on acceptance to preserve detailed balance, since velocity is (sometimes) being perturbed, not completely randomized
+      at.set_velocities(-at.get_velocities()) # is there a faster way of doing this in ASE?  Can you do at.velocities?
       at.info['ns_energy'] = final_E
-
-   n_accept = 1
-   if movement_args['MD_atom_reject_energy_violation']:
-      if reject_fuzz:
-	 n_accept = 0
-   else:
-      if reject_Emax:
-	 n_accept = 0
+      n_accept = 1
 
    return {'MD_atom' : (1, n_accept) }
 #DOC \end{itemize}
@@ -879,7 +875,7 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
       if n_try > 0:
 	 rate = float(n_accept)/float(n_try)
 
-	 if comm.rank == 0:
+	 if comm is None or comm.rank == 0:
 	    print print_prefix, "accept rate for %s = %f (%d)" % (key, rate, n_try)
 
 	 if key.find("MC") == 0:
@@ -915,7 +911,7 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	 if movement_args[key+"_"+suffix] == orig_value:
 	    dir=None
 
-	 if dir is not None and comm.rank == 0:
+	 if dir is not None and (comm is None or comm.rank == 0):
 	    print print_prefix, "adjust_step_sizes adjusted %s %s to %f" % (key, dir, movement_args[key+"_"+suffix])
 
 def zero_stats(d, movement_args):
