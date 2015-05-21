@@ -5,7 +5,7 @@ start_energy_ceiling=1.0e9
 
 n_walkers=128
 n_cull=1
-n_iter_per_walker=1200
+n_iter_per_walker=10
 out_file_prefix=cluster.MC
 
 atom_algorithm=MC
