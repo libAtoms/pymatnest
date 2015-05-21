@@ -58,8 +58,8 @@ def usage():
   sys.stderr.write("MC_cell_min_aspect_ratio=float (0.5)\n")
   sys.stderr.write("MC_cell_max_volume_per_atom=float (1.0e3)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("adjust_step_interval=int (-10, negative for only using last iteration, 0 for no adjust)\n")
-  sys.stderr.write("MC_adjust_step_factor=float (2.0)\n")
+  sys.stderr.write("adjust_step_interval=int (10, negative for only using last iteration, 0 for no adjust)\n")
+  sys.stderr.write("MC_adjust_step_factor=float (1.5)\n")
   sys.stderr.write("MC_adjust_min_rate=float (0.25)\n")
   sys.stderr.write("MC_adjust_max_rate=float (0.75)\n")
   sys.stderr.write("MD_adjust_step_factor=float (1.5)\n")
@@ -237,7 +237,14 @@ elif ns_args['energy_calculator'] == 'fortran':
 else:
    exit_error("energy_calculator=%s unknown\n" % ns_args['energy_calculator'], 3)
 
-ns_args['no_extra_walks_at_all'] = args.pop('no_extra_walks_at_all', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+def str_to_logical(x):
+   if x in [ "t", "T", "true", "True", "TRUE", "1" ]:
+      return True
+   if x in [ "f", "F", "false", "False", "FALSE", "0" ]:
+      return False
+   exit_error("Failed to parse logical\n",5)
+
+ns_args['no_extra_walks_at_all'] = str_to_logical(args.pop('no_extra_walks_at_all', "F"))
 
 ns_args['config_file_format'] = args.pop('config_file_format', 'extxyz')
 
@@ -279,23 +286,23 @@ if movement_args['atom_n_steps_expected'] == 0 and movement_args['atoms_n_steps'
 if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD':
    exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorith,'], 3)
 
-movement_args['MC_atom_velocities'] = args.pop('MC_atom_velocities', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
-movement_args['MC_atom_velocities_pre_perturb'] = args.pop('MC_atom_velocities_pre_perturb', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['MC_atom_velocities'] = str_to_logical(args.pop('MC_atom_velocities', "F"))
+movement_args['MC_atom_velocities_pre_perturb'] = str_to_logical(args.pop('MC_atom_velocities_pre_perturb', "F"))
 movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
 movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
 movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 0.1))
 movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 1.0))
-movement_args['MC_atom_uniform_rv'] = args.pop('MC_atom_uniform_rv', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
 movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
-movement_args['MD_atom_velo_perturb'] = args.pop('MD_atom_velo_perturb', "T") in [ "t", "T", "true", "True", "TRUE", "1" ]
-movement_args['MD_atom_velo_randomize'] = args.pop('MD_atom_velo_randomize', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['MD_atom_velo_perturb'] = str_to_logical(args.pop('MD_atom_velo_perturb', "T"))
+movement_args['MD_atom_velo_randomize'] = str_to_logical(args.pop('MD_atom_velo_randomize', "F"))
 movement_args['MD_atom_velo_perturb_angle'] = float(args.pop('MD_atom_velo_perturb_angle', 0.1))
 
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
 movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
 movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
-movement_args['MD_atom_reject_energy_violation'] = args.pop('MD_atom_reject_energy_violation', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
 movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
 movement_args['MC_cell_volume_step_size'] = float(args.pop('MC_cell_volume_step_size', 0.01))
@@ -311,15 +318,15 @@ movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.5))
 movement_args['MC_cell_max_volume_per_atom'] = float(args.pop('MC_cell_max_volume_per_atom', 1.0e3))
 
-movement_args['adjust_step_interval'] = int(args.pop('adjust_step_interval', -10))
-movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 2.0))
+movement_args['adjust_step_interval'] = int(args.pop('adjust_step_interval', 10))
+movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
 movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
 movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
 movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.5))
 movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.95))
 movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 1.00))
 
-movement_args['2D'] = args.pop('2D', "F") in [ "t", "T", "true", "True", "TRUE", "1" ]
+movement_args['2D'] = str_to_logical(args.pop('2D', "F"))
 
 if 'QUIP_pot_params_file' in ns_args:
    if not have_quippy:
@@ -587,21 +594,17 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DOC \item accept/reject entire move on E $<$ Emax
    reject_Emax = (final_E >= Emax)
 
-   if reject_fuzz or reject_Emax:
+   if reject_fuzz or reject_Emax: # reject
       print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
       at.info['ns_energy'] = orig_E
-   else:
+      n_accept = 0
+   else: # accept
+      # remember to reverse velocities on acceptance to preserve detailed balance, since velocity is (sometimes) being perturbed, not completely randomized
+      at.set_velocities(-at.get_velocities()) # is there a faster way of doing this in ASE?  Can you do at.velocities?
       at.info['ns_energy'] = final_E
-
-   n_accept = 1
-   if movement_args['MD_atom_reject_energy_violation']:
-      if reject_fuzz:
-	 n_accept = 0
-   else:
-      if reject_Emax:
-	 n_accept = 0
+      n_accept = 1
 
    return {'MD_atom' : (1, n_accept) }
 #DOC \end{itemize}
@@ -872,7 +875,7 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
       if n_try > 0:
 	 rate = float(n_accept)/float(n_try)
 
-	 if comm.rank == 0:
+	 if comm is None or comm.rank == 0:
 	    print print_prefix, "accept rate for %s = %f (%d)" % (key, rate, n_try)
 
 	 if key.find("MC") == 0:
@@ -908,7 +911,7 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	 if movement_args[key+"_"+suffix] == orig_value:
 	    dir=None
 
-	 if dir is not None and comm.rank == 0:
+	 if dir is not None and (comm is None or comm.rank == 0):
 	    print print_prefix, "adjust_step_sizes adjusted %s %s to %f" % (key, dir, movement_args[key+"_"+suffix])
 
 def zero_stats(d, movement_args):
