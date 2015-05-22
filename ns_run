@@ -511,12 +511,12 @@ def perturb_velo(at, Emax, rotate=True):
    if not at.has('momenta') or not at.has('masses'):
       return
 
-   #DOC \item if MD\_atom\_velo\_perturb false return doing nothing
+   #DOC \item if not MD\_atom\_velo\_perturb return, doing nothing
    if not movement_args['MD_atom_velo_perturb']:
       return
 
    orig_KE = at.get_kinetic_energy()
-   #DOC \item if MD\_atom\_velo\_randomize pick random velocities consistent with Emax
+   #DOC \item if MD\_atom\_velo\_randomize, pick random velocities consistent with Emax
    if movement_args['MD_atom_velo_randomize']:
       # randomize completely
       at.set_velocities(gen_random_velo(at, Emax))
@@ -528,7 +528,7 @@ def perturb_velo(at, Emax, rotate=True):
       #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
       if velo_mag == 0.0:
 	 at.set_velocities(gen_random_velo(at, Emax))
-      #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction
+      #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in $\pm$MD\_atom\_velo\_perturb\_angle $\pi$
       else:
 	 # pick new random magnitude - count on dimensionality to make change small
 	 velo = gen_random_velo(at, Emax, velo/velo_mag)
