@@ -55,6 +55,18 @@ class fortran_MC_MD:
       self.lib.fortran_set_seed_.argtypes = [ctypes.c_void_p, # n_seed
 	 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")] # seed
 
+      # fortran_MC_atom_microcanonical
+      self.lib.fortran_mc_atom_microcanonical_.argtypes = [ctypes.c_void_p, # N
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # velo
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # masses
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
+	 ctypes.c_void_p, # n_steps
+	 ctypes.c_void_p, # step_size_pos
+	 ctypes.c_void_p, # Emax
+	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # final_E
+	 ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")] # n_accept
+
       # fortran_MC_atom
       self.lib.fortran_mc_atom_.argtypes = [ctypes.c_void_p, # N
 	 ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
@@ -112,6 +124,21 @@ class fortran_MC_MD:
       n_seed = ctypes.c_int(len(seed))
       self.lib.fortran_set_seed_(ctypes.byref(n_seed), seed)
 
+   def MC_atom_walk_microcanonical(self, at, n_steps, step_size_pos, Emax):
+      n = ctypes.c_int(len(at))
+      n_steps = ctypes.c_int(n_steps)
+      step_size_pos = ctypes.c_double(step_size_pos)
+      Emax = ctypes.c_double(Emax)
+      pos = at.get_positions()
+      velo = at.get_velocities()
+      n_accept_pos = np.zeros( (1), dtype=np.int32)
+      final_E = np.zeros( (1), dtype=np.float64)
+      self.lib.fortran_mc_atom_microcanonical_(ctypes.byref(n), pos, velo, at.get_masses(), at.get_cell(),
+	 ctypes.byref(n_steps), ctypes.byref(step_size_pos), ctypes.byref(Emax), final_E, n_accept_pos)
+      at.set_positions(pos)
+      at.set_velocities(velo)
+      return (n_accept_pos[0], final_E[0])
+
    def MC_atom_walk(self, at, n_steps, step_size_pos, Emax, step_size_velo=None):
       n = ctypes.c_int(len(at))
       n_steps = ctypes.c_int(n_steps)
@@ -138,6 +165,7 @@ class fortran_MC_MD:
       else:
 	 at.set_velocities(velo)
 	 return (n_accept_pos[0], n_accept_velo[0], final_E[0])
+
 
    def MD_atom_NVE_walk(self, at, n_steps, timestep, debug):
       n = ctypes.c_int(len(at))

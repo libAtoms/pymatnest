@@ -10,6 +10,63 @@ subroutine fortran_set_seed(n_seed, seed)
    call random_seed(put=seed)
 end subroutine fortran_set_seed
 
+subroutine fortran_MC_atom_microcanonical(N, pos, vel, mass, cell, n_steps, step_size_pos, Emax, final_E, n_accept_pos)
+   implicit none
+   integer :: N
+   double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
+   integer :: n_steps
+   double precision :: step_size_pos, Emax, final_E
+   integer :: n_accept_pos
+
+   integer :: d_i
+   double precision :: d_r, E, PE, KE, dPE, d_pos(3)
+
+   double precision, external :: ll_eval_energy, ll_eval_denergy_1
+
+   integer :: i_step, i_at, t_i
+   integer :: order(N)
+
+   n_accept_pos = 0
+   PE = ll_eval_energy(N, pos, cell) 
+   KE = 0.5*sum(spread(mass,1,3)*vel**2)
+   E = PE + KE
+
+   do i_step=1, n_steps
+
+      do i_at=1, N
+	 order(i_at) = i_at
+      end do
+      do i_at=1, N-1
+	 call random_number(d_r); d_i = floor(d_r*(N-i_at+1))+i_at
+	 if (d_i /= i_at) then
+	    t_i = order(i_at)
+	    order(i_at) = order(d_i)
+	    order(d_i) = t_i
+	 endif
+      end do
+
+      do i_at=1, N
+	 d_i = order(i_at)
+
+	 call random_number(d_pos)
+	 d_pos = 2.0*step_size_pos*(d_pos-0.5)
+	 dPE = ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
+	 if (PE + dPE < E) then
+	    pos(1:3,d_i) = pos(1:3,d_i) + d_pos(1:3)
+	    PE = PE + dPE
+	    vel = vel * sqrt((KE-dPE)/KE)
+	    KE = KE - dPE
+	    n_accept_pos = n_accept_pos + 1
+	 endif
+
+      end do
+   end do
+
+
+   final_E = KE + PE
+
+end subroutine fortran_MC_atom_microcanonical
+
 subroutine fortran_MC_atom(N, pos, vel, mass, cell, n_steps, step_size_pos, step_size_vel, Emax, final_E, &
 			   n_accept_pos, n_accept_vel)
    implicit none
@@ -31,18 +88,6 @@ subroutine fortran_MC_atom(N, pos, vel, mass, cell, n_steps, step_size_pos, step
 
    do_vel = (step_size_vel /= 0.0)
 
-   do i_at=1, N
-      order(i_at) = i_at
-   end do
-   do i_at=1, N-1
-      call random_number(d_r); d_i = floor(d_r*(N-i_at+1))+i_at
-      if (d_i /= i_at) then
-	 t_i = order(i_at)
-	 order(i_at) = order(d_i)
-	 order(d_i) = t_i
-      endif
-   end do
-
    n_accept_pos = 0
    n_accept_vel = 0
    E = ll_eval_energy(N, pos, cell)
@@ -51,42 +96,55 @@ subroutine fortran_MC_atom(N, pos, vel, mass, cell, n_steps, step_size_pos, step
    endif
 
    do i_step=1, n_steps
-   do i_at=1, N
-      d_i = order(i_at)
-      if (do_vel) then
-	 call random_number(d_vel)
-	 d_vel = 2.0*step_size_vel*(d_vel-0.5)
-	 call random_number(vel_pos_rv)
-      endif
 
-      if (do_vel .and.  vel_pos_rv < 0.5) then
-	 dE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
-	 if (E + dE < Emax) then
-	    vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
-	    E = E + dE
-	    n_accept_vel = n_accept_vel + 1
+      do i_at=1, N
+	 order(i_at) = i_at
+      end do
+      do i_at=1, N-1
+	 call random_number(d_r); d_i = floor(d_r*(N-i_at+1))+i_at
+	 if (d_i /= i_at) then
+	    t_i = order(i_at)
+	    order(i_at) = order(d_i)
+	    order(d_i) = t_i
 	 endif
-      endif
+      end do
 
-      call random_number(d_pos)
-      d_pos = 2.0*step_size_pos*(d_pos-0.5)
-      dE = ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
-      if (E + dE < Emax) then
-	 pos(1:3,d_i) = pos(1:3,d_i) + d_pos(1:3)
-	 E = E + dE
-	 n_accept_pos = n_accept_pos + 1
-      endif
-
-      if (do_vel .and.  vel_pos_rv >= 0.5) then
-	 dE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
-	 if (E + dE < Emax) then
-	    vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
-	    E = E + dE
-	    n_accept_vel = n_accept_vel + 1
+      do i_at=1, N
+	 d_i = order(i_at)
+	 if (do_vel) then
+	    call random_number(d_vel)
+	    d_vel = 2.0*step_size_vel*(d_vel-0.5)
+	    call random_number(vel_pos_rv)
 	 endif
-      endif
 
-   end do
+	 if (do_vel .and.  vel_pos_rv < 0.5) then
+	    dE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
+	    if (E + dE < Emax) then
+	       vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
+	       E = E + dE
+	       n_accept_vel = n_accept_vel + 1
+	    endif
+	 endif
+
+	 call random_number(d_pos)
+	 d_pos = 2.0*step_size_pos*(d_pos-0.5)
+	 dE = ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
+	 if (E + dE < Emax) then
+	    pos(1:3,d_i) = pos(1:3,d_i) + d_pos(1:3)
+	    E = E + dE
+	    n_accept_pos = n_accept_pos + 1
+	 endif
+
+	 if (do_vel .and.  vel_pos_rv >= 0.5) then
+	    dE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
+	    if (E + dE < Emax) then
+	       vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
+	       E = E + dE
+	       n_accept_vel = n_accept_vel + 1
+	    endif
+	 endif
+
+      end do
    end do
 
    final_E = E
