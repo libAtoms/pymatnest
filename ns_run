@@ -627,17 +627,18 @@ def do_MC_atom_walk(at, movement_args, Emax):
 #DOC do\_MC\_atom\_walk
 #DOC \begin{itemize}
 
-   #DOC \item loop atom\_n\_substeps times
-   #DOC \begin{itemize}
    n_steps = movement_args['atom_n_substeps']
    step_size = movement_args['MC_atom_step_size']
    step_size_velo = movement_args['MC_atom_velo_step_size']
    n_accept=0
    n_accept_velo = None
 
+   #DOC \item if MC\_atom\_velocities and MC\_atom\_velocities\_pre\_perturb, perturb velocities, magnitude and and rotation
    if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
       perturb_velo(at, Emax)
 
+   #DOC \item loop atom\_n\_substeps times
+   #DOC \begin{itemize}
    if do_calc_fortran:
       if movement_args['MC_atom_velocities']:
 	 if movement_args['MC_atom_velocities_microcanonical']:
