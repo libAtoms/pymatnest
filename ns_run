@@ -511,6 +511,7 @@ def perturb_velo(at, Emax, rotate=True):
    if not at.has('momenta') or not at.has('masses'):
       return
 
+   #DOC \item if MD\_atom\_velo\_perturb false return doing nothing
    if not movement_args['MD_atom_velo_perturb']:
       return
 
@@ -524,7 +525,7 @@ def perturb_velo(at, Emax, rotate=True):
    else: # perturb
       velo = at.get_velocities()
       velo_mag = np.linalg.norm(velo)
-      #DOC \item if current velocity=0, pick random velocities consistent with Emax
+      #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
       if velo_mag == 0.0:
 	 at.set_velocities(gen_random_velo(at, Emax))
       #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction
@@ -548,6 +549,7 @@ def perturb_velo(at, Emax, rotate=True):
 	       velo[ind_2_i,ind_2_j] = v_2
 
 	 at.set_velocities(velo)
+
    new_KE = at.get_kinetic_energy()
    # perturb_velo expects at.info['ns_energy'] to be set correctly initially
    at.info['ns_energy'] += new_KE-orig_KE
@@ -584,7 +586,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    reject_fuzz = False
    KE = eval_energy(at, do_PE=False, do_PV=False)
-   #DOC \item optionally accept/reject entire move on E deviating by more than energy fuzz times kinetic energy
+   #DOC \item optionally accept/reject entire move on E deviating by less than energy fuzz times kinetic energy
    if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']*KE:
       if movement_args['MD_atom_reject_energy_violation']:
 	 reject_fuzz = True
@@ -594,17 +596,25 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DOC \item accept/reject entire move on E $<$ Emax
    reject_Emax = (final_E >= Emax)
 
+   #DOC \item if reject
+   #DOC \begin{itemize}
    if reject_fuzz or reject_Emax: # reject
+      #DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)
       print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
       at.set_positions(orig_pos)
       at.set_velocities(orig_velo)
       at.info['ns_energy'] = orig_E
       n_accept = 0
+   #DOC \end{itemize}
+   #DOC \item else
    else: # accept
+   #DOC \begin{itemize}
+      #DOC \item flip velocities
       # remember to reverse velocities on acceptance to preserve detailed balance, since velocity is (sometimes) being perturbed, not completely randomized
       at.set_velocities(-at.get_velocities()) # is there a faster way of doing this in ASE?  Can you do at.velocities?
       at.info['ns_energy'] = final_E
       n_accept = 1
+   #DOC \end{itemize}
 
    return {'MD_atom' : (1, n_accept) }
 #DOC \end{itemize}
@@ -780,9 +790,9 @@ def do_MC_cell_walk(at, movement_args, Emax):
       #DOC \item do in random order
       #DOC \begin{itemize}
       for key, propose_step_func in items:
-	 #DOC \item volume move if rng $<$ acceptance probablity
-	 #DOC \item shear move if rng $<$ acceptance probablity
-	 #DOC \item stretch move if rng < acceptance probablity
+	 #DOC \item volume move if rng $<$ attempt probablity
+	 #DOC \item shear move if rng $<$ attempt probablity
+	 #DOC \item stretch move if rng $<$ attempt probablity
 	 step_rv = rng.float_uniform(0.0, 1.0)
 	 if step_rv < movement_args[key+"_prob"]:
 	    (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
