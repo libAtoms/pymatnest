@@ -10,6 +10,57 @@ subroutine fortran_set_seed(n_seed, seed)
    call random_seed(put=seed)
 end subroutine fortran_set_seed
 
+
+subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, KEmax, final_KE, n_accept)
+   implicit none
+   integer :: N
+   double precision :: vel(3,N), mass(N)
+   integer :: n_steps
+   double precision :: step_size, KEmax, final_KE
+   integer :: n_accept
+
+   integer :: d_i
+   double precision :: d_r, KE, dKE, d_vel(3)
+
+
+   integer :: i_step, i_at, t_i
+   integer :: order(N)
+
+   n_accept = 0
+   KE = 0.5*sum(spread(mass,1,3)*vel**2)
+
+   do i_step=1, n_steps
+
+      do i_at=1, N
+	 order(i_at) = i_at
+      end do
+      do i_at=1, N-1
+	 call random_number(d_r); d_i = floor(d_r*(N-i_at+1))+i_at
+	 if (d_i /= i_at) then
+	    t_i = order(i_at)
+	    order(i_at) = order(d_i)
+	    order(d_i) = t_i
+	 endif
+      end do
+
+      do i_at=1, N
+	 d_i = order(i_at)
+	 call random_number(d_vel)
+	 d_vel = 2.0*step_size*(d_vel-0.5)
+
+	 dKE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
+	 if (KE + dKE < KEmax) then
+	    vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
+	    KE = KE + dKE
+	    n_accept = n_accept + 1
+	 endif
+      end do
+   end do
+
+   final_KE = KE
+
+end subroutine fortran_MC_atom_velo
+
 subroutine fortran_MC_atom_microcanonical(N, pos, vel, mass, cell, n_steps, step_size_pos, Emax, final_E, n_accept_pos)
    implicit none
    integer :: N

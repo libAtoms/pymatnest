@@ -24,6 +24,7 @@ def usage():
   sys.stderr.write("atom_n_steps=int (0, this or atom_n_steps_expected required)\n")
   sys.stderr.write("atom_n_substeps=int (10, number of steps (MC sweeps or MD time steps in each segement))\n")
   sys.stderr.write("cell_n_substeps=int (1, number of MC sweeps in each segement)\n")
+  sys.stderr.write("velo_n_substeps=int (0, number of velocity sweeps in each segement, supported only for fortran calculator )\n")
   sys.stderr.write("\n")
   sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
   sys.stderr.write("atom_algorithm=[MC | MD] (MANDATORY)\n")
@@ -278,6 +279,7 @@ movement_args['atom_n_steps_expected'] = int(args.pop('atom_n_steps_expected', 0
 movement_args['atom_n_steps'] = int(args.pop('atom_n_steps', 0))
 movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
 movement_args['cell_n_substeps'] = int(args.pop('cell_n_substeps', 1))
+movement_args['velo_n_substeps'] = int(args.pop('velo_n_substeps', 0))
 try:
    movement_args['atom_algorithm'] = args.pop('atom_algorithm')
 except:
@@ -513,10 +515,6 @@ def perturb_velo(at, Emax, rotate=True):
    if not at.has('momenta') or not at.has('masses'):
       return
 
-   #DOC \item if not MD\_atom\_velo\_perturb return, doing nothing
-   if not movement_args['MD_atom_velo_perturb']:
-      return
-
    orig_KE = at.get_kinetic_energy()
    #DOC \item if MD\_atom\_velo\_randomize, pick random velocities consistent with Emax
    if movement_args['MD_atom_velo_randomize']:
@@ -571,8 +569,9 @@ def do_MD_atom_walk(at, movement_args, Emax):
    if orig_E >= Emax:
       print print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax
 
-   #DOC \item perturb\_velo, magnitude and rotation
-   perturb_velo(at, Emax)
+   #DOC \item if MD\_atom\_velo\_perturb, call perturb\_velo() for magnitude and rotation
+   if movement_args['MD_atom_velo_perturb']:
+      perturb_velo(at, Emax)
 
    pre_MD_E = at.info['ns_energy']
 
@@ -812,6 +811,21 @@ def do_MC_cell_walk(at, movement_args, Emax):
    return out
 #DOC \end{itemize}
 
+def do_MC_atom_velo_walk(at, movement_args, Emax):
+   n_steps = movement_args['velo_n_substeps']
+   if n_steps == 0:
+      return {}
+
+   step_size = movement_args['MC_atom_velo_step_size']
+   if do_calc_fortran:
+      initial_KE = eval_energy(at, do_PE=False, do_PV=False)
+      (n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, Emax-eval_energy(at, do_KE=False))
+      at.info['ns_energy'] += final_KE-initial_KE
+   else:
+      exit_error("MC_atom_velo_walk supported only for FORTRAN calculator\n", 7)
+
+   return {'MC_atom_velo' : (n_steps*len(at), n_accept)}
+
 def do_atom_walk(at, movement_args, Emax):
    if movement_args['atom_algorithm'] == 'MC':
       out = do_MC_atom_walk(at, movement_args, Emax)
@@ -829,7 +843,7 @@ def walk_single_walker(at, movement_args, Emax):
 #DOC \begin{itemize}
 
    #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
-   possible_moves = [do_atom_walk, do_MC_cell_walk]
+   possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_atom_velo_walk]
    out = {}
 
    #DOC \item loop atom\_n\_steps times
