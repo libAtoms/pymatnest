@@ -1,0 +1,3 @@
+NS_RUN_PATH=$HOME/src/work/pymatnest
+
+export PYTHONPATH=${NS_RUN_PATH}:${PYTHONPATH}
