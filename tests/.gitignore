@@ -1,0 +1,6 @@
+test*.traj.*.extxyz
+test*.snapshot.*.extxyz
+test*.out
+test*.energies
+analysis*energies
+job*pbs

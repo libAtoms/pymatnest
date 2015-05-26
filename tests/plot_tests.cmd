@@ -15,10 +15,10 @@ set autoscale y
 
 set output "cluster.energies.pdf"
 set xlabel "n iter / n walkers"
-set ylabel "E / epsilon"
-set yrange [:1]
-plot "< tail -n +2 run_test.cluster.MC/*energies" u ($1/1024):($2/6) w l lt 1 color red ti "MC", \
-     "< tail -n +2 run_test.cluster.MD/*energies" u ($1/1024):($2/6) w l lt 1 color cyan ti "MD"
+set ylabel "E / atom epsilon"
+set yrange [:4]
+plot "< tail -n +2 run_test.cluster.MC/*energies" u ($1/1024):($2/6/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 run_test.cluster.MD/*energies" u ($1/1024):($2/6/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -42,11 +42,11 @@ set autoscale y
 
 set output "periodic.energies.pdf"
 set xlabel "n iter / n walkers"
-set ylabel "H / epsilon"
+set ylabel "H / atom epsilon"
 unset log y
-set yrange [:15]
-plot "< tail -n +2 run_test.periodic.MC/*energies" u ($1/128):($2/64) w l lt 1 color red ti "MC", \
-     "< tail -n +2 run_test.periodic.MD/*energies" u ($1/128):($2/64) w l lt 1 color cyan ti "MD"
+set yrange [:60]
+plot "< tail -n +2 run_test.periodic.MC/*energies" u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 run_test.periodic.MD/*energies" u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -54,11 +54,11 @@ set autoscale y
 
 set output "periodic.volumes.pdf"
 set xlabel "n iter / n walkers"
-set ylabel "H / epsilon"
+set ylabel "H / atom epsilon"
 unset log y
-set yrange [:15]
-plot "< tail -n +2 run_test.periodic.MC/*energies" u ($1/128):($2/64) w l lt 1 color red ti "MC", \
-     "< tail -n +2 run_test.periodic.MD/*energies" u ($1/128):($2/64) w l lt 1 color cyan ti "MD"
+set yrange [:60]
+plot "< tail -n +2 run_test.periodic.MC/*energies" u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 run_test.periodic.MD/*energies" u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
