@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [ $# -lt 2 ]; then
+   echo "Usage: $0 machine run [ run ... ]" 1>&2
+   exit  1
+fi
+
+machine=$1; shift
+for run in $*; do 
+
+   mydir=`pwd | sed "s#^$HOME##"`
+   if [[ $mydir =~ '/jellium' ]]; then
+      mydir=`echo $mydir | sed 's#^/jellium/##'`
+   else
+      mydir=`echo $mydir | sed 's#^/##'`
+   fi
+   wdir=`ssh $machine "tail -1 $mydir/$run.stdout.rundir"`
+   if [ -z $wdir ]; then
+      echo "No $run.stdout.rundir file" 1>&2
+      exit 2
+   fi
+   mkdir -p run_${run}
+   rsync -P ${machine}:$wdir/{*energies,*traj*xyz} run_${run}
+done

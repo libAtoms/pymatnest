@@ -32,7 +32,10 @@ def process_headers(file):
 
       r_KE = re_KE.search(l)
       if r_KE is not None:
-	 r_KE = float(r_KE.group(1))
+	 try:
+	    r_KE = float(r_KE.group(1))
+	 except:
+	    r_KE = 0.0
 
       data.append([r_e, r_volume, r_KE])
    return data

@@ -9,13 +9,13 @@ out_file_prefix=test.cluster.MD
 
 atom_algorithm=MD
 
-adjust_step_interval=-10
-atom_n_steps_expected=50
+atom_n_steps_expected=64
 atom_n_substeps=10
+cell_n_substeps=0
 
 MD_atom_timestep=0.01
 MD_atom_timestep_max=0.025
-MD_atom_velo_perturb=0.1
+MD_atom_velo_pre_perturb=T
 
 FORTRAN_model=example_LJ_min_image_model.so
 energy_calculator=fortran

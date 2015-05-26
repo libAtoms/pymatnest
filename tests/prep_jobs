@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for infile in $*; do
+   if [ ! -f $infile ]; then
+      echo "inputs files for $infile doesn't exist" 1>&2
+      exit 1
+   fi
+   job=${infile/inputs./}
+   export INPUT_FILES_MASTER=inputs.${job}
+   export REDIRECT_IO="< inputs.${job} > \$startdir/${job}.out" 
+   bugs -exec='$NS_RUN_PATH/ns_run' -time=48h -np=32 -script=test.script -postscript=test.postscript -name=t.p.MD -fileroot=${job} -output=job.${job}
+done

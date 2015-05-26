@@ -9,12 +9,12 @@ n_iter_per_walker=1200
 out_file_prefix=test.periodic.MC
 
 ################################################################################
-atom_n_steps_expected=32
-atom_n_substeps=8
 
 atom_algorithm=MC
+atom_n_steps_expected=32
+atom_n_substeps=8
+cell_n_substeps=1
 
-adjust_step_interval=-10
 
 MC_atom_step_size=5.0
 MC_atom_step_size_max=5.0

@@ -7,11 +7,13 @@ n_cull=1
 n_iter_per_walker=100
 out_file_prefix=test.cluster.MC
 
-atom_algorithm=MC
+################################################################################
 
-adjust_step_interval=-10
-atom_n_steps_expected=16
-atom_n_substeps=16
+atom_algorithm=MC
+atom_n_steps_expected=32
+atom_n_substeps=8
+cell_n_substeps=0
+
 
 MC_atom_step_size=5.0
 MC_atom_step_size_max=5.0

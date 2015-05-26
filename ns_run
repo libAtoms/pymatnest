@@ -24,27 +24,27 @@ def usage():
   sys.stderr.write("atom_n_steps=int (0, this or atom_n_steps_expected required)\n")
   sys.stderr.write("atom_n_substeps=int (10, number of steps (MC sweeps or MD time steps in each segement))\n")
   sys.stderr.write("cell_n_substeps=int (1, number of MC sweeps in each segement)\n")
-  sys.stderr.write("velo_n_substeps=int (0, number of velocity sweeps in each segement, supported only for fortran calculator )\n")
+  sys.stderr.write("velo_n_substeps=int (1, number of MC sweeps in each velocity MC segement)\n")
   sys.stderr.write("\n")
   sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
   sys.stderr.write("atom_algorithm=[MC | MD] (MANDATORY)\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_atom_velocities=[T | F] (F, supported only for energy_calculator=fortran)\n")
   sys.stderr.write("MC_atom_velocities_microcanonical=[T | F] (F, supported only for energy_calculator=fortran)\n")
-  sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F, uses MD_atom_velo_perturb*)\n")
+  sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F, Perturb velocities (rejection free) before MC + velocities walk)\n")
   sys.stderr.write("MC_atom_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_velo_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_velo_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("MD_atom_velo_perturb=[T | F] (T. Perturb velocities before MD trajectory\n")
-  sys.stderr.write("MD_atom_velo_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
-  sys.stderr.write("MD_atom_velo_perturb_angle=float (0.1. Max angle for random rotations.)\n")
+  sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2)\n")
   sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (T, use energy conservation violation (exceeding MD_atom_energy_fuzz) to reject MD trajectories)\n")
+  sys.stderr.write("atom_velo_perturb_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
+  sys.stderr.write("atom_velo_perturb_angle=float (0.1. Max angle for random rotations.)\n")
   sys.stderr.write("\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_cell_P=float (0.0)\n")
@@ -279,7 +279,7 @@ movement_args['atom_n_steps_expected'] = int(args.pop('atom_n_steps_expected', 0
 movement_args['atom_n_steps'] = int(args.pop('atom_n_steps', 0))
 movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
 movement_args['cell_n_substeps'] = int(args.pop('cell_n_substeps', 1))
-movement_args['velo_n_substeps'] = int(args.pop('velo_n_substeps', 0))
+movement_args['velo_n_substeps'] = int(args.pop('velo_n_substeps', 1))
 try:
    movement_args['atom_algorithm'] = args.pop('atom_algorithm')
 except:
@@ -299,9 +299,9 @@ movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_
 movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
 movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
-movement_args['MD_atom_velo_perturb'] = str_to_logical(args.pop('MD_atom_velo_perturb', "T"))
-movement_args['MD_atom_velo_randomize'] = str_to_logical(args.pop('MD_atom_velo_randomize', "F"))
-movement_args['MD_atom_velo_perturb_angle'] = float(args.pop('MD_atom_velo_perturb_angle', 0.1))
+movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))
+movement_args['atom_velo_perturb_randomize'] = str_to_logical(args.pop('atom_velo_perturb_randomize', "F"))
+movement_args['atom_velo_perturb_angle'] = float(args.pop('atom_velo_perturb_angle', 0.1))
 
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
 movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
@@ -517,7 +517,7 @@ def perturb_velo(at, Emax, rotate=True):
 
    orig_KE = at.get_kinetic_energy()
    #DOC \item if MD\_atom\_velo\_randomize, pick random velocities consistent with Emax
-   if movement_args['MD_atom_velo_randomize']:
+   if movement_args['atom_velo_perturb_randomize']:
       # randomize completely
       at.set_velocities(gen_random_velo(at, Emax))
    #DOC \item else perturb velocities
@@ -540,7 +540,7 @@ def perturb_velo(at, Emax, rotate=True):
 	    for (ind_1_i, ind_2_i) in pairwise(indices):
 	       ind_1_j = rng.int_uniform(0,3)
 	       ind_2_j = rng.int_uniform(0,3)
-	       ang = rng.float_uniform(-movement_args['MD_atom_velo_perturb_angle']*np.pi,movement_args['MD_atom_velo_perturb_angle']*np.pi)
+	       ang = rng.float_uniform(-movement_args['atom_velo_perturb_angle']*np.pi,movement_args['atom_velo_perturb_angle']*np.pi)
 	       c_ang = np.cos(ang)
 	       s_ang = np.sin(ang)
 	       v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
@@ -570,7 +570,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       print print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax
 
    #DOC \item if MD\_atom\_velo\_perturb, call perturb\_velo() for magnitude and rotation
-   if movement_args['MD_atom_velo_perturb']:
+   if movement_args['MD_atom_velo_pre_perturb']:
       perturb_velo(at, Emax)
 
    pre_MD_E = at.info['ns_energy']
@@ -778,8 +778,11 @@ def do_MC_cell_walk(at, movement_args, Emax):
 #DOC \vspace*{\baselineskip}
 #DOC do\_MC\_cell\_walk
 #DOC \begin{itemize}
-   if movement_args['MC_cell_P'] <= 0.0:
+   if movement_args['cell_n_substeps'] <= 0:
       return {}
+
+   if movement_args['MC_cell_P'] <= 0.0 and rank == 0:
+      sys.stderr.write("WARNING: doing MC_cell_walk but pressure == %f <= 0.0\n" % movement_args['MC_cell_P'])
 
    possible_moves = {
       'MC_cell_volume': propose_volume_step,
@@ -815,14 +818,31 @@ def do_MC_atom_velo_walk(at, movement_args, Emax):
    n_steps = movement_args['velo_n_substeps']
    if n_steps == 0:
       return {}
-
    step_size = movement_args['MC_atom_velo_step_size']
+
    if do_calc_fortran:
       initial_KE = eval_energy(at, do_PE=False, do_PV=False)
       (n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, Emax-eval_energy(at, do_KE=False))
       at.info['ns_energy'] += final_KE-initial_KE
    else:
-      exit_error("MC_atom_velo_walk supported only for FORTRAN calculator\n", 7)
+      masses = at.get_masses()
+      velocities = at.get_velocities()
+      initial_KE = eval_energy(at, do_PE=False, do_PV=False)
+      KE = initial_KE
+      KEmax = Emax - (at.info['ns_energy'] - KE)
+      n_accept = 0
+      for i_step in frange(n_steps):
+	 at_list = list(range(len(at)))
+	 rng.shuffle_in_place(at_list)
+	 d_vel = rng.normal(step_size, (len(at), 3))
+	 for i_at in at_list:
+	    d_KE = 0.5*masses[i_at]*(np.sum((velocities[i_at,:]+d_vel[i_at,:])**2) - np.sum(velocities[i_at,:]**2))
+	    if KE + d_KE < KEmax:
+	       velocities[i_at,:] += d_vel[i_at,:]
+	       KE += d_KE
+	       n_accept += 1
+      at.set_velocities(velocities)
+      at.info['ns_energy'] += KE-initial_KE
 
    return {'MC_atom_velo' : (n_steps*len(at), n_accept)}
 
@@ -843,7 +863,10 @@ def walk_single_walker(at, movement_args, Emax):
 #DOC \begin{itemize}
 
    #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
-   possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_atom_velo_walk]
+   if movement_args['do_velocities']:
+      possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_atom_velo_walk]
+   else:
+      possible_moves = [do_atom_walk, do_MC_cell_walk]
    out = {}
 
    #DOC \item loop atom\_n\_steps times

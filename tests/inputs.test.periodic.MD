@@ -9,19 +9,18 @@ n_iter_per_walker=1700
 out_file_prefix=test.periodic.MD
 
 ################################################################################
+
+atom_algorithm=MD
 atom_n_steps_expected=128
 atom_n_substeps=8
 cell_n_substeps=4
-
-atom_algorithm=MD
-
-adjust_step_interval=10
+velo_n_substeps=8
 
 MD_atom_timestep=0.01
 MD_atom_timestep_max=0.025
-MD_atom_velo_perturb=T
-MD_atom_velo_randomize=F
-MD_atom_velo_perturb_angle=0.1
+
+MC_atom_velo_step_size=0.1
+MC_atom_velo_step_size_max=0.5
 
 ################################################################################
 MC_cell_P=0.00675
