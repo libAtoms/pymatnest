@@ -47,6 +47,7 @@ def usage():
   sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (T, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)\n")
   sys.stderr.write("atom_velo_perturb_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
   sys.stderr.write("atom_velo_perturb_angle=float (0.1. Max angle for random rotations.)\n")
+  sys.stderr.write("MC_atom_velo_walk_rej_free=[T | F] (F. If true, use rejection free algorithm for MC_atom_walk\n")
   sys.stderr.write("\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_cell_P=float (0.0)\n")
@@ -306,6 +307,7 @@ movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_ve
 movement_args['MD_atom_velo_flip_accept'] = str_to_logical(args.pop('MD_atom_velo_flip_accept', "F"))
 movement_args['atom_velo_perturb_randomize'] = str_to_logical(args.pop('atom_velo_perturb_randomize', "F"))
 movement_args['atom_velo_perturb_angle'] = float(args.pop('atom_velo_perturb_angle', 0.1))
+movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "F"))
 
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
 movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
@@ -831,6 +833,10 @@ def do_MC_atom_velo_walk(at, movement_args, Emax):
    if n_steps == 0:
       return {}
    step_size = movement_args['MC_atom_velo_step_size']
+
+   if movement_args['MC_atom_velo_walk_rej_free']:
+      perturb_velo(at, Emax)
+      return {}
 
    if do_calc_fortran:
       initial_KE = eval_energy(at, do_PE=False, do_PV=False)

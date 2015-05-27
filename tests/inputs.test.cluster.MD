@@ -11,11 +11,11 @@ atom_algorithm=MD
 
 atom_n_steps_expected=64
 atom_n_substeps=10
+velo_n_substeps=8
 cell_n_substeps=0
 
 MD_atom_timestep=0.01
 MD_atom_timestep_max=0.025
-MD_atom_velo_pre_perturb=T
 
 FORTRAN_model=example_LJ_min_image_model.so
 energy_calculator=fortran
