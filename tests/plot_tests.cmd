@@ -6,8 +6,8 @@ set xlabel "T / epsilon"
 set ylabel "Cv per atom"
 set autoscale y
 plot "analysis.cluster.MC.Livia" u ($1/0.1):($4/6) w l lt 1 color black ti "Livia reference", \
-     "analysis.test.cluster.MC.energies" u ($1/0.25):($4/6) w l lt 1 color red ti "MC", \
-     "analysis.test.cluster.MD.energies" u ($1/0.25):($4/6) w l lt 1 color cyan ti "MD"
+     "test.cluster.MC.energies.analysis" u ($1/0.25):($4/6) w l lt 1 color red ti "MC", \
+     "test.cluster.MD.energies.analysis" u ($1/0.25):($4/6) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -33,8 +33,8 @@ set log y
 set yrange [1:]
 set xrange [0:1.5]
 plot "analysis.periodic.MC.Livia" u ($1/0.1):($4/64) w l lt 1 color black ti "Livia reference", \
-     "analysis.test.periodic.MC.energies" u ($1/0.25):($4/64) w l lt 1 color red ti "MC", \
-     "analysis.test.periodic.MD.energies" u ($1/0.25):($4/64) w l lt 1 color cyan ti "MD"
+     "test.periodic.MC.energies.analysis" u ($1/0.25):($4/64) w l lt 1 color red ti "MC", \
+     "test.periodic.MD.energies.analysis" u ($1/0.25):($4/64) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x

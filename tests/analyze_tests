@@ -3,16 +3,16 @@
 mydir=`dirname $0`
 
 for f in test*cluster*.energies; do
-   if [[ $f -nt analysis.$f || ! -s analysis.$f ]]; then
+   if [[ $f -nt $f.analysis || ! -s $f.analysis ]]; then
       echo analyze $f
-      $mydir/../ns_analyse -M 0.002 -D 0.002 -n 99 -k 1.0 $f > analysis.$f
+      $mydir/../ns_analyse -M 0.002 -D 0.002 -n 99 -k 1.0 $f > $f.analysis
    fi
 done
 
 for f in test*periodic*.energies; do
-   if [[ $f -nt analysis.$f || ! -s analysis.$f ]]; then
+   if [[ $f -nt $f.analysis || ! -s $f.analysis ]]; then
       echo analyze $f
-      $mydir/../ns_analyse -M 0.002 -D 0.0015625 -n 400 -k 1.0 $f > analysis.$f
+      $mydir/../ns_analyse -M 0.002 -D 0.0015625 -n 400 -k 1.0 $f > $f.analysis
       # froot=${f/.energies/}
       # $mydir/../ns_process_traj ${froot}*.traj*xyz > proc_traj.${froot}
    fi
