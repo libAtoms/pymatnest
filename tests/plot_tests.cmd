@@ -6,8 +6,8 @@ set xlabel "T / epsilon"
 set ylabel "Cv per atom"
 set autoscale y
 plot "analysis.cluster.MC.Livia" u ($1/0.1):($4/6) w l lt 1 color black ti "Livia reference", \
-     "analysis.run_test.cluster.MC.energies" u ($1/0.25):($4/6) w l lt 1 color red ti "MC", \
-     "analysis.run_test.cluster.MD.energies" u ($1/0.25):($4/6) w l lt 1 color cyan ti "MD"
+     "analysis.test.cluster.MC.energies" u ($1/0.25):($4/6) w l lt 1 color red ti "MC", \
+     "analysis.test.cluster.MD.energies" u ($1/0.25):($4/6) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -17,8 +17,8 @@ set output "cluster.energies.pdf"
 set xlabel "n iter / n walkers"
 set ylabel "E / atom epsilon"
 set yrange [:4]
-plot "< tail -n +2 run_test.cluster.MC/*energies" u ($1/1024):($2/6/0.25) w l lt 1 color red ti "MC", \
-     "< tail -n +2 run_test.cluster.MD/*energies" u ($1/1024):($2/6/0.25) w l lt 1 color cyan ti "MD"
+plot "< tail -n +2 test.cluster.MC.energies" u ($1/1024):($2/6/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 test.cluster.MD.energies" u ($1/1024):($2/6/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -33,8 +33,8 @@ set log y
 set yrange [1:]
 set xrange [0:1.5]
 plot "analysis.periodic.MC.Livia" u ($1/0.1):($4/64) w l lt 1 color black ti "Livia reference", \
-     "analysis.run_test.periodic.MC.energies" u ($1/0.25):($4/64) w l lt 1 color red ti "MC", \
-     "analysis.run_test.periodic.MD.energies" u ($1/0.25):($4/64) w l lt 1 color cyan ti "MD"
+     "analysis.test.periodic.MC.energies" u ($1/0.25):($4/64) w l lt 1 color red ti "MC", \
+     "analysis.test.periodic.MD.energies" u ($1/0.25):($4/64) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -45,8 +45,8 @@ set xlabel "n iter / n walkers"
 set ylabel "H / atom epsilon"
 unset log y
 set yrange [:60]
-plot "< tail -n +2 run_test.periodic.MC/*energies" u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
-     "< tail -n +2 run_test.periodic.MD/*energies" u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
+plot "< tail -n +2 test.periodic.MC.energies" u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 test.periodic.MD.energies" u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -57,8 +57,8 @@ set xlabel "n iter / n walkers"
 set ylabel "H / atom epsilon"
 unset log y
 set yrange [:60]
-plot "< tail -n +2 run_test.periodic.MC/*energies" u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
-     "< tail -n +2 run_test.periodic.MD/*energies" u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
+plot "< tail -n +2 test.periodic.MC.energies" u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 test.periodic.MD.energies" u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
