@@ -39,6 +39,8 @@ def usage():
   sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
   sys.stderr.write("\n")
   sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
+  sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (F. Perturb velocities after MD trajectory\n")
+  sys.stderr.write("MD_atom_velo_flip_accept=[T | F] (F)\n")
   sys.stderr.write("MD_atom_timestep=float (1.0)\n")
   sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)\n")
@@ -300,6 +302,8 @@ movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_r
 movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
 movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))
+movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_velo_post_perturb', "F"))
+movement_args['MD_atom_velo_flip_accept'] = str_to_logical(args.pop('MD_atom_velo_flip_accept', "F"))
 movement_args['atom_velo_perturb_randomize'] = str_to_logical(args.pop('atom_velo_perturb_randomize', "F"))
 movement_args['atom_velo_perturb_angle'] = float(args.pop('atom_velo_perturb_angle', 0.1))
 
@@ -516,7 +520,7 @@ def perturb_velo(at, Emax, rotate=True):
       return
 
    orig_KE = at.get_kinetic_energy()
-   #DOC \item if MD\_atom\_velo\_randomize, pick random velocities consistent with Emax
+   #DOC \item if atom\_velo\_randomize, pick random velocities consistent with Emax
    if movement_args['atom_velo_perturb_randomize']:
       # randomize completely
       at.set_velocities(gen_random_velo(at, Emax))
@@ -528,7 +532,7 @@ def perturb_velo(at, Emax, rotate=True):
       #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
       if velo_mag == 0.0:
 	 at.set_velocities(gen_random_velo(at, Emax))
-      #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in $\pm$MD\_atom\_velo\_perturb\_angle $\pi$
+      #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in $\pm$ atom\_velo\_perturb\_angle $\pi$
       else:
 	 # pick new random magnitude - count on dimensionality to make change small
 	 velo = gen_random_velo(at, Emax, velo/velo_mag)
@@ -569,7 +573,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
    if orig_E >= Emax:
       print print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax
 
-   #DOC \item if MD\_atom\_velo\_perturb, call perturb\_velo() for magnitude and rotation
+   #DOC \item if MD\_atom\_velo\_pre\_perturb, call perturb\_velo() for magnitude and rotation
    if movement_args['MD_atom_velo_pre_perturb']:
       perturb_velo(at, Emax)
 
@@ -603,7 +607,10 @@ def do_MD_atom_walk(at, movement_args, Emax):
       #DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)
       print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
       at.set_positions(orig_pos)
-      at.set_velocities(orig_velo)
+      if movement_args['MD_atom_velo_flip_accept']:
+	 at.set_velocities(orig_velo)
+      else:
+	 at.set_velocities(-orig_velo)
       at.info['ns_energy'] = orig_E
       n_accept = 0
    #DOC \end{itemize}
@@ -612,10 +619,15 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DOC \begin{itemize}
       #DOC \item flip velocities
       # remember to reverse velocities on acceptance to preserve detailed balance, since velocity is (sometimes) being perturbed, not completely randomized
-      at.set_velocities(-at.get_velocities()) # is there a faster way of doing this in ASE?  Can you do at.velocities?
+      if movement_args['MD_atom_velo_flip_accept']:
+	 at.set_velocities(-at.get_velocities()) # is there a faster way of doing this in ASE?  Can you do at.velocities?
       at.info['ns_energy'] = final_E
       n_accept = 1
    #DOC \end{itemize}
+
+   #DOC \item if MD\_atom\_velo\_post\_perturb, call perturb\_velo() for magnitude and rotation
+   if movement_args['MD_atom_velo_post_perturb']:
+      perturb_velo(at, Emax)
 
    return {'MD_atom' : (1, n_accept) }
 #DOC \end{itemize}
