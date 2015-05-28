@@ -47,9 +47,9 @@ def prep_run(vars):
 
   inputs_file = template.replace("TEMPLATE",label+"."+name_string)
   print "sed %s < %s > %s" % (sed_string, template, inputs_file)
-  # os.system("sed %s < %s > %s" % (sed_string, template, inputs_file))
+  os.system("sed %s < %s > %s" % (sed_string, template, inputs_file))
   print "./prep_jobs %dh %d %s %s" % (time, np, label, inputs_file)
-  # os.system("./prep_jobs %dh %d %s %s" % (time, np, label, inputs_file))
+  os.system("./prep_jobs %dh %d %s %s" % (time, np, label, inputs_file))
 
 def do_scan(vars_use, free_vars):
    var = free_vars[0]
