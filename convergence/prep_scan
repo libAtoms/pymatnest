@@ -30,7 +30,7 @@ print fixed_vars
 print free_vars
 
 def prep_run(vars):
-  sed_string=""
+  sed_string="-e 's/_label_/%s/' " % label
   name_string=""
 
   for var in vars:

@@ -3,3 +3,5 @@
 # conclusion: 2 larger are identical, test.cluster.MC.NW_1024.NS_64.NSS_16.energies as converged
 ./prep_scan inputs.test.cluster.MC.TEMPLATE scan_2 time=1 np=16 NW=1024 NS=16,32,64 NSS=4,8,16
 
+# scan_3: cluster MD, NS and NSS together
+./prep_scan inputs.test.cluster.MD.TEMPLATE scan_3  time=4 np==16 NW=512 NS=32 NSS=8 factor=1,2,4
