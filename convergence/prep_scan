@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+
+import os, sys, re
+
+if len(sys.argv) < 6:
+  sys.stderr.write("Usage: %s template label time=t np=np var=val [ var=val ... [ factor=f1,f2,... ] ]\n" % sys.argv[0])
+  sys.exit(0)
+
+vars={}
+template=sys.argv[1]
+label=sys.argv[2]
+fixed_vars=[]
+free_vars=[]
+for var in sys.argv[3:]:
+  m = re.match("^(.+)==(.+)$", var)
+  if m is not None:
+    fixed_vars.append(m.group(1))
+  else:
+    m = re.match("^(.+)=(.+)$", var)
+    if m is not None:
+      if m.group(1) != 'factor':
+	free_vars.append(m.group(1))
+    else:
+      sys.stderr.write("Failed to parse arg '%s'\n" % var)
+      sys.exit(1)
+  vars[m.group(1)] = m.group(2)
+
+print vars
+print fixed_vars
+print free_vars
+
+base_sed_string=""
+base_name_string=""
+for var in fixed_vars:
+  if var == "time":
+    time=int(vars[var])
+  elif var == "np":
+    np=int(vars[var])
+  else:
+    val = vars[var]
+    base_sed_string += "-e 's/_%s_/%s/g' " % (var, val)
+    if len(base_name_string) > 0:
+      base_name_string += "."
+    base_name_string += "%s_%s" % (var, val)
+
+if 'factor' in vars:
+
+  factors = vars.pop('factor')
+  for f in factors.split(","):
+    f = int(f)
+    print "factor ", f
+    vars_out={}
+    sed_string=base_sed_string
+    name_string=base_name_string
+    for var in free_vars:
+      val = f*int(vars[var])
+      if var == "time":
+	time=val
+      elif var == "np":
+	np=val
+      else:
+	sed_string += "-e 's/_%s_/%d/g' " % (var, val)
+	if len(name_string) > 0:
+	  name_string += "."
+	name_string += "%s_%d" % (var, val)
+
+    inputs_file = template.replace("TEMPLATE",label+"."+name_string)
+    print "sed %s < %s > %s" % (sed_string, template, inputs_file)
+    os.system("sed %s < %s > %s" % (sed_string, template, inputs_file))
+    print "./prep_jobs %dh %d %s %s" % (time, np, label, inputs_file)
+    os.system("./prep_jobs %dh %d %s %s" % (time, np, label, inputs_file))
+
+else:
+  print "factor required for now"

@@ -1,0 +1,3 @@
+# scan_1: cluster MC, NS and NSS together
+./prep_scan inputs.test.cluster.MC.TEMPLATE scan_1  time=1 np==16 NW=512 NS=32 NSS=8 factor=1,2,4
+

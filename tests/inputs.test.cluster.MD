@@ -7,6 +7,8 @@ n_cull=1
 n_iter_per_walker=120
 out_file_prefix=test.cluster.MD
 
+################################################################################
+
 atom_algorithm=MD
 
 atom_n_steps_expected=64

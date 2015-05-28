@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ $# -lt 4 ]; then
+  echo "Usage: $0 time np name" 1>&2
+  exit 1
+fi
+
+t=$1; shift
+n=$1; shift
+name=$1; shift
+
+for infile in $*; do
+   if [ ! -f $infile ]; then
+      echo "inputs files for $infile doesn't exist" 1>&2
+      exit 1
+   fi
+   job=${infile/inputs./}
+   export INPUT_FILES_MASTER=inputs.${job}
+   export REDIRECT_IO="< inputs.${job} > \$startdir/${job}.out" 
+   bugs -exec='$NS_RUN_PATH/ns_run' -time=${t} -np=${n} -script=test.script -postscript=test.postscript -name=$name -fileroot=${job} -output=job.${job}
+done
