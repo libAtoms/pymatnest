@@ -61,63 +61,6 @@ subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, KEmax, final_K
 
 end subroutine fortran_MC_atom_velo
 
-subroutine fortran_MC_atom_microcanonical(N, pos, vel, mass, cell, n_steps, step_size_pos, Emax, final_E, n_accept_pos)
-   implicit none
-   integer :: N
-   double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
-   integer :: n_steps
-   double precision :: step_size_pos, Emax, final_E
-   integer :: n_accept_pos
-
-   integer :: d_i
-   double precision :: d_r, E, PE, KE, dPE, d_pos(3)
-
-   double precision, external :: ll_eval_energy, ll_eval_denergy_1
-
-   integer :: i_step, i_at, t_i
-   integer :: order(N)
-
-   n_accept_pos = 0
-   PE = ll_eval_energy(N, pos, cell) 
-   KE = 0.5*sum(spread(mass,1,3)*vel**2)
-   E = PE + KE
-
-   do i_step=1, n_steps
-
-      do i_at=1, N
-	 order(i_at) = i_at
-      end do
-      do i_at=1, N-1
-	 call random_number(d_r); d_i = floor(d_r*(N-i_at+1))+i_at
-	 if (d_i /= i_at) then
-	    t_i = order(i_at)
-	    order(i_at) = order(d_i)
-	    order(d_i) = t_i
-	 endif
-      end do
-
-      do i_at=1, N
-	 d_i = order(i_at)
-
-	 call random_number(d_pos)
-	 d_pos = 2.0*step_size_pos*(d_pos-0.5)
-	 dPE = ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
-	 if (PE + dPE < E) then
-	    pos(1:3,d_i) = pos(1:3,d_i) + d_pos(1:3)
-	    PE = PE + dPE
-	    vel = vel * sqrt((KE-dPE)/KE)
-	    KE = KE - dPE
-	    n_accept_pos = n_accept_pos + 1
-	 endif
-
-      end do
-   end do
-
-
-   final_E = KE + PE
-
-end subroutine fortran_MC_atom_microcanonical
-
 subroutine fortran_MC_atom(N, pos, vel, mass, cell, n_steps, step_size_pos, step_size_vel, Emax, final_E, &
 			   n_accept_pos, n_accept_vel)
    implicit none
