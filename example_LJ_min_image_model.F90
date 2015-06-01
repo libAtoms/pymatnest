@@ -1,28 +1,4 @@
-! publically accessible things required for interface to pymatnest
-!
-! subroutine ll_init_model() 
-!    initializes potential
-!
-! subroutine ll_init_config(N, pos, cell, Emax) 
-!    initializes a configuration with energy < Emax
-!    config will be tested for failure after return
-!
-! double precision function ll_eval_energy(N, pos, cell)
-!    integer :: N ! number of atoms
-!    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
-!    returns energy
-!
-! double precision function ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
-!    integer :: N ! number of atoms
-!    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
-!    integer :: d_i ! index of atom to be perturbed, 1-based (called from fortran_MC())
-!    double precision :: d_pos(3) ! displacement of perturbed atom
-!    returns energy change
-!
-! double precision function ll_eval_forces(N, pos, cell, forces)
-!    integer :: N ! number of atoms
-!    double precision :: pos(3,N), cell(3,3), forces(3,N) ! positions, cell vectors, forces
-!    returns energy
+! API documented in example_LJ_model.F90
 
 module mat_mod
 implicit none
@@ -90,11 +66,13 @@ subroutine ll_init_config()
    return
 end subroutine ll_init_config
 
-double precision function ll_eval_energy(N, pos, cell)
+double precision function ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
 use mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
+   integer :: n_extra_data
+   double precision :: extra_data(n_extra_data, N)
 
    integer :: i, j
    double precision :: dr(3), dr_mag, dr_l(3)
@@ -120,13 +98,16 @@ implicit none
 
 end function ll_eval_energy
 
-double precision function ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
+integer function ll_move_atom_1(N, pos, n_extra_data, extra_data, cell, d_i, d_pos, dEmax, dE)
 use mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
+   integer :: n_extra_data
+   double precision :: extra_data(n_extra_data, N)
    integer :: d_i
    double precision :: d_pos(3)
+   double precision :: dEmax, dE
 
    double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6
 
@@ -136,7 +117,7 @@ implicit none
 
    call matrix3x3_inverse(cell, cell_inv)
 
-   ll_eval_denergy_1 = 0.0
+   dE = 0.0
    i=d_i
    do j=1,N
       if (j == i) cycle
@@ -154,21 +135,31 @@ implicit none
       dr1_mag = sqrt(sum(dr1*dr1))
 
       if (dr0_mag < 3.0) then
-	 ll_eval_denergy_1 = ll_eval_denergy_1 - ((1.0/dr0_mag**12 - 1.0/dr0_mag**6) - E_offset)
+	 dE = dE - ((1.0/dr0_mag**12 - 1.0/dr0_mag**6) - E_offset)
       endif
       if (dr1_mag < 3.0) then
-	 ll_eval_denergy_1 = ll_eval_denergy_1 + ((1.0/dr1_mag**12 - 1.0/dr1_mag**6) - E_offset)
+	 dE = dE + ((1.0/dr1_mag**12 - 1.0/dr1_mag**6) - E_offset)
       endif
 
    end do
 
-end function ll_eval_denergy_1
+   if (dE < dEmax) then ! accept
+      pos(:,i) = pos(:,i) + d_pos(:)
+      ll_move_atom_1 = 1
+   else ! reject
+      dE = 0.0
+      ll_move_atom_1 = 0
+   endif
 
-function ll_eval_forces(N, pos, cell, forces) result(energy)
+end function ll_move_atom_1
+
+function ll_eval_forces(N, pos, n_extra_data, extra_data, cell, forces) result(energy)
 use mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3), forces(3,N)
+   integer :: n_extra_data
+   double precision :: extra_data(n_extra_data, N)
    double precision :: energy ! result
 
    integer :: i, j

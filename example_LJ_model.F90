@@ -1,27 +1,47 @@
 ! publically accessible things required for interface to pymatnest
 !
 ! subroutine ll_init_model() 
+!
 !    initializes potential
 !
 ! subroutine ll_init_config(N, pos, cell, Emax) 
+!    integer :: N ! number of atoms
+!    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
+!    double precision :: Emax ! maximum energy for config acceptance
+!
 !    initializes a configuration with energy < Emax
 !    config will be tested for failure after return
 !
-! double precision function ll_eval_energy(N, pos, cell)
+! double precision function ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
 !    integer :: N ! number of atoms
 !    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
-!    returns energy
+!    integer :: n_extra_data ! width of extra data array
+!    double precision :: extra_data(n_extra_data, N) ! extra data on output
 !
-! double precision function ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
+!    evaluates energy of a config, sets extra_data, returns energy
+!
+! integer function ll_move_atom_1(N, pos, n_extra_data, extra_data, cell, d_i, d_pos, dEmax, dE)
 !    integer :: N ! number of atoms
-!    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
+!    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors, on output updated (pos only) to be consistent with acceptance/rejection
+!    integer :: n_extra_data ! width of extra data array
+!    double precision :: extra_data(n_extra_data, N) ! extra data on input, on output updated to be consistent with acceptance/rejection
 !    integer :: d_i ! index of atom to be perturbed, 1-based (called from fortran_MC())
 !    double precision :: d_pos(3) ! displacement of perturbed atom
-!    returns energy change
+!    double precision :: dEmax ! maximum change in energy for move acceptance
+!    double precision :: dE ! on output actual change in energy, 0.0 if move is rejected
 !
-! double precision function ll_eval_forces(N, pos, cell, forces)
+!    moves an atom if dE < dEmax
+!    if move is accepted, updates pos, extra_data, sets dE
+!    if move is rejected, nothing is updated, dE set to 0.0
+!    returns 1 for accept, 0 for reject
+!
+! double precision function ll_eval_forces(N, pos, n_extra_data, extra_data, cell, forces)
 !    integer :: N ! number of atoms
 !    double precision :: pos(3,N), cell(3,3), forces(3,N) ! positions, cell vectors, forces
+!    integer :: n_extra_data ! width of extra data array
+!    double precision :: extra_data(n_extra_data, N) ! extra data on output
+!
+!    evaluates forces, sets extra_data
 !    returns energy
 
 module mat_mod
@@ -90,11 +110,13 @@ subroutine ll_init_config()
    return
 end subroutine ll_init_config
 
-double precision function ll_eval_energy(N, pos, cell)
+double precision function ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
 use mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
+   integer :: n_extra_data
+   double precision :: extra_data(n_extra_data, N)
 
    integer :: i, j
    double precision :: dr(3), dr_mag, dr_l(3), dr_l0(3), pos_l(3,N)
@@ -106,6 +128,8 @@ implicit none
    call matrix3x3_inverse(cell, cell_inv)
    ! into lattice coodinates 
    pos_l = matmul(cell_inv, pos)
+
+   if (n_extra_data == 1) extra_data = 0.0
 
    ll_eval_energy = 0.0
    do i=1, N
@@ -126,6 +150,12 @@ implicit none
 	    E_term = ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
 	    if (i == j) E_term = E_term * 0.5
 	    ll_eval_energy = ll_eval_energy + E_term
+
+	    if (n_extra_data == 1) then
+	       extra_data(1,i) = extra_data(1,i) + 0.5*E_term
+	       extra_data(1,j) = extra_data(1,j) + 0.5*E_term
+	    endif
+
 	 endif
       end do
       end do
@@ -135,13 +165,16 @@ implicit none
 
 end function ll_eval_energy
 
-double precision function ll_eval_denergy_1(N, pos, cell, d_i, d_pos)
+integer function ll_move_atom_1(N, pos, n_extra_data, extra_data, cell, d_i, d_pos, dEmax, dE)
 use mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
+   integer :: n_extra_data
+   double precision :: extra_data(n_extra_data, N)
    integer :: d_i
    double precision :: d_pos(3)
+   double precision :: dEmax, dE
 
    double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6
 
@@ -151,12 +184,25 @@ implicit none
    double precision :: cell_inv(3,3) 
    integer :: dj1, dj2, dj3
 
+   double precision, allocatable, save :: new_extra_data(:,:)
+
    call matrix3x3_inverse(cell, cell_inv)
    ! into lattice coodinates 
    pos_l = matmul(cell_inv, pos)
    d_pos_l = matmul(cell_inv, d_pos)
 
-   ll_eval_denergy_1 = 0.0
+   if (n_extra_data == 1 .and. allocated(new_extra_data)) then
+      if (any(shape(new_extra_data) /= shape(extra_data))) then
+	 deallocate(new_extra_data)
+      endif
+   endif
+   if (n_extra_data == 1 .and. .not. allocated(new_extra_data)) then
+      allocate(new_extra_data(n_extra_data, N))
+   endif
+
+   if (n_extra_data == 1) new_extra_data = extra_data
+
+   dE = 0.0
    i=d_i
    do j=1,N
       if (j == i) cycle
@@ -183,10 +229,18 @@ implicit none
 	 drp_mag = sqrt(sum(drp*drp))
 
 	 if (dr_mag < 3.0) then
-	    ll_eval_denergy_1 = ll_eval_denergy_1 -  ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	    dE = dE -  ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	    if (n_extra_data == 1) then
+	       new_extra_data(1,i) = new_extra_data(1,i) - 0.5*((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	       new_extra_data(1,j) = new_extra_data(1,j) - 0.5*((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	    endif
 	 endif
 	 if (drp_mag < 3.0) then
-	    ll_eval_denergy_1 = ll_eval_denergy_1 + ((1.0/drp_mag**12 - 1.0/drp_mag**6) - E_offset)
+	    dE = dE + ((1.0/drp_mag**12 - 1.0/drp_mag**6) - E_offset)
+	    if (n_extra_data == 1) then
+	       new_extra_data(1,i) = new_extra_data(1,i) + 0.5*((1.0/drp_mag**12 - 1.0/drp_mag**6) - E_offset)
+	       new_extra_data(1,j) = new_extra_data(1,j) + 0.5*((1.0/drp_mag**12 - 1.0/drp_mag**6) - E_offset)
+	    endif
 	 endif
 
       end do
@@ -194,13 +248,24 @@ implicit none
       end do
    end do
 
-end function ll_eval_denergy_1
+   if (dE < dEmax) then ! accept
+      pos(:,i) = pos(:,i) + d_pos(:)
+      if (n_extra_data == 1) extra_data = new_extra_data
+      ll_move_atom_1 = 1
+   else ! reject
+      dE = 0.0
+      ll_move_atom_1 = 0
+   endif
 
-function ll_eval_forces(N, pos, cell, forces) result(energy)
+end function ll_move_atom_1
+
+function ll_eval_forces(N, pos, n_extra_data, extra_data, cell, forces) result(energy)
 use mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3), forces(3,N)
+   integer :: n_extra_data
+   double precision :: extra_data(n_extra_data, N)
    double precision :: energy ! result
 
    integer :: i, j
@@ -212,6 +277,8 @@ implicit none
 
    call matrix3x3_inverse(cell, cell_inv)
    pos_l = matmul(cell_inv, pos)
+
+   if (n_extra_data == 1) extra_data = 0.0
 
    energy = 0.0
    forces = 0.0
@@ -234,6 +301,10 @@ implicit none
 	    E_term = ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
 	    if (i == j) E_term = E_term * 0.5
 	    energy = energy + E_term
+	    if (n_extra_data == 1) then
+	       extra_data(1,i) = extra_data(1,i) + 0.5*E_term
+	       extra_data(1,j) = extra_data(1,j) + 0.5*E_term
+	    endif
 	    if (i /= j) then
 	       forces(:,i) = forces(:,i) - (-12.0/dr_mag**13 + 6.0/dr_mag**7)*(dr/dr_mag)
 	       forces(:,j) = forces(:,j) + (-12.0/dr_mag**13 + 6.0/dr_mag**7)*(dr/dr_mag)

@@ -4,3 +4,4 @@ test*.out
 test*.energies
 analysis*energies
 job*pbs
+*.pdf

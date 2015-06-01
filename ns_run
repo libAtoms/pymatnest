@@ -19,6 +19,7 @@ def usage():
   sys.stderr.write("min_Emax=float (None.  Termination condition based on Emax)\n")
   sys.stderr.write("out_file_prefix=str (None)\n")
   sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
+  sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
   sys.stderr.write("\n")
   sys.stderr.write("atom_n_steps_expected=int (0, this or atom_n_steps required)\n")
   sys.stderr.write("atom_n_steps=int (0, this or atom_n_steps_expected required)\n")
@@ -205,6 +206,7 @@ ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
 ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
+ns_args['n_extra_data'] = int(args.pop('n_extra_data', 0))
 
 # parse energy_calculator
 ns_args['energy_calculator'] = args.pop('energy_calculator', 'fortran')
@@ -1096,6 +1098,8 @@ if ns_args['restart_file'] == '': # start from scratch
 	 init_atoms.set_masses(init_atoms.mass/quippy.MASSCONVERT)
       else:
 	 exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
+   if ns_args['n_extra_data'] > 0:
+      init_atoms.arrays['ns_extra_data'] = np.zeros( (len(init_atoms), ns_args['n_extra_data']) )
 
    # clone initial config into array of walkers
    for i_walker in range(n_walkers):
@@ -1144,6 +1148,8 @@ else: # doing a restart
       walkers = comm.recv(source=0, tag=1)
 
    for at in walkers:
+      if ns_args['n_extra_data'] > 0:
+	 at.arrays['ns_extra_data'] = np.zeros( (len(at), ns_args['n_extra_data']) )
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
       at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
@@ -1161,14 +1167,17 @@ def save_snapshot(id):
    except:
       snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (id,rank, ns_args['config_file_format']), "w")
 
-   i_at = 0
    for at in walkers:
       #QUIP_IO if have_quippy:
 	 #QUIP_IO at.write(snapshot_io)
       #QUIP_IO else:
 	 #QUIP_IO ase.io.write(snapshot_file % i_at, ase.Atoms(at))
-      ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
-      i_at += 1
+
+      ### ASE_IO_ARRAYS_WRITE_ISSUE ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
+      ta = at.copy() ### ASE_IO_ARRAYS_WRITE_ISSUE
+      if 'ns_extra_data' in ta.arrays: ### ASE_IO_ARRAYS_WRITE_ISSUE 
+	 del ta.arrays['ns_extra_data'] ### ASE_IO_ARRAYS_WRITE_ISSUE
+      ase.io.write(snapshot_io, ta, format=ns_args['config_file_format']) ### ASE_IO_ARRAYS_WRITE_ISSUE
 
    snapshot_io.close()
 
@@ -1270,7 +1279,11 @@ def do_ns_loop():
 	       #QUIP_IO walkers[i].write(traj_io)
 	    #QUIP_IO else:
 	       #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
-	    ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
+	    ### ASE_IO_ARRAYS_WRITE_ISSUE ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
+	    ta = walkers[i].copy() ### ASE_IO_ARRAYS_WRITE_ISSUE
+	    if 'ns_extra_data' in ta.arrays: ### ASE_IO_ARRAYS_WRITE_ISSUE
+	       del ta.arrays['ns_extra_data'] ### ASE_IO_ARRAYS_WRITE_ISSUE
+	    ase.io.write(traj_io, ta, format=ns_args['config_file_format']) ### ASE_IO_ARRAYS_WRITE_ISSUE
 
       # calculate how many will be culled on each rank
       n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -1375,26 +1388,40 @@ def do_ns_loop():
 	    walkers[recv_ind[0]].set_cell(walkers[send_ind[0]].get_cell())
 	    if movement_args['do_velocities']:
 	       walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
+	    if ns_args['n_extra_data'] > 0:
+	       walkers[recv_ind[0]].arrays['ns_extra_data'][:,:] = walkers[send_ind[0]].arrays['ns_extra_data']
 	    walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 	 else:
-	    n_send = n_atoms + 3
+	    n_send = 3*(n_atoms + 3)
 	    if movement_args['do_velocities']:
-	       n_send += n_atoms
-	    buf = np.zeros ( (n_send, 3) )
+	       n_send += 3*n_atoms
+	    if ns_args['n_extra_data'] > 0:
+	       n_send += ns_args['n_extra_data']*n_atoms
+	    buf = np.zeros ( n_send )
 	    if send_rank[0] == rank: # only one config is sent/received
-	       buf[0:n_atoms,:] = walkers[send_ind[0]].get_positions()
-	       buf[n_atoms:n_atoms+3,:] = walkers[send_ind[0]].get_cell()
+	       buf_o = 0
+	       buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].get_positions().reshape( (3*n_atoms) ); buf_o += 3*n_atoms
+	       buf[buf_o:buf_o+3*3] = walkers[send_ind[0]].get_cell().reshape( (3*3) ); buf_o += 3*3
 	       if movement_args['do_velocities']:
-		  buf[n_atoms+3:,:] = walkers[send_ind[0]].get_velocities()
+		  buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].get_velocities().reshape( (3*n_atoms) ); buf_o += 3*n_atoms
+	       if ns_args['n_extra_data'] > 0:
+		  buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) )
+		  buf_o += ns_args['n_extra_data']*n_atoms
 	       comm.Send([buf,  MPI.DOUBLE], dest=recv_rank[0], tag=100)
 	    elif recv_rank[0] == rank:
 	       comm.Recv([buf, MPI.DOUBLE], source=send_rank[0], tag=100)
-	       walkers[recv_ind[0]].set_positions(buf[0:n_atoms,:])
-	       walkers[recv_ind[0]].set_cell(buf[n_atoms:n_atoms+3,:])
+	       buf_o = 0
+	       walkers[recv_ind[0]].set_positions(buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, 3) )); buf_o += 3*n_atoms
+	       walkers[recv_ind[0]].set_cell(buf[buf_o:buf_o+3*3].reshape( (3, 3) )); buf_o += 3*3
 	       if movement_args['do_velocities']:
-		  walkers[recv_ind[0]].set_velocities(buf[n_atoms+3:,:])
+		  walkers[recv_ind[0]].set_velocities(buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, 3) )); buf_o += 3*n_atoms
+	       if ns_args['n_extra_data'] > 0:
+		  walkers[recv_ind[0]].arrays['ns_extra_data'][:,:] = buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, ns_args['n_extra_data']) ); buf_o += ns_args['n_extra_data']*n_atoms
 	       walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
+
       else: # should switch to comm.Alltoall, faster, but more manual massaging of data structures
+	 if ns_args['n_extra_data'] > 0:
+	    exit_error("extra data not implemented when n_cull > 1", 8)
 	 # create sending/receiving buffers
 	 # create sending/receiving buffers
 	 pos_send_buf=[None] * size
