@@ -46,7 +46,7 @@ def usage():
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)\n")
   sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (T, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)\n")
   sys.stderr.write("atom_velo_perturb_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
-  sys.stderr.write("atom_velo_perturb_angle=float (0.1. Max angle for random rotations.)\n")
+  sys.stderr.write("atom_velo_perturb_angle=float (0.3. Max angle in radians for random rotations.)\n")
   sys.stderr.write("MC_atom_velo_walk_rej_free=[T | F] (F. If true, use rejection free algorithm for MC_atom_walk\n")
   sys.stderr.write("\n")
   sys.stderr.write("\n")
@@ -306,7 +306,7 @@ movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_vel
 movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_velo_post_perturb', "T"))
 movement_args['MD_atom_velo_flip_accept'] = str_to_logical(args.pop('MD_atom_velo_flip_accept', "F"))
 movement_args['atom_velo_perturb_randomize'] = str_to_logical(args.pop('atom_velo_perturb_randomize', "F"))
-movement_args['atom_velo_perturb_angle'] = float(args.pop('atom_velo_perturb_angle', 0.1))
+movement_args['atom_velo_perturb_angle'] = float(args.pop('atom_velo_perturb_angle', 0.3))
 movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "F"))
 
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
@@ -534,27 +534,26 @@ def perturb_velo(at, Emax, rotate=True):
       #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
       if velo_mag == 0.0:
 	 at.set_velocities(gen_random_velo(at, Emax))
-      #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in $\pm$ atom\_velo\_perturb\_angle $\pi$
+      #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in $\pm$ atom\_velo\_perturb\_angle
       else:
 	 # pick new random magnitude - count on dimensionality to make change small
-	 velo = gen_random_velo(at, Emax, velo/velo_mag)
+	 masses_2D = at.get_masses().reshape( (len(at),1) )
+	 momenta = gen_random_velo(at, Emax, velo/velo_mag) * masses_2D
 
 	 if rotate:
 	    # apply random rotations
-	    indices = range(len(at))
+	    indices = [ (int(i/3), i%3) for i in range(3*len(at)) ]
 	    rng.shuffle_in_place(indices)
-	    for (ind_1_i, ind_2_i) in pairwise(indices):
-	       ind_1_j = rng.int_uniform(0,3)
-	       ind_2_j = rng.int_uniform(0,3)
-	       ang = rng.float_uniform(-movement_args['atom_velo_perturb_angle']*np.pi,movement_args['atom_velo_perturb_angle']*np.pi)
+	    for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
+	       ang = rng.float_uniform(-movement_args['atom_velo_perturb_angle'],movement_args['atom_velo_perturb_angle'])
 	       c_ang = np.cos(ang)
 	       s_ang = np.sin(ang)
-	       v_1 = velo[ind_1_i,ind_1_j] * c_ang + velo[ind_2_i,ind_2_j] * s_ang
-	       v_2 = -velo[ind_1_i,ind_1_j] * s_ang + velo[ind_2_i,ind_2_j] * c_ang
-	       velo[ind_1_i,ind_1_j] = v_1
-	       velo[ind_2_i,ind_2_j] = v_2
+	       v_1 = momenta[ind_1_a,ind_1_c] * c_ang + momenta[ind_2_a,ind_2_c] * s_ang
+	       v_2 = -momenta[ind_1_a,ind_1_c] * s_ang + momenta[ind_2_a,ind_2_c] * c_ang
+	       momenta[ind_1_a,ind_1_c] = v_1
+	       momenta[ind_2_a,ind_2_c] = v_2
 
-	 at.set_velocities(velo)
+	 at.set_velocities(momenta / masses_2D)
 
    new_KE = at.get_kinetic_energy()
    # perturb_velo expects at.info['ns_energy'] to be set correctly initially
