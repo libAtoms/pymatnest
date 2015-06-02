@@ -115,7 +115,7 @@ class fortran_MC_MD:
    def eval_energy(self, at):
       n = ctypes.c_int(len(at))
       if 'ns_extra_data' in at.arrays:
-	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].shape[1])
+	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].size/len(at))
 	 extra_data = at.arrays['ns_extra_data']
       else:
 	 n_extra_data_c = ctypes.c_int(0)
@@ -125,7 +125,7 @@ class fortran_MC_MD:
    def move_atom_1(self, at, d_i, d_pos, dEmax):
       n = ctypes.c_int(len(at))
       if 'ns_extra_data' in at.arrays:
-	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].shape[1])
+	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].size/len(at))
 	 extra_data = at.arrays['ns_extra_data']
       else:
 	 n_extra_data_c = ctypes.c_int(0)
@@ -145,7 +145,7 @@ class fortran_MC_MD:
    def eval_forces(self, at, forces):
       n = ctypes.c_int(len(at))
       if 'ns_extra_data' in at.arrays:
-	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].shape[1])
+	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].size/len(at))
 	 extra_data = at.arrays['ns_extra_data']
       else:
 	 n_extra_data_c = ctypes.c_int(0)
@@ -193,7 +193,7 @@ class fortran_MC_MD:
       n_accept_velo = np.zeros( (1), dtype=np.int32)
       final_E = np.zeros( (1), dtype=np.float64) 
       if 'ns_extra_data' in at.arrays:
-	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].shape[1])
+	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].size/len(at))
 	 extra_data = at.arrays['ns_extra_data']
       else:
 	 n_extra_data_c = ctypes.c_int(0)
@@ -220,7 +220,7 @@ class fortran_MC_MD:
       debug = ctypes.c_int(debug)
       final_E = np.zeros( (1), dtype=np.float64) 
       if 'ns_extra_data' in at.arrays:
-	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].shape[1])
+	 n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].size/len(at))
 	 extra_data = at.arrays['ns_extra_data']
       else:
 	 n_extra_data_c = ctypes.c_int(0)

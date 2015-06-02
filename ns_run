@@ -1098,7 +1098,10 @@ if ns_args['restart_file'] == '': # start from scratch
       else:
 	 exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
    if ns_args['n_extra_data'] > 0:
-      init_atoms.arrays['ns_extra_data'] = np.zeros( (len(init_atoms), ns_args['n_extra_data']) )
+      if ns_args['n_extra_data'] == 1:
+	 init_atoms.arrays['ns_extra_data'] = np.zeros( (len(init_atoms)) )
+      else:
+	 init_atoms.arrays['ns_extra_data'] = np.zeros( (len(init_atoms), ns_args['n_extra_data']) )
 
    # clone initial config into array of walkers
    for i_walker in range(n_walkers):
@@ -1147,8 +1150,11 @@ else: # doing a restart
       walkers = comm.recv(source=0, tag=1)
 
    for at in walkers:
-      if ns_args['n_extra_data'] > 0:
-	 at.arrays['ns_extra_data'] = np.zeros( (len(at), ns_args['n_extra_data']) )
+      if ns_args['n_extra_data'] > 0 and (not 'ns_extra_data' in at.arrays or at.arrays['ns_extra_data'].size/len(at) != ns_args['n_extra_data']):
+	 if ns_args['n_extra_data'] == 1:
+	    at.arrays['ns_extra_data'] = np.zeros( (len(at)) )
+	 else:
+	    at.arrays['ns_extra_data'] = np.zeros( (len(at), ns_args['n_extra_data']) )
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
       at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
@@ -1171,12 +1177,7 @@ def save_snapshot(id):
 	 #QUIP_IO at.write(snapshot_io)
       #QUIP_IO else:
 	 #QUIP_IO ase.io.write(snapshot_file % i_at, ase.Atoms(at))
-
-      ### ASE_IO_ARRAYS_WRITE_ISSUE ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
-      ta = at.copy() ### ASE_IO_ARRAYS_WRITE_ISSUE
-      if 'ns_extra_data' in ta.arrays: ### ASE_IO_ARRAYS_WRITE_ISSUE 
-	 del ta.arrays['ns_extra_data'] ### ASE_IO_ARRAYS_WRITE_ISSUE
-      ase.io.write(snapshot_io, ta, format=ns_args['config_file_format']) ### ASE_IO_ARRAYS_WRITE_ISSUE
+      ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
 
    snapshot_io.close()
 
@@ -1278,11 +1279,7 @@ def do_ns_loop():
 	       #QUIP_IO walkers[i].write(traj_io)
 	    #QUIP_IO else:
 	       #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
-	    ### ASE_IO_ARRAYS_WRITE_ISSUE ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
-	    ta = walkers[i].copy() ### ASE_IO_ARRAYS_WRITE_ISSUE
-	    if 'ns_extra_data' in ta.arrays: ### ASE_IO_ARRAYS_WRITE_ISSUE
-	       del ta.arrays['ns_extra_data'] ### ASE_IO_ARRAYS_WRITE_ISSUE
-	    ase.io.write(traj_io, ta, format=ns_args['config_file_format']) ### ASE_IO_ARRAYS_WRITE_ISSUE
+	    ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
 
       # calculate how many will be culled on each rank
       n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -1388,7 +1385,7 @@ def do_ns_loop():
 	    if movement_args['do_velocities']:
 	       walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
 	    if ns_args['n_extra_data'] > 0:
-	       walkers[recv_ind[0]].arrays['ns_extra_data'][:,:] = walkers[send_ind[0]].arrays['ns_extra_data']
+	       walkers[recv_ind[0]].arrays['ns_extra_data'][...] = walkers[send_ind[0]].arrays['ns_extra_data']
 	    walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 	 else:
 	    n_send = 3*(n_atoms + 3)
@@ -1415,7 +1412,7 @@ def do_ns_loop():
 	       if movement_args['do_velocities']:
 		  walkers[recv_ind[0]].set_velocities(buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, 3) )); buf_o += 3*n_atoms
 	       if ns_args['n_extra_data'] > 0:
-		  walkers[recv_ind[0]].arrays['ns_extra_data'][:,:] = buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, ns_args['n_extra_data']) ); buf_o += ns_args['n_extra_data']*n_atoms
+		  walkers[recv_ind[0]].arrays['ns_extra_data'][...] = buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, ns_args['n_extra_data']) ); buf_o += ns_args['n_extra_data']*n_atoms
 	       walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 
       else: # should switch to comm.Alltoall, faster, but more manual massaging of data structures
