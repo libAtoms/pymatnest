@@ -881,10 +881,9 @@ def walk_single_walker(at, movement_args, Emax):
 #DOC \begin{itemize}
 
    #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
+   possible_moves = [do_atom_walk, do_MC_cell_walk]
    if movement_args['do_velocities'] and movement_args['atom_velo_random_order_perturb']:
-      possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_atom_velo_walk]
-   else:
-      possible_moves = [do_atom_walk, do_MC_cell_walk]
+      possible_moves.append(do_MC_atom_velo_walk)
    out = {}
 
    #DOC \item loop atom\_n\_steps times
@@ -1215,8 +1214,8 @@ def do_ns_loop():
       ## print print_prefix, ": common random state ", common_random_state
 
    if ns_args['debug'] >= 10 and size <= 1:
-      n_walks_history = []
-
+      for at in walkers:
+	 at.info['n_walks'] = 0
 
    for at in walkers:
       print rank, ": initial energy ", at.info['ns_energy']
@@ -1237,8 +1236,8 @@ def do_ns_loop():
 	 zero_stats(walk_stats_cumul, movement_args)
 
       if ns_args['debug'] >= 20:
-	 print print_prefix, ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
-	 print print_prefix, ": LOOP_PE START 01 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_PE START 01 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
 
       # get list of highest energy configs
       (Emax, cull_ind, cull_rank) = max_energy(walkers, n_cull)
@@ -1268,6 +1267,7 @@ def do_ns_loop():
 	 entries_for_this_rank = np.where(cull_rank == r)[0]
 	 cull_list[r] = cull_ind[entries_for_this_rank]
 
+
       # record Emax walkers energies and configurations
       if rank == 0:
 	 for E in Emax:
@@ -1275,6 +1275,8 @@ def do_ns_loop():
 	 energy_io.flush()
       if cull_list[rank] is not None:
 	 for i in cull_list[rank]:
+	    if ns_args['debug'] >= 10 and size <= 1:
+	       print print_prefix, "walker killed at age ",walkers[i].info['n_walks']
 	    walkers[i].info['volume'] = walkers[i].get_volume()
 	    walkers[i].info['ns_P'] = movement_args['MC_cell_P']
 	    if walkers[i].has('masses') and walkers[i].has('momenta'):
@@ -1371,7 +1373,8 @@ def do_ns_loop():
 	       n_remaining_clones -= n_transfer
 
       if ns_args['debug'] >= 20:
-	 print print_prefix, ": LOOP_PE POST_LOC_CLONE 15 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_TE POST_LOC_CLONE 15 ",i_ns_step, [ eval_energy(at) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_PE POST_LOC_CLONE 16 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
 
       # make into numpy arrays so that mathematical operations will work
       send_rank = np.array(send_rank)
@@ -1391,6 +1394,8 @@ def do_ns_loop():
 	    if ns_args['n_extra_data'] > 0:
 	       walkers[recv_ind[0]].arrays['ns_extra_data'][...] = walkers[send_ind[0]].arrays['ns_extra_data']
 	    walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
+	    if ns_args['debug'] >= 10 and size <= 1:
+	       walkers[recv_ind[0]].info['n_walks'] = 0
 	 else:
 	    n_send = 3*(n_atoms + 3)
 	    if movement_args['do_velocities']:
@@ -1464,7 +1469,8 @@ def do_ns_loop():
 		  recv_i += 1
 
       if ns_args['debug'] >= 20:
-	 print print_prefix, ": LOOP_PE POST_CLONE 20 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_TE POST_CLONE 20 ",i_ns_step, [ eval_energy(at) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_PE POST_CLONE 21 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
 
       # move cloned walkers
 
@@ -1477,7 +1483,13 @@ def do_ns_loop():
 	 if ns_args['debug'] >= 5:
 	    print print_prefix, "WALK clone_target ", rank, i_at
 	 walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
+	 if ns_args['debug'] >= 10 and size <= 1:
+	    walkers[i_at].info['n_walks'] += movement_args['atom_n_steps']
 	 accumulate_stats(walk_stats_cumul, walk_stats)
+
+      if ns_args['debug'] >= 20:
+	 print print_prefix, "%30s" % ": LOOP_TE POST_CLONE_WALK 25 ",i_ns_step, [ eval_energy(at) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_PE POST_CLONE_WALK 26 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
 
       # check that everything that should have been changed has, and things that shouldn't have, haven't
       if ns_args['debug'] >= 10:
@@ -1503,11 +1515,14 @@ def do_ns_loop():
       if not ns_args['no_extra_walks_at_all']:
 	 for ii in range(max_n_cull_per_task - len(clone_walk_ind)+n_extra_walk_per_task):
 	    r_i = rng.int_uniform(0, n_walkers)
+	    # WARNING: this may select walkers for extra walks multiple times, yet never re-walk ones that were walked as clone targets
 	    while status[rank,r_i] != '' and status[rank,r_i] != 'c_s':
 	       r_i = rng.int_uniform(0, n_walkers)
 	    if ns_args['debug'] >= 5:
 	       print print_prefix, "WALK extra ",rank, r_i
 	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
+	    if ns_args['debug'] >= 10 and size <= 1:
+	       walkers[r_i].info['n_walks'] += movement_args['atom_n_steps']
 	    accumulate_stats(walk_stats_cumul, walk_stats)
 
       if movement_args['adjust_step_interval'] != 0 and i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
@@ -1515,8 +1530,8 @@ def do_ns_loop():
 	 zero_stats(walk_stats_cumul, movement_args)
 
       if ns_args['debug'] >= 20:
-	 print print_prefix, ": LOOP_PE END 30 ",i_ns_step, [ eval_energy(at,do_KE=False) for at in walkers ]
-	 print print_prefix, ": LOOP_TE END 31 ",i_ns_step, [ eval_energy(at) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_TE END 30 ",i_ns_step, [ eval_energy(at) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_PE END 31 ",i_ns_step, [ eval_energy(at,do_KE=False) for at in walkers ]
 
       if ns_args['debug'] >= 30:
 	 for r in range(len(status)):
