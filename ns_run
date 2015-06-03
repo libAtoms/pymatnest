@@ -34,9 +34,9 @@ def usage():
   sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F, Perturb velocities (rejection free) before MC + velocities walk)\n")
   sys.stderr.write("MC_atom_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
-  sys.stderr.write("MC_atom_velo_step_size=float (0.1)\n")
-  sys.stderr.write("MC_atom_velo_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
+  sys.stderr.write("\n")
+  sys.stderr.write("atom_velo_random_order_perturb=[T | F] (F. Perturb velocities as part of main loop steps\n")
   sys.stderr.write("\n")
   sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
   sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory\n")
@@ -45,8 +45,11 @@ def usage():
   sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
   sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)\n")
   sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)\n")
-  sys.stderr.write("atom_velo_perturb_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
-  sys.stderr.write("atom_velo_perturb_angle=float (0.3. Max angle in radians for random rotations.)\n")
+  sys.stderr.write("\n")
+  sys.stderr.write("atom_velo_rej_free_perturb_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
+  sys.stderr.write("atom_velo_rej_free_perturb_angle=float (0.3. Max angle in radians for random rotations.)\n")
+  sys.stderr.write("MC_atom_velo_step_size=float (0.1)\n")
+  sys.stderr.write("MC_atom_velo_step_size_max=float (1.0)\n")
   sys.stderr.write("MC_atom_velo_walk_rej_free=[T | F] (F. If true, use rejection free algorithm for MC_atom_walk\n")
   sys.stderr.write("\n")
   sys.stderr.write("\n")
@@ -302,11 +305,13 @@ movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_
 movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
 movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
+movement_args['atom_velo_random_order_perturb'] = str_to_logical(args.pop('atom_velo_random_order_perturb', "F"))
+
 movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))
 movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_velo_post_perturb', "T"))
 movement_args['MD_atom_velo_flip_accept'] = str_to_logical(args.pop('MD_atom_velo_flip_accept', "F"))
-movement_args['atom_velo_perturb_randomize'] = str_to_logical(args.pop('atom_velo_perturb_randomize', "F"))
-movement_args['atom_velo_perturb_angle'] = float(args.pop('atom_velo_perturb_angle', 0.3))
+movement_args['atom_velo_rej_free_perturb_randomize'] = str_to_logical(args.pop('atom_velo_rej_free_perturb_randomize', "F"))
+movement_args['atom_velo_rej_free_perturb_angle'] = float(args.pop('atom_velo_rej_free_perturb_angle', 0.3))
 movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "F"))
 
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
@@ -512,7 +517,7 @@ def pairwise(iterable):
    a = iter(iterable)
    return izip(a, a)
 
-def perturb_velo(at, Emax, rotate=True):
+def rej_free_perturb_velo(at, Emax, rotate=True):
 #DOC 
 #DOC \vspace*{\baselineskip}
 #DOC perturb\_velo
@@ -523,7 +528,7 @@ def perturb_velo(at, Emax, rotate=True):
 
    orig_KE = at.get_kinetic_energy()
    #DOC \item if atom\_velo\_randomize, pick random velocities consistent with Emax
-   if movement_args['atom_velo_perturb_randomize']:
+   if movement_args['atom_velo_rej_free_perturb_randomize']:
       # randomize completely
       at.set_velocities(gen_random_velo(at, Emax))
    #DOC \item else perturb velocities
@@ -545,7 +550,7 @@ def perturb_velo(at, Emax, rotate=True):
 	    indices = [ (int(i/3), i%3) for i in range(3*len(at)) ]
 	    rng.shuffle_in_place(indices)
 	    for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
-	       ang = rng.float_uniform(-movement_args['atom_velo_perturb_angle'],movement_args['atom_velo_perturb_angle'])
+	       ang = rng.float_uniform(-movement_args['atom_velo_rej_free_perturb_angle'],movement_args['atom_velo_rej_free_perturb_angle'])
 	       c_ang = np.cos(ang)
 	       s_ang = np.sin(ang)
 	       v_1 = momenta[ind_1_a,ind_1_c] * c_ang + momenta[ind_2_a,ind_2_c] * s_ang
@@ -556,10 +561,44 @@ def perturb_velo(at, Emax, rotate=True):
 	 at.set_velocities(momenta / masses_2D)
 
    new_KE = at.get_kinetic_energy()
-   # perturb_velo expects at.info['ns_energy'] to be set correctly initially
+   # rej_free_perturb_velo expects at.info['ns_energy'] to be set correctly initially
    at.info['ns_energy'] += new_KE-orig_KE
    #DOC \end{itemize}
 #DOC \end{itemize}
+
+def do_MC_atom_velo_walk(at, movement_args, Emax):
+   if movement_args['MC_atom_velo_walk_rej_free']:
+      rej_free_perturb_velo(at, Emax)
+      return {}
+
+   n_steps = movement_args['velo_n_substeps']
+   step_size = movement_args['MC_atom_velo_step_size']
+
+   if do_calc_fortran:
+      initial_KE = eval_energy(at, do_PE=False, do_PV=False)
+      (n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, Emax-eval_energy(at, do_KE=False))
+      at.info['ns_energy'] += final_KE-initial_KE
+   else:
+      masses = at.get_masses()
+      velocities = at.get_velocities()
+      initial_KE = eval_energy(at, do_PE=False, do_PV=False)
+      KE = initial_KE
+      KEmax = Emax - (at.info['ns_energy'] - KE)
+      n_accept = 0
+      for i_step in frange(n_steps):
+	 at_list = list(range(len(at)))
+	 rng.shuffle_in_place(at_list)
+	 d_vel = rng.normal(step_size, (len(at), 3))
+	 for i_at in at_list:
+	    d_KE = 0.5*masses[i_at]*(np.sum((velocities[i_at,:]+d_vel[i_at,:])**2) - np.sum(velocities[i_at,:]**2))
+	    if KE + d_KE < KEmax:
+	       velocities[i_at,:] += d_vel[i_at,:]
+	       KE += d_KE
+	       n_accept += 1
+      at.set_velocities(velocities)
+      at.info['ns_energy'] += KE-initial_KE
+
+   return {'MC_atom_velo' : (n_steps*len(at), n_accept)}
 
 def do_MD_atom_walk(at, movement_args, Emax):
 #DOC 
@@ -576,7 +615,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    #DOC \item if MD\_atom\_velo\_pre\_perturb, call perturb\_velo() for magnitude and rotation
    if movement_args['MD_atom_velo_pre_perturb']:
-      perturb_velo(at, Emax)
+      do_MC_atom_velo_walk(at, movement_args, Emax)
 
    pre_MD_E = at.info['ns_energy']
 
@@ -628,7 +667,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    #DOC \item if MD\_atom\_velo\_post\_perturb, call perturb\_velo() for magnitude and rotation
    if movement_args['MD_atom_velo_post_perturb']:
-      perturb_velo(at, Emax)
+      do_MC_atom_velo_walk(at, movement_args, Emax)
 
    return {'MD_atom' : (1, n_accept) }
 #DOC \end{itemize}
@@ -647,7 +686,7 @@ def do_MC_atom_walk(at, movement_args, Emax):
 
    #DOC \item if MC\_atom\_velocities and MC\_atom\_velocities\_pre\_perturb, perturb velocities, magnitude and and rotation
    if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
-      perturb_velo(at, Emax)
+      do_MC_atom_velo_walk(at, movement_args, Emax)
 
    #DOC \item loop atom\_n\_substeps times
    #DOC \begin{itemize}
@@ -824,41 +863,6 @@ def do_MC_cell_walk(at, movement_args, Emax):
    return out
 #DOC \end{itemize}
 
-def do_MC_atom_velo_walk(at, movement_args, Emax):
-   n_steps = movement_args['velo_n_substeps']
-   if n_steps == 0:
-      return {}
-   step_size = movement_args['MC_atom_velo_step_size']
-
-   if movement_args['MC_atom_velo_walk_rej_free']:
-      perturb_velo(at, Emax)
-      return {}
-
-   if do_calc_fortran:
-      initial_KE = eval_energy(at, do_PE=False, do_PV=False)
-      (n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, Emax-eval_energy(at, do_KE=False))
-      at.info['ns_energy'] += final_KE-initial_KE
-   else:
-      masses = at.get_masses()
-      velocities = at.get_velocities()
-      initial_KE = eval_energy(at, do_PE=False, do_PV=False)
-      KE = initial_KE
-      KEmax = Emax - (at.info['ns_energy'] - KE)
-      n_accept = 0
-      for i_step in frange(n_steps):
-	 at_list = list(range(len(at)))
-	 rng.shuffle_in_place(at_list)
-	 d_vel = rng.normal(step_size, (len(at), 3))
-	 for i_at in at_list:
-	    d_KE = 0.5*masses[i_at]*(np.sum((velocities[i_at,:]+d_vel[i_at,:])**2) - np.sum(velocities[i_at,:]**2))
-	    if KE + d_KE < KEmax:
-	       velocities[i_at,:] += d_vel[i_at,:]
-	       KE += d_KE
-	       n_accept += 1
-      at.set_velocities(velocities)
-      at.info['ns_energy'] += KE-initial_KE
-
-   return {'MC_atom_velo' : (n_steps*len(at), n_accept)}
 
 def do_atom_walk(at, movement_args, Emax):
    if movement_args['atom_algorithm'] == 'MC':
@@ -877,7 +881,7 @@ def walk_single_walker(at, movement_args, Emax):
 #DOC \begin{itemize}
 
    #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
-   if movement_args['do_velocities']:
+   if movement_args['do_velocities'] and movement_args['atom_velo_random_order_perturb']:
       possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_atom_velo_walk]
    else:
       possible_moves = [do_atom_walk, do_MC_cell_walk]
@@ -1130,7 +1134,7 @@ if ns_args['restart_file'] == '': # start from scratch
 
       # set initial velocities, rejection free
       if movement_args['do_velocities']:
-	 perturb_velo(at, ns_args['start_energy_ceiling'])
+	 rej_free_perturb_velo(at, ns_args['start_energy_ceiling'])
 
 else: # doing a restart
    if rank == 0: # read on head task and send to other tasks

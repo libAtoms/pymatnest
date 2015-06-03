@@ -22,8 +22,8 @@ MC_atom_step_size_max=5.0
 ################################################################################
 MC_cell_P=0.00675
 
-MC_cell_volume_step_size=0.01
-MC_cell_volume_step_size_max=0.1
+MC_cell_volume_per_atom_step_size=100.0
+MC_cell_volume_per_atom_step_size_max=5000.0
 
 MC_cell_shear_step_size=0.01
 MC_cell_shear_step_size_max=0.1
