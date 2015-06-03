@@ -51,9 +51,9 @@ def usage():
   sys.stderr.write("\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_cell_P=float (0.0)\n")
-  sys.stderr.write("MC_cell_volume_step_size=float (0.01)\n")
-  sys.stderr.write("MC_cell_volume_step_size_max=float (0.05)\n")
-  sys.stderr.write("MC_cell_volume_prob=float (1.0)\n")
+  sys.stderr.write("MC_cell_volume_per_atom_step_size=float (0.01)\n")
+  sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (0.05)\n")
+  sys.stderr.write("MC_cell_volume_per_atom_prob=float (1.0)\n")
   sys.stderr.write("MC_cell_stretch_step_size=float (0.01)\n")
   sys.stderr.write("MC_cell_stretch_step_size_max=float (0.05)\n")
   sys.stderr.write("MC_cell_stretch_prob=float (1.0)\n")
@@ -315,9 +315,9 @@ movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0
 movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
 movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
-movement_args['MC_cell_volume_step_size'] = float(args.pop('MC_cell_volume_step_size', 0.01))
-movement_args['MC_cell_volume_step_size_max'] = float(args.pop('MC_cell_volume_step_size_max', 0.05))
-movement_args['MC_cell_volume_prob'] = float(args.pop('MC_cell_volume_prob', 1.0))
+movement_args['MC_cell_volume_per_atom_step_size'] = float(args.pop('MC_cell_volume_per_atom_step_size', 100.0))
+movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 5000.0))
+movement_args['MC_cell_volume_per_atom_prob'] = float(args.pop('MC_cell_volume_per_atom_prob', 1.0))
 movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.01))
 movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 0.05))
 movement_args['MC_cell_stretch_prob'] = float(args.pop('MC_cell_stretch_prob', 1.0))
@@ -703,9 +703,9 @@ def do_MC_atom_walk(at, movement_args, Emax):
 
 
 def propose_volume_step(at, step_size):
-   dV = rng.normal(step_size)
+   dV = rng.normal(step_size*len(at))
    orig_V = at.get_volume()
-   new_V = orig_V*(1.0+dV)
+   new_V = orig_V+dV
    transform = np.identity(3)*(new_V/orig_V)**(1.0/3.0)
    p_accept = min(1.0, (new_V/orig_V)**len(at))
    return (p_accept, transform)
@@ -795,7 +795,7 @@ def do_MC_cell_walk(at, movement_args, Emax):
       sys.stderr.write("WARNING: doing MC_cell_walk but pressure == %f <= 0.0\n" % movement_args['MC_cell_P'])
 
    possible_moves = {
-      'MC_cell_volume': propose_volume_step,
+      'MC_cell_volume_per_atom': propose_volume_step,
       'MC_cell_shear': propose_shear_step,
       'MC_cell_stretch': propose_stretch_step }
 
