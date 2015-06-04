@@ -542,6 +542,7 @@ def rej_free_perturb_velo(at, Emax, rotate=True):
       #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in $\pm$ atom\_velo\_perturb\_angle
       else:
 	 # pick new random magnitude - count on dimensionality to make change small
+	 # WARNING: check this for variable masses
 	 masses_2D = at.get_masses().reshape( (len(at),1) )
 	 momenta = gen_random_velo(at, Emax, velo/velo_mag) * masses_2D
 
