@@ -286,7 +286,7 @@ movement_args['atom_n_steps_expected'] = int(args.pop('atom_n_steps_expected', 0
 movement_args['atom_n_steps'] = int(args.pop('atom_n_steps', 0))
 movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
 movement_args['cell_n_substeps'] = int(args.pop('cell_n_substeps', 1))
-movement_args['velo_n_substeps'] = int(args.pop('velo_n_substeps', 0))
+movement_args['velo_n_substeps'] = int(args.pop('velo_n_substeps', 8))
 try:
    movement_args['atom_algorithm'] = args.pop('atom_algorithm')
 except:
