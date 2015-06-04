@@ -204,7 +204,7 @@ class fortran_MC_MD:
 	 ctypes.byref(Emax), final_E, n_accept_pos, n_accept_velo)
       at.set_positions(pos)
       if n_extra_data_c.value > 0:
-	 at.arrays['ns_extra_data'][:,:] = extra_data
+	 at.arrays['ns_extra_data'][...] = extra_data
       if step_size_velo is None:
 	 return (n_accept_pos[0], final_E[0])
       else:
@@ -225,11 +225,11 @@ class fortran_MC_MD:
       else:
 	 n_extra_data_c = ctypes.c_int(0)
 	 extra_data= np.zeros( (1) )
-      n_accept = self.lib.fortran_md_atom_nve_(ctypes.byref(n), 
+      self.lib.fortran_md_atom_nve_(ctypes.byref(n), 
 	 pos, vel, at.get_masses(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell(),
 	 ctypes.byref(n_steps), ctypes.byref(timestep), final_E, ctypes.byref(debug))
       at.set_positions(pos)
       at.set_velocities(vel)
       if n_extra_data_c.value > 0:
-	 at.arrays['ns_extra_data'][:,:] = extra_data
+	 at.arrays['ns_extra_data'][...] = extra_data
       return final_E[0]

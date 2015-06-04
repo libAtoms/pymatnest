@@ -607,15 +607,16 @@ def do_MD_atom_walk(at, movement_args, Emax):
 #DOC \begin{itemize}
 
    orig_E = at.info['ns_energy']
-   orig_pos = at.get_positions()
-   orig_velo = at.get_velocities()
-
    if orig_E >= Emax:
       print print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax
 
    #DOC \item if MD\_atom\_velo\_pre\_perturb, call perturb\_velo() for magnitude and rotation
    if movement_args['MD_atom_velo_pre_perturb']:
       do_MC_atom_velo_walk(at, movement_args, Emax)
+
+   pre_MD_pos = at.get_positions()
+   pre_MD_velo = at.get_velocities()
+   #NB need to save and restore ns_extra_data
 
    pre_MD_E = at.info['ns_energy']
 
@@ -646,12 +647,12 @@ def do_MD_atom_walk(at, movement_args, Emax):
    if reject_fuzz or reject_Emax: # reject
       #DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)
       print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
-      at.set_positions(orig_pos)
+      at.set_positions(pre_MD_pos)
       if movement_args['MD_atom_velo_flip_accept']:
-	 at.set_velocities(orig_velo)
+	 at.set_velocities(pre_MD_velo)
       else:
-	 at.set_velocities(-orig_velo)
-      at.info['ns_energy'] = orig_E
+	 at.set_velocities(-pre_MD_velo)
+      at.info['ns_energy'] = pre_MD_E
       n_accept = 0
    #DOC \end{itemize}
    #DOC \item else
