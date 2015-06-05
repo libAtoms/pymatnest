@@ -1,0 +1,23 @@
+################################################################################
+Compilation:
+
+1. edit Makefile.arch (by default Linux appropriate variables are set)
+2. make (or if you don't have pdflatex, make libs)
+
+################################################################################
+Running:
+
+   ns_run < inputs
+
+Example input files for clusters and periodic, MC and MD, are in the tests/ directory
+
+If you get weird errors about modules and/or .so files not found, do (in sh syntax)
+   export PYTHONPATH=path_to_ns_run_directory:$PYTHONPATH
+This appears to be necessary on some HPC machines where mpirun copies the executable.
+
+################################################################################
+Analysis
+   ns_analyze -M 0.01 -D 0.01 -n 100 file.energies > analysis
+
+see also
+   ns_analyze -h
