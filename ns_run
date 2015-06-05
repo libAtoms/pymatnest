@@ -617,7 +617,8 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    pre_MD_pos = at.get_positions()
    pre_MD_velo = at.get_velocities()
-   #NB need to save and restore ns_extra_data
+   if ns_args['n_extra_data'] > 0:
+      pre_MD_extra_data = at.arrays['ns_extra_data'].copy()
 
    pre_MD_E = at.info['ns_energy']
 
@@ -647,12 +648,14 @@ def do_MD_atom_walk(at, movement_args, Emax):
    #DOC \begin{itemize}
    if reject_fuzz or reject_Emax: # reject
       #DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)
-      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
+      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " velo perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
       at.set_positions(pre_MD_pos)
       if movement_args['MD_atom_velo_flip_accept']:
 	 at.set_velocities(pre_MD_velo)
       else:
 	 at.set_velocities(-pre_MD_velo)
+      if ns_args['n_extra_data'] > 0:
+	  at.arrays['ns_extra_data'][...] = pre_MD_extra_data
       at.info['ns_energy'] = pre_MD_E
       n_accept = 0
    #DOC \end{itemize}
@@ -700,6 +703,8 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	 (n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
 	 at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
    else:
+      if movement_args['MC_atom_velocities']:
+	 exit_error("MC_atom_velocities only supported for FORTRAN calculator\n", 8)
       dz=0.0
       for i_MC_step in range(n_steps):
 	 #DOC \item loop over atoms in random order
@@ -720,6 +725,8 @@ def do_MC_atom_walk(at, movement_args, Emax):
 		  dz = rng.normal(step_size)
 	    orig_energy = at.info['ns_energy']
 	    orig_pos = at.get_positions()
+	    if ns_args['n_extra_data'] > 0:
+	       orig_extra_data = at.arrays['ns_extra_data'].copy()
 	    new_pos = orig_pos.copy()
 	    new_pos[i_at,:] += (dx, dy,dz)
 	    at.set_positions(new_pos)
@@ -728,6 +735,8 @@ def do_MC_atom_walk(at, movement_args, Emax):
 	    if energy >= Emax:
 	       # reject move
 	       at.set_positions(orig_pos)
+	       if ns_args['n_extra_data'] > 0:
+		  at.arrays['ns_extra_data'][...] = orig_extra_data 
 	       energy = orig_energy
 	    else:
 	       n_accept += 1
@@ -809,6 +818,8 @@ def do_cell_step(at, Emax, p_accept, transform):
 
    # orig_cell already saved previous value
    orig_pos = at.get_positions()
+   if ns_args['n_extra_data'] > 0:
+      extra_data = at.arrays['ns_extra_data'].copy()
 
    # set new positions and velocities
    at.set_cell(new_cell, scale_atoms=True)
@@ -822,6 +833,8 @@ def do_cell_step(at, Emax, p_accept, transform):
    else: # reject and revert
       at.set_cell(orig_cell,scale_atoms=False)
       at.set_positions(orig_pos)
+      if ns_args['n_extra_data'] > 0:
+	 at.arrays['ns_extra_data'][...] = extra_data 
       return False
 
 def do_MC_cell_walk(at, movement_args, Emax):
@@ -1102,6 +1115,7 @@ if ns_args['restart_file'] == '': # start from scratch
 	 init_atoms.set_masses(init_atoms.mass/quippy.MASSCONVERT)
       else:
 	 exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
+   # create extra data arrays if needed
    if ns_args['n_extra_data'] > 0:
       if ns_args['n_extra_data'] == 1:
 	 init_atoms.arrays['ns_extra_data'] = np.zeros( (len(init_atoms)) )
