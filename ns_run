@@ -63,7 +63,7 @@ def usage():
   sys.stderr.write("MC_cell_shear_step_size=float (0.01)\n")
   sys.stderr.write("MC_cell_shear_step_size_max=float (0.05)\n")
   sys.stderr.write("MC_cell_shear_prob=float (1.0)\n")
-  sys.stderr.write("MC_cell_min_aspect_ratio=float (0.5)\n")
+  sys.stderr.write("MC_cell_min_aspect_ratio=float (0.85)\n")
   sys.stderr.write("MC_cell_max_volume_per_atom=float (1.0e3)\n")
   sys.stderr.write("\n")
   sys.stderr.write("adjust_step_interval=int (10, negative for only using last iteration, 0 for no adjust)\n")
@@ -330,7 +330,7 @@ movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_si
 movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 0.05))
 movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
-movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.5))
+movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.85))
 movement_args['MC_cell_max_volume_per_atom'] = float(args.pop('MC_cell_max_volume_per_atom', 1.0e3))
 
 movement_args['adjust_step_interval'] = int(args.pop('adjust_step_interval', 10))
