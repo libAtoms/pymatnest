@@ -44,7 +44,15 @@
 !    evaluates forces, sets extra_data
 !    returns energy
 
+module LJ_params_mod
+   double precision, parameter :: epsilon = 0.4
+   double precision, parameter :: sigma = 3.0
+   double precision, parameter :: cutoff = 9.0
+   double precision, parameter :: E_offset  = (sigma/cutoff)**12 - (sigma/cutoff)**6
+end module LJ_params_mod
+
 module mat_mod
+
 implicit none
 private
 
@@ -113,6 +121,7 @@ end subroutine ll_init_config
 
 double precision function ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
 use mat_mod
+use LJ_params_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
@@ -121,7 +130,6 @@ implicit none
 
    integer :: i, j
    double precision :: dr(3), dr_mag, dr_l(3), dr_l0(3), pos_l(3,N)
-   double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6
 
    double precision :: cell_inv(3,3), E_term
    integer :: dj1, dj2, dj3
@@ -140,8 +148,7 @@ implicit none
       v_norm_hat = v_norm_hat / sqrt(sum(v_norm_hat**2))
       cell_height(i) = abs(sum(v_norm_hat*cell(:,i)))
    end do
-   n_images = ceiling(3.0/minval(cell_height))
-   print *, "got n_images ", n_images
+   n_images = ceiling(cutoff/minval(cell_height))
 
    ll_eval_energy = 0.0
    do i=1, N
@@ -158,8 +165,8 @@ implicit none
 
 	 dr = matmul(cell, dr_l)
 	 dr_mag = sqrt(sum(dr*dr))
-	 if (dr_mag < 3.0) then
-	    E_term = ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	 if (dr_mag < cutoff) then
+	    E_term = epsilon*(((sigma/dr_mag)**12 - (sigma/dr_mag)**6) - E_offset)
 	    if (i == j) E_term = E_term * 0.5
 	    ll_eval_energy = ll_eval_energy + E_term
 
@@ -179,6 +186,7 @@ end function ll_eval_energy
 
 integer function ll_move_atom_1(N, pos, n_extra_data, extra_data, cell, d_i, d_pos, dEmax, dE)
 use mat_mod
+use LJ_params_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
@@ -187,8 +195,6 @@ implicit none
    integer :: d_i
    double precision :: d_pos(3)
    double precision :: dEmax, dE
-
-   double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6
 
    integer :: i, j
    double precision :: dr(3), drp(3), dr_l(3), drp_l(3), dr_l0(3), drp_l0(3), dr_mag, drp_mag, pos_l(3,N), d_pos_l(3)
@@ -206,7 +212,7 @@ implicit none
       v_norm_hat = v_norm_hat / sqrt(sum(v_norm_hat**2))
       cell_height(i) = abs(sum(v_norm_hat*cell(:,i)))
    end do
-   n_images = ceiling(3.0/minval(cell_height))
+   n_images = ceiling(cutoff/minval(cell_height))
 
    call matrix3x3_inverse(cell, cell_inv)
    ! into lattice coodinates 
@@ -250,18 +256,18 @@ implicit none
 	 dr_mag = sqrt(sum(dr*dr))
 	 drp_mag = sqrt(sum(drp*drp))
 
-	 if (dr_mag < 3.0) then
-	    dE = dE -  ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	 if (dr_mag < cutoff) then
+	    dE = dE -  epsilon*(((sigma/dr_mag)**12 - (sigma/dr_mag)**6) - E_offset)
 	    if (n_extra_data == 1) then
 	       new_extra_data(1,i) = new_extra_data(1,i) - 0.5*((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
 	       new_extra_data(1,j) = new_extra_data(1,j) - 0.5*((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
 	    endif
 	 endif
-	 if (drp_mag < 3.0) then
-	    dE = dE + ((1.0/drp_mag**12 - 1.0/drp_mag**6) - E_offset)
+	 if (drp_mag < cutoff) then
+	    dE = dE + epsilon*(((sigma/drp_mag)**12 - (sigma/drp_mag)**6) - E_offset)
 	    if (n_extra_data == 1) then
-	       new_extra_data(1,i) = new_extra_data(1,i) + 0.5*((1.0/drp_mag**12 - 1.0/drp_mag**6) - E_offset)
-	       new_extra_data(1,j) = new_extra_data(1,j) + 0.5*((1.0/drp_mag**12 - 1.0/drp_mag**6) - E_offset)
+	       new_extra_data(1,i) = new_extra_data(1,i) + 0.5*epsilon*(((sigma/drp_mag)**12 - (sigma/drp_mag)**6) - E_offset)
+	       new_extra_data(1,j) = new_extra_data(1,j) + 0.5*epsilon*(((sigma/drp_mag)**12 - (sigma/drp_mag)**6) - E_offset)
 	    endif
 	 endif
 
@@ -283,6 +289,7 @@ end function ll_move_atom_1
 
 function ll_eval_forces(N, pos, n_extra_data, extra_data, cell, forces) result(energy)
 use mat_mod
+use LJ_params_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3), forces(3,N)
@@ -292,10 +299,8 @@ implicit none
 
    integer :: i, j
    double precision :: dr(3), dr_mag, dr_l(3), dr_l0(3), pos_l(3,N)
-   double precision :: cell_inv(3,3)
+   double precision :: cell_inv(3,3), E_term
    integer :: dj1, dj2, dj3
-
-   double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6, E_term
 
    integer n_images
    double precision cell_height(3), v_norm_hat(3)
@@ -305,7 +310,7 @@ implicit none
       v_norm_hat = v_norm_hat / sqrt(sum(v_norm_hat**2))
       cell_height(i) = abs(sum(v_norm_hat*cell(:,i)))
    end do
-   n_images = ceiling(3.0/minval(cell_height))
+   n_images = ceiling(cutoff/minval(cell_height))
 
    call matrix3x3_inverse(cell, cell_inv)
    pos_l = matmul(cell_inv, pos)
@@ -329,8 +334,8 @@ implicit none
 
 	 dr = matmul(cell, dr_l)
 	 dr_mag = sqrt(sum(dr*dr))
-	 if (dr_mag < 3.0) then
-	    E_term = ((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
+	 if (dr_mag < cutoff) then
+	    E_term = epsilon*(((sigma/dr_mag)**12 - (sigma/dr_mag)**6) - E_offset)
 	    if (i == j) E_term = E_term * 0.5
 	    energy = energy + E_term
 	    if (n_extra_data == 1) then
@@ -338,8 +343,8 @@ implicit none
 	       extra_data(1,j) = extra_data(1,j) + 0.5*E_term
 	    endif
 	    if (i /= j) then
-	       forces(:,i) = forces(:,i) - (-12.0/dr_mag**13 + 6.0/dr_mag**7)*(dr/dr_mag)
-	       forces(:,j) = forces(:,j) + (-12.0/dr_mag**13 + 6.0/dr_mag**7)*(dr/dr_mag)
+	       forces(:,i) = forces(:,i) - epsilon*(-12.0*sigma**12/dr_mag**13 + 6.0*sigma**6/dr_mag**7)*(dr/dr_mag)
+	       forces(:,j) = forces(:,j) + epsilon*(-12.0*sigma**12/dr_mag**13 + 6.0*sigma**6/dr_mag**7)*(dr/dr_mag)
 	    endif
 	 endif
 
