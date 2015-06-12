@@ -50,6 +50,7 @@ private
 
 public :: matrix3x3_inverse
 
+public operator(.cross.)
 interface operator(.cross.)
   module procedure cross_product
 end interface
@@ -125,22 +126,33 @@ implicit none
    double precision :: cell_inv(3,3), E_term
    integer :: dj1, dj2, dj3
 
+   integer :: n_images
+   double precision cell_height(3), v_norm_hat(3)
+
    call matrix3x3_inverse(cell, cell_inv)
    ! into lattice coodinates 
    pos_l = matmul(cell_inv, pos)
 
    if (n_extra_data == 1) extra_data = 0.0
 
+   do i=1, 3
+      v_norm_hat = cell(:,mod(i,3)+1) .cross. cell(:,mod(i+1,3)+1)
+      v_norm_hat = v_norm_hat / sqrt(sum(v_norm_hat**2))
+      cell_height(i) = abs(sum(v_norm_hat*cell(:,i)))
+   end do
+   n_images = ceiling(3.0/minval(cell_height))
+   print *, "got n_images ", n_images
+
    ll_eval_energy = 0.0
    do i=1, N
    do j=i, N
       dr_l0 = pos_l(:,i)-pos_l(:,j)
       dr_l0 = dr_l0 - floor(dr_l0+0.5)
-      do dj1=-1,1
+      do dj1=-n_images,n_images
       dr_l(1) = dr_l0(1) + real(dj1, 8)
-      do dj2=-1,1
+      do dj2=-n_images,n_images
       dr_l(2) = dr_l0(2) + real(dj2, 8)
-      do dj3=-1,1
+      do dj3=-n_images,n_images
       dr_l(3) = dr_l0(3) + real(dj3, 8)
 	 if (i == j .and. dj1 == 0 .and. dj2 == 0 .and. dj3 == 0) cycle
 
@@ -186,6 +198,16 @@ implicit none
 
    double precision, allocatable, save :: new_extra_data(:,:)
 
+   integer n_images
+   double precision cell_height(3), v_norm_hat(3)
+
+   do i=1, 3
+      v_norm_hat = cell(:,mod(i,3)+1) .cross. cell(:,mod(i+1,3)+1)
+      v_norm_hat = v_norm_hat / sqrt(sum(v_norm_hat**2))
+      cell_height(i) = abs(sum(v_norm_hat*cell(:,i)))
+   end do
+   n_images = ceiling(3.0/minval(cell_height))
+
    call matrix3x3_inverse(cell, cell_inv)
    ! into lattice coodinates 
    pos_l = matmul(cell_inv, pos)
@@ -213,13 +235,13 @@ implicit none
       drp_l0 = pos_l(:,i)+d_pos_l(:) - pos_l(:,j)
       drp_l0 = drp_l0 - floor(drp_l0+0.5)
 
-      do dj1=-1,1
+      do dj1=-n_images,n_images
       dr_l(1) = dr_l0(1) + real(dj1, 8)
       drp_l(1) = drp_l0(1) + real(dj1, 8)
-      do dj2=-1,1
+      do dj2=-n_images,n_images
       dr_l(2) = dr_l0(2) + real(dj2, 8)
       drp_l(2) = drp_l0(2) + real(dj2, 8)
-      do dj3=-1,1
+      do dj3=-n_images,n_images
       dr_l(3) = dr_l0(3) + real(dj3, 8)
       drp_l(3) = drp_l0(3) + real(dj3, 8)
 
@@ -275,6 +297,16 @@ implicit none
 
    double precision :: E_offset  = 1.0/3.0**12 - 1.0/3.0**6, E_term
 
+   integer n_images
+   double precision cell_height(3), v_norm_hat(3)
+
+   do i=1, 3
+      v_norm_hat = cell(:,mod(i,3)+1) .cross. cell(:,mod(i+1,3)+1)
+      v_norm_hat = v_norm_hat / sqrt(sum(v_norm_hat**2))
+      cell_height(i) = abs(sum(v_norm_hat*cell(:,i)))
+   end do
+   n_images = ceiling(3.0/minval(cell_height))
+
    call matrix3x3_inverse(cell, cell_inv)
    pos_l = matmul(cell_inv, pos)
 
@@ -287,11 +319,11 @@ implicit none
 
       dr_l0 = pos_l(:,i) - pos_l(:,j)
       dr_l0 = dr_l0 - floor(dr_l0+0.5)
-      do dj1=-1,1
+      do dj1=-n_images,n_images
       dr_l(1) = dr_l0(1) + real(dj1, 8)
-      do dj2=-1,1
+      do dj2=-n_images,n_images
       dr_l(2) = dr_l0(2) + real(dj2, 8)
-      do dj3=-1,1
+      do dj3=-n_images,n_images
       dr_l(3) = dr_l0(3) + real(dj3, 8)
       if (i == j .and. dj1 == 0 .and. dj2 == 0 .and. dj3 == 0) cycle
 
