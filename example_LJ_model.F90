@@ -47,7 +47,7 @@
 module LJ_params_mod
    double precision, parameter :: epsilon = 0.4
    double precision, parameter :: sigma = 3.0
-   double precision, parameter :: cutoff = 9.0
+   double precision, parameter :: cutoff = 9.0, cutoff_sq = cutoff*cutoff
    double precision, parameter :: E_offset  = (sigma/cutoff)**12 - (sigma/cutoff)**6
 end module LJ_params_mod
 
@@ -129,7 +129,7 @@ implicit none
    double precision :: extra_data(n_extra_data, N)
 
    integer :: i, j
-   double precision :: dr(3), dr_mag, dr_l(3), dr_l0(3), pos_l(3,N)
+   double precision :: dr(3), dr_mag, dr_mag_sq, dr_l(3), dr_l0(3), pos_l(3,N)
 
    double precision :: cell_inv(3,3), E_term
    integer :: dj1, dj2, dj3
@@ -163,9 +163,12 @@ implicit none
       dr_l(3) = dr_l0(3) + real(dj3, 8)
 	 if (i == j .and. dj1 == 0 .and. dj2 == 0 .and. dj3 == 0) cycle
 
-	 dr = matmul(cell, dr_l)
-	 dr_mag = sqrt(sum(dr*dr))
-	 if (dr_mag < cutoff) then
+	 dr(1) = sum(cell(1,:)*dr_l)
+	 dr(2) = sum(cell(2,:)*dr_l)
+	 dr(3) = sum(cell(3,:)*dr_l)
+	 dr_mag_sq = sum(dr*dr)
+	 if (dr_mag_sq < cutoff_sq) then
+	    dr_mag = sqrt(dr_mag_sq)
 	    E_term = epsilon*(((sigma/dr_mag)**12 - (sigma/dr_mag)**6) - E_offset)
 	    if (i == j) E_term = E_term * 0.5
 	    ll_eval_energy = ll_eval_energy + E_term
@@ -197,7 +200,8 @@ implicit none
    double precision :: dEmax, dE
 
    integer :: i, j
-   double precision :: dr(3), drp(3), dr_l(3), drp_l(3), dr_l0(3), drp_l0(3), dr_mag, drp_mag, pos_l(3,N), d_pos_l(3)
+   double precision :: dr(3), drp(3), dr_l(3), drp_l(3), dr_l0(3), drp_l0(3), dr_mag, drp_mag, &
+		       dr_mag_sq, drp_mag_sq, pos_l(3,N), d_pos_l(3)
 
    double precision :: cell_inv(3,3) 
    integer :: dj1, dj2, dj3
@@ -216,8 +220,15 @@ implicit none
 
    call matrix3x3_inverse(cell, cell_inv)
    ! into lattice coodinates 
-   pos_l = matmul(cell_inv, pos)
-   d_pos_l = matmul(cell_inv, d_pos)
+   do i=1, N
+       pos_l(1,i) = sum(cell_inv(1,:)*pos(:,i))
+       pos_l(2,i) = sum(cell_inv(2,:)*pos(:,i))
+       pos_l(3,i) = sum(cell_inv(3,:)*pos(:,i))
+   end do
+   d_pos_l(1) = sum(cell_inv(1,:)*d_pos(:))
+   d_pos_l(2) = sum(cell_inv(2,:)*d_pos(:))
+   d_pos_l(3) = sum(cell_inv(3,:)*d_pos(:))
+
 
    if (n_extra_data == 1 .and. allocated(new_extra_data)) then
       if (any(shape(new_extra_data) /= shape(extra_data))) then
@@ -251,19 +262,25 @@ implicit none
       dr_l(3) = dr_l0(3) + real(dj3, 8)
       drp_l(3) = drp_l0(3) + real(dj3, 8)
 
-	 dr = matmul(cell, dr_l)
-	 drp = matmul(cell, drp_l)
-	 dr_mag = sqrt(sum(dr*dr))
-	 drp_mag = sqrt(sum(drp*drp))
+         dr(1) = sum(cell(1,:)*dr_l)
+         dr(2) = sum(cell(2,:)*dr_l)
+         dr(3) = sum(cell(3,:)*dr_l)
+         drp(1) = sum(cell(1,:)*drp_l)
+         drp(2) = sum(cell(2,:)*drp_l)
+         drp(3) = sum(cell(3,:)*drp_l)
+	 dr_mag_sq = sum(dr*dr)
+	 drp_mag_sq = sum(drp*drp)
 
-	 if (dr_mag < cutoff) then
+	 if (dr_mag_sq < cutoff_sq) then
+	    dr_mag = sqrt(dr_mag_sq)
 	    dE = dE -  epsilon*(((sigma/dr_mag)**12 - (sigma/dr_mag)**6) - E_offset)
 	    if (n_extra_data == 1) then
 	       new_extra_data(1,i) = new_extra_data(1,i) - 0.5*((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
 	       new_extra_data(1,j) = new_extra_data(1,j) - 0.5*((1.0/dr_mag**12 - 1.0/dr_mag**6) - E_offset)
 	    endif
 	 endif
-	 if (drp_mag < cutoff) then
+	 if (drp_mag_sq < cutoff_sq) then
+	    drp_mag = sqrt(drp_mag_sq)
 	    dE = dE + epsilon*(((sigma/drp_mag)**12 - (sigma/drp_mag)**6) - E_offset)
 	    if (n_extra_data == 1) then
 	       new_extra_data(1,i) = new_extra_data(1,i) + 0.5*epsilon*(((sigma/drp_mag)**12 - (sigma/drp_mag)**6) - E_offset)
@@ -298,7 +315,7 @@ implicit none
    double precision :: energy ! result
 
    integer :: i, j
-   double precision :: dr(3), dr_mag, dr_l(3), dr_l0(3), pos_l(3,N)
+   double precision :: dr(3), dr_mag, dr_mag_sq, dr_l(3), dr_l0(3), pos_l(3,N)
    double precision :: cell_inv(3,3), E_term
    integer :: dj1, dj2, dj3
 
@@ -313,7 +330,11 @@ implicit none
    n_images = ceiling(cutoff/minval(cell_height))
 
    call matrix3x3_inverse(cell, cell_inv)
-   pos_l = matmul(cell_inv, pos)
+   do i=1, N
+       pos_l(1,i) = sum(cell_inv(1,:)*pos(:,i))
+       pos_l(2,i) = sum(cell_inv(2,:)*pos(:,i))
+       pos_l(3,i) = sum(cell_inv(3,:)*pos(:,i))
+   end do
 
    if (n_extra_data == 1) extra_data = 0.0
 
@@ -332,9 +353,12 @@ implicit none
       dr_l(3) = dr_l0(3) + real(dj3, 8)
       if (i == j .and. dj1 == 0 .and. dj2 == 0 .and. dj3 == 0) cycle
 
-	 dr = matmul(cell, dr_l)
-	 dr_mag = sqrt(sum(dr*dr))
-	 if (dr_mag < cutoff) then
+         dr(1) = sum(cell(1,:)*dr_l)
+         dr(2) = sum(cell(2,:)*dr_l)
+         dr(3) = sum(cell(3,:)*dr_l)
+	 dr_mag_sq = sum(dr*dr)
+	 if (dr_mag_sq < cutoff_sq) then
+	    dr_mag = sqrt(dr_mag_sq)
 	    E_term = epsilon*(((sigma/dr_mag)**12 - (sigma/dr_mag)**6) - E_offset)
 	    if (i == j) E_term = E_term * 0.5
 	    energy = energy + E_term
