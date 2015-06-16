@@ -7,7 +7,7 @@ print_prefix=""
 def usage():
   sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
-  sys.stderr.write("start_volume_per_atom=float (initial simulation box volume per atom. Mutually exclusive with restart_*, one is required)\n")
+  sys.stderr.write("max_volume_per_atom=float (1e3)\n")
   sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required\n")
   sys.stderr.write("start_energy_ceiling=float (max energy for initial configs.  Initial P*V is added to this automatically. Mutually exclusive with restart_*, one is required.)\n")
   sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
@@ -63,8 +63,7 @@ def usage():
   sys.stderr.write("MC_cell_shear_step_size=float (0.01)\n")
   sys.stderr.write("MC_cell_shear_step_size_max=float (0.05)\n")
   sys.stderr.write("MC_cell_shear_prob=float (1.0)\n")
-  sys.stderr.write("MC_cell_min_aspect_ratio=float (0.85)\n")
-  sys.stderr.write("MC_cell_max_volume_per_atom=float (1.0e3)\n")
+  sys.stderr.write("MC_cell_min_aspect_ratio=float (0.5)\n")
   sys.stderr.write("\n")
   sys.stderr.write("adjust_step_interval=int (10, negative for only using last iteration, 0 for no adjust)\n")
   sys.stderr.write("MC_adjust_step_factor=float (1.5)\n")
@@ -178,13 +177,8 @@ try:
 except:
    ns_args['min_Emax'] = None
 
-ns_args['start_volume_per_atom'] = float(args.pop('start_volume_per_atom', 0.0))
 ns_args['restart_file'] = args.pop('restart_file', '')
-if ((ns_args['start_volume_per_atom'] == 0.0 and ns_args['restart_file'] == '') or
-    (ns_args['start_volume_per_atom'] != 0.0 and ns_args['restart_file'] != '')):
-   exit_error("Got neither or both (conflicting) start_volume and restart_file\n", 3)
-
-if ns_args['start_volume_per_atom'] != 0.0:
+if ns_args['restart_file'] == '':
    try:
      ns_args['start_species'] = args.pop('start_species')
    except:
@@ -193,12 +187,13 @@ if ns_args['start_volume_per_atom'] != 0.0:
      ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling'))
    except:
      exit_error("need energy ceiling for initial distribution of configs start_energy_ceiling\n",1)
-
-if ns_args['restart_file'] != '':
+else:
    try:
      ns_args['restart_first_iter'] = int(args.pop('restart_first_iter'))
    except:
      exit_error("need initial iteration restart_first_iter\n",1)
+
+ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
 
 ns_args['out_file_prefix'] = args.pop('out_file_prefix', '')
 if ns_args['out_file_prefix'] != '':
@@ -330,8 +325,7 @@ movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_si
 movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 0.05))
 movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
-movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.85))
-movement_args['MC_cell_max_volume_per_atom'] = float(args.pop('MC_cell_max_volume_per_atom', 1.0e3))
+movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.5))
 
 movement_args['adjust_step_interval'] = int(args.pop('adjust_step_interval', 10))
 movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
@@ -811,7 +805,7 @@ def do_cell_step(at, Emax, p_accept, transform):
    new_cell = np.dot(orig_cell,transform)
    new_vol = abs(np.dot(new_cell[0,:],np.cross(new_cell[1,:],new_cell[2,:])))
    # check size and shape constraints
-   if new_vol > movement_args['MC_cell_max_volume_per_atom']*len(at):
+   if new_vol > ns_args['max_volume_per_atom']*len(at):
       return False
    if min_aspect_ratio(new_vol, new_cell) < movement_args['MC_cell_min_aspect_ratio']:
       return False
@@ -1080,7 +1074,7 @@ if ns_args['restart_file'] == '': # start from scratch
    # create initial config
    if rank == 0:
       # create atoms structs from a list of atomic numbers and numbers of atoms
-      lc = ns_args['start_volume_per_atom']**(1.0/3.0)
+      lc = ns_args['max_volume_per_atom']**(1.0/3.0)
       init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
       species = ns_args['start_species'].split(',')
       for specie in species:
@@ -1132,14 +1126,26 @@ if ns_args['restart_file'] == '': # start from scratch
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
 
-   ns_args['start_energy_ceiling'] += movement_args['MC_cell_P']*init_atoms.get_volume()
+   # V should have prob distrib p(V) = V^N. 
+   # Using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^N and p(x) = 1,
+   #       one gets dx/dy = y^N
+   #                x = y^{N+1}
+   #                y = x^{1/(N+1)}
+   ns_args['start_energy_ceiling'] += movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms)
    # initial positions are just random, up to an energy ceiling
    for at in walkers:
+      # randomize cell if P is set
+      if movement_args['MC_cell_P'] > 0.0:
+	 lc = (len(at)*ns_args['max_volume_per_atom']*rng.float_uniform(0.0,1.0)**(1.0/float(len(at)+1)))**(1.0/3.0)
+	 at.set_cell( np.identity(3) * lc )
+      # random initial positions
       at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
+      # try FORTRAN config initializer
       if do_calc_fortran:
-	 f_MC_MD.init_config(at, ns_args['start_energy_ceiling'])
+	 f_MC_MD.init_config(at, ns_args['start_energy_ceiling']-movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms))
       energy = eval_energy(at)
       n_try = 0
+      # try python config initializer
       while math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
 	 if n_try > 10:
 	    exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['start_energy_ceiling'], 4)
@@ -1234,7 +1240,10 @@ def do_ns_loop():
 	 at.info['n_walks'] = 0
 
    for at in walkers:
-      print rank, ": initial energy ", at.info['ns_energy']
+      if movement_args['MC_cell_P'] > 0:
+	 print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False, do_PV=False), " KE ", eval_energy(at, do_PE=False, do_PV=False)
+      else:
+	 print rank, ": initial energy ", at.info['ns_energy']
 
    walk_stats_cumul={}
    zero_stats(walk_stats_cumul, movement_args)
