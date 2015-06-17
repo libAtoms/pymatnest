@@ -633,7 +633,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
       if movement_args['MD_atom_reject_energy_violation']:
 	 reject_fuzz = True
       else:
-	 print print_prefix, ": WARNING: MD energy deviation > fuzz*KE. Pre-MD, post-MD, difference, KE ", pre_MD_E, final_E, final_E-pre_MD_E, KE
+	 print print_prefix, ": INFO: MD energy deviation > fuzz*KE. Pre-MD, post-MD, difference, KE ", pre_MD_E, final_E, final_E-pre_MD_E, KE
 
    #DOC \item accept/reject entire move on E $<$ Emax
    reject_Emax = (final_E >= Emax)
@@ -1586,7 +1586,7 @@ if rank == 0:
 
 if ns_args['profile'] == rank:
    import cProfile
-   cProfile.run('do_ns_loop()','ns_run.stats')
+   cProfile.run('do_ns_loop()',ns_args['out_file_prefix']+'profile.stats')
 else:
    do_ns_loop()
 
