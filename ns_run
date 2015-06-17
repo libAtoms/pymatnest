@@ -910,7 +910,11 @@ def walk_single_walker(at, movement_args, Emax):
 
    #DOC \item perturb final energy of random\_energy\_perturbation
    # perturb final energy
-   at.info['ns_energy'] += rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+   pert = 1.0 + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+   while at.info['ns_energy']*pert >= Emax:
+       pert = 1.0 + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+   at.info['ns_energy'] *= pert
+
 
    #DEBUG print "walk_single_walker end ", eval_energy(at, do_PE=False), eval_energy(at) #DEBUG
 
