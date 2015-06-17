@@ -17,8 +17,8 @@ set output "cluster.energies.pdf"
 set xlabel "n iter / n walkers"
 set ylabel "E / atom epsilon"
 set yrange [:4]
-plot "< tail -n +2 test.cluster.MC.energies" u ($1/1024):($2/6/0.25) w l lt 1 color red ti "MC", \
-     "< tail -n +2 test.cluster.MD.energies" u ($1/1024):($2/6/0.25) w l lt 1 color cyan ti "MD"
+plot "< tail -n +2 test.cluster.MC.energies" every 100 u ($1/1024):($2/6/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 test.cluster.MD.energies" every 100 u ($1/1024):($2/6/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -32,7 +32,7 @@ set ylabel "Cp per atom"
 set log y
 set yrange [1:]
 set xrange [0:1.5]
-plot "analysis.periodic.MC.Livia" u ($1/0.1):($4/64) w l lt 1 color black ti "Livia reference", \
+plot "analysis.periodic.MC.Baldock" u ($1/0.1*8.6173324e-5):($2/8.6e-5/64) w l lt 1 color green ti "Rob reference", \
      "test.periodic.MC.energies.analysis" u ($1/0.25):($4/64) w l lt 1 color red ti "MC", \
      "test.periodic.MD.energies.analysis" u ($1/0.25):($4/64) w l lt 1 color cyan ti "MD"
 unset log x
@@ -45,8 +45,8 @@ set xlabel "n iter / n walkers"
 set ylabel "H / atom epsilon"
 unset log y
 set yrange [:60]
-plot "< tail -n +2 test.periodic.MC.energies" u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
-     "< tail -n +2 test.periodic.MD.energies" u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
+plot "< tail -n +2 test.periodic.MC.energies" every 1000 u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 test.periodic.MD.energies" every 1000 u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
@@ -57,8 +57,8 @@ set xlabel "n iter / n walkers"
 set ylabel "H / atom epsilon"
 unset log y
 set yrange [:60]
-plot "< tail -n +2 test.periodic.MC.energies" u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
-     "< tail -n +2 test.periodic.MD.energies" u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
+plot "< tail -n +2 test.periodic.MC.energies" every 1000 u ($1/128):($2/64/0.25) w l lt 1 color red ti "MC", \
+     "< tail -n +2 test.periodic.MD.energies" every 1000 u ($1/128):($2/64/0.25) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x
