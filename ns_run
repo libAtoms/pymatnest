@@ -579,7 +579,7 @@ def do_MC_atom_velo_walk(at, movement_args, Emax):
       KE = initial_KE
       KEmax = Emax - (at.info['ns_energy'] - KE)
       n_accept = 0
-      for i_step in frange(n_steps):
+      for i_step in range(n_steps):
 	 at_list = list(range(len(at)))
 	 rng.shuffle_in_place(at_list)
 	 d_vel = rng.normal(step_size, (len(at), 3))
