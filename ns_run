@@ -50,7 +50,7 @@ def usage():
   sys.stderr.write("atom_velo_rej_free_perturb_angle=float (0.3. Max angle in radians for random rotations.)\n")
   sys.stderr.write("MC_atom_velo_step_size=float (0.1)\n")
   sys.stderr.write("MC_atom_velo_step_size_max=float (1.0)\n")
-  sys.stderr.write("MC_atom_velo_walk_rej_free=[T | F] (F. If true, use rejection free algorithm for MC_atom_walk\n")
+  sys.stderr.write("MC_atom_velo_walk_rej_free=[T | F] (T. If true, use rejection free algorithm for MC_atom_walk\n")
   sys.stderr.write("\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_cell_P=float (0.0)\n")
@@ -307,7 +307,7 @@ movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_ve
 movement_args['MD_atom_velo_flip_accept'] = str_to_logical(args.pop('MD_atom_velo_flip_accept', "F"))
 movement_args['atom_velo_rej_free_perturb_randomize'] = str_to_logical(args.pop('atom_velo_rej_free_perturb_randomize', "F"))
 movement_args['atom_velo_rej_free_perturb_angle'] = float(args.pop('atom_velo_rej_free_perturb_angle', 0.3))
-movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "F"))
+movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "T"))
 
 movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
 movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
