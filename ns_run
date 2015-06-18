@@ -456,7 +456,6 @@ def propagate_NVE_quippy(at, dt, n_steps):
       at.velo[:,:] = old_velo.transpose()/(ase.units.Ang/ase.units.fs)
    ds=quippy.DynamicalSystem(at)
 
-
    if ns_args['debug'] >= 10:
       ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=1, write_interval=0, save_interval=0)
    else:
@@ -1055,6 +1054,8 @@ def init_config(at, Emax):
    pos = at.get_positions()
    for i_at in range(1,len(at)):
       at_new = at[0:i_at+1]
+      if do_calc_quip or do_calc_lammps:
+          at_new.set_calculator(at.get_calculator())
       at_new.set_positions(pos[0:i_at+1,:])
       success = False
       for i_try in range(10):
