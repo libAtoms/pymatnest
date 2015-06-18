@@ -1,4 +1,4 @@
-start_volume_per_atom=108.0
+max_volume_per_atom=108.0
 start_species=1 6 1.0
 start_energy_ceiling=40.0
 
