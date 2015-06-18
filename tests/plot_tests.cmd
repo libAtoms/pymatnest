@@ -31,10 +31,11 @@ set xlabel "T / epsilon"
 set ylabel "Cp per atom"
 set log y
 set yrange [1:]
-set xrange [0:1.5]
-plot "analysis.periodic.MC.Baldock" u ($1/0.1*8.6173324e-5):($2/8.6e-5/64) w l lt 1 color green ti "Rob reference", \
-     "test.periodic.MC.energies.analysis" u ($1/0.25):($4/64) w l lt 1 color red ti "MC", \
-     "test.periodic.MD.energies.analysis" u ($1/0.25):($4/64) w l lt 1 color cyan ti "MD"
+set key left top
+set xrange [0:0.40]
+plot "analysis.periodic.MC.Baldock" u ($1*8.6173324e-5/0.4):($2/8.6e-5/64) w l lt 1 color black ti "Rob reference", \
+     "test.periodic.MC.energies.analysis" u ($1/0.4):($4/64) w l lt 1 color red ti "MC", \
+     "test.periodic.MD.energies.analysis" u ($1/0.4):($4/64) w l lt 1 color cyan ti "MD"
 unset log x
 unset log y
 set autoscale x

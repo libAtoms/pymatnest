@@ -11,9 +11,9 @@ out_file_prefix=test.periodic.MC
 ################################################################################
 
 atom_algorithm=MC
-atom_n_steps_expected=64
-atom_n_substeps=4
-cell_n_substeps=1
+atom_n_steps_expected=32
+atom_n_substeps=8
+cell_n_substeps=4
 
 
 MC_atom_step_size=5.0
