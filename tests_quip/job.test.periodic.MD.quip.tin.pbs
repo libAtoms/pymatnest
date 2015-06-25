@@ -1,0 +1,46 @@
+#!/bin/bash
+#CCMS nprocs=64:network=fast:n2013
+#PBS -l walltime=168:00:00
+#PBS -N ns_test.periodic.MD.quip
+#PBS -o test.periodic.MD.quip.stdout
+#PBS -e test.periodic.MD.quip.stderr
+#PBS -S /bin/bash
+
+cd $PBS_O_WORKDIR
+startdir=$PWD
+
+if [ -f $HOME/.bashrc ]; then
+   . $HOME/.bashrc
+fi
+
+export WORK_DIR=$WORKDIR/$PBS_JOBID
+startdir=`pwd`; mkdir -p $WORK_DIR; cd $WORK_DIR
+
+echo `pwd` >> $startdir/test.periodic.MD.quip.stdout.rundir
+echo Running on `hostname` >> $startdir/test.periodic.MD.quip.stdout.rundir
+
+
+
+# stage in
+cp -rpL $startdir/inputs.test.periodic.MD.quip .
+cp $startdir/quip_params*xml .
+
+
+
+# script
+NS_RUN_PATH=$HOME/src/work/pymatnest
+
+export PYTHONPATH=${NS_RUN_PATH}:${PYTHONPATH}
+
+
+
+ module load quip
+ mpirun  $NS_RUN_PATH/ns_run < inputs.test.periodic.MD.quip > $startdir/test.periodic.MD.quip.out
+
+# postscript
+cp *.out *.energies *traj* *snap* $startdir
+
+
+
+
+
