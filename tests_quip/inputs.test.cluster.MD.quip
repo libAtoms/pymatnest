@@ -11,7 +11,7 @@ out_file_prefix=test.cluster.MD.quip
 
 atom_algorithm=MD
 
-atom_n_steps_expected=64
+n_steps_expected=64
 atom_n_substeps=10
 cell_n_substeps=0
 

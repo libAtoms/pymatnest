@@ -10,7 +10,7 @@ out_file_prefix=test.cluster.MC.quip
 ################################################################################
 
 atom_algorithm=MC
-atom_n_steps_expected=32
+n_steps_expected=32
 atom_n_substeps=8
 cell_n_substeps=0
 
@@ -18,7 +18,7 @@ cell_n_substeps=0
 MC_atom_step_size=5.0
 MC_atom_step_size_max=5.0
 
-QUIP_pot_params_file=quip_params.periodic.xml
+QUIP_pot_params_file=quip_params.cluster.xml
 QUIP_pot_args=IP LJ
 
 energy_calculator=quip

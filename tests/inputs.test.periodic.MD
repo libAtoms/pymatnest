@@ -11,7 +11,7 @@ out_file_prefix=test.periodic.MD
 ################################################################################
 
 atom_algorithm=MD
-atom_n_steps_expected=32
+n_steps_expected=32
 atom_n_substeps=32
 cell_n_substeps=4
 

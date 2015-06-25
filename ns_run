@@ -21,8 +21,8 @@ def usage():
   sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
   sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("atom_n_steps_expected=int (0, this or atom_n_steps required)\n")
-  sys.stderr.write("atom_n_steps=int (0, this or atom_n_steps_expected required)\n")
+  sys.stderr.write("n_steps_expected=int (0, this or n_steps required)\n")
+  sys.stderr.write("n_steps=int (0, this or n_steps_expected required)\n")
   sys.stderr.write("atom_n_substeps=int (10, number of steps (MC sweeps or MD time steps in each segement))\n")
   sys.stderr.write("cell_n_substeps=int (1, number of MC sweeps in each segement)\n")
   sys.stderr.write("velo_n_substeps=int (0, number of MC sweeps in each velocity MC segement)\n")
@@ -277,8 +277,8 @@ if do_calc_fortran:
 
 movement_args={}
 
-movement_args['atom_n_steps_expected'] = int(args.pop('atom_n_steps_expected', 0))
-movement_args['atom_n_steps'] = int(args.pop('atom_n_steps', 0))
+movement_args['n_steps_expected'] = int(args.pop('n_steps_expected', 0))
+movement_args['n_steps'] = int(args.pop('n_steps', 0))
 movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
 movement_args['cell_n_substeps'] = int(args.pop('cell_n_substeps', 1))
 movement_args['velo_n_substeps'] = int(args.pop('velo_n_substeps', 8))
@@ -286,8 +286,8 @@ try:
    movement_args['atom_algorithm'] = args.pop('atom_algorithm')
 except:
       exit_error("Failed to read algorithm for atom motion atom_algorithm", 1)
-if movement_args['atom_n_steps_expected'] == 0 and movement_args['atoms_n_steps'] == 0:
-   exit_error("Got both atoms_n_steps_expected and atoms_n_steps == 0\n", 3)
+if movement_args['n_steps_expected'] == 0 and movement_args['n_steps'] == 0:
+   exit_error("Got both n_steps_expected and n_steps == 0\n", 3)
 if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD':
    exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorith,'], 3)
 
@@ -896,7 +896,7 @@ def walk_single_walker(at, movement_args, Emax):
 
    #DOC \item loop atom\_n\_steps times
    #DOC \begin{itemize}
-   for i_step in range(movement_args['atom_n_steps']):
+   for i_step in range(movement_args['n_steps']):
       #DOC \item do in random order
       #DOC \begin{itemize}
       rng.shuffle_in_place(possible_moves)
@@ -1070,9 +1070,9 @@ def init_config(at, Emax):
    at.set_positions(pos)
    return energy
 
-set_n_steps('atom_n_steps')
+set_n_steps('n_steps')
 if  rank == 0:
-   print "Using atom_n_steps = ", movement_args['atom_n_steps']
+   print "Using n_steps = ", movement_args['n_steps']
 
 walkers=[]
 if ns_args['restart_file'] == '': # start from scratch
@@ -1514,7 +1514,7 @@ def do_ns_loop():
 	    print print_prefix, "WALK clone_target ", rank, i_at
 	 walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
 	 if ns_args['debug'] >= 10 and size <= 1:
-	    walkers[i_at].info['n_walks'] += movement_args['atom_n_steps']
+	    walkers[i_at].info['n_walks'] += movement_args['n_steps']
 	 accumulate_stats(walk_stats_cumul, walk_stats)
 
       if ns_args['debug'] >= 20:
@@ -1552,7 +1552,7 @@ def do_ns_loop():
 	       print print_prefix, "WALK extra ",rank, r_i
 	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
 	    if ns_args['debug'] >= 10 and size <= 1:
-	       walkers[r_i].info['n_walks'] += movement_args['atom_n_steps']
+	       walkers[r_i].info['n_walks'] += movement_args['n_steps']
 	    accumulate_stats(walk_stats_cumul, walk_stats)
 
       if movement_args['adjust_step_interval'] != 0 and i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
