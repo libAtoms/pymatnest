@@ -7,7 +7,9 @@ set ylabel "Cv per atom"
 set autoscale y
 plot "analysis.cluster.MC.Livia" u ($1/0.1):($4/6) w l lt 1 color black ti "Livia reference", \
      "test.cluster.MD.fortran.energies.analysis" u ($1/0.25):($4/6) w l lt 1 color red ti "MD fortran", \
-     "test.cluster.MD.quip.energies.analysis" u ($1/0.25):($4/6) w l lt 1 color cyan ti "MD quip"
+     "test.cluster.MD.quip.energies.analysis" u ($1/0.25):($4/6) w l lt 1 color cyan ti "MD quip", \
+     "test.cluster.MC.fortran.energies.analysis" u ($1/0.25):($4/6) w l lt 1 color blue ti "MC fortran", \
+     "test.cluster.MC.quip.energies.analysis" u ($1/0.25):($4/6) w l lt 1 color green ti "MC quip"
 unset log x
 unset log y
 set autoscale x
