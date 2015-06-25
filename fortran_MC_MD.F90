@@ -62,19 +62,19 @@ subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, KEmax, final_K
 end subroutine fortran_MC_atom_velo
 
 subroutine fortran_MC_atom(N, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, &
-			   step_size_pos, step_size_vel, Emax, final_E, n_accept_pos, n_accept_vel)
+			   step_size_pos, step_size_vel, Emax, KEmax, final_E, n_accept_pos, n_accept_vel)
    implicit none
    integer :: N
    double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data,N)
    integer :: n_steps
-   double precision :: step_size_pos, step_size_vel, Emax, final_E
+   double precision :: step_size_pos, step_size_vel, Emax, KEmax, final_E
    integer :: n_accept_pos, n_accept_vel
 
    logical :: do_vel
    integer :: d_i
-   double precision :: d_r, E, dE, d_pos(3), d_vel(3)
+   double precision :: d_r, E, dE, KE, dKE, d_pos(3), d_vel(3)
 
    double precision, external :: ll_eval_energy
    integer, external :: ll_move_atom_1
@@ -89,7 +89,8 @@ subroutine fortran_MC_atom(N, pos, vel, mass, n_extra_data, extra_data, cell, n_
    n_accept_vel = 0
    E = ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
    if (do_vel) then
-      E = E + 0.5*sum(spread(mass,1,3)*vel**2)
+      KE = 0.5*sum(spread(mass,1,3)*vel**2)
+      E = E + KE
    endif
 
    do i_step=1, n_steps
@@ -115,10 +116,12 @@ subroutine fortran_MC_atom(N, pos, vel, mass, n_extra_data, extra_data, cell, n_
 	 endif
 
 	 if (do_vel .and.  vel_pos_rv < 0.5) then
-	    dE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
-	    if (E + dE < Emax) then
+	    dKE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
+	    dE = dKE
+	    if (E + dE < Emax .and. (KEmax <= 0.0 .or. KE + dKE < KEmax)) then
 	       vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
 	       E = E + dE
+	       KE = KE + dKE
 	       n_accept_vel = n_accept_vel + 1
 	    endif
 	 endif
@@ -129,10 +132,12 @@ subroutine fortran_MC_atom(N, pos, vel, mass, n_extra_data, extra_data, cell, n_
 	 E = E + dE
 
 	 if (do_vel .and.  vel_pos_rv >= 0.5) then
-	    dE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
-	    if (E + dE < Emax) then
+	    dKE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
+	    dE = dKE
+	    if (E + dE < Emax .and. (KEmax <= 0.0 .or. KE + dKE < KEmax)) then
 	       vel(1:3,d_i) = vel(1:3,d_i) + d_vel(1:3)
 	       E = E + dE
+	       KE = KE + dKE
 	       n_accept_vel = n_accept_vel + 1
 	    endif
 	 endif
