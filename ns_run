@@ -8,8 +8,7 @@ def usage():
   sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
   sys.stderr.write("input:\n")
   sys.stderr.write("max_volume_per_atom=float (1e3)\n")
-  sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required\n")
-  sys.stderr.write("start_energy_ceiling=float (max energy for initial configs.  Initial P*V is added to this automatically. Mutually exclusive with restart_*, one is required.)\n")
+  sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required\n")
   sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
   sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from. Mutually exclusive with start_*, one is required\n")
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
@@ -20,6 +19,9 @@ def usage():
   sys.stderr.write("out_file_prefix=str (None)\n")
   sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
   sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
+  sys.stderr.write("\n")
+  sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P != 0 (will be multiplied by kB ~= 8.6e-5 eV/K))\n")
+  sys.stderr.write("start_energy_ceiling=float (1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
   sys.stderr.write("\n")
   sys.stderr.write("n_steps_expected=int (0, this or n_steps required)\n")
   sys.stderr.write("n_steps=int (0, this or n_steps_expected required)\n")
@@ -63,7 +65,8 @@ def usage():
   sys.stderr.write("MC_cell_shear_step_size=float (0.01)\n")
   sys.stderr.write("MC_cell_shear_step_size_max=float (0.05)\n")
   sys.stderr.write("MC_cell_shear_prob=float (1.0)\n")
-  sys.stderr.write("MC_cell_min_aspect_ratio=float (0.5)\n")
+  sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
+  sys.stderr.write("cell_shape_equil_steps=int (100)\n")
   sys.stderr.write("\n")
   sys.stderr.write("adjust_step_interval=int (10, negative for only using last iteration, 0 for no adjust)\n")
   sys.stderr.write("MC_adjust_step_factor=float (1.5)\n")
@@ -183,10 +186,6 @@ if ns_args['restart_file'] == '':
      ns_args['start_species'] = args.pop('start_species')
    except:
      exit_error("need species for initial configs start_species\n",1)
-   try:
-     ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling'))
-   except:
-     exit_error("need energy ceiling for initial distribution of configs start_energy_ceiling\n",1)
 else:
    try:
      ns_args['restart_first_iter'] = int(args.pop('restart_first_iter'))
@@ -205,6 +204,10 @@ ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
 ns_args['n_extra_data'] = int(args.pop('n_extra_data', 0))
+
+ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling', 1.0e9))
+ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
+kB = 8.6173324e-5
 
 # parse energy_calculator
 ns_args['energy_calculator'] = args.pop('energy_calculator', 'fortran')
@@ -325,7 +328,8 @@ movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_si
 movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 0.05))
 movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
-movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.5))
+movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
+movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 100))
 
 movement_args['adjust_step_interval'] = int(args.pop('adjust_step_interval', 10))
 movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
@@ -464,7 +468,7 @@ def propagate_NVE_quippy(at, dt, n_steps):
    at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
 
 
-def velo_rv_mag(at, Emax):
+def velo_rv_mag(n):
    if movement_args['2D']:
       unit_rv[:,2] = 0.0
       nDOF = 2.0
@@ -475,17 +479,17 @@ def velo_rv_mag(at, Emax):
    #       one gets dx/dy = y^{3N-1}
    #                x = y^{3N}
    #                y = x^{1/3N}
-   return rng.float_uniform(0.0,1.0)**(1.0/(nDOF*len(at)))
+   return rng.float_uniform(0.0,1.0)**(1.0/(nDOF*n))
 
-def velo_unit_rv(at):
-   unit_rv = rng.normal( 1.0, (len(at), 3) )
+def velo_unit_rv(n):
+   unit_rv = rng.normal( 1.0, (n, 3) )
    unit_rv /= np.linalg.norm(unit_rv)
    return unit_rv
 
-def gen_random_velo(at, Emax, unit_rv=None):
+def gen_random_velo(at, KEmax, unit_rv=None):
    if unit_rv is None:
-      unit_rv = velo_unit_rv(at)
-   rv_mag = velo_rv_mag(at, Emax)
+      unit_rv = velo_unit_rv(len(at))
+   rv_mag = velo_rv_mag(len(at))
 
    # from Baldock thesis Eq. 11.10 
    #     p^{**} = r \mathbf{S} \hat{\mathbf{r}}
@@ -494,14 +498,8 @@ def gen_random_velo(at, Emax, unit_rv=None):
    # p_i = r (2 m_i)^{1/2} (E-U)^{1/2} \hat{r}_i
    # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
 
-   pot_energy = at.info['ns_energy'] - eval_energy(at, do_PE=False, do_PV=False)
-   if Emax > pot_energy:
-      masses = at.get_masses()
-      velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt((Emax-pot_energy)) * unit_rv
-   else: # should never happen
-      if rank == 0:
-	 print print_prefix, ": WARNING: got pot_energy ",pot_energy, " > Emax ",Emax, " in gen_random_velo"
-      velocities = 0.0 * unit_rv
+   masses = at.get_masses()
+   velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt(KEmax) * unit_rv
 
    return velocities
 
@@ -510,7 +508,7 @@ def pairwise(iterable):
    a = iter(iterable)
    return izip(a, a)
 
-def rej_free_perturb_velo(at, Emax, rotate=True):
+def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 #DOC 
 #DOC \vspace*{\baselineskip}
 #DOC perturb\_velo
@@ -519,11 +517,23 @@ def rej_free_perturb_velo(at, Emax, rotate=True):
    if not at.has('momenta') or not at.has('masses'):
       return
 
-   orig_KE = at.get_kinetic_energy()
+   KEmax_use = None
+   if Emax is not None:
+       initial_KE = eval_energy(at, do_PE=False, do_PV=False)
+       KEmax_use = Emax - (at.info['ns_energy'] - initial_KE)
+   if KEmax is not None:
+       if Emax is None:
+           KEmax_use = KEmax
+       else:
+           KEmax_use = min(KEmax_use, KEmax)
+   if KEmax_use is None:
+      exit_error("rej_free_perturb_velo() called with Emax and KEmax both None\n", 9)
+
+   orig_KE = at.get_kinetic_energy( )
    #DOC \item if atom\_velo\_randomize, pick random velocities consistent with Emax
    if movement_args['atom_velo_rej_free_perturb_randomize']:
       # randomize completely
-      at.set_velocities(gen_random_velo(at, Emax))
+      at.set_velocities(gen_random_velo(at, KEmax_use))
    #DOC \item else perturb velocities
    #DOC \begin{itemize}
    else: # perturb
@@ -531,13 +541,13 @@ def rej_free_perturb_velo(at, Emax, rotate=True):
       velo_mag = np.linalg.norm(velo)
       #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
       if velo_mag == 0.0:
-	 at.set_velocities(gen_random_velo(at, Emax))
+	 at.set_velocities(gen_random_velo(at, KEmax_use))
       #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in $\pm$ atom\_velo\_perturb\_angle
       else:
 	 # pick new random magnitude - count on dimensionality to make change small
 	 # WARNING: check this for variable masses
 	 masses_2D = at.get_masses().reshape( (len(at),1) )
-	 momenta = gen_random_velo(at, Emax, velo/velo_mag) * masses_2D
+	 momenta = gen_random_velo(at, KEmax_use, velo/velo_mag) * masses_2D
 
 	 if rotate:
 	    # apply random rotations
@@ -560,24 +570,26 @@ def rej_free_perturb_velo(at, Emax, rotate=True):
    #DOC \end{itemize}
 #DOC \end{itemize}
 
-def do_MC_atom_velo_walk(at, movement_args, Emax):
+def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax):
    if movement_args['MC_atom_velo_walk_rej_free']:
-      rej_free_perturb_velo(at, Emax)
+      rej_free_perturb_velo(at, Emax, KEmax)
       return {}
 
    n_steps = movement_args['velo_n_substeps']
    step_size = movement_args['MC_atom_velo_step_size']
 
+   initial_KE = eval_energy(at, do_PE=False, do_PV=False)
+   KEmax_use = Emax - (at.info['ns_energy'] - initial_KE)
+   if KEmax is not None and KEmax < KEmax_use:
+      KEmax_use = KEmax
+
    if do_calc_fortran:
-      initial_KE = eval_energy(at, do_PE=False, do_PV=False)
-      (n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, Emax-eval_energy(at, do_KE=False))
+      (n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, KEmax_use)
       at.info['ns_energy'] += final_KE-initial_KE
    else:
       masses = at.get_masses()
       velocities = at.get_velocities()
-      initial_KE = eval_energy(at, do_PE=False, do_PV=False)
       KE = initial_KE
-      KEmax = Emax - (at.info['ns_energy'] - KE)
       n_accept = 0
       for i_step in range(n_steps):
 	 at_list = list(range(len(at)))
@@ -585,7 +597,7 @@ def do_MC_atom_velo_walk(at, movement_args, Emax):
 	 d_vel = rng.normal(step_size, (len(at), 3))
 	 for i_at in at_list:
 	    d_KE = 0.5*masses[i_at]*(np.sum((velocities[i_at,:]+d_vel[i_at,:])**2) - np.sum(velocities[i_at,:]**2))
-	    if KE + d_KE < KEmax:
+	    if KE + d_KE < KEmax_use:
 	       velocities[i_at,:] += d_vel[i_at,:]
 	       KE += d_KE
 	       n_accept += 1
@@ -594,7 +606,7 @@ def do_MC_atom_velo_walk(at, movement_args, Emax):
 
    return {'MC_atom_velo' : (n_steps*len(at), n_accept)}
 
-def do_MD_atom_walk(at, movement_args, Emax):
+def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 #DOC 
 #DOC \vspace*{\baselineskip}
 #DOC do\_MD\_atom\_walk
@@ -606,7 +618,7 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    #DOC \item if MD\_atom\_velo\_pre\_perturb, call perturb\_velo() for magnitude and rotation
    if movement_args['MD_atom_velo_pre_perturb']:
-      do_MC_atom_velo_walk(at, movement_args, Emax)
+      do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
 
    pre_MD_pos = at.get_positions()
    pre_MD_velo = at.get_velocities()
@@ -626,22 +638,23 @@ def do_MD_atom_walk(at, movement_args, Emax):
       exit_error("Need some non-quippy, non-fortran way of doing MD\n",3)
 
    reject_fuzz = False
-   KE = eval_energy(at, do_PE=False, do_PV=False)
+   final_KE = eval_energy(at, do_PE=False, do_PV=False)
    #DOC \item optionally accept/reject entire move on E deviating by less than energy fuzz times kinetic energy
-   if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']*KE:
+   if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']*final_KE:
       if movement_args['MD_atom_reject_energy_violation']:
 	 reject_fuzz = True
       else:
-	 print print_prefix, ": INFO: MD energy deviation > fuzz*KE. Pre-MD, post-MD, difference, KE ", pre_MD_E, final_E, final_E-pre_MD_E, KE
+	 print print_prefix, ": INFO: MD energy deviation > fuzz*final_KE. Pre-MD, post-MD, difference, final_KE ", pre_MD_E, final_E, final_E-pre_MD_E, final_KE
 
    #DOC \item accept/reject entire move on E $<$ Emax
    reject_Emax = (final_E >= Emax)
+   reject_KEmax = (KEmax is not None and final_KE >= KEmax)
 
    #DOC \item if reject
    #DOC \begin{itemize}
-   if reject_fuzz or reject_Emax: # reject
+   if reject_fuzz or reject_Emax or reject_KEmax: # reject
       #DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)
-      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " velo perturbed E ", pre_MD_E, " final E ",final_E, " KE ", KE
+      print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " velo perturbed E ", pre_MD_E, " final E ",final_E, " KEmax ", KEmax, " KE ", final_KE
       at.set_positions(pre_MD_pos)
       if movement_args['MD_atom_velo_flip_accept']:
 	 at.set_velocities(pre_MD_velo)
@@ -665,12 +678,12 @@ def do_MD_atom_walk(at, movement_args, Emax):
 
    #DOC \item if MD\_atom\_velo\_post\_perturb, call perturb\_velo() for magnitude and rotation
    if movement_args['MD_atom_velo_post_perturb']:
-      do_MC_atom_velo_walk(at, movement_args, Emax)
+      do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
 
    return {'MD_atom' : (1, n_accept) }
 #DOC \end{itemize}
 
-def do_MC_atom_walk(at, movement_args, Emax):
+def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 #DOC 
 #DOC \vspace*{\baselineskip}
 #DOC do\_MC\_atom\_walk
@@ -684,13 +697,13 @@ def do_MC_atom_walk(at, movement_args, Emax):
 
    #DOC \item if MC\_atom\_velocities and MC\_atom\_velocities\_pre\_perturb, perturb velocities, magnitude and and rotation
    if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
-      do_MC_atom_velo_walk(at, movement_args, Emax)
+      do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
 
    #DOC \item loop atom\_n\_substeps times
    #DOC \begin{itemize}
    if do_calc_fortran:
       if movement_args['MC_atom_velocities']:
-	 (n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), step_size_velo)
+	 (n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), KEmax, step_size_velo)
 	 at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
       else:
 	 (n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
@@ -817,6 +830,9 @@ def do_cell_step(at, Emax, p_accept, transform):
    # set new positions and velocities
    at.set_cell(new_cell, scale_atoms=True)
 
+   if Emax is None:
+      return
+
    # calculate new energy
    new_energy = eval_energy(at)
    # accept or reject
@@ -830,7 +846,19 @@ def do_cell_step(at, Emax, p_accept, transform):
 	 at.arrays['ns_extra_data'][...] = extra_data 
       return False
 
-def do_MC_cell_walk(at, movement_args, Emax):
+def do_cell_shape_walk(at, movement_args):
+    possible_moves = {
+        'MC_cell_shear': propose_shear_step,
+        'MC_cell_stretch': propose_stretch_step }
+    items = possible_moves.items()
+
+    for i in range(movement_args['cell_shape_equil_steps']):
+        rng.shuffle_in_place(items)
+        for key, propose_step_func in items:
+            (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
+            do_cell_step(at, None, p_accept, transform)
+
+def do_MC_cell_walk(at, movement_args, Emax, KEmax):
 #DOC 
 #DOC \vspace*{\baselineskip}
 #DOC do\_MC\_cell\_walk
@@ -872,17 +900,17 @@ def do_MC_cell_walk(at, movement_args, Emax):
 #DOC \end{itemize}
 
 
-def do_atom_walk(at, movement_args, Emax):
+def do_atom_walk(at, movement_args, Emax, KEmax):
    if movement_args['atom_algorithm'] == 'MC':
-      out = do_MC_atom_walk(at, movement_args, Emax)
+      out = do_MC_atom_walk(at, movement_args, Emax, KEmax)
    elif movement_args['atom_algorithm'] == 'MD':
-      out = do_MD_atom_walk(at, movement_args, Emax)
+      out = do_MD_atom_walk(at, movement_args, Emax, KEmax)
    else:
       exit_error("do_atom_walk got unknown 'atom_algorithm' = '%s'\n" % movement_args['atom_algorithm'], 5)
 
    return out
 
-def walk_single_walker(at, movement_args, Emax):
+def walk_single_walker(at, movement_args, Emax, KEmax):
 #DOC 
 #DOC \vspace*{\baselineskip}
 #DOC walk\_single\_walker
@@ -903,7 +931,7 @@ def walk_single_walker(at, movement_args, Emax):
       for move in possible_moves:
 	 #DOC \item do\_(MC $|$ MD)\_atom\_walk
 	 #DOC \item do\_MC\_cell\_walk
-	 accumulate_stats(out, move(at, movement_args, Emax))
+	 accumulate_stats(out, move(at, movement_args, Emax, KEmax))
       #DOC \end{itemize}
    #DOC \end{itemize}
 
@@ -1131,6 +1159,15 @@ if ns_args['restart_file'] == '': # start from scratch
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
 
+   # set KEmax from P and Vmax
+   if movement_args['do_velocities']:
+       if movement_args['MC_cell_P'] > 0.0:
+           KEmax = 2.0*movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms)
+       else:
+           KEmax = kB*ns_args['KEmax_max_T']
+   else:
+       KEmax = None
+
    # V should have prob distrib p(V) = V^N. 
    # Using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^N and p(x) = 1,
    #       one gets dx/dy = y^N
@@ -1139,10 +1176,11 @@ if ns_args['restart_file'] == '': # start from scratch
    ns_args['start_energy_ceiling'] += movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms)
    # initial positions are just random, up to an energy ceiling
    for at in walkers:
-      # randomize cell if P is set
+      # randomize cell if P is set, both volume (from appropriate distribution) and shape (from uniform distribution with min aspect ratio limit)
       if movement_args['MC_cell_P'] > 0.0:
 	 lc = (len(at)*ns_args['max_volume_per_atom']*rng.float_uniform(0.0,1.0)**(1.0/float(len(at)+1)))**(1.0/3.0)
 	 at.set_cell( np.identity(3) * lc )
+         do_cell_shape_walk(at, movement_args)
       # random initial positions
       at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
       # try FORTRAN config initializer
@@ -1160,7 +1198,7 @@ if ns_args['restart_file'] == '': # start from scratch
 
       # set initial velocities, rejection free
       if movement_args['do_velocities']:
-	 rej_free_perturb_velo(at, ns_args['start_energy_ceiling'])
+	 rej_free_perturb_velo(at, None, KEmax)
 
 else: # doing a restart
    if rank == 0: # read on head task and send to other tasks
@@ -1512,7 +1550,7 @@ def do_ns_loop():
       for i_at in clone_walk_ind:
 	 if ns_args['debug'] >= 5:
 	    print print_prefix, "WALK clone_target ", rank, i_at
-	 walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step)
+	 walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step, KEmax)
 	 if ns_args['debug'] >= 10 and size <= 1:
 	    walkers[i_at].info['n_walks'] += movement_args['n_steps']
 	 accumulate_stats(walk_stats_cumul, walk_stats)
@@ -1550,7 +1588,7 @@ def do_ns_loop():
 	       r_i = rng.int_uniform(0, n_walkers)
 	    if ns_args['debug'] >= 5:
 	       print print_prefix, "WALK extra ",rank, r_i
-	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step)
+	    walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step, KEmax)
 	    if ns_args['debug'] >= 10 and size <= 1:
 	       walkers[r_i].info['n_walks'] += movement_args['n_steps']
 	    accumulate_stats(walk_stats_cumul, walk_stats)
