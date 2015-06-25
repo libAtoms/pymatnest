@@ -11,6 +11,7 @@ p.add_option('-k','--kB', action='store', help="""Boltzmann constant (defaults t
 p.add_option('-a','--accurate_sum', action='store_true', help="""use more accurate sum (math.fsum)""")
 p.add_option('-v','--verbose', action='store_true', help="""Verbose output (for debugging)""")
 p.add_option('-p','--profile', action='store_true', help="""do profiling""")
+p.add_option('-s','--skip', action='store', help="""number of lines to skip""", type='int', default=0)
 
 opt, args = p.parse_args()
 
@@ -40,9 +41,12 @@ log_a = math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
 print "# n_walkers ",n_walkers," n_cull ",n_cull," log(alpha) ",log_a
 
 Es=[]
+i = 0
 for line in inputs:
-   (n_iter, E) = line.split()
-   Es.append(float(E))
+   if i >= opt.skip:
+       (n_iter, E) = line.split()
+       Es.append(float(E))
+   i += 1
 
 Es = np.array(Es)
 Es -= np.amin(Es)
