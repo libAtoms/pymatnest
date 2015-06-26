@@ -942,7 +942,6 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
        pert = 1.0 + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
    at.info['ns_energy'] *= pert
 
-
    #DEBUG print "walk_single_walker end ", eval_energy(at, do_PE=False), eval_energy(at) #DEBUG
 
    return out
@@ -1306,6 +1305,7 @@ def do_ns_loop():
       if ns_args['debug'] >= 20:
 	 print print_prefix, "%30s" % ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
 	 print print_prefix, "%30s" % ": LOOP_PE START 01 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_X START 02 ",i_ns_step, [ at.positions[0,0] for at in walkers ]
 
       # get list of highest energy configs
       (Emax, cull_ind, cull_rank) = max_energy(walkers, n_cull)
@@ -1327,7 +1327,7 @@ def do_ns_loop():
       if rank == 0:
 	 cur_time=time.time()
 	 if (cur_time > prev_time+60 or i_ns_step == 0 or i_ns_step == ns_args['n_iter'] or (ns_args['n_iter'] > 0 and i_ns_step % max(int(ns_args['n_iter']/1000),1) == 0)):
-	    print i_ns_step, "Emax_of_step ", Emax_of_step, cur_time-prev_time
+	    print i_ns_step, "Emax_of_step ", Emax_of_step, " loop time ", cur_time-prev_time
 	    prev_time = cur_time
 
       cull_list=[None] * size
@@ -1381,7 +1381,7 @@ def do_ns_loop():
       send_rank=[]
       cull_inds_to_remove=[]
 
-      if n_cull > 1:
+      if n_cull > 1: # send/recv for fixing load balance
 	 # CHECK FOR RANDOMNESS ISSUES AND WHICH NODES ARE USED FOR CLONES
 	 for r in range(size):
 	    # maybe remote_r should be chosen completely randomly, rather than close to task of extra culled configs
@@ -1419,7 +1419,6 @@ def do_ns_loop():
 	       # send from random avail walker on remote_r to clone_target on r
 	       n_transfer = min(n_remaining_clones, n_avail_remote)
 
-
 	       # set ranks
 	       send_rank.extend([remote_r]*n_transfer)
 	       recv_rank.extend([r]*n_transfer)
@@ -1438,17 +1437,25 @@ def do_ns_loop():
 	       status[r,list_clone_target[0:n_transfer]] = 'c_t_a'
 	       recv_ind.extend(list_clone_target[0:n_transfer])
 
+               if n_transfer < len(list_clone_target):
+                   list_clone_target = list_clone_target[n_transfer:]
 	       n_remaining_clones -= n_transfer
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, "%30s" % ": LOOP_TE POST_LOC_CLONE 15 ",i_ns_step, [ eval_energy(at) for at in walkers ]
 	 print print_prefix, "%30s" % ": LOOP_PE POST_LOC_CLONE 16 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_X POST_LOC_CLONE 17 ",i_ns_step, [ at.positions[0,0] for at in walkers ]
 
       # make into numpy arrays so that mathematical operations will work
       send_rank = np.array(send_rank)
       send_ind = np.array(send_ind)
       recv_rank = np.array(recv_rank)
       recv_ind = np.array(recv_ind)
+
+      if ns_args['debug'] >= 10:
+          if rank == 0:
+            for i in range(len(send_rank)):
+                print print_prefix, "send from ",send_rank[i],send_ind[i]," to ",recv_rank[i], recv_ind[i]
 
       # save new common state, and restore to local state
       rng.switch_to_local()
@@ -1478,8 +1485,7 @@ def do_ns_loop():
 	       if movement_args['do_velocities']:
 		  buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].get_velocities().reshape( (3*n_atoms) ); buf_o += 3*n_atoms
 	       if ns_args['n_extra_data'] > 0:
-		  buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) )
-		  buf_o += ns_args['n_extra_data']*n_atoms
+		  buf[buf_o:buf_o+ns_args['n_extra_data']*n_atoms] = walkers[send_ind[0]].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) ); buf_o += ns_args['n_extra_data']*n_atoms
 	       comm.Send([buf,  MPI.DOUBLE], dest=recv_rank[0], tag=100)
 	    elif recv_rank[0] == rank:
 	       comm.Recv([buf, MPI.DOUBLE], source=send_rank[0], tag=100)
@@ -1492,53 +1498,87 @@ def do_ns_loop():
 		  walkers[recv_ind[0]].arrays['ns_extra_data'][...] = buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, ns_args['n_extra_data']) ); buf_o += ns_args['n_extra_data']*n_atoms
 	       walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 
-      else: # should switch to comm.Alltoall, faster, but more manual massaging of data structures
-	 if ns_args['n_extra_data'] > 0:
-	    exit_error("extra data not implemented when n_cull > 1", 8)
-	 # create sending/receiving buffers
-	 # create sending/receiving buffers
-	 pos_send_buf=[None] * size
-	 vel_send_buf=[None] * size
-	 cell_send_buf=[None] * size
+      else: # complicated construction of sending/receiving buffers
+         # figure out how much is sent per config
+         n_data_per_config = 1+3*(n_atoms + 3)
+         if movement_args['do_velocities']:
+            n_data_per_config += 3*n_atoms
+         if ns_args['n_extra_data'] > 0:
+            n_data_per_config += ns_args['n_extra_data']*n_atoms
+
+         # figure out send counts
+         send_count = [0] * size
+	 for i in np.where(send_rank == rank)[0]:
+	    r_recv = recv_rank[i]
+            send_count[r_recv] += n_data_per_config
+
+         # figure out send displacements
+         send_displ = [0] * size
+         send_displ[0] = 0
+         for i in range(1,size):
+            send_displ[i] = send_displ[i-1] + send_count[i-1]
+
+         # create empty buffer for sending
+         send_count_tot = sum(send_count)
+         send_data = np.zeros(send_count_tot)
+
+         # copy data to be sent to buffer
+         send_displ_t = list(send_displ)
 	 for i in np.where(send_rank == rank)[0]:
 	    r_recv = recv_rank[i]
 	    i_send = send_ind[i]
-	    if pos_send_buf[r_recv] is None:
-	       pos_send_buf[r_recv] = []
-	    if vel_send_buf[r_recv] is None:
-	       vel_send_buf[r_recv] = []
-	    if cell_send_buf[r_recv] is None:
-	       cell_send_buf[r_recv] = []
-	    pos_send_buf[r_recv].append(walkers[i_send].get_positions())
-	    vel_send_buf[r_recv].append(walkers[i_send].get_velocities())
-	    cell_send_buf[r_recv].append(walkers[i_send].get_cell())
 
+            data_o = send_displ_t[r_recv]
+            send_data[data_o] = walkers[i_send].info['ns_energy']; data_o += 1
+            send_data[data_o:data_o+3*n_atoms] = walkers[i_send].get_positions().reshape( (3*n_atoms) ); data_o += 3*n_atoms
+            send_data[data_o:data_o+3*3] = walkers[i_send].get_cell().reshape( (3*3) ); data_o += 3*3
+            if movement_args['do_velocities']:
+               send_data[data_o:data_o+3*n_atoms] = walkers[i_send].get_velocities().reshape( (3*n_atoms) ); data_o += 3*n_atoms
+            if ns_args['n_extra_data'] > 0:
+               send_data[data_o:data_o+ns_args['n_extra_data']*n_atoms] = walkers[i_send].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) ); data_o += ns_args['n_extra_data']*n_atoms
+            send_displ_t[r_recv] = data_o
 
-	 # do communication
-	 if comm is not None:
-	    pos_recv_buf = comm.alltoall(pos_send_buf)
-	    vel_recv_buf = comm.alltoall(vel_send_buf)
-	    cell_recv_buf = comm.alltoall(cell_send_buf)
-	 else:
-	    pos_recv_buf = pos_send_buf
-	    vel_recv_buf = vel_send_buf
-	    cell_recv_buf = cell_send_buf
+         # figure out recv counts
+         recv_count = [0] * size
+	 for i in np.where(recv_rank == rank)[0]:
+	    r_send = send_rank[i]
+            recv_count[r_send] += n_data_per_config
 
-	 # copy from receive buffers into walkers structure
-	 my_recv_ind = np.array(recv_ind)[np.where(np.array(recv_rank) == rank)[0]]
-	 recv_i = 0
-	 for (pos_array, vel_array, cell_array) in zip(pos_recv_buf, vel_recv_buf, cell_recv_buf):
-	    if pos_array is not None:
-	       for (pos_entry, vel_entry, cell_entry) in zip(pos_array, vel_array, cell_array):
-		  walkers[my_recv_ind[recv_i]].set_positions(pos_entry)
-		  walkers[my_recv_ind[recv_i]].set_velocities(vel_entry)
-		  walkers[my_recv_ind[recv_i]].set_cell(cell_entry)
-		  walkers[my_recv_ind[recv_i]].info['ns_energy'] = eval_energy(walkers[my_recv_ind[recv_i]])
-		  recv_i += 1
+         # figure out recv displacements
+         recv_displ = [0] * size
+         recv_displ[0] = 0
+         for i in range(1,size):
+            recv_displ[i] = recv_displ[i-1] + recv_count[i-1]
+
+         # create empty buffer for receiving
+         recv_count_tot = sum(recv_count)
+         recv_data = np.zeros(recv_count_tot)
+
+         # do communications
+         send_buf = [send_data, send_count, send_displ, MPI.DOUBLE]
+         recv_buf = (recv_data, recv_count, recv_displ, MPI.DOUBLE)
+         comm.Alltoallv(send_buf, recv_buf)
+
+         # copy data from recv buffer to walkers
+         recv_displ_t = list(recv_displ)
+         for i in np.where(recv_rank == rank)[0]:
+            r_send = send_rank[i]
+            i_recv = recv_ind[i]
+
+            data_o = recv_displ_t[r_send]
+            walkers[i_recv].info['ns_energy'] = recv_data[data_o]; data_o += 1
+            walkers[i_recv].set_positions( recv_data[data_o:data_o+3*n_atoms].reshape( (n_atoms, 3) )); data_o += 3*n_atoms
+            walkers[i_recv].set_cell( recv_data[data_o:data_o+3*3].reshape( (3, 3) )); data_o += 3*3
+            if movement_args['do_velocities']:
+                walkers[i_recv].set_velocities( recv_data[data_o:data_o+3*n_atoms].reshape( (n_atoms, 3) )); data_o += 3*n_atoms
+            if ns_args['n_extra_data'] > 0:
+                walkers[i_recv].arrays['ns_extra_data'][...] = recv_data[data_o:data_o+ns_args['n_extra_data']*n_atoms].reshape( (n_atoms, ns_args['n_extra_data']) ); data_o += ns_args['n_extra_data']*n_atoms
+            recv_displ_t[r_send] = data_o
 
       if ns_args['debug'] >= 20:
 	 print print_prefix, "%30s" % ": LOOP_TE POST_CLONE 20 ",i_ns_step, [ eval_energy(at) for at in walkers ]
 	 print print_prefix, "%30s" % ": LOOP_PE POST_CLONE 21 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
+	 print print_prefix, "%30s" % ": LOOP_X POST_CLONE 22 ",i_ns_step, [ at.positions[0,0] for at in walkers ]
 
       # move cloned walkers
 
