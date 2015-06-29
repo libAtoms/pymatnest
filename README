@@ -10,6 +10,8 @@ Running:
    ns_run < inputs
 
 Example input files for clusters and periodic, MC and MD, are in the tests/ directory
+See also
+    ns_run --help
 
 If you get weird errors about modules and/or .so files not found, do (in sh syntax)
    export PYTHONPATH=path_to_ns_run_directory:$PYTHONPATH
