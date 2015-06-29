@@ -376,6 +376,7 @@ elif do_calc_internal or do_calc_fortran:
 elif do_calc_lammps:
    pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), log_file='lammps.%d.log' % rank, keep_alive=True)
    pot.start_lammps() # so that top level things like units will be set
+   pot.first_MD=True
 else:
    exit_error("Need some way of initializing calculator\n",3)
 
@@ -472,11 +473,10 @@ def propagate_NVE_quippy(at, dt, n_steps):
 
    at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
 
-first_MD=True
 def propagate_NVE_lammps(at, dt, n_steps):
-   if first_MD:
+   if pot.first_MD:
        pot.lmp.command('fix 1 all nve')
-       first_MD=False
+       pot.first_MD=False
 
    pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
 
@@ -1218,6 +1218,8 @@ if ns_args['restart_file'] == '': # start from scratch
       n_try = 0
       # try python config initializer
       while math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+         if do_calc_lammps:
+            exit_error("python init_config doesn't work with LAMMPS, since it varies list of atoms\n", 10)
 	 if n_try > 10:
 	    exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['start_energy_ceiling'], 4)
 	 energy = init_config(at, ns_args['start_energy_ceiling'])

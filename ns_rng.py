@@ -30,7 +30,10 @@ class NsRngNumpy(NsRng):
 	    self.common_random_state = None
 	 self.common_random_state = comm.bcast(self.common_random_state, root=0)
       if delta_seed > 0:
-	 np.random.seed(comm.rank + 1 + delta_seed)
+         if comm is None:
+             np.random.seed(1 + delta_seed)
+         else:
+             np.random.seed(comm.rank + 1 + delta_seed)
       else:
 	 np.random.seed()
    def int_uniform(self, low, high):
