@@ -374,7 +374,10 @@ if do_calc_quip:
 elif do_calc_internal or do_calc_fortran:
    pass
 elif do_calc_lammps:
-   pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), log_file='lammps.%d.log' % rank, keep_alive=True)
+   if ns_args['debug'] >= 5:
+       pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), log_file='lammps.%d.log' % rank, keep_alive=True)
+   else:
+       pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), keep_alive=True)
    pot.start_lammps() # so that top level things like units will be set
    pot.first_MD=True
 else:
