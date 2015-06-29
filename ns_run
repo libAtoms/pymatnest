@@ -228,8 +228,15 @@ if ns_args['energy_calculator'] == 'quip':
    except:
      exit_error("need QUIP potential params file QUIP_pot_params_file\n",1)
 elif ns_args['energy_calculator'] == 'lammps':
-   exit_error("energy_calculator=lammps not implemented yet\n", 3)
+   try:
+       from lammpslib import LAMMPSlib
+   except:
+       exit_error("energy_calculator=lammps and failed to import lammpslib module\n", 1)
    do_calc_lammps=True
+   try:
+       ns_args['LAMMPS_init_cmds'] = args.pop('LAMMPS_init_cmds')
+   except:
+     exit_error("need LAMMPS initialization commands LAMMPS_init_cmds\n",1)
 elif ns_args['energy_calculator'] == 'internal':
    do_calc_internal=True
 elif ns_args['energy_calculator'] == 'fortran':
@@ -353,9 +360,6 @@ if 'QUIP_pot_params_file' in ns_args:
 	 ns_args['QUIP_pot_params'] = comm.bcast(ns_args['QUIP_pot_params'], root=0)
    except:
       exit_error("Failed to read params file '%s'\n" % ns_args['QUIP_pot_params_file'], 1)
-else:
-   if ns_args['energy_calculator'] != 'internal' and ns_args['energy_calculator'] != 'fortran' and rank == 0:
-      sys.stderr.write("Got no *_pot_params_file")
 
 if len(args) > 0:
   exit_error(str(args)+"\nUnknown arguments read in\n", 2)
@@ -370,7 +374,8 @@ if do_calc_quip:
 elif do_calc_internal or do_calc_fortran:
    pass
 elif do_calc_lammps:
-   exit_error("no lammps initialization of potential implemented yet\n", 3)
+   pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), log_file='lammps.%d.log' % rank, keep_alive=True)
+   pot.start_lammps() # so that top level things like units will be set
 else:
    exit_error("Need some way of initializing calculator\n",3)
 
@@ -467,6 +472,13 @@ def propagate_NVE_quippy(at, dt, n_steps):
 
    at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
 
+first_MD=True
+def propagate_NVE_lammps(at, dt, n_steps):
+   if first_MD:
+       pot.lmp.command('fix 1 all nve')
+       first_MD=False
+
+   pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
 
 def velo_rv_mag(n):
    if movement_args['2D']:
@@ -631,11 +643,14 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
    if do_calc_quip:
       propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_n_substeps']) 
       final_E = eval_energy(at)
+   elif do_calc_lammps:
+      propagate_NVE_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_n_substeps']) 
+      final_E = eval_energy(at)
    elif do_calc_fortran:
       final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
       final_E += eval_energy(at,do_PE=False, do_KE=False)
    else:
-      exit_error("Need some non-quippy, non-fortran way of doing MD\n",3)
+      exit_error("Need some non-quippy, non-fortran, non-lammps way of doing MD\n",3)
 
    reject_fuzz = False
    final_KE = eval_energy(at, do_PE=False, do_PV=False)
