@@ -188,6 +188,7 @@ End LAMMPSlib Interface Documentation
     default_parameters = dict(
         atom_types=None,
         log_file=None,
+        lammps_name='',
         keep_alive=False,
         lammps_header=['units metal',
                        'atom_style atomic',
@@ -371,7 +372,7 @@ End LAMMPSlib Interface Documentation
         self.cmd_args = cmd_args
 
         if not hasattr(self, 'lmp'):
-            self.lmp = lammps('', self.cmd_args)
+            self.lmp = lammps(self.parameters.lammps_name, self.cmd_args)
 
         # Use metal units: Angstrom, ps, and eV
         for cmd in self.parameters.lammps_header:

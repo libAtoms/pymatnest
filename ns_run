@@ -76,9 +76,11 @@ def usage():
   sys.stderr.write("MD_adjust_min_rate=float (0.95)\n")
   sys.stderr.write("MD_adjust_max_rate=float (1.00)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("QUIP_pot_args=str (MANDATORY if energy_calculator=QUIP)\n")
-  sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=QUIP)\n")
-  sys.stderr.write("FORTRAN_model=str (MANDATORY if energy_calculator=QUIP)\n")
+  sys.stderr.write("QUIP_pot_args=str (MANDATORY if energy_calculator=quip)\n")
+  sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=quip)\n")
+  sys.stderr.write("FORTRAN_model=str (MANDATORY if energy_calculator=fortran)\n")
+  sys.stderr.write("LAMMPS_init_cmds=str (MANDATORY if energy_calculator=lammps)\n")
+  sys.stderr.write("LAMMPS_name=str ('', arch name for lammps shared object file)\n")
   sys.stderr.write("\n")
   sys.stderr.write("config_file_format=str (extxyz)\n") # julia
   sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
@@ -237,6 +239,7 @@ elif ns_args['energy_calculator'] == 'lammps':
        ns_args['LAMMPS_init_cmds'] = args.pop('LAMMPS_init_cmds')
    except:
      exit_error("need LAMMPS initialization commands LAMMPS_init_cmds\n",1)
+   ns_args['LAMMPS_name'] = args.pop('LAMMPS_name', '')
 elif ns_args['energy_calculator'] == 'internal':
    do_calc_internal=True
 elif ns_args['energy_calculator'] == 'fortran':
@@ -375,10 +378,12 @@ elif do_calc_internal or do_calc_fortran:
    pass
 elif do_calc_lammps:
    if ns_args['debug'] >= 5:
-       pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), log_file='lammps.%d.log' % rank, keep_alive=True)
+       pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), log_file='lammps.%d.log' % rank, keep_alive=True, lammps_name=ns_args['LAMMPS_name'])
    else:
-       pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), keep_alive=True)
+       pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), keep_alive=True, lammps_name=ns_args['LAMMPS_name'])
+   print "PRE START_LAMMPS"
    pot.start_lammps() # so that top level things like units will be set
+   print "POST START_LAMMPS"
    pot.first_MD=True
 else:
    exit_error("Need some way of initializing calculator\n",3)
