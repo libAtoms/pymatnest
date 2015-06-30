@@ -246,7 +246,7 @@ End LAMMPSlib Interface Documentation
 
         # If necessary, transform the positions to new coordinate system
         if self.coord_transform != None:
-            pos = self.coord_transform * np.matrix.transpose(pos)
+            pos = np.dot(self.coord_transform , np.matrix.transpose(pos))
             pos = np.matrix.transpose(pos)
 
         # Convert ase position matrix to lammps-style position array
@@ -264,7 +264,7 @@ End LAMMPSlib Interface Documentation
 
             # If necessary, transform the velocities to new coordinate system
             if self.coord_transform != None:
-                vel = self.coord_transform * np.matrix.transpose(vel)
+                vel = np.dot(self.coord_transform , np.matrix.transpose(vel) )
                 vel = np.matrix.transpose(vel)
 
             # Convert ase velocities matrix to lammps-style velocities array
@@ -283,8 +283,13 @@ End LAMMPSlib Interface Documentation
 
         if n_steps > 0:
             # TODO this must be slower than native copy, but why is it broken?
-            atoms.set_positions(np.array([x for x in self.lmp.gather_atoms("x",1,3)]).reshape(-1,3))
-            atoms.set_velocities(np.array([v for v in self.lmp.gather_atoms("v",1,3)]).reshape(-1,3)*(ase.units.Ang/(1.0e-12*ase.units.s))) # TODO convert from ASE velo to lammps metal velo A/ps
+            pos = np.array([x for x in self.lmp.gather_atoms("x",1,3)]).reshape(-1,3)
+            if self.coord_transform is not None:
+                pos = np.dot(pos, self.coord_transform)
+            vel = np.array([v for v in self.lmp.gather_atoms("v",1,3)]).reshape(-1,3)
+            if self.coord_transform is not None:
+                vel = np.dot(vel, self.coord_transform)
+            atoms.set_velocities(vel*(ase.units.Ang/(1.0e-12*ase.units.s)))
 
         # Extract the forces and energy
 #        if 'energy' in properties:
@@ -349,7 +354,7 @@ End LAMMPSlib Interface Documentation
             volume = np.linalg.det(ase_cell)
             trans = np.array([np.cross(B, C), np.cross(C, A), np.cross(A, B)])
             trans = trans / volume
-            self.coord_transform = tri_mat * trans
+            self.coord_transform = np.dot(tri_mat , trans)
 
             return tri_mat
         else:
