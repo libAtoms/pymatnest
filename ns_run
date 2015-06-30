@@ -2,6 +2,9 @@
 
 import sys
 
+import stacktrace
+stacktrace.listen()
+
 print_prefix=""
 
 def usage():
@@ -12,7 +15,7 @@ def usage():
   sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
   sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from. Mutually exclusive with start_*, one is required\n")
   sys.stderr.write("n_walkers=int (MANDATORY)\n")
-  sys.stderr.write("n_cull=int (MANDATORY)\n")
+  sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
   sys.stderr.write("n_extra_walk_per_task=int (0)\n")
   sys.stderr.write("n_iter_per_walker=int (MANDATORY)\n")
   sys.stderr.write("min_Emax=float (None.  Termination condition based on Emax)\n")
@@ -20,7 +23,7 @@ def usage():
   sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
   sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P != 0 (will be multiplied by kB ~= 8.6e-5 eV/K))\n")
+  sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K))\n")
   sys.stderr.write("start_energy_ceiling=float (1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
   sys.stderr.write("\n")
   sys.stderr.write("n_steps_expected=int (0, this or n_steps required)\n")
@@ -56,8 +59,8 @@ def usage():
   sys.stderr.write("\n")
   sys.stderr.write("\n")
   sys.stderr.write("MC_cell_P=float (0.0)\n")
-  sys.stderr.write("MC_cell_volume_per_atom_step_size=float (0.01)\n")
-  sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (0.05)\n")
+  sys.stderr.write("MC_cell_volume_per_atom_step_size=float (100.0)\n")
+  sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (5000.0)\n")
   sys.stderr.write("MC_cell_volume_per_atom_prob=float (1.0)\n")
   sys.stderr.write("MC_cell_stretch_step_size=float (0.01)\n")
   sys.stderr.write("MC_cell_stretch_step_size_max=float (0.05)\n")
@@ -68,7 +71,7 @@ def usage():
   sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
   sys.stderr.write("cell_shape_equil_steps=int (100)\n")
   sys.stderr.write("\n")
-  sys.stderr.write("adjust_step_interval=int (10, negative for only using last iteration, 0 for no adjust)\n")
+  sys.stderr.write("adjust_step_interval_per_walker=float (0.25, multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
   sys.stderr.write("MC_adjust_step_factor=float (1.5)\n")
   sys.stderr.write("MC_adjust_min_rate=float (0.25)\n")
   sys.stderr.write("MC_adjust_max_rate=float (0.75)\n")
@@ -88,7 +91,7 @@ def usage():
   sys.stderr.write("2D=[ T | F ] (F, unsupported)\n")
   sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
   sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
-  sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
+  sys.stderr.write("random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
   sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
 
 if len(sys.argv) != 1 and len(sys.argv) != 2:
@@ -166,10 +169,7 @@ try:
 except:
   exit_error("need number of walkers n_walkers\n",1)
 
-try:
-  ns_args['n_cull'] = int(args.pop('n_cull'))
-except:
-  exit_error("need number to cull n_cull\n",1)
+ns_args['n_cull'] = int(args.pop('n_cull', 1))
 
 try:
   ns_args['n_iter_per_walker'] = int(args.pop('n_iter_per_walker'))
@@ -341,7 +341,8 @@ movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
 movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 100))
 
-movement_args['adjust_step_interval'] = int(args.pop('adjust_step_interval', 10))
+movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.25))
+movement_args['adjust_step_interval'] = int(movement_args['adjust_step_interval_per_walker']*ns_args['n_walkers'])
 movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
 movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
 movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
