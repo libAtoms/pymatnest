@@ -940,6 +940,34 @@ def do_atom_walk(at, movement_args, Emax, KEmax):
 
    return out
 
+def rand_perturb_energy(energy, perturbation, Emax=None):
+    if Emax is None:
+        if abs(energy)<= 1.0:
+            energy += rng.float_uniform(-1.0,0.0)*perturbation
+        else:
+            energy *= (1.0+rng.float_uniform(-1.0,0.0)*perturbation)
+    else:
+       if abs(energy) <= 1.0:
+           pert = rng.float_uniform(-1.0,0.0)*perturbation
+           n_tries = 0
+           while energy+pert >= Emax and n_tries < 100:
+               pert = rng.float_uniform(-1.0,0.0)*perturbation
+               n_tries += 1
+           if energy+pert >= Emax:
+               print print_prefix, "WARNING: failed to do random energy perturbation below Emax ", at.info['ns_energy'], Emax
+           energy += pert
+       else:
+           pert = 1.0 + rng.float_uniform(-1.0,0.0)*perturbation
+           n_tries = 0
+           while energy*pert >= Emax and n_tries < 100:
+               pert = 1.0 + rng.float_uniform(-1.0,0.0)*perturbation
+               n_tries += 1
+           if energy*pert >= Emax:
+               print print_prefix, "WARNING: failed to do random energy perturbation below Emax ", at.info['ns_energy'], Emax
+           energy *= pert
+
+    return energy
+
 def walk_single_walker(at, movement_args, Emax, KEmax):
 #DOC 
 #DOC \vspace*{\baselineskip}
@@ -967,14 +995,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
 
    #DOC \item perturb final energy of random\_energy\_perturbation
    # perturb final energy
-   pert = 1.0 + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
-   n_tries = 0
-   while at.info['ns_energy']*pert >= Emax and n_tries < 100:
-       pert = 1.0 + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
-       n_tries += 1
-   if at.info['ns_energy']*pert >= Emax:
-       print print_prefix, "WARNING: failed to do random energy perturbation below Emax ", at.info['ns_energy'], Emax
-   at.info['ns_energy'] *= pert
+   at.info['ns_energy'] = rand_perturb_energy(at.info['ns_energy'],ns_args['random_energy_perturbation'],Emax)
 
    #DEBUG print "walk_single_walker end ", eval_energy(at, do_PE=False), eval_energy(at) #DEBUG
 
@@ -1239,7 +1260,7 @@ if ns_args['restart_file'] == '': # start from scratch
 	    exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['start_energy_ceiling'], 4)
 	 energy = init_config(at, ns_args['start_energy_ceiling'])
 	 n_try += 1
-      at.info['ns_energy'] = energy + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+      at.info['ns_energy'] = rand_perturb_energy(energy, ns_args['random_energy_perturbation'])
 
       # set KEmax from P and Vmax
       if movement_args['do_velocities']:
@@ -1279,7 +1300,7 @@ else: # doing a restart
 	    at.arrays['ns_extra_data'] = np.zeros( (len(at), ns_args['n_extra_data']) )
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
-      at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+      at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
 
 # scale MC_atom_step_size by max_vol^(1/3)
 max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
