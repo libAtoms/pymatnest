@@ -1,3 +1,7 @@
-1. Make atom MC step size commensurate with cell size. Possibly change to doing atom MC steps in fractional coordinates.
+TO DO:
 2. Automatically adjust initial step sizes to within the acceptance tolerances used throughout the calculation.
 3. Update stepsize setting routine so that it fixes the stepsize within certain acceptance rate tolerances. Routine should perform a small amount of additional exploration, starting from random configurations stored on each process. This will help to avoid "pan handle" problems.
+
+DONE?
+1. Make atom MC step size commensurate with cell size. Possibly change to doing atom MC steps in fractional coordinates.
+    NB 7/1/2015: scale MC_atom_step_size and corresponding max by (max_volume_per_atom*N_atoms)^(1/3).  Steps still done in Cartesian coordinates, since it seems like wrong physics to take smaller steps just because a box side happens to be small.  Also proposals won't be uniform in Cartesian space, which could even violate detailed balance (although I don't think so)
