@@ -37,8 +37,8 @@ def usage():
   sys.stderr.write("\n")
   sys.stderr.write("MC_atom_velocities=[T | F] (F, supported only for energy_calculator=fortran)\n")
   sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F, Perturb velocities (rejection free) before MC + velocities walk)\n")
-  sys.stderr.write("MC_atom_step_size=float (0.1)\n")
-  sys.stderr.write("MC_atom_step_size_max=float (1.0)\n")
+  sys.stderr.write("MC_atom_step_size=float (0.1, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
+  sys.stderr.write("MC_atom_step_size_max=float (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
   sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
   sys.stderr.write("\n")
   sys.stderr.write("atom_velo_random_order_perturb=[T | F] (F. Perturb velocities as part of main loop steps\n")
@@ -307,7 +307,7 @@ if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] !
 movement_args['MC_atom_velocities'] = str_to_logical(args.pop('MC_atom_velocities', "F"))
 movement_args['MC_atom_velocities_pre_perturb'] = str_to_logical(args.pop('MC_atom_velocities_pre_perturb', "F"))
 movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
-movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
+movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 0.5))
 movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 0.1))
 movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 1.0))
 movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
@@ -1153,7 +1153,6 @@ if ns_args['restart_file'] == '': # start from scratch
    # create initial config
    if rank == 0:
       # create atoms structs from a list of atomic numbers and numbers of atoms
-      lc = ns_args['max_volume_per_atom']**(1.0/3.0)
       init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
       species = ns_args['start_species'].split(',')
       for specie in species:
@@ -1274,6 +1273,11 @@ else: # doing a restart
       if do_calc_quip or do_calc_lammps:
 	 at.set_calculator(pot)
       at.info['ns_energy'] = eval_energy(at) + rng.float_uniform(-1.0,0.0)*ns_args['random_energy_perturbation']
+
+# scale MC_atom_step_size by max_vol^(1/3)
+max_lc = (ns_args['max_volume_per_atoms']*len(walkers[0]))**(1.0/3.0)
+movement_args['MC_atom_step_size'] *= max_lc
+movement_args['MC_atom_step_size_max'] *= max_lc
 
 def save_snapshot(id):
    #QUIP_IO if have_quippy:
