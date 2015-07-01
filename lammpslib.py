@@ -289,6 +289,7 @@ End LAMMPSlib Interface Documentation
             pos = np.array([x for x in self.lmp.gather_atoms("x",1,3)]).reshape(-1,3)
             if self.coord_transform is not None:
                 pos = np.dot(pos, self.coord_transform)
+            atoms.set_positions(pos)
             vel = np.array([v for v in self.lmp.gather_atoms("v",1,3)]).reshape(-1,3)
             if self.coord_transform is not None:
                 vel = np.dot(vel, self.coord_transform)
@@ -437,7 +438,7 @@ End LAMMPSlib Interface Documentation
         for sym in self.atom_types:
             for i in range(len(atoms)):
                 if symbols[i] == sym:
-                    self.lmp.command('mass %d %f' % (self.atom_types[sym], masses[i]/(1.0e-3 * ase.units.kg /ase.units.mol))) # TODO convert from amu (ASE) to g/mole (metal))
+                    self.lmp.command('mass %d %f' % (self.atom_types[sym], masses[i]/(1.0e-3 * ase.units.kg /ase.units.mol))) # convert from amu (ASE) to g/mole (metal))
                     break
 
         # execute the user commands
