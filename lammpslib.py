@@ -207,8 +207,11 @@ End LAMMPSlib Interface Documentation
             cell_cmd = 'change_box all     x final 0 {} y final 0 {} z final 0 {}      xy final {} xz final {} yz final {}'\
                 .format(xhi, yhi, zhi, xy, xz, yz)
         else:
+            # just in case we'll want to run with a funny shape box, and here command will only happen once, and before any calculation
+            self.lmp.command('box tilt large')
             cell_cmd = 'region cell prism    0 {} 0 {} 0 {}     {} {} {}     units box'\
                 .format(xhi, yhi, zhi, xy, xz, yz)
+
         self.lmp.command(cell_cmd)
 
     def calculate(self, atoms, properties, system_changes):
