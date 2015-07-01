@@ -1153,6 +1153,7 @@ if ns_args['restart_file'] == '': # start from scratch
    # create initial config
    if rank == 0:
       # create atoms structs from a list of atomic numbers and numbers of atoms
+      lc = ns_args['max_volume_per_atom']**(1.0/3.0)
       init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
       species = ns_args['start_species'].split(',')
       for specie in species:
