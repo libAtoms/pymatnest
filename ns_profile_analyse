@@ -3,8 +3,8 @@
 import pstats, sys
 
 if len(sys.argv) != 2:
-   sys.stderr.write("Usage: %s stats_file\n" % sys.argv[0])
-   sys.exit(1)
+    sys.stderr.write("Usage: %s stats_file\n" % sys.argv[0])
+    sys.exit(1)
 
 import pstats
 p = pstats.Stats(sys.argv[1])
