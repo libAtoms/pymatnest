@@ -1576,7 +1576,7 @@ def do_ns_loop():
                     if movement_args['do_velocities']:
                         walkers[recv_ind[0]].set_velocities(buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, 3) )); buf_o += 3*n_atoms
                     if ns_args['n_extra_data'] > 0:
-                        walkers[recv_ind[0]].arrays['ns_extra_data'][...] = buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, ns_args['n_extra_data']) ); buf_o += ns_args['n_extra_data']*n_atoms
+                        walkers[recv_ind[0]].arrays['ns_extra_data'][...] = buf[buf_o:buf_o+3*n_atoms].reshape( walkers[recv_ind[0]].arrays['ns_extra_data'].shape() ); buf_o += ns_args['n_extra_data']*n_atoms
                     walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 
         else: # complicated construction of sending/receiving buffers
@@ -1653,7 +1653,7 @@ def do_ns_loop():
                 if movement_args['do_velocities']:
                     walkers[i_recv].set_velocities( recv_data[data_o:data_o+3*n_atoms].reshape( (n_atoms, 3) )); data_o += 3*n_atoms
                 if ns_args['n_extra_data'] > 0:
-                    walkers[i_recv].arrays['ns_extra_data'][...] = recv_data[data_o:data_o+ns_args['n_extra_data']*n_atoms].reshape( (n_atoms, ns_args['n_extra_data']) ); data_o += ns_args['n_extra_data']*n_atoms
+                    walkers[i_recv].arrays['ns_extra_data'][...] = recv_data[data_o:data_o+ns_args['n_extra_data']*n_atoms].reshape( walkers[i_recv].arrays['ns_extra_data'].shape() ); data_o += ns_args['n_extra_data']*n_atoms
                 recv_displ_t[r_send] = data_o
 
         if ns_args['debug'] >= 20:
