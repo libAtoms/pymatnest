@@ -54,3 +54,7 @@ Note that "serial" LAMMPS still links to fake MPI routines, which then conflict 
     the true mpi routines that mpi4py includes.
 
 I expect that OpenMP parallelized LAMMPS will work OK, but this is completely untested.
+
+LAMMPS ASE interface is a heavily modified version of
+   https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py
+

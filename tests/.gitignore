@@ -2,6 +2,6 @@ test*.traj.*.extxyz
 test*.snapshot.*.extxyz
 test*.out
 test*.energies
-analysis*energies
+*analysis*
 job*pbs
 *.pdf
