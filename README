@@ -38,8 +38,8 @@ Examples are in tests_quip/ directory
 Using LAMMPS
 
 Apply the MPI patch to the LAMMPS source by doing
-    cd lammps_top_dir
-    patch -p0 < ns_run_dir/lammps.patch
+    cd lammps_top_dir/src
+    patch < ns_run_dir/lammps.patch
 cd lammps_top_dir/src
 Create a Makefile for _parallel_ lammps in MAKE/MINE, but define "-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF" 
     in the LMP_INC makefile variable.
