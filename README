@@ -38,23 +38,24 @@ Examples are in tests_quip/ directory
 Using LAMMPS
 
 Apply the MPI patch to the LAMMPS source by doing
-    cd lammps_top_dir/src
-    patch < ns_run_dir/lammps.patch
-cd lammps_top_dir/src
-Create a Makefile for _parallel_ lammps in MAKE/MINE, but define "-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF" 
+    > cd lammps_top_dir/src
+    > patch < ns_run_dir/lammps.patch
+> cd lammps_top_dir/src
+Create a Makefile for _parallel_ lammps in MAKE/MINE, and define "-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF" 
     in the LMP_INC makefile variable.
-make machine mode=shlib
-copy the resulting liblammps_machine.so to someplace in your LD_LIBRARY_PATH.  Copying it to ns_run_dir 
-    may also work, especially if that's also where you put lammps.py
-copy lammps_dir/python/lammps.py into somplace in your PYTHONPATH.  Copying it to ns_run_dir should also work.
+> make [machine] mode=shlib
 
-Examples are in the tests_lammps/directory.  LAMMPS_name is what you set for "machine" when compiling LAMMPS.
+copy lammps_top_dir/python/lammps.py to someplace in your PYTHONPATH
+copy lammps_top_dir/src/liblammps_[machine].so to the same place where you copied lammps.py
 
-Note that "serial" LAMMPS still links to fake MPI routines, which then conflict in unpredictable ways with 
+Examples are in the tests_lammps/directory.  LAMMPS_name is what you set for [machine] when compiling LAMMPS.
+
+Note that you _have_ to compile a parallel version of LAMMPS with my source patch.  LAMMPS "serial"
+    compilation still links to fake MPI routines, which then conflict in unpredictable ways with 
     the true mpi routines that mpi4py includes.
 
 I expect that OpenMP parallelized LAMMPS will work OK, but this is completely untested.
 
-LAMMPS ASE interface is a heavily modified version of
+My LAMMPS ASE interface (lammpslib.py) is a heavily modified version of
    https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py
 
