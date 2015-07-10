@@ -266,7 +266,7 @@ End LAMMPSlib Interface Documentation
             vel = atoms.get_velocities()/(ase.units.Ang/(1.0e-12*ase.units.s))
 
             # If necessary, transform the velocities to new coordinate system
-            if self.coord_transform != None:
+            if self.coord_transform is not None:
                 vel = np.dot(self.coord_transform , np.matrix.transpose(vel) )
                 vel = np.matrix.transpose(vel)
 
