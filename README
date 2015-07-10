@@ -37,6 +37,9 @@ Examples are in tests_quip/ directory
 ################################################################################
 Using LAMMPS
 
+These instructions assume the latest (git/svn) version of LAMMPS.  I don't know how
+far back older versions would also work.
+
 Apply the MPI patch to the LAMMPS source by doing
     > cd lammps_top_dir/src
     > patch < ns_run_dir/lammps.patch
