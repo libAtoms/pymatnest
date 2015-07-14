@@ -122,8 +122,8 @@ if use_mpi:
     try:
         from mpi4py import MPI
     except:
-        sys.stderr.write("Failed to import mpi4py\n", 10)
-        sys.exit(1)
+        sys.stderr.write("Failed to import mpi4py\n")
+        sys.exit(10)
     comm = MPI.COMM_WORLD
 
 def exit_error(message, stat):
