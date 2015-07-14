@@ -114,20 +114,17 @@ try:
 except:
     have_quippy=False
 
+# initialize mpi
 comm = None
 rank = 0
 size = 1
 if use_mpi:
     try:
         from mpi4py import MPI
-        comm = MPI.COMM_WORLD
-        rank = comm.Get_rank()
-        size = comm.Get_size()
     except:
-        pass
-
-if comm is not None and rank == 0:
-    print "comm ", comm, " size ", size
+        sys.stderr.write("Failed to import mpi4py\n", 10)
+        sys.exit(1)
+    comm = MPI.COMM_WORLD
 
 def exit_error(message, stat):
     sys.stderr.write(message)
@@ -136,6 +133,16 @@ def exit_error(message, stat):
     except:
         pass
     sys.exit(stat)
+
+if use_mpi:
+    try:
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+    except:
+        exit_error("Failed to get rank or size\n", 10)
+
+if comm is not None:
+    print "comm ", comm, " size ", size, " rank ", rank
 
 # read inputs on root, then bcast
 if rank == 0:
