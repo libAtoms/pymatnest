@@ -387,6 +387,10 @@ End LAMMPSlib Interface Documentation
         for cmd in self.parameters.lammps_header:
             self.lmp.command(cmd)
 
+        if hasattr(self.parameters, "lammps_header_extra") and self.parameters.lammps_header_extra is not None:
+            for cmd in self.parameters.lammps_header_extra:
+                self.lmp.command(cmd)
+
         self.started=True
 
     def initialise_lammps(self, atoms):

@@ -57,7 +57,22 @@ Note that you _have_ to compile a parallel version of LAMMPS with my source patc
     compilation still links to fake MPI routines, which then conflict in unpredictable ways with 
     the true mpi routines that mpi4py includes.
 
-I expect that OpenMP parallelized LAMMPS will work OK, but this is completely untested.
+It's possible to use OpenMP to parallelize each LAMMPS task.  This has been tested to run, but not for correctness or efficiency.
+    > cd lammps_top_dir/src
+    > make yes-user-omp
+    Add openmp enabling flag (e.g. -fopenmp for gfortran) to CCFLAGS in the MAKE/MINE/Makefile.[machine]
+    > make [machine] mode=shlib
+copy liblammps_[machine].so as before
+When running:
+    set OMP_NUM_THREADS environment variable  for number of OpenMP threads per task
+    add "LAMMPS_header_extra='package omp 0'" input file argument
+    Use LAMMPS pair style that activates omp, e.g. "pair_style lj/cut/omp 3.00"
+    Pass flags to mpirun to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are 
+        available for OpenMP parallelization.
+        Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task's LAMMPS work over all 16 cores:
+            export OMP_NUM_THREADS=16
+            mpirun -np 8 -x OMP_NUM_THREADS --map-by slot:pe=$OMP_NUM_THREADS ns_run < inputs
+        the "-np 8" may not be needed, depending on your queueing system
 
 My LAMMPS ASE interface (lammpslib.py) is a heavily modified version of
    https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py
