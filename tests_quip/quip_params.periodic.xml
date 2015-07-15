@@ -1,0 +1,5 @@
+<LJ_params n_types="1" label="default">
+<!-- dummy paramters for testing purposes, no physical meaning -->
+<per_type_data type="1" atomic_num="1" />
+<per_pair_data type1="1" type2="1" sigma="3.0" eps6="0.4" eps12="0.4" cutoff="9.0" energy_shift="T" linear_force_shift="F" />
+</LJ_params>
