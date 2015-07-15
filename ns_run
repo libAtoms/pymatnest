@@ -85,7 +85,7 @@ def usage():
     sys.stderr.write("LAMMPS_init_cmds=str (MANDATORY if energy_calculator=lammps)\n")
     sys.stderr.write("LAMMPS_name=str ('', arch name for lammps shared object file)\n")
     sys.stderr.write("LAMMPS_header=str (lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps)\n")
-    sys.stderr.write("LAMMPS_header_extra=str (None, extra lammpslib.py header commands for energy_calculator=lammps)\n")
+    sys.stderr.write("LAMMPS_header_extra=str ('', extra lammpslib.py header commands for energy_calculator=lammps)\n")
     sys.stderr.write("\n")
     sys.stderr.write("config_file_format=str (extxyz)\n") # julia
     sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
@@ -250,7 +250,7 @@ elif ns_args['energy_calculator'] == 'lammps':
         exit_error("need LAMMPS initialization commands LAMMPS_init_cmds\n",1)
     ns_args['LAMMPS_name'] = args.pop('LAMMPS_name', '')
     ns_args['LAMMPS_header'] = args.pop('LAMMPS_header', 'units metal; atom_style atomic; atom_modify map array sort 0 0')
-    ns_args['LAMMPS_header_extra'] = args.pop('LAMMPS_header_extra', None)
+    ns_args['LAMMPS_header_extra'] = args.pop('LAMMPS_header_extra', '')
 elif ns_args['energy_calculator'] == 'internal':
     do_calc_internal=True
 elif ns_args['energy_calculator'] == 'fortran':
