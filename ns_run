@@ -30,6 +30,7 @@ def usage():
     sys.stderr.write("n_steps=int (0, this or n_steps_expected required)\n")
     sys.stderr.write("atom_n_substeps=int (10, number of steps (MC sweeps or MD time steps in each segement))\n")
     sys.stderr.write("cell_n_substeps=int (1, number of MC sweeps in each segement)\n")
+    sys.stderr.write("swap_n_substeps=int (0, number of atom swaps in each segement.  Will hang if used with only one atom type present!)\n")
     sys.stderr.write("velo_n_substeps=int (0, number of MC sweeps in each velocity MC segement)\n")
     sys.stderr.write("\n")
     sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
@@ -305,6 +306,7 @@ movement_args['n_steps_expected'] = int(args.pop('n_steps_expected', 0))
 movement_args['n_steps'] = int(args.pop('n_steps', 0))
 movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
 movement_args['cell_n_substeps'] = int(args.pop('cell_n_substeps', 1))
+movement_args['swap_n_substeps'] = int(args.pop('swap_n_substeps', 0))
 movement_args['velo_n_substeps'] = int(args.pop('velo_n_substeps', 8))
 try:
     movement_args['atom_algorithm'] = args.pop('atom_algorithm')
@@ -901,6 +903,49 @@ def do_cell_shape_walk(at, movement_args):
             (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
             do_cell_step(at, None, p_accept, transform)
 
+def do_MC_swap_walk(at, movement_args, Emax, KEmax):
+#DOC \vspace*{\baselineskip}
+#DOC do\_MC\_swap_\_walk
+#DOC \begin{itemize}
+    if movement_args['swap_n_substeps'] <= 0:
+        return {}
+
+    Z = at.get_atomic_numbers()
+
+    #DOC \item loop swap\_n\_substeps times:
+    #DOC \begin{itemize}
+    for i in range(movement_args['swap_n_substeps']):
+        #DOC \item pick two atoms with distinct atomic numbers (will hang if only one atomic number is present in system)
+        i1 = rng.int_uniform(0,len(at))
+        i2 = rng.int_uniform(0,len(at))
+        while Z[i1] == Z[i2]:
+            i2 = rng.int_uniform(0,len(at))
+        p_1_orig = at.positions[i1,:].copy()
+        p_2_orig = at.positions[i2,:].copy()
+        at.positions[i1,:] = p_2_orig
+        at.positions[i2,:] = p_1_orig
+        if ns_args['n_extra_data'] > 0:
+            extra_data_1_orig = at.arrays['ns_extra_data'][i1,...].copy()
+            extra_data_2_orig = at.arrays['ns_extra_data'][i2,...].copy()
+            at.arrays['ns_extra_data'][i1,...] = extra_data_2_orig
+            at.arrays['ns_extra_data'][i2,...] = extra_data_1_orig
+
+        #DOC accept swap if energy < Emax
+        new_energy = eval_energy(at)
+
+        if new_energy < Emax: # accept
+            at.info['ns_energy'] = new_energy
+        else:
+            t = at.positions[i1,:]
+            at.positions[i1,:] = p_1_orig
+            at.positions[i2,:] = p_2_orig
+            if ns_args['n_extra_data'] > 0:
+                at.arrays['ns_extra_data'][i1,...] = extra_data_1_orig
+                at.arrays['ns_extra_data'][i2,...] = extra_data_2_orig
+
+    #DOC \end{itemize}
+    return {}
+
 def do_MC_cell_walk(at, movement_args, Emax, KEmax):
 #DOC
 #DOC \vspace*{\baselineskip}
@@ -988,7 +1033,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
 #DOC \begin{itemize}
 
     #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
-    possible_moves = [do_atom_walk, do_MC_cell_walk]
+    possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_swap_walk]
     if movement_args['do_velocities'] and movement_args['atom_velo_random_order_perturb']:
         possible_moves.append(do_MC_atom_velo_walk)
     out = {}
