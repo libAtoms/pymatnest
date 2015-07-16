@@ -1,7 +1,9 @@
 TO DO:
 2. Automatically adjust initial step sizes to within the acceptance tolerances used throughout the calculation.
 3. Update stepsize setting routine so that it fixes the stepsize within certain acceptance rate tolerances. Routine should perform a small amount of additional exploration, starting from random configurations stored on each process. This will help to avoid "pan handle" problems.
-4. Introduce atom swap MC moves for multi component systems.
+
+PARTIALLY DONE:
+4. Introduce atom swap MC moves for multi component systems - untested
 
 DONE?
 1. Make atom MC step size commensurate with cell size. Possibly change to doing atom MC steps in fractional coordinates.
