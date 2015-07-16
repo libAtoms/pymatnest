@@ -392,11 +392,11 @@ elif do_calc_internal or do_calc_fortran:
     pass
 elif do_calc_lammps:
     if ns_args['debug'] >= 5:
-        pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), log_file='lammps.%d.log' % rank, keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
-                        lammps_header=ns_args['LAMMPS_header'].split(';'), lammps_header_extra=ns_args['LAMMPS_header_extra'].split(';'))
+        pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';').strip(), log_file='lammps.%d.log' % rank, keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
+                        lammps_header=ns_args['LAMMPS_header'].split(';').strip(), lammps_header_extra=ns_args['LAMMPS_header_extra'].split(';').strip())
     else:
-        pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';'), keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
-                        lammps_header=ns_args['LAMMPS_header'].split(';'), lammps_header_extra=ns_args['LAMMPS_header_extra'].split(';'))
+        pot = LAMMPSlib(lmpcmds=ns_args['LAMMPS_init_cmds'].split(';').strip(), keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
+                        lammps_header=ns_args['LAMMPS_header'].split(';').strip(), lammps_header_extra=ns_args['LAMMPS_header_extra'].split(';').strip())
     print "PRE START_LAMMPS"
     pot.start_lammps() # so that top level things like units will be set
     print "POST START_LAMMPS"
