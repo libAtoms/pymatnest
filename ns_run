@@ -1230,7 +1230,9 @@ def set_n_steps(prop):
         if movement_args[prop] > 0 and rank == 0:
             print "WARNING: using absolute number of "+prop
 
-def init_config(at, Emax):
+def additive_init_config(at, Emax):
+    if do_calc_lammps:
+        exit_error("got energy %f ceiling %f, but python additive_init_config doesn't work with LAMMPS, since it varies list of atoms\n" % (energy, ns_args['start_energy_ceiling']), 10)
     pos = at.get_positions()
     for i_at in range(1,len(at)):
         at_new = at[0:i_at+1]
@@ -1321,21 +1323,37 @@ if ns_args['restart_file'] == '': # start from scratch
             lc = (len(at)*ns_args['max_volume_per_atom']*rng.float_uniform(0.0,1.0)**(1.0/float(len(at)+1)))**(1.0/3.0)
             at.set_cell( np.identity(3) * lc )
             do_cell_shape_walk(at, movement_args)
+
         # random initial positions
-        at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
-        # try FORTRAN config initializer
-        if do_calc_fortran:
-            f_MC_MD.init_config(at, ns_args['start_energy_ceiling']-movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms))
-        energy = eval_energy(at)
+        energy = float('nan')
         n_try = 0
-        # try python config initializer
-        while math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-            if do_calc_lammps:
-                exit_error("got energy %f ceiling %f, but python init_config doesn't work with LAMMPS, since it varies list of atoms\n" % (energy, ns_args['start_energy_ceiling']), 10)
-            if n_try > 10:
-                exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['start_energy_ceiling'], 4)
-            energy = init_config(at, ns_args['start_energy_ceiling'])
+        while n_try < 10 and math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+            at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
+            energy = eval_energy(at)
             n_try += 1
+        if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+            sys.stderr.write("WARNING: rank %d failed to generate initial config by random positions under max energy %f in 10 tries\n" % (rank, ns_args['start_energy_ceiling']), 4)
+
+        # try FORTRAN config initializer
+        n_try = 0
+        if do_calc_fortran:
+            while n_try < 10 and math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+                f_MC_MD.init_config(at, ns_args['start_energy_ceiling']-movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms))
+                energy = eval_energy(at)
+                n_try += 1
+            if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+                sys.stderr.write("WARNING: rank %d failed to generate initial config by fortran config initializer under max energy %f in 10 tries\n" % (rank, ns_args['start_energy_ceiling']), 4)
+
+        # try python config initializer
+        n_try = 0
+        while n_try < 10 and math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+            energy = additive_init_config(at, ns_args['start_energy_ceiling'])
+            n_try += 1
+
+        # quit if failed to generate acceptable config
+        if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+            exit_error("Rank %d failed to generate initial config by random, fortran, or (atom by atom addition) python initializer under max energy %f in 10 tries each\n" % (rank, ns_args['start_energy_ceiling']), 4)
+
         at.info['ns_energy'] = rand_perturb_energy(energy, ns_args['random_energy_perturbation'])
 
         # set KEmax from P and Vmax
