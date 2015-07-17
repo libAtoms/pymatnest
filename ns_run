@@ -1073,7 +1073,6 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
 #DOC walk\_single\_walker
 #DOC \begin{itemize}
 
-    print "walk_single_walker"
     #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
     possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_swap_walk]
     if movement_args['do_velocities'] and movement_args['atom_velo_random_order_perturb']:
@@ -1085,10 +1084,8 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
     for i_step in range(movement_args['n_steps']):
         #DOC \item do in random order
         #DOC \begin{itemize}
-        print "  blocked set do block"
         rng.shuffle_in_place(possible_moves)
         for move in possible_moves:
-            print "    blocked set do move ", move
             #DOC \item do\_(MC $|$ MD)\_atom\_walk
             #DOC \item do\_MC\_cell\_walk
             accumulate_stats(out, move(at, movement_args, Emax, KEmax))
@@ -1105,7 +1102,6 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
     #DOC \item do in random order
     rng.shuffle_in_place(possible_moves)
     for move in possible_moves:
-        print "  unblocked set do move ", move
         accumulate_stats(out, move(at, movement_args, Emax, KEmax))
     #DOC \end{itemize}
 
