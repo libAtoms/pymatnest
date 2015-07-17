@@ -966,11 +966,11 @@ def do_MC_cell_walk(at, movement_args, Emax, KEmax):
        'MC_cell_stretch': propose_stretch_step }
 
     items = possible_moves.items()
+    out = {}
     #DOC \item loop cell\_n\_substeps times:
     #DOC \begin{itemize}
     for i in range(movement_args['cell_n_substeps']):
         rng.shuffle_in_place(items)
-        out = {}
         #DOC \item do in random order
         #DOC \begin{itemize}
         for key, propose_step_func in items:
@@ -981,9 +981,9 @@ def do_MC_cell_walk(at, movement_args, Emax, KEmax):
             if step_rv < movement_args[key+"_prob"]:
                 (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
                 if do_cell_step(at, Emax, p_accept, transform):
-                    out[key] = (1, 1)
+                    accumulate_stats(out, {key : (1,1) })
                 else:
-                    out[key] = (1, 0)
+                    accumulate_stats(out, {key : (1,0) })
         #DOC \end{itemize}
     #DOC \end{itemize}
 
@@ -1313,7 +1313,7 @@ if ns_args['restart_file'] == '': # start from scratch
         # try python config initializer
         while math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
             if do_calc_lammps:
-                exit_error("python init_config doesn't work with LAMMPS, since it varies list of atoms\n", 10)
+                exit_error("got energy %f ceiling %f, but python init_config doesn't work with LAMMPS, since it varies list of atoms\n" % (energy, ns_args['start_energy_ceiling']), 10)
             if n_try > 10:
                 exit_error("Failed to generate initial config under max energy %f in 10 tries\n" % ns_args['start_energy_ceiling'], 4)
             energy = init_config(at, ns_args['start_energy_ceiling'])
