@@ -26,8 +26,14 @@ def usage():
     sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K))\n")
     sys.stderr.write("start_energy_ceiling=float (1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("n_steps_expected=int (0, this or n_steps required)\n")
-    sys.stderr.write("n_steps=int (0, this or n_steps_expected required)\n")
+    sys.stderr.write("n_steps_expected=int (0, one of these is required)\n")
+    sys.stderr.write("n_steps=int (0, one of these is required)\n")
+    sys.stderr.write("n_steps_unblocked_atom=int (0, one of these is required)\n")
+    sys.stderr.write("n_steps_unblocked_cell_volume=int (0, one of these is required)\n")
+    sys.stderr.write("n_steps_unblocked_cell_shear=int (0, one of these is required)\n")
+    sys.stderr.write("n_steps_unblocked_cell_stretch=int (0, one of these is required)\n")
+    sys.stderr.write("n_steps_unblocked_swap=int (0, one of these is required)\n")
+    sys.stderr.write("\n")
     sys.stderr.write("atom_n_substeps=int (10, number of steps (MC sweeps or MD time steps in each segement))\n")
     sys.stderr.write("cell_n_substeps=int (1, number of MC sweeps in each segement)\n")
     sys.stderr.write("swap_n_substeps=int (0, number of atom swaps in each segement.  Will hang if used with only one atom type present!)\n")
@@ -304,6 +310,20 @@ movement_args={}
 
 movement_args['n_steps_expected'] = int(args.pop('n_steps_expected', 0))
 movement_args['n_steps'] = int(args.pop('n_steps', 0))
+movement_args['n_steps_unblocked_atom'] = int(args.pop('n_steps_unblocked_atom', 0))
+movement_args['n_steps_unblocked_cell_volume'] = int(args.pop('n_steps_unblocked_cell_volume', 0))
+movement_args['n_steps_unblocked_cell_shear'] = int(args.pop('n_steps_unblocked_cell_shear', 0))
+movement_args['n_steps_unblocked_cell_stretch'] = int(args.pop('n_steps_unblocked_cell_stretch', 0))
+movement_args['n_steps_unblocked_swap'] = int(args.pop('n_steps_unblocked_swap', 0))
+if (movement_args['n_steps_expected'] <= 0 and
+    movement_args['n_steps'] <= 0 and
+    movement_args['n_steps_unblocked_atom'] <= 0 and
+    movement_args['n_steps_unblocked_cell_volume'] <= 0 and
+    movement_args['n_steps_unblocked_cell_shear'] <= 0 and
+    movement_args['n_steps_unblocked_cell_stretch'] <= 0 and
+    movement_args['n_steps_unblocked_swap'] <= 0):
+    exit_error("Got all of n_steps_* == 0\n", 3)
+
 movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
 movement_args['cell_n_substeps'] = int(args.pop('cell_n_substeps', 1))
 movement_args['swap_n_substeps'] = int(args.pop('swap_n_substeps', 0))
@@ -312,8 +332,7 @@ try:
     movement_args['atom_algorithm'] = args.pop('atom_algorithm')
 except:
     exit_error("Failed to read algorithm for atom motion atom_algorithm", 1)
-if movement_args['n_steps_expected'] == 0 and movement_args['n_steps'] == 0:
-    exit_error("Got both n_steps_expected and n_steps == 0\n", 3)
+
 if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD':
     exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorith,'], 3)
 
@@ -908,7 +927,7 @@ def do_cell_shape_walk(at, movement_args):
 
 def do_MC_swap_walk(at, movement_args, Emax, KEmax):
 #DOC \vspace*{\baselineskip}
-#DOC do\_MC\_swap_\_walk
+#DOC do\_MC\_swap\_walk
 #DOC \begin{itemize}
     if movement_args['swap_n_substeps'] <= 0:
         return {}
@@ -948,6 +967,7 @@ def do_MC_swap_walk(at, movement_args, Emax, KEmax):
 
     #DOC \end{itemize}
     return {}
+#DOC \end{itemize}
 
 def do_MC_cell_volume_step(at, movement_args, Emax, KEmax):
     (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_per_atom_step_size'])
@@ -1053,26 +1073,43 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
 #DOC walk\_single\_walker
 #DOC \begin{itemize}
 
+    print "walk_single_walker"
     #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
     possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_swap_walk]
     if movement_args['do_velocities'] and movement_args['atom_velo_random_order_perturb']:
         possible_moves.append(do_MC_atom_velo_walk)
     out = {}
 
-    #DOC \item loop atom\_n\_steps times
+    #DOC \item loop n\_steps times
     #DOC \begin{itemize}
     for i_step in range(movement_args['n_steps']):
         #DOC \item do in random order
         #DOC \begin{itemize}
+        print "  blocked set do block"
         rng.shuffle_in_place(possible_moves)
         for move in possible_moves:
+            print "    blocked set do move ", move
             #DOC \item do\_(MC $|$ MD)\_atom\_walk
             #DOC \item do\_MC\_cell\_walk
             accumulate_stats(out, move(at, movement_args, Emax, KEmax))
         #DOC \end{itemize}
     #DOC \end{itemize}
 
-    #DOC \item perturb final energy of random\_energy\_perturbation
+    #DOC \item create list of possible unblocked moves, each type x repeated n\_steps\_unblocked\_x times (x=do\_atom\_walk, do\_MC\_cell\_*\_step, do\_MC\_swap\_walk)
+    possible_moves = ( [ do_atom_walk ] * movement_args['n_steps_unblocked_atom'] +
+                       [ do_MC_cell_volume_step ] * movement_args['n_steps_unblocked_cell_volume'] +
+                       [ do_MC_cell_shear_step ] * movement_args['n_steps_unblocked_cell_shear'] +
+                       [ do_MC_cell_stretch_step ] * movement_args['n_steps_unblocked_cell_stretch'] +
+                       [ do_MC_swap_walk ] * movement_args['n_steps_unblocked_swap'] )
+    #DOC \begin{itemize}
+    #DOC \item do in random order
+    rng.shuffle_in_place(possible_moves)
+    for move in possible_moves:
+        print "  unblocked set do move ", move
+        accumulate_stats(out, move(at, movement_args, Emax, KEmax))
+    #DOC \end{itemize}
+
+    #DOC \item perturb final energy by random\_energy\_perturbation
     # perturb final energy
     at.info['ns_energy'] = rand_perturb_energy(at.info['ns_energy'],ns_args['random_energy_perturbation'],Emax)
 
