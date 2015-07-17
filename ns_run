@@ -949,6 +949,28 @@ def do_MC_swap_walk(at, movement_args, Emax, KEmax):
     #DOC \end{itemize}
     return {}
 
+def do_MC_cell_volume_step(at, movement_args, Emax, KEmax):
+    (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_per_atom_step_size'])
+    if do_cell_step(at, Emax, p_accept, transform):
+        return {'MC_cell_volume_per_atom' : (1, 1) }
+    else:
+        return {'MC_cell_volume_per_atom' : (1, 0) }
+
+def do_MC_cell_shear_step(at, movement_args, Emax, KEmax):
+    (p_accept, transform) = propose_shear_step(at, movement_args['MC_cell_shear_step_size'])
+    if do_cell_step(at, Emax, p_accept, transform):
+        return {'MC_cell_shear' : (1, 1) }
+    else:
+        return {'MC_cell_shear' : (1, 0) }
+
+def do_MC_cell_stretch_step(at, movement_args, Emax, KEmax):
+    (p_accept, transform) = propose_stretch_step(at, movement_args['MC_cell_stretch_step_size'])
+    if do_cell_step(at, Emax, p_accept, transform):
+        return {'MC_cell_stretch' : (1, 1) }
+    else:
+        return {'MC_cell_stretch' : (1, 0) }
+
+
 def do_MC_cell_walk(at, movement_args, Emax, KEmax):
 #DOC
 #DOC \vspace*{\baselineskip}
@@ -961,9 +983,9 @@ def do_MC_cell_walk(at, movement_args, Emax, KEmax):
         sys.stderr.write("WARNING: doing MC_cell_walk but pressure == %f <= 0.0\n" % movement_args['MC_cell_P'])
 
     possible_moves = {
-       'MC_cell_volume_per_atom': propose_volume_step,
-       'MC_cell_shear': propose_shear_step,
-       'MC_cell_stretch': propose_stretch_step }
+       'MC_cell_volume_per_atom': do_MC_cell_volume_step,
+       'MC_cell_shear': do_MC_cell_shear_step,
+       'MC_cell_stretch': do_MC_cell_stretch_step }
 
     items = possible_moves.items()
     out = {}
@@ -973,17 +995,13 @@ def do_MC_cell_walk(at, movement_args, Emax, KEmax):
         rng.shuffle_in_place(items)
         #DOC \item do in random order
         #DOC \begin{itemize}
-        for key, propose_step_func in items:
+        for key, do_step_func in items:
             #DOC \item volume move if rng $<$ attempt probablity
             #DOC \item shear move if rng $<$ attempt probablity
             #DOC \item stretch move if rng $<$ attempt probablity
             step_rv = rng.float_uniform(0.0, 1.0)
             if step_rv < movement_args[key+"_prob"]:
-                (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
-                if do_cell_step(at, Emax, p_accept, transform):
-                    accumulate_stats(out, {key : (1,1) })
-                else:
-                    accumulate_stats(out, {key : (1,0) })
+                accumulate_stats(out, do_step_func(at, movement_args, Emax, KEmax))
         #DOC \end{itemize}
     #DOC \end{itemize}
 
