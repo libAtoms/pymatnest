@@ -248,7 +248,7 @@ End LAMMPSlib Interface Documentation
         pos = atoms.get_positions()
 
         # If necessary, transform the positions to new coordinate system
-        if self.coord_transform != None:
+        if self.coord_transform is not None:
             pos = np.dot(self.coord_transform , np.matrix.transpose(pos))
             pos = np.matrix.transpose(pos)
 
@@ -372,7 +372,7 @@ End LAMMPSlib Interface Documentation
 
     def start_lammps(self):
         # start lammps process
-        if self.parameters.log_file == None:
+        if self.parameters.log_file is None:
             cmd_args = ['-echo', 'log', '-log', 'none', '-screen', 'none']
         else:
             cmd_args = ['-echo', 'log', '-log', self.parameters.log_file,
@@ -415,7 +415,7 @@ End LAMMPSlib Interface Documentation
         symbols = np.asarray(atoms.get_chemical_symbols())
 
         # if the dictionary of types has not already been specified
-        if self.atom_types == None:
+        if self.atom_types is None:
             self.atom_types = {}
             atom_types = np.sort(np.unique(symbols))
 
