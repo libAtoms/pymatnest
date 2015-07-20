@@ -1,79 +1,104 @@
-################################################################################
-Running:
 
-   ns_run < inputs
+Running 
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Example input files for clusters and periodic, MC and MD, are in the tests/ directory
-See also
-    ns_run --help
+   ``ns_run < inputs``
 
-If you get weird errors about modules and/or .so files not found, do (in sh syntax)
-   export PYTHONPATH=ns_run_dir:$PYTHONPATH
-where "ns_run_dir" is the directory where ns_run is.
+Example input files for clusters and periodic, MC and MD, are in the ``tests/`` directory.
+See also:
+
+   ``ns_run --help``
+
+If you get weird errors about modules and/or ``.so`` files not found, do (in sh syntax)
+
+   ``export PYTHONPATH=ns_run_dir:$PYTHONPATH``
+
+where ``ns_run_dir`` is the directory where ``ns_run`` is.
 This appears to be necessary on some HPC machines where mpirun copies the executable,
-    because ns_run by default looks for modules in the same directory as the top
-    level python script itself
+because ``ns_run`` by default looks for modules in the same directory as the top level 
+python script itself.
 
-################################################################################
+
 Analysis
-   ns_analyze -M 0.01 -D 0.01 -n 100 file.energies > analysis
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-see also
-   ns_analyze --help
+   ``ns_analyze -M 0.01 -D 0.01 -n 100 file.energies > analysis``
 
-################################################################################
-Compilation of the streamlined FORTRAN models and MC/MD walkers
+See also:
 
-1. edit Makefile.arch (by default Linux appropriate variables are set)
-2. make (or if you don't have pdflatex, make libs)
+   ``ns_analyze --help``
 
-################################################################################
-Using QUIP
 
-Make sure PYTHONPATH is set correctly to find the quippy module
+Compilation of the streamlined FORTRAN models and MC/MD walkers.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-Examples are in tests_quip/ directory
+1. edit ``Makefile.arch`` (by default Linux appropriate variables are set)
+2. ``make`` (or if you don't have pdflatex, ``make libs``)
 
-################################################################################
-Using LAMMPS
 
-These instructions assume the latest (git/svn) version of LAMMPS.  I don't know how
+Using ``QUIP``
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Make sure ``PYTHONPATH`` is set correctly to find the ``quippy`` module.
+
+Examples are in ``tests_quip/`` directory.
+
+
+Using ``LAMMPS``
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+These instructions assume the latest (git/svn) version of ``LAMMPS``.  It is not tested how
 far back older versions would also work.
 
-Apply the MPI patch to the LAMMPS source by doing
-    > cd lammps_top_dir/src
-    > patch < ns_run_dir/lammps.patch
-> cd lammps_top_dir/src
-Create a Makefile for _parallel_ lammps in MAKE/MINE, and define "-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF" 
-    in the LMP_INC makefile variable.
-> make [machine] mode=shlib
+Apply the ``MPI`` patch to the ``LAMMPS`` source by doing
 
-copy lammps_top_dir/python/lammps.py to someplace in your PYTHONPATH
-copy lammps_top_dir/src/liblammps_[machine].so to the same place where you copied lammps.py
+    ``cd lammps_top_dir/src``
 
-Examples are in the tests_lammps/directory.  LAMMPS_name is what you set for [machine] when compiling LAMMPS.
+    ``patch < ns_run_dir/lammps.patch``
 
-Note that you _have_ to compile a parallel version of LAMMPS with my source patch.  LAMMPS "serial"
-    compilation still links to fake MPI routines, which then conflict in unpredictable ways with 
-    the true mpi routines that mpi4py includes.
+    ``cd lammps_top_dir/src``
 
-It's possible to use OpenMP to parallelize each LAMMPS task.  This has been tested to run, but not for correctness or efficiency.
-    > cd lammps_top_dir/src
-    > make yes-user-omp
-    Add openmp enabling flag (e.g. -fopenmp for gfortran) to CCFLAGS in the MAKE/MINE/Makefile.[machine]
-    > make [machine] mode=shlib
-copy liblammps_[machine].so as before
+Create a Makefile for **parallel** lammps in MAKE/MINE, and define "-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF" 
+in the ``LMP_INC`` makefile variable.
+
+    ``make [machine] mode=shlib``
+
+Copy ``lammps_top_dir/python/lammps.py`` to someplace in your ``PYTHONPATH``.
+Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where you copied ``lammps.py``.
+
+Examples are in the ``tests_lammps/directory``.  ``LAMMPS_name`` is what you set for ``[machine]`` when compiling ``LAMMPS``.
+
+Note that you **have** to compile a parallel version of ``LAMMPS`` with my source patch.  ``LAMMPS`` "serial"
+compilation still links to fake MPI routines, which then conflict in unpredictable ways with 
+the true mpi routines that ``mpi4py`` includes.
+
+It's possible to use OpenMP to parallelize each ``LAMMPS`` task.  This has been tested to run, but not for correctness or efficiency.
+
+    ``cd lammps_top_dir/src``
+
+    ``make yes-user-omp``
+
+Add openmp enabling flag (e.g. ``-fopenmp`` for gfortran) to CCFLAGS in the ``MAKE/MINE/Makefile.[machine]``
+
+    ``make [machine] mode=shlib``
+
+Copy ``liblammps_[machine].so`` as before.
+
 When running:
-    set OMP_NUM_THREADS environment variable  for number of OpenMP threads per task
-    add "LAMMPS_header_extra='package omp 0'" input file argument
-    Use LAMMPS pair style that activates omp, e.g. "pair_style lj/cut/omp 3.00"
-    Pass flags to mpirun to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are 
-        available for OpenMP parallelization.
-        Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task's LAMMPS work over all 16 cores:
-            export OMP_NUM_THREADS=16
-            mpirun -np 8 -x OMP_NUM_THREADS --map-by slot:pe=$OMP_NUM_THREADS ns_run < inputs
-        the "-np 8" may not be needed, depending on your queueing system
 
-My LAMMPS ASE interface (lammpslib.py) is a heavily modified version of
-   https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py
+Set ``OMP_NUM_THREADS`` environment variable for number of OpenMP threads per task, and
+add ``LAMMPS_header_extra='package omp 0'`` input file argument.
+Use ``LAMMPS`` pair style that activates omp, e.g. ``pair_style lj/cut/omp 3.00``.
+Pass flags to ``mpirun`` to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are 
+available for OpenMP parallelization.
+Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task's ``LAMMPS`` work over all 16 cores:
 
+     ``export OMP_NUM_THREADS=16``
+
+     ``mpirun -np 8 -x OMP_NUM_THREADS --map-by slot:pe=$OMP_NUM_THREADS ns_run < inputs``
+
+Note: the ``-np 8`` may not be needed, depending on your queueing system.
+
+My ``LAMMPS ASE`` interface (``lammpslib.py``) is a heavily modified version of
+
+`<https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py>`_
