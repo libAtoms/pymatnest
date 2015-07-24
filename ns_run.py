@@ -17,6 +17,42 @@ def usage():
        | MANDATORY
        | atomic number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required
 
+    ``restart_file=path_to_file``
+       | (file for restart configs. Mutually exclusive with start_*, one is required)\n")
+
+    ``restart_first_iter=int``
+       | (>=0, iteration being restarted from. Mutually exclusive with start_*, one is required\n")
+
+    ``n_walkers=int``
+       | MANDATORY
+       | Total number of walkers, i.e. the size of the live set used. 
+
+    ``n_cull=int``
+       | number of walkers to kill at each NS iteration.
+       | deafult: 1
+
+    ``n_extra_walk_per_task=int``
+       | default: 0
+
+    ``n_iter_per_walker=int``
+       | MANDATORY
+       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_walkers``*``n_iter_per_walker``
+
+    ``min_Emax=float``
+       | Termination condition based on Emax.
+       | No default.
+
+    ``out_file_prefix=str``
+       | String used as prefix for the different output files. 
+       | (None)
+
+    ``energy_calculator= ( quip | lammps | internal | fortran)``
+       | Energy calculator.
+       | default: fortran
+
+    ``n_extra_data=int``
+       | Amount of extra data per atom to pass around.
+       | default: 0
 
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
