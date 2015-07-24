@@ -25,8 +25,7 @@ class LAMMPSlib(Calculator):
     r"""
     LAMMPSlib Interface Documentation
     
-Introduction
-============
+**Introduction**
 
 LAMMPSlib is an interface and calculator for LAMMPS_. LAMMPSlib uses
 the python interface that comes with LAMMPS to solve an atoms model
@@ -36,8 +35,7 @@ can be sent to this object executed until it is explicitly closed. Any
 additional variables calculated by lammps can also be extracted. This
 is still experimental code.
     
-Arguments
-=========
+**Arguments**
 
 =================  ==========================================================
 Keyword                               Description
@@ -69,8 +67,7 @@ Keyword                               Description
 =================  ==========================================================
 
 
-Requirements
-============
+**Requirements**
 
 To run this calculator you must have LAMMPS installed and compiled to
 enable the python interface. See the LAMMPS manual.
@@ -85,8 +82,7 @@ versions after approximately 2011. Prior to this the python interface
 is slightly different from that used by LAMMPSlib. It is not difficult
 to change to the earlier format.
 
-LAMMPS and LAMMPSlib
-====================
+**LAMMPS and LAMMPSlib**
 
 The LAMMPS calculator is another calculator that uses LAMMPS (the
 program) to calculate the energy by generating input files and running
@@ -96,8 +92,7 @@ program) python interface. As well as directly running any LAMMPS
 comand line it allows the values of any of LAMMPS variables to be
 extracted and returned to python.
 
-Example
-=======
+**Example**
 
 ::
 
@@ -118,8 +113,7 @@ Example
     print "Energy ", alh.get_potential_energy()
 
     
-Implementation
-==============
+**Implementation**
 
 LAMMPS provides a set of python functions to allow execution of the
 underlying C++ LAMMPS code. The functions used by the LAMMPSlib
@@ -155,8 +149,7 @@ by invoking the get_potential_energy() method::
     run 0
 
 
-Notes
-=====
+**Notes**
 
 .. _LAMMPS: http://lammps.sandia.gov/
 
