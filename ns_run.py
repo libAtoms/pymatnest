@@ -10,25 +10,25 @@ def usage():
 .. glossary::  
 
     ``max_volume=float``
-       | maximum volume allowed during the run
+       | Maximum volume allowed during the run.
        | default: 1.0e3
 
     ``start_species=int int [ float ] [, int int [ float ] ... ]``
        | MANDATORY
-       | atomic number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required
+       | Atomic number; multiplicity; mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required
 
     ``restart_file=path_to_file``
-       | (file for restart configs. Mutually exclusive with start_*, one is required)\n")
+       | File for restart configs. Mutually exclusive with start_*, one is required.
 
     ``restart_first_iter=int``
-       | (>=0, iteration being restarted from. Mutually exclusive with start_*, one is required\n")
+       | >=0, iteration being restarted from. Mutually exclusive with start_*, one is required
 
     ``n_walkers=int``
        | MANDATORY
        | Total number of walkers, i.e. the size of the live set used. 
 
     ``n_cull=int``
-       | number of walkers to kill at each NS iteration.
+       | Number of walkers to kill at each NS iteration.
        | deafult: 1
 
     ``n_extra_walk_per_task=int``
@@ -36,7 +36,7 @@ def usage():
 
     ``n_iter_per_walker=int``
        | MANDATORY
-       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_walkers``*``n_iter_per_walker``
+       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_walkers`` * ``n_iter_per_walker``
 
     ``min_Emax=float``
        | Termination condition based on Emax.
@@ -53,6 +53,164 @@ def usage():
     ``n_extra_data=int``
        | Amount of extra data per atom to pass around.
        | default: 0
+
+    ``KEmax_max_T=float`` 
+       | Maximum temperature for estimating KEmax if *P* = 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K)
+       | default: 1.0e5
+
+    ``start_energy_ceiling=float``
+       | Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.
+       | default: 1.0e9
+
+    ``n_steps_expected=int``
+       | (0, one of these is required)
+
+    ``n_steps=int``
+       | (0, one of these is required)
+
+    ``n_steps_unblocked_atom=int``
+       | (0, one of these is required)
+
+    ``n_steps_unblocked_cell_volume=int``
+       | (0, one of these is required)
+
+    ``n_steps_unblocked_cell_shear=int``
+       | (0, one of these is required)
+
+    ``n_steps_unblocked_cell_stretch=int``
+       | (0, one of these is required)
+
+    ``n_steps_unblocked_swap=int``
+       | (0, one of these is required)
+
+    ``atom_n_substeps=int`` 
+       | (10, number of steps (MC sweeps or MD time steps in each segement))
+
+    ``cell_n_substeps=int`` 
+       | (1, number of MC sweeps in each segement)
+
+    ``swap_n_substeps=int`` 
+       | (0, number of atom swaps in each segement.  Will hang if used with only one atom type present!)
+
+    ``velo_n_substeps=int`` 
+       | (0, number of MC sweeps in each velocity MC segement)
+
+    ``random_energy_perturbation=float`` 
+       | (1.0e-12)
+
+    ``atom_algorithm=[MC | MD]``
+       | (MANDATORY)
+       | Use either Monte Carlo or Molecular dynamics to explore.
+    ``MC_atom_velocities=[T | F]`` 
+       | (F, supported only for energy_calculator=fortran)
+    ``MC_atom_velocities_pre_perturb=[T | F]``
+       | (F, Perturb velocities (rejection free) before MC + velocities walk)
+    ``MC_atom_step_size=float`` 
+       | (0.1, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+    ``MC_atom_step_size_max=float`` 
+       | (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+    ``MC_atom_uniform_rv=[T | F]`` 
+       | default: F
+    ``atom_velo_random_order_perturb=[T | F]`` 
+       | Perturb velocities as part of main loop steps
+       | default: F
+    ``MD_atom_velo_pre_perturb=[T | F]`` 
+       | Perturb velocities before MD trajectory
+       | default: F
+    ``MD_atom_velo_post_perturb=[T | F]`` 
+       | Perturb velocities after MD trajectory
+       | default: T
+    ``MD_atom_velo_flip_accept=[T | F]`` 
+       | default: F
+    ``MD_atom_timestep=float`` 
+       | default: 1.0
+    ``MD_atom_timestep_max=float`` 
+     | default: 2.0
+    ``MD_atom_energy_fuzz=float``
+     |  (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)
+    ``MD_atom_reject_energy_violation=[ T | F ]``
+     |  (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)
+    ``atom_velo_rej_free_perturb_randomize=[T | F]``
+     |  (F. If true, randomize velocities completely rather than actually perturbing.
+    ``atom_velo_rej_free_perturb_angle=float``
+     |  (0.3. Max angle in radians for random rotations.)
+    ``MC_atom_velo_step_size=float``
+     |  (0.1)
+    ``MC_atom_velo_step_size_max=float``
+     |  (1.0)
+    ``MC_atom_velo_walk_rej_free=[T | F]``
+     |  (T. If true, use rejection free algorithm for MC_atom_walk
+    ``MC_cell_P=float``
+     | Pressure value to be used. (Note: the unit of pressure depends on the energy calculator and the potential model used)
+     | default: 0.0 
+    ``MC_cell_volume_per_atom_step_size=float``
+     |  (100.0)
+    ``MC_cell_volume_per_atom_step_size_max=float``
+     |  (5000.0)
+    ``MC_cell_volume_per_atom_prob=float``
+     |  (1.0)
+    ``MC_cell_stretch_step_size=float``
+     |  (0.01)
+    ``MC_cell_stretch_step_size_max=float``
+     |  (0.05)
+    ``MC_cell_stretch_prob=float``
+     |  (1.0)
+    ``MC_cell_shear_step_size=float``
+     |  (0.01)
+    ``MC_cell_shear_step_size_max=float``
+     |  (0.05)
+    ``MC_cell_shear_prob=float``
+     |  (1.0)
+    ``MC_cell_min_aspect_ratio=float``
+     |  (0.9)
+    ``cell_shape_equil_steps=int``
+     |  (100)
+    ``adjust_step_interval_per_walker=float`` 
+     | Multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust.
+     | default: 0.25
+    ``MC_adjust_step_factor=float``
+     |  default: 1.5
+    ``MC_adjust_min_rate=float``
+     |  default: 0.25
+    ``MC_adjust_max_rate=float``
+     |  default: 0.75
+    ``MD_adjust_step_factor=float``
+     |  default: 1.5
+    ``MD_adjust_min_rate=float``
+     |  default: 0.95
+    ``MD_adjust_max_rate=float``
+     |  default: 1.00
+    ``QUIP_pot_args=str``
+     |  (MANDATORY if energy_calculator=quip)
+    ``QUIP_pot_params_file=str``
+     |  (MANDATORY if energy_calculator=quip)
+    ``FORTRAN_model=str``
+     |  (MANDATORY if energy_calculator=fortran)
+    ``LAMMPS_init_cmds=str``
+     |  (MANDATORY if energy_calculator=lammps)
+    ``LAMMPS_name=str``
+     |  ('', arch name for lammps shared object file)
+    ``LAMMPS_header=str``
+     |  (lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps)
+    ``LAMMPS_header_extra=str``
+     |  ('', extra lammpslib.py header commands for energy_calculator=lammps)
+    ``config_file_format=str``
+     |  (extxyz)
+    ``rng=( numpy | internal | rngstream )``
+     |  (numpy)
+    ``profile=rank_to_profile``
+     |  (-1)
+    ``2D=[ T | F ]``
+     |  (F, unsupported)
+    ``debug=debug_level``
+     |  (0, <= 0 for no debugging tests/prints)
+    ``snapshot_interval=int``
+     |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. 
+     |  default: 1000
+    ``random_seed=seed_shift``
+     |  (-1, < 0 for seed from /dev/urandom)
+    ``no_extra_walks_at_all=[ T | F ]``
+     | (F)
 
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
