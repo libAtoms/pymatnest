@@ -207,6 +207,9 @@ def usage():
     ``snapshot_interval=int``
      |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. 
      |  default: 1000
+    ``traj_interval=int``
+     |  Iteration interval at which the currently culled configuration is printed to the trajectory output, in extended xyz format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
+     |  default: 1 
     ``random_seed=seed_shift``
      |  (-1, < 0 for seed from /dev/urandom)
     ``no_extra_walks_at_all=[ T | F ]``
@@ -305,6 +308,7 @@ def usage():
     sys.stderr.write("2D=[ T | F ] (F, unsupported)\n")
     sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
     sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
+    sys.stderr.write("traj_interval=int (1, <=0 for no trajectory)\n")
     sys.stderr.write("random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
 
@@ -1006,6 +1010,7 @@ def max_energy(walkers, n):
 def median_PV(walkers):
     # do local max
     PVs_loc = np.array([ eval_energy(at, do_PE=False, do_KE=False, do_PV=True) for at in walkers])
+
     if comm is not None:
 	PVs = np.zeros( (comm.size*len(PVs_loc)) )
 	# comm.barrier() #BARRIER
@@ -1286,7 +1291,8 @@ def do_ns_loop():
 		    #QUIP_IO walkers[i].write(traj_io)
 		#QUIP_IO else:
 		    #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
-		ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
+	        if ns_args['traj_interval'] > 0 and i_ns_step % ns_args['traj_interval'] == 0:
+		    ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
 
 	# calculate how many will be culled on each rank
 	n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -1713,6 +1719,7 @@ def main():
 	ns_args['profile'] = int(args.pop('profile', -1))
 	ns_args['debug'] = int(args.pop('debug', -1))
 	ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
+	ns_args['traj_interval'] = int(args.pop('traj_interval', 1))
 	ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 	ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 	ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
