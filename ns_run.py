@@ -205,7 +205,7 @@ def usage():
     ``debug=debug_level``
      |  (0, <= 0 for no debugging tests/prints)
     ``snapshot_interval=int``
-     |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. 
+     |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
      |  default: 1000
     ``traj_interval=int``
      |  Iteration interval at which the currently culled configuration is printed to the trajectory output, in extended xyz format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
@@ -222,6 +222,7 @@ def usage():
     sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required\n")
     sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
     sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from. Mutually exclusive with start_*, one is required\n")
+    sys.stderr.write("restart_KEmax=float (Temporary solution for setting KEmax at a restart\n")
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
     sys.stderr.write("n_extra_walk_per_task=int (0)\n")
@@ -989,6 +990,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
 
 
 def max_energy(walkers, n):
+    """Collect the current energies of the walkers from all the processes and chooses the right number of highest energies to be culled"""
     # do local max
     energies_loc = np.array([ at.info['ns_energy'] for at in walkers])
     if comm is not None:
@@ -998,7 +1000,8 @@ def max_energy(walkers, n):
 	energies = energies.flatten()
     else:
 	energies = energies_loc
-
+   
+    # n is n_cull
     Emax_ind = energies.argsort()[-1:-n-1:-1]
     Emax = energies[Emax_ind]
     # WARNING: assumes that each node has equal number of walkers
@@ -1163,7 +1166,7 @@ def additive_init_config(at, Emax):
 
 def save_snapshot(id):
     """
-    Save a current configuration snapshot in xyw format.
+    Save a current configuration snapshot in xyz format.
     """
     #QUIP_IO if have_quippy:
 	#QUIP_IO snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.extxyz' % (id,rank), action=quippy.OUTPUT)
@@ -1196,7 +1199,7 @@ def clean_prev_snapshot(prev_snapshot_iter):
 
 def do_ns_loop():
     """ 
-    Main nested sampling loop
+    This is the main nested sampling loop, doing the iterations.
     """
     global print_prefix
 
@@ -1232,6 +1235,8 @@ def do_ns_loop():
     prev_time = initial_time
 
     Emax_of_step = None
+    Emax_save = []
+    i_ns_step_save = []
 
     verbose=False
     for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
@@ -1259,6 +1264,7 @@ def do_ns_loop():
 
 	if ns_args['min_Emax'] is not None and Emax_of_step < ns_args['min_Emax']:
 	    if rank == 0:
+                # if the termination was set by a minimum energy, and it is reached, stop.
 		print "Leaving loop because Emax=",Emax_of_step," < min_Emax =",ns_args['min_Emax']
 	    break
 
@@ -1276,9 +1282,18 @@ def do_ns_loop():
 
 	# record Emax walkers energies and configurations
 	if rank == 0:
-	    for E in Emax:
-		energy_io.write("%d %.60f\n" % (i_ns_step, E))
-	    energy_io.flush()
+            # save the energies and crresponding iteration numbers
+            Emax_save.extend(Emax)
+            i_ns_step_save.extend(n_cull*[i_ns_step])
+            # if it is time to print (i.e. at the same iteration when a snapshot is written, or at every iter if no snapshots - for smooth restarts)
+	    if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
+	        for istep,E in zip(i_ns_step_save,Emax_save):
+	            energy_io.write("%d %.60f\n" % (istep, E))
+	        energy_io.flush()
+                #empty the save lists, so they are ready for the next bunch of saved energies
+                Emax_save[:]=[]
+                i_ns_step_save[:]=[]
+
 	if cull_list[rank] is not None:
 	    for i in cull_list[rank]:
 		if ns_args['debug'] >= 10 and size <= 1:
@@ -1608,7 +1623,6 @@ def main():
 
 	import sys
 
-	#import stacktrace
 	stacktrace.listen()
 
 	print_prefix=""
@@ -1624,8 +1638,6 @@ def main():
 		usage()
 		sys.exit(1)
 
-	#import re, math, time, os
-	#import numpy as np, ase, ase.io
 	try:
 	    import quippy
 	    have_quippy=True
@@ -1727,6 +1739,7 @@ def main():
 
 	ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling', 1.0e9))
 	ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
+	ns_args['restart_KEmax'] = float(args.pop('restart_KEmax', 0.0))
 	kB = 8.6173324e-5
 
 	# parse energy_calculator
@@ -1779,7 +1792,7 @@ def main():
 	ns_args['config_file_format'] = args.pop('config_file_format', 'extxyz')
 
 	ns_args['rng'] = args.pop('rng', 'numpy')
-	#import ns_rng
+
 	if ns_args['rng'] == 'numpy':
 	    rng = ns_rng.NsRngNumpy(ns_args['delta_random_seed'],comm)
 	# elif ns_args['rng'] == 'julia':
@@ -2072,6 +2085,7 @@ def main():
 		    rej_free_perturb_velo(at, None, KEmax)
 
 	else: # doing a restart
+            KEmax=ns_args['restart_KEmax'] ### Temporary hack, it is correct but should be done automatically, without the user manually setting it.
 	    if rank == 0: # read on head task and send to other tasks
 		i_at = 0
 		for r in range(size):
@@ -2095,6 +2109,11 @@ def main():
 		    at.set_calculator(pot)
 		at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
 
+	    if have_quippy:
+                walkers = [quippy.Atoms(at) for at in walkers]
+	            #print "check", isinstance(walkers[0],quippy.Atoms), have_quippy
+		    #at = quippy.Atoms(at)
+
 	# scale MC_atom_step_size by max_vol^(1/3)
 	max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
 	movement_args['MC_atom_step_size'] *= max_lc
@@ -2107,10 +2126,19 @@ def main():
 	    #QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.extxyz' % rank, action=quippy.OUTPUT)
 	#QUIP_IO else:
 	    #QUIP_IO traj_file = ns_args['out_file_prefix']+'traj.%08d.'+('%04d' % rank)+'.extxyz'
-	traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
 
+        # open the file where the trajectory will be printed
+	if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
+            traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
+        else: # restart, so the existing file should be appended
+            traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
+
+        # open the file where the energies will be printed
 	if rank == 0:
-	    energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
+	    if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
+	        energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
+            else: # restart, so the existing file should be appended
+	        energy_io = open(ns_args['out_file_prefix']+'energies', 'a')
 
 	if ns_args['profile'] == rank:
 	    import cProfile
