@@ -926,7 +926,7 @@ def rand_perturb_energy(energy, perturbation, Emax=None):
 		pert = rng.float_uniform(-1.0,0.0)*perturbation
 		n_tries += 1
 	    if energy+pert >= Emax:
-		print print_prefix, "WARNING: failed to do random energy perturbation below Emax ", at.info['ns_energy'], Emax
+		print print_prefix, "WARNING: failed to do random energy perturbation below Emax ", energy, Emax
 	    energy += pert
 	else:
 	    pert = 1.0 + rng.float_uniform(-1.0,0.0)*perturbation
@@ -935,7 +935,7 @@ def rand_perturb_energy(energy, perturbation, Emax=None):
 		pert = 1.0 + rng.float_uniform(-1.0,0.0)*perturbation
 		n_tries += 1
 	    if energy*pert >= Emax:
-		print print_prefix, "WARNING: failed to do random energy perturbation below Emax ", at.info['ns_energy'], Emax
+		print print_prefix, "WARNING: failed to do random energy perturbation below Emax ", energy, Emax
 	    energy *= pert
 
     return energy
@@ -1166,7 +1166,7 @@ def additive_init_config(at, Emax):
 
 def save_snapshot(id):
     """
-    Save a current configuration snapshot in xyz format.
+    Save the current walker configurations' as a snapshot in the file ``out_file_prefix.iter.rank.config_file_format``
     """
     #QUIP_IO if have_quippy:
 	#QUIP_IO snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.extxyz' % (id,rank), action=quippy.OUTPUT)
@@ -1185,6 +1185,7 @@ def save_snapshot(id):
 	    #QUIP_IO at.write(snapshot_io)
 	#QUIP_IO else:
 	    #QUIP_IO ase.io.write(snapshot_file % i_at, ase.Atoms(at))
+        at.info['iter']=id
 	ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
 
     snapshot_io.close()
@@ -1223,6 +1224,7 @@ def do_ns_loop():
 	    at.info['n_walks'] = 0
 
     for at in walkers:
+        at.info['KEmax']=KEmax 
 	if movement_args['MC_cell_P'] > 0:
 	    print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False, do_PV=False), " KE ", eval_energy(at, do_PE=False, do_PV=False)
 	else:
@@ -1239,7 +1241,10 @@ def do_ns_loop():
     i_ns_step_save = []
 
     verbose=False
-    for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
+
+    # actual iteration cycles starts here
+    #for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
+    for i_ns_step in range(start_first_iter, ns_args['n_iter']):
 	print_prefix="%d %d" % (rank, i_ns_step)
 
 	if movement_args['adjust_step_interval'] < 0:
@@ -1258,7 +1263,8 @@ def do_ns_loop():
 	    # comm.barrier()
 	    # exit_error("Energy above Emax\n", 5)
 
-	if rank == 0 and (i_ns_step > ns_args['restart_first_iter'] and Emax_next >= Emax_of_step):
+	#if rank == 0 and (i_ns_step > ns_args['restart_first_iter'] and Emax_next >= Emax_of_step):
+	if rank == 0 and (i_ns_step > start_first_iter and Emax_next >= Emax_of_step):
 	    print "WARNING: Emax not decreasing ",Emax_of_step, Emax_next
 	Emax_of_step=Emax_next
 
@@ -1300,6 +1306,7 @@ def do_ns_loop():
 		    print print_prefix, "walker killed at age ",walkers[i].info['n_walks']
 		walkers[i].info['volume'] = walkers[i].get_volume()
 		walkers[i].info['ns_P'] = movement_args['MC_cell_P']
+		walkers[i].info['iter'] = i_ns_step
 		if walkers[i].has('masses') and walkers[i].has('momenta'):
 		    walkers[i].info['ns_KE'] = walkers[i].get_kinetic_energy()
 		#QUIP_IO if have_quippy:
@@ -1611,7 +1618,7 @@ def do_ns_loop():
 def main():
 	""" Main function """
         global movement_args
-        global ns_args
+        global ns_args, start_first_iter
         global max_n_cull_per_task
         global size, rank, comm, rng, np, sys
         global n_cull, n_walkers, n_walkers_per_task
@@ -1717,11 +1724,11 @@ def main():
 		ns_args['start_species'] = args.pop('start_species')
 	    except:
 		exit_error("need species for initial configs start_species\n",1)
-	else:
-	    try:
-		ns_args['restart_first_iter'] = int(args.pop('restart_first_iter'))
-	    except:
-		exit_error("need initial iteration restart_first_iter\n",1)
+	#else:
+	#    try:
+#		ns_args['restart_first_iter'] = int(args.pop('restart_first_iter'))
+#	    except:
+#		exit_error("need initial iteration restart_first_iter\n",1)
 
 	ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
 
@@ -1966,13 +1973,13 @@ def main():
 	internal_cutoff = 3.0
 	Eshift = internal_cutoff**-12 - internal_cutoff**-6
 
-	#from itertools import izip
 	set_n_steps('n_steps')
 	if  rank == 0:
 	    print "Using n_steps = ", movement_args['n_steps']
 
 	walkers=[]
 	if ns_args['restart_file'] == '': # start from scratch
+            start_first_iter = 0
 	    # create initial config
 	    if rank == 0:
 		# create atoms structs from a list of atomic numbers and numbers of atoms
@@ -2018,7 +2025,7 @@ def main():
 	    # clone initial config into array of walkers
 	    for i_walker in range(n_walkers):
 		walkers.append(init_atoms.copy())
-	    ns_args['restart_first_iter'] = 0
+	    #ns_args['restart_first_iter'] = 0
 
 	    for at in walkers:
 		at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
@@ -2077,6 +2084,8 @@ def main():
 			KEmax = median_PV(walkers)
 		    else:
 			KEmax = kB*ns_args['KEmax_max_T']
+                    at.info['KEmax']=KEmax
+                 
 		else:
 		    KEmax = None
 
@@ -2085,7 +2094,7 @@ def main():
 		    rej_free_perturb_velo(at, None, KEmax)
 
 	else: # doing a restart
-            KEmax=ns_args['restart_KEmax'] ### Temporary hack, it is correct but should be done automatically, without the user manually setting it.
+            #KEmax=ns_args['restart_KEmax'] ### Temporary hack, it is correct but should be done automatically, without the user manually setting it.
 	    if rank == 0: # read on head task and send to other tasks
 		i_at = 0
 		for r in range(size):
@@ -2108,11 +2117,11 @@ def main():
 		if do_calc_quip or do_calc_lammps:
 		    at.set_calculator(pot)
 		at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
+                KEmax = at.info['KEmax']
+                start_first_iter = at.info['iter']+1
 
 	    if have_quippy:
                 walkers = [quippy.Atoms(at) for at in walkers]
-	            #print "check", isinstance(walkers[0],quippy.Atoms), have_quippy
-		    #at = quippy.Atoms(at)
 
 	# scale MC_atom_step_size by max_vol^(1/3)
 	max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
@@ -2138,7 +2147,22 @@ def main():
 	    if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
 	        energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
             else: # restart, so the existing file should be appended
-	        energy_io = open(ns_args['out_file_prefix']+'energies', 'a')
+	        energy_io = open(ns_args['out_file_prefix']+'energies', 'r+')
+		tmp_iter = 0
+                line = energy_io.readline() # read the first line of nwalker,ncull..etc information
+		i = 0
+		while 1: # we do create an infinite loop here :(
+		    line=energy_io.readline()              # read lines one by one
+		    i = i+1
+		    if i%n_cull==0:                        # if this is n_cull-th line, examine the stored iteration
+                        tmp_split = line.split()
+                        tmp_iter = int(tmp_split[0])       # tmp_iter contains the iteration number of the line as an integer number
+                    if tmp_iter == start_first_iter-1:     # if this is the iteration same as in the snapshot, 
+                        energy_io.truncate()                #delete the rest of the file, as we are restarting from here
+                        break
+	  	    if not line:                           # something went wrong, exit the infinit loop
+                        print "WARNING: end of .energies file reached without finding the iteration number", start_first_iter
+			break
 
 	if ns_args['profile'] == rank:
 	    import cProfile
