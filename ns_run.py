@@ -20,9 +20,6 @@ def usage():
     ``restart_file=path_to_file``
        | File for restart configs. Mutually exclusive with start_*, one is required.
 
-    ``restart_first_iter=int``
-       | >=0, iteration being restarted from. Mutually exclusive with start_*, one is required
-
     ``n_walkers=int``
        | MANDATORY
        | Total number of walkers, i.e. the size of the live set used. 
@@ -221,8 +218,6 @@ def usage():
     sys.stderr.write("max_volume_per_atom=float (1e3)\n")
     sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required\n")
     sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
-    sys.stderr.write("restart_first_iter=int (>=0, iteration being restarted from. Mutually exclusive with start_*, one is required\n")
-    sys.stderr.write("restart_KEmax=float (Temporary solution for setting KEmax at a restart\n")
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
     sys.stderr.write("n_extra_walk_per_task=int (0)\n")
@@ -1243,7 +1238,6 @@ def do_ns_loop():
     verbose=False
 
     # actual iteration cycles starts here
-    #for i_ns_step in range(ns_args['restart_first_iter'], ns_args['n_iter']):
     for i_ns_step in range(start_first_iter, ns_args['n_iter']):
 	print_prefix="%d %d" % (rank, i_ns_step)
 
@@ -1263,7 +1257,6 @@ def do_ns_loop():
 	    # comm.barrier()
 	    # exit_error("Energy above Emax\n", 5)
 
-	#if rank == 0 and (i_ns_step > ns_args['restart_first_iter'] and Emax_next >= Emax_of_step):
 	if rank == 0 and (i_ns_step > start_first_iter and Emax_next >= Emax_of_step):
 	    print "WARNING: Emax not decreasing ",Emax_of_step, Emax_next
 	Emax_of_step=Emax_next
@@ -1288,17 +1281,21 @@ def do_ns_loop():
 
 	# record Emax walkers energies and configurations
 	if rank == 0:
-            # save the energies and crresponding iteration numbers
-            Emax_save.extend(Emax)
-            i_ns_step_save.extend(n_cull*[i_ns_step])
-            # if it is time to print (i.e. at the same iteration when a snapshot is written, or at every iter if no snapshots - for smooth restarts)
-	    if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
-	        for istep,E in zip(i_ns_step_save,Emax_save):
-	            energy_io.write("%d %.60f\n" % (istep, E))
-	        energy_io.flush()
-                #empty the save lists, so they are ready for the next bunch of saved energies
-                Emax_save[:]=[]
-                i_ns_step_save[:]=[]
+            for E in Emax:
+		energy_io.write("%d %.60f\n" % (i_ns_step, E))
+	    energy_io.flush()
+
+            ## save the energies and corresponding iteration numbers
+            #Emax_save.extend(Emax)
+            #i_ns_step_save.extend(n_cull*[i_ns_step])
+            ## if it is time to print (i.e. at the same iteration when a snapshot is written, or at every iter if no snapshots - for smooth restarts)
+	    #if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
+	    #    for istep,E in zip(i_ns_step_save,Emax_save):
+	    #        energy_io.write("%d %.60f\n" % (istep, E))
+	    #    energy_io.flush()
+            #    #empty the save lists, so they are ready for the next bunch of saved energies
+            #    Emax_save[:]=[]
+            #    i_ns_step_save[:]=[]
 
 	if cull_list[rank] is not None:
 	    for i in cull_list[rank]:
@@ -1724,11 +1721,6 @@ def main():
 		ns_args['start_species'] = args.pop('start_species')
 	    except:
 		exit_error("need species for initial configs start_species\n",1)
-	#else:
-	#    try:
-#		ns_args['restart_first_iter'] = int(args.pop('restart_first_iter'))
-#	    except:
-#		exit_error("need initial iteration restart_first_iter\n",1)
 
 	ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
 
@@ -1746,7 +1738,6 @@ def main():
 
 	ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling', 1.0e9))
 	ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
-	ns_args['restart_KEmax'] = float(args.pop('restart_KEmax', 0.0))
 	kB = 8.6173324e-5
 
 	# parse energy_calculator
@@ -2025,7 +2016,6 @@ def main():
 	    # clone initial config into array of walkers
 	    for i_walker in range(n_walkers):
 		walkers.append(init_atoms.copy())
-	    #ns_args['restart_first_iter'] = 0
 
 	    for at in walkers:
 		at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
@@ -2094,7 +2084,6 @@ def main():
 		    rej_free_perturb_velo(at, None, KEmax)
 
 	else: # doing a restart
-            #KEmax=ns_args['restart_KEmax'] ### Temporary hack, it is correct but should be done automatically, without the user manually setting it.
 	    if rank == 0: # read on head task and send to other tasks
 		i_at = 0
 		for r in range(size):
