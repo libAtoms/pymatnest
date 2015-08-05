@@ -697,6 +697,10 @@ def propose_volume_step(at, step_size):
     dV = rng.normal(step_size*len(at))
     orig_V = at.get_volume()
     new_V = orig_V+dV
+    if new_V < 0: # negative number cannot be raised to fractional power, so this is only to avoid fatal error during the run
+	new_V=abs(new_V)
+	print "Warning, the step_size for volume change might be too big, resulted negativ new volume", step_size, dV, orig_V+dV
+    #print "TRANSFORM", new_V, orig_V, dV, step_size, len(at)
     transform = np.identity(3)*(new_V/orig_V)**(1.0/3.0)
     p_accept = min(1.0, (new_V/orig_V)**len(at))
     return (p_accept, transform)
@@ -1877,7 +1881,9 @@ def main():
 	movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
 	movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
-	movement_args['MC_cell_volume_per_atom_step_size'] = float(args.pop('MC_cell_volume_per_atom_step_size', 100.0))
+
+	default_value = ns_args['max_volume_per_atom']/10.0 # 10% of maximum allowed volume per atom
+	movement_args['MC_cell_volume_per_atom_step_size'] = float(args.pop('MC_cell_volume_per_atom_step_size', default_value))
 	movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 5000.0))
 	movement_args['MC_cell_volume_per_atom_prob'] = float(args.pop('MC_cell_volume_per_atom_prob', 1.0))
 	movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.01))
@@ -2119,6 +2125,7 @@ def main():
 		at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
                 KEmax = at.info['KEmax']
                 start_first_iter = at.info['iter']+1
+		movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0 
 
 	    if have_quippy:
                 walkers = [quippy.Atoms(at) for at in walkers]
@@ -2166,16 +2173,17 @@ def main():
 		i = 0
 		while True: # we do create an infinite loop here :(
 		    line=energy_io.readline()              # read lines one by one
+	  	    if not line:                           # something went wrong, exit the infinit loop
+                        print "WARNING: end of .energies file reached without finding the iteration number", start_first_iter
+			break
 		    i = i+1
 		    if i%n_cull==0:                        # if this is n_cull-th line, examine the stored iteration
                         tmp_split = line.split()
+		        print tmp_split, start_first_iter-1
                         tmp_iter = int(tmp_split[0])       # tmp_iter contains the iteration number of the line as an integer number
                     if tmp_iter == start_first_iter-1:     # if this is the iteration same as in the snapshot, 
                         energy_io.truncate()                #delete the rest of the file, as we are restarting from here
                         break
-	  	    if not line:                           # something went wrong, exit the infinit loop
-                        print "WARNING: end of .energies file reached without finding the iteration number", start_first_iter
-			break
 
 	if ns_args['profile'] == rank:
 	    import cProfile
@@ -2184,7 +2192,7 @@ def main():
 	    do_ns_loop()
 
 	# cleanup post loop
-	save_snapshot(ns_args['n_iter'])
+	save_snapshot(ns_args['n_iter']-1) # this is the final configuration
 	clean_prev_snapshot(prev_snapshot_iter)
 
 	for at in walkers:
