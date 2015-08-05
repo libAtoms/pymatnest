@@ -205,7 +205,7 @@ def usage():
      |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
      |  default: 1000
     ``traj_interval=int``
-     |  Iteration interval at which the currently culled configuration is printed to the trajectory output, in extended xyz format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
+     |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
      |  default: 1 
     ``random_seed=seed_shift``
      |  (-1, < 0 for seed from /dev/urandom)
@@ -1242,7 +1242,7 @@ def do_ns_loop():
 
     verbose=False
 
-    # actual iteration cycles starts here
+    # actual iteration cycle starts here
     for i_ns_step in range(start_first_iter, ns_args['n_iter']):
 	print_prefix="%d %d" % (rank, i_ns_step)
 
@@ -2106,7 +2106,7 @@ def main():
 		for r in range(size):
 		    at_list=[]
 		    for i_walker in range(n_walkers):
-			print "read i_at ",i_at, " from ",ns_args['restart_file']
+			print "read walker ",i_at, " from ",ns_args['restart_file']
 			if comm is None or r == 0:
 			    walkers.append(ase.io.read(ns_args['restart_file'], i_at))
 			else:
@@ -2125,7 +2125,7 @@ def main():
 		at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
                 KEmax = at.info['KEmax']
                 start_first_iter = at.info['iter']+1
-		movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0 
+		movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0/at.get_number_of_atoms() 
 
 	    if have_quippy:
                 walkers = [quippy.Atoms(at) for at in walkers]
