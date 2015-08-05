@@ -1234,6 +1234,7 @@ def do_ns_loop():
     Emax_of_step = None
     Emax_save = []
     i_ns_step_save = []
+    walker_list = []
 
     verbose=False
 
@@ -1285,7 +1286,7 @@ def do_ns_loop():
 		energy_io.write("%d %.60f\n" % (i_ns_step, E))
 	    energy_io.flush()
 
-            ## save the energies and corresponding iteration numbers
+            ## Save the energies and corresponding iteration numbers in a list then print them out only when printing a snapshot
             #Emax_save.extend(Emax)
             #i_ns_step_save.extend(n_cull*[i_ns_step])
             ## if it is time to print (i.e. at the same iteration when a snapshot is written, or at every iter if no snapshots - for smooth restarts)
@@ -1310,9 +1311,18 @@ def do_ns_loop():
 		    #QUIP_IO walkers[i].write(traj_io)
 		#QUIP_IO else:
 		    #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
+
+	 #       if ns_args['traj_interval'] > 0 and i_ns_step % ns_args['traj_interval'] == 0:
+	 #	    ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
+	 #   traj_io.flush()
 	        if ns_args['traj_interval'] > 0 and i_ns_step % ns_args['traj_interval'] == 0:
-		    ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
+		    walker_list.append(walkers[i].copy())
+
+        if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
+	    for at in walker_list:
+	        ase.io.write(traj_io, at, format=ns_args['config_file_format'])
 	    traj_io.flush()
+	    walker_list=[]
 
 	# calculate how many will be culled on each rank
 	n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -2130,18 +2140,20 @@ def main():
 	if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
             traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
         else: # restart, so the existing file should be appended
-            #traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
+            traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
 
-            # test this bit!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "r+")
-	    i = 0
-	    while True:
-                at=(ase.io.read(traj_io, format=ns_args['config_file_format'],index=i))
-                if at.info['iter'] >= start_first_iter:
-	             at=(ase.io.read(traj_io, format=ns_args['config_file_format'],index=i-1))
-	             traj_io.truncate()
-                     break
-	        i += 1
+            # Read the existing traj file and look for the point where we restart from. Truncate the rest. 
+	    # This part is not used because the ASE.io.read takes soooo long, that it makes a restart impossible.
+            #traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "r+")
+	    #i = 0
+	    #while True:
+            #    at=(ase.io.read(traj_io, format=ns_args['config_file_format'],index=i))
+	    #	print "ASE.io.read trajectory", rank, i, at.info['iter']
+            #    if at.info['iter'] >= start_first_iter:
+	    #         at=(ase.io.read(traj_io, format=ns_args['config_file_format'],index=i-1))
+	    #         traj_io.truncate()
+            #         break
+	    #    i += 1
 
         # open the file where the energies will be printed
 	if rank == 0:
@@ -2172,7 +2184,7 @@ def main():
 	    do_ns_loop()
 
 	# cleanup post loop
-	save_snapshot(i_ns_step)
+	save_snapshot(ns_args['n_iter'])
 	clean_prev_snapshot(prev_snapshot_iter)
 
 	for at in walkers:
