@@ -1882,7 +1882,7 @@ def main():
 
 	movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
 
-	default_value = ns_args['max_volume_per_atom']/10.0 # 10% of maximum allowed volume per atom
+	default_value = ns_args['max_volume_per_atom']/20.0 # 5% of maximum allowed volume per atom
 	movement_args['MC_cell_volume_per_atom_step_size'] = float(args.pop('MC_cell_volume_per_atom_step_size', default_value))
 	movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 5000.0))
 	movement_args['MC_cell_volume_per_atom_prob'] = float(args.pop('MC_cell_volume_per_atom_prob', 1.0))
@@ -1898,6 +1898,10 @@ def main():
 
 	movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.25))
 	movement_args['adjust_step_interval'] = int(movement_args['adjust_step_interval_per_walker']*ns_args['n_walkers'])
+	if movement_args['adjust_step_interval'] < 20:
+	    print "WARNING: step inteval adjustment would be done too often, adjust_step_interval: ", movement_args['adjust_step_interval']
+	    print "increased to 20"
+	    movement_args['adjust_step_interval'] = 20
 	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
 	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
 	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
@@ -2084,6 +2088,7 @@ def main():
 		    exit_error("Rank %d failed to generate initial config by random, fortran, or (atom by atom addition) python initializer under max energy %f in 10 tries each\n" % (rank, ns_args['start_energy_ceiling']), 4)
 
 		at.info['ns_energy'] = rand_perturb_energy(energy, ns_args['random_energy_perturbation'])
+		at.info['volume'] = at.get_volume()
 
 		# set KEmax from P and Vmax
 		if movement_args['do_velocities']:
@@ -2124,8 +2129,24 @@ def main():
 		    at.set_calculator(pot)
 		at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
                 KEmax = at.info['KEmax']
-                start_first_iter = at.info['iter']+1
-		movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0/at.get_number_of_atoms() 
+
+		key_found = False
+		for key in at.info: # check if 'iter=' info is present in the file used for restart
+		    if key == 'iter':
+                        start_first_iter = at.info['iter']+1
+			key_found = True
+		if not key_found:
+		    print "Warning, no iteration number information was found in the restart file"
+		    break
+
+		key_found = False
+		for key in at.info: # check if 'volume=' info is present in the file used for restart
+		    if key == 'volume':
+		        movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0/at.get_number_of_atoms()
+			key_found = True
+		if not key_found:
+		    print "Warning, no volume information was found in the restart file. If volume changes will be done, the starting stepsize will be the default"
+	            
 
 	    if have_quippy:
                 walkers = [quippy.Atoms(at) for at in walkers]
