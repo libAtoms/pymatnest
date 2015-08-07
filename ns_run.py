@@ -1242,6 +1242,11 @@ def do_ns_loop():
 
     verbose=False
 
+    # to avoid errors of unassigned values, if in case of a restart that final number of iter is the same as the satring, stop.
+    if start_first_iter == ns_args['n_iter']:
+	print "WARNING: Increase the n_iter_per_walker variable in the input if you want NS cycles to be performed."
+        exit_error("satring iteration and the total number of required iterations are the same,hence no NS cycles will be performed\n",11)
+
     # actual iteration cycle starts here
     for i_ns_step in range(start_first_iter, ns_args['n_iter']):
 	print_prefix="%d %d" % (rank, i_ns_step)
@@ -1899,8 +1904,8 @@ def main():
 	movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.25))
 	movement_args['adjust_step_interval'] = int(movement_args['adjust_step_interval_per_walker']*ns_args['n_walkers'])
 	if movement_args['adjust_step_interval'] < 20:
-	    print "WARNING: step inteval adjustment would be done too often, adjust_step_interval: ", movement_args['adjust_step_interval']
-	    print "increased to 20"
+	    print "WARNING: step size adjustment would be done too often, at every ", movement_args['adjust_step_interval'], " iteration"
+	    print "WARNING: adjust_step_interval is increased to 20"
 	    movement_args['adjust_step_interval'] = 20
 	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
 	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
@@ -2136,8 +2141,8 @@ def main():
                         start_first_iter = at.info['iter']+1
 			key_found = True
 		if not key_found:
-		    print "Warning, no iteration number information was found in the restart file"
-		    break
+		    print "WARNING: no iteration number information was found in the restart file"
+                    exit_error("no iteration number information was found in the restart file\n",5)
 
 		key_found = False
 		for key in at.info: # check if 'volume=' info is present in the file used for restart
@@ -2145,7 +2150,7 @@ def main():
 		        movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0/at.get_number_of_atoms()
 			key_found = True
 		if not key_found:
-		    print "Warning, no volume information was found in the restart file. If volume changes will be done, the starting stepsize will be the default"
+		    print "WARNING: no volume information was found in the restart file. If volume changes will be done, the starting stepsize will be the default"
 	            
 
 	    if have_quippy:
@@ -2200,7 +2205,6 @@ def main():
 		    i = i+1
 		    if i%n_cull==0:                        # if this is n_cull-th line, examine the stored iteration
                         tmp_split = line.split()
-		        print tmp_split, start_first_iter-1
                         tmp_iter = int(tmp_split[0])       # tmp_iter contains the iteration number of the line as an integer number
                     if tmp_iter == start_first_iter-1:     # if this is the iteration same as in the snapshot, 
                         energy_io.truncate()                #delete the rest of the file, as we are restarting from here
