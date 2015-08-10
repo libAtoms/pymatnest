@@ -18,11 +18,11 @@ def usage():
        | Atomic number; multiplicity; mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required
 
     ``restart_file=path_to_file``
-       | File for restart configs. Mutually exclusive with start_*, one is required.
+       | File for restart configs. Mutually exclusive with start_*, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. 
 
     ``n_walkers=int``
        | MANDATORY
-       | Total number of walkers, i.e. the size of the live set used. 
+       | Total number of walkers, i.e. the size of the live set used. It has to be a multiple of the number of processors used.
 
     ``n_cull=int``
        | Number of walkers to kill at each NS iteration.
@@ -141,7 +141,8 @@ def usage():
      | Pressure value to be used. (Note: the unit of pressure depends on the energy calculator and the potential model used)
      | default: 0.0 
     ``MC_cell_volume_per_atom_step_size=float``
-     |  (100.0)
+     | Initial volume stepsize for volume change.
+     | Default: 5% of the maximum allowed volume
     ``MC_cell_volume_per_atom_step_size_max=float``
      |  (5000.0)
     ``MC_cell_volume_per_atom_prob=float``
@@ -940,6 +941,7 @@ def rand_perturb_energy(energy, perturbation, Emax=None):
     return energy
 
 def walk_single_walker(at, movement_args, Emax, KEmax):
+    """Do random walk on a single atoms object."""
 #DOC
 #DOC \vspace*{\baselineskip}
 #DOC walk\_single\_walker
@@ -1242,7 +1244,7 @@ def do_ns_loop():
 
     verbose=False
 
-    # to avoid errors of unassigned values, if in case of a restart that final number of iter is the same as the satring, stop.
+    # to avoid errors of unassigned values, if in case of a restart the final number of iter is the same as the satring, stop.
     if start_first_iter == ns_args['n_iter']:
 	print "WARNING: Increase the n_iter_per_walker variable in the input if you want NS cycles to be performed."
         exit_error("satring iteration and the total number of required iterations are the same,hence no NS cycles will be performed\n",11)
@@ -1289,7 +1291,7 @@ def do_ns_loop():
 	    cull_list[r] = cull_ind[entries_for_this_rank]
 
 
-	# record Emax walkers energies and configurations
+	# record Emax walkers energies
 	if rank == 0:
             for E in Emax:
 		energy_io.write("%d %.60f\n" % (i_ns_step, E))
@@ -1307,6 +1309,7 @@ def do_ns_loop():
             #    Emax_save[:]=[]
             #    i_ns_step_save[:]=[]
 
+	# record Emax walkers configurations
 	if cull_list[rank] is not None:
 	    for i in cull_list[rank]:
 		if ns_args['debug'] >= 10 and size <= 1:
@@ -1321,12 +1324,10 @@ def do_ns_loop():
 		#QUIP_IO else:
 		    #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
 
-	 #       if ns_args['traj_interval'] > 0 and i_ns_step % ns_args['traj_interval'] == 0:
-	 #	    ase.io.write(traj_io, walkers[i], format=ns_args['config_file_format'])
-	 #   traj_io.flush()
 	        if ns_args['traj_interval'] > 0 and i_ns_step % ns_args['traj_interval'] == 0:
 		    walker_list.append(walkers[i].copy())
 
+	# print the recorded Emax walkers configurations to output file
         if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
 	    for at in walker_list:
 	        ase.io.write(traj_io, at, format=ns_args['config_file_format'])
@@ -1569,6 +1570,7 @@ def do_ns_loop():
 	    if ns_args['debug'] >= 5:
 		print print_prefix, "WALK clone_target ", rank, i_at
 	    walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step, KEmax)
+	    #print "WALK on rank ", rank, "at iteration ", i_ns_step, " walker ", i_at
 	    if ns_args['debug'] >= 10 and size <= 1:
 		walkers[i_at].info['n_walks'] += movement_args['n_steps']
 	    accumulate_stats(walk_stats_cumul, walk_stats)
@@ -1607,6 +1609,7 @@ def do_ns_loop():
 		if ns_args['debug'] >= 5:
 		    print print_prefix, "WALK extra ",rank, r_i
 		walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step, KEmax)
+	        #print "WALK EXTRA on rank ", rank, "at iteration ", i_ns_step, " walker ", r_i
 		if ns_args['debug'] >= 10 and size <= 1:
 		    walkers[r_i].info['n_walks'] += movement_args['n_steps']
 		accumulate_stats(walk_stats_cumul, walk_stats)
@@ -2218,7 +2221,7 @@ def main():
 
 	# cleanup post loop
 	save_snapshot(ns_args['n_iter']-1) # this is the final configuration
-	clean_prev_snapshot(prev_snapshot_iter)
+	#clean_prev_snapshot(prev_snapshot_iter) # !!!! This line is commented out as sometimes it deleted the final snapshot - check the prev_snashot_iter vale in case of normal termination!!!!!!!!!!!!
 
 	for at in walkers:
 	    print rank, ": final energy ", at.info['ns_energy']
