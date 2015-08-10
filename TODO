@@ -1,6 +1,7 @@
 TO DO:
 2. Automatically adjust initial step sizes to within the acceptance tolerances used throughout the calculation.
 3. Update stepsize setting routine so that it fixes the stepsize within certain acceptance rate tolerances. Routine should perform a small amount of additional exploration, starting from random configurations stored on each process. This will help to avoid "pan handle" problems.
+5. add routine to do short explorations, and use the results to set stepsizes
 
 PARTIALLY DONE:
 4. Introduce atom swap MC moves for multi component systems - untested
@@ -8,3 +9,9 @@ PARTIALLY DONE:
 DONE?
 1. Make atom MC step size commensurate with cell size. Possibly change to doing atom MC steps in fractional coordinates.
     NB 7/1/2015: scale MC_atom_step_size and corresponding max by (max_volume_per_atom*N_atoms)^(1/3).  Steps still done in Cartesian coordinates, since it seems like wrong physics to take smaller steps just because a box side happens to be small.  Also proposals won't be uniform in Cartesian space, which could even violate detailed balance (although I don't think so)
+
+QUESTIONS/NOTES/SUGGESTIONS:
+a. Why .extxyz is used instead of .xyz? (Atomeye does not handle extxyz correctly if multiple configurations are present in the file, or the ns_process_traj code does not read extxyz at all...) Renaming the file to xyz simply solves the problem, but it is confusing.
+b. for ns_process_tray: the ASE atom read is very very slow, normal production run files can take days to be read. We should provide a more usable code to manipulate the trajectory files.
+c. introduce binary format versions or an extra printing option for the trajectory to save disc space?
+d. should have a more user readable output: what is the current input settings, the pressure value if used with corresponding unit, the total number of energy evaluations done per iteration. And do we need all this output with debug=0?  
