@@ -298,6 +298,7 @@ def usage():
     sys.stderr.write("LAMMPS_name=str ('', arch name for lammps shared object file)\n")
     sys.stderr.write("LAMMPS_header=str (lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps)\n")
     sys.stderr.write("LAMMPS_header_extra=str ('', extra lammpslib.py header commands for energy_calculator=lammps)\n")
+    sys.stderr.write("LAMMPS_atom_types=symbol int [, symbol int ] ... ('', mapping from atomic symbols to type numbers for LAMMPS ASE interface)\n")
     sys.stderr.write("\n")
     sys.stderr.write("config_file_format=str (extxyz)\n") # julia
     sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
@@ -1794,6 +1795,13 @@ def main():
 	    ns_args['LAMMPS_name'] = args.pop('LAMMPS_name', '')
 	    ns_args['LAMMPS_header'] = args.pop('LAMMPS_header', 'units metal; atom_style atomic; atom_modify map array sort 0 0')
 	    ns_args['LAMMPS_header_extra'] = args.pop('LAMMPS_header_extra', '')
+            ns_args['LAMMPS_atom_types'] = None
+	    LAMMPS_atom_types = args.pop('LAMMPS_atom_types', '')
+            if len(LAMMPS_atom_types) > 0:
+                ns_args['LAMMPS_atom_types'] = {}
+                for type_pair in [s.strip() for s in LAMMPS_atom_types.split(',')]:
+                    f = type_pair.split()
+                    ns_args['LAMMPS_atom_types'][f[0]] = f[1]
 	elif ns_args['energy_calculator'] == 'internal':
 	    do_calc_internal=True
 	elif ns_args['energy_calculator'] == 'fortran':
@@ -1949,10 +1957,10 @@ def main():
 	    header_cmds = [s.strip() for s in ns_args['LAMMPS_header'].split(';')]
 	    header_extra_cmds = [s.strip() for s in ns_args['LAMMPS_header_extra'].split(';')]
 	    if ns_args['debug'] >= 5:
-		pot = LAMMPSlib(lmpcmds=init_cmds, log_file='lammps.%d.log' % rank, keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
+		pot = LAMMPSlib(lmpcmds=init_cmds, atom_types=ns_args['LAMMPS_atom_types'], log_file='lammps.%d.log' % rank, keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
 				lammps_header=header_cmds, lammps_header_extra=header_extra_cmds)
 	    else:
-		pot = LAMMPSlib(lmpcmds=init_cmds, keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
+		pot = LAMMPSlib(lmpcmds=init_cmds, atom_types=ns_args['LAMMPS_atom_types'], keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
 				lammps_header=header_cmds, lammps_header_extra=header_extra_cmds)
 	    print "PRE START_LAMMPS"
 	    pot.start_lammps() # so that top level things like units will be set
