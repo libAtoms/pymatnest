@@ -87,7 +87,7 @@ def usage():
        | (1, number of MC sweeps in each segement)
 
     ``swap_n_substeps=int`` 
-       | (0, number of atom swaps in each segement.  Will hang if used with only one atom type present!)
+       | (0, number of atom swaps in each segement)
 
     ``velo_n_substeps=int`` 
        | (0, number of MC sweeps in each velocity MC segement)
@@ -241,7 +241,7 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("atom_n_substeps=int (10, number of steps (MC sweeps or MD time steps in each segement))\n")
     sys.stderr.write("cell_n_substeps=int (1, number of MC sweeps in each segement)\n")
-    sys.stderr.write("swap_n_substeps=int (0, number of atom swaps in each segement.  Will hang if used with only one atom type present!)\n")
+    sys.stderr.write("swap_n_substeps=int (0, number of atom swaps in each segement)\n")
     sys.stderr.write("velo_n_substeps=int (0, number of MC sweeps in each velocity MC segement)\n")
     sys.stderr.write("\n")
     sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
@@ -808,10 +808,15 @@ def do_MC_swap_walk(at, movement_args, Emax, KEmax):
 
     Z = at.get_atomic_numbers()
 
+    #DOC \item return if all atomic numbers are identical
+    if (Z[:] == Z[0]).all(): 
+        # don't try to swap when all atoms are the same
+        return {}
+
     #DOC \item loop swap\_n\_substeps times:
     #DOC \begin{itemize}
     for i in range(movement_args['swap_n_substeps']):
-	#DOC \item pick two atoms with distinct atomic numbers (will hang if only one atomic number is present in system)
+	#DOC \item pick two atoms with distinct atomic numbers
 	i1 = rng.int_uniform(0,len(at))
 	i2 = rng.int_uniform(0,len(at))
 	while Z[i1] == Z[i2]:
