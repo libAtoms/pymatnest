@@ -1115,10 +1115,13 @@ def set_n_steps(prop):
 	if movement_args[prop] > 0:
 	    exit_error("Got both "+prop+" and "+prop+"_expected, conflict\n", 5)
 
+	if rank == 0:
+	    print "Calculating %s from %s_expected=%d" % (prop, prop, movement_args[prop+'_expected'])
+
 	if max_n_cull_per_task*size == n_cull and n_extra_walk_per_task == 0: # no extra walkers
 	    movement_args[prop] = movement_args[prop+'_expected']
 	    if rank == 0:
-		print "Calculating n_walks, trivial since there are no extra walkers"
+		print "No extra walkers (n_cull mod n_tasks == 0), trivial, so average n_walks at kill is 1, and %s=%s_expected" % (prop, prop)
 	else:
 	    # f_c = n_c/n_t [ fraction of total that are culled (and walked once)]
 	    # f_e = n_e/(n_t-n_c) [fraction of ones that aren't culled that are also walked ]
@@ -1142,12 +1145,18 @@ def set_n_steps(prop):
 
 	    n_walks = f_cull/(f_cull+f_extra-f_cull*f_extra) * (1.0 + f/(1.0-f) + f/(1.0-f)**2)
 	    if rank == 0:
-		print "Calculated n_walks =",n_walks, " from f_cull ",f_cull," f_extra ",f_extra
+		print "Calculated average n_walks at kill = ",n_walks, " from f_cull ",f_cull," f_extra (due to otherwise idle processors doing walks and explicitly requested extra walks) ",f_extra
+                if n_walks < 1:
+                    print "WARNING: got average n_walks < 1, but will always do at least 1 walk, so effective %s_expected will be higher than requested" % prop
+                print "Setting %s = ceiling(%s_expected/n_walks)" % (prop, prop)
 	    movement_args[prop] = int(math.ceil(movement_args[prop+'_expected']/n_walks))
 
     else:
 	if movement_args[prop] > 0 and rank == 0:
 	    print "WARNING: using absolute number of "+prop
+
+    if rank == 0:
+        print "Final value of %s=%d" % (prop, movement_args[prop])
 
 def additive_init_config(at, Emax):
     if do_calc_lammps:
