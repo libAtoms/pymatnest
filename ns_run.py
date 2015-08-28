@@ -685,7 +685,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 		    n_accept += 1
 		at.info['ns_energy'] = energy
 	    #DOC \end{itemize}
-	#DOC \end{itemize}
+     #DOC \end{itemize}
 
     out = {}
     if n_accept_velo is not None:
@@ -800,6 +800,7 @@ def do_cell_shape_walk(at, movement_args):
 	    do_cell_step(at, None, p_accept, transform)
 
 def do_MC_swap_walk(at, movement_args, Emax, KEmax):
+#DOC
 #DOC \vspace*{\baselineskip}
 #DOC do\_MC\_swap\_walk
 #DOC \begin{itemize}
@@ -831,7 +832,7 @@ def do_MC_swap_walk(at, movement_args, Emax, KEmax):
 	    at.arrays['ns_extra_data'][i1,...] = extra_data_2_orig
 	    at.arrays['ns_extra_data'][i2,...] = extra_data_1_orig
 
-	#DOC accept swap if energy < Emax
+	#DOC \item accept swap if energy < Emax
 	new_energy = eval_energy(at)
 
 	if new_energy < Emax: # accept
@@ -968,6 +969,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
 	for move in possible_moves:
 	    #DOC \item do\_(MC $|$ MD)\_atom\_walk
 	    #DOC \item do\_MC\_cell\_walk
+	    #DOC \item do\_MC\_swap\_walk
 	    accumulate_stats(out, move(at, movement_args, Emax, KEmax))
 	#DOC \end{itemize}
     #DOC \end{itemize}

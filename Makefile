@@ -8,8 +8,8 @@ libs: fortran_MC_MD.so $(F90_MODELS:.F90=.so)
 
 doc: MC_MD_steps.pdf
 
-MC_MD_steps.pdf: MC_MD_steps.tex ns_run
-	egrep '#DOC' ns_run | sed 's/#DOC[ ]*//' > MC_MD_steps_body.tex
+MC_MD_steps.pdf: MC_MD_steps.tex ns_run.py
+	egrep '#DOC' ns_run.py | sed 's/#DOC[ ]*//' > MC_MD_steps_body.tex
 	pdflatex MC_MD_steps.tex
 
 # extra dependency for RngStream
