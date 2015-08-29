@@ -310,7 +310,7 @@ End LAMMPSlib Interface Documentation
             f[:, i] = np.asarray(self.lmp.extract_variable(
                     var, 'all', 1)[:len(atoms)])
             
-        self.results['forces'] = f
+        self.results['forces'] = np.dot(f, self.coord_transform)
 
         if not self.parameters.keep_alive:
             self.lmp.close()
