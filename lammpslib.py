@@ -295,11 +295,30 @@ End LAMMPSlib Interface Documentation
             
 #        if 'stress' in properties:
         stress = np.empty(6)
-        stress_vars = ['pxx', 'pyy', 'pzz', 'pxy', 'pxz', 'pyz']
+        # stress_vars = ['pxx', 'pyy', 'pzz', 'pxy', 'pxz', 'pyz']
+        stress_vars = ['pxx', 'pyy', 'pzz', 'pyz', 'pxz', 'pxy']
 
         for i, var in enumerate(stress_vars):
             stress[i] = self.lmp.extract_variable(var, None, 0)
-            
+
+	stress_mat = np.zeros( (3,3) )
+	stress_mat[0,0] = stress[0]
+	stress_mat[1,1] = stress[1]
+	stress_mat[2,2] = stress[2]
+	stress_mat[1,2] = stress[3]
+	stress_mat[2,1] = stress[3]
+	stress_mat[0,2] = stress[4]
+	stress_mat[2,0] = stress[4]
+	stress_mat[0,1] = stress[5]
+	stress_mat[1,0] = stress[5]
+	stress_mat = np.dot(self.coord_transform.T, np.dot(stress_mat, self.coord_transform))
+	stress[0] = stress_mat[0,0]
+	stress[1] = stress_mat[1,1]
+	stress[2] = stress_mat[2,2]
+	stress[3] = stress_mat[1,2]
+	stress[4] = stress_mat[0,2]
+	stress[5] = stress_mat[0,1]
+
         # 1 bar (used by lammps for metal units) = 1e-4 GPa
         self.results['stress'] = stress * -1e-4 * GPa
 
