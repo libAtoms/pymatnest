@@ -1,0 +1,37 @@
+repeat n_steps
+	blocked, in random order:
+		do_(MC|MD)_atom_walk (vel_rando+atom_n_substeps MD or MC sweeps)
+		do_MC_cell_walk (cell_n_substeps x 3)
+		do_MC_swap_walk (swap_n_substeps attempts)
+	unblocked, in random order
+		do_(MC|MD)_atom_walk x n_steps_unblocked_atom_walk(?)
+		do_MC_cell_walk x n_steps_unblocked_cell_walk
+		do_MC_swap_walk x n_steps_unblocked_swap_walk
+
+
+
+
+
+specify
+	n_model_calls_expected
+	n_atom_steps
+		n_atom_HMC_traj_len
+	n_cell_steps
+	n_swap_steps
+
+calculate n_model_calls from n_model_calls_expected
+
+blocked:
+	while n_model_cells_used <  n_model_calls
+		do in random order:
+			do_(MC|MD)_atom_walk (n_atom_steps x [vel + n_atom_HMC_traj_len MD steps or 1 x MC sweep])
+			do_MC_cell_walk(n_cell_steps)
+			do_MC_swap_walk(n_swap_steps)
+
+unblocked:
+	create_list:
+		while n_model_calls_used <  n_model_calls
+			add n_atom_steps * do_(MC|MD)_atom_walk (vel + n_atom_HMC_traj MD steps or 1 x MC sweep)
+			add n_cell_steps * do_MC_cell_walk(1)
+			add n_swap_steps * do_MC_swap_walk(1)
+	execute list in random order
