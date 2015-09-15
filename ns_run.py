@@ -9,8 +9,8 @@ def usage():
 
 .. glossary::  
 
-    ``max_volume=float``
-       | Maximum volume allowed during the run.
+    ``max_volume_per_atom=float``
+       | Maximum volume per atom allowed during the run.
        | default: 1.0e3
 
     ``start_species=int int [ float ] [, int int [ float ] ... ]``
@@ -212,6 +212,9 @@ def usage():
      |  (-1, < 0 for seed from /dev/urandom)
     ``no_extra_walks_at_all=[ T | F ]``
      | (F)
+    ``track_configs=[ T | F ]``
+     | Track configrations across all walks/clones
+     | (F)
 
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
@@ -309,6 +312,7 @@ def usage():
     sys.stderr.write("traj_interval=int (1, <=0 for no trajectory)\n")
     sys.stderr.write("random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
+    sys.stderr.write("track_configs=[ T | F ] (F)\n")
 
 def exit_error(message, stat):
     sys.stderr.write(message)
@@ -581,7 +585,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 	if movement_args['MD_atom_reject_energy_violation']:
 	    reject_fuzz = True
 	else:
-	    print print_prefix, ": INFO: MD energy deviation > fuzz*final_KE. Pre-MD, post-MD, difference, final_KE ", pre_MD_E, final_E, final_E-pre_MD_E, final_KE
+	    print print_prefix, ": WARNING: MD energy deviation > fuzz*final_KE. Pre-MD, post-MD, difference, final_KE ", pre_MD_E, final_E, final_E-pre_MD_E, final_KE
 
     #DOC \item accept/reject entire move on E $<$ Emax
     reject_Emax = (final_E >= Emax)
@@ -1221,6 +1225,7 @@ def do_ns_loop():
     This is the main nested sampling loop, doing the iterations.
     """
     global print_prefix
+    global cur_config_ind
 
     if rank == 0:
 	nD = 3
@@ -1270,6 +1275,10 @@ def do_ns_loop():
     for i_ns_step in range(start_first_iter, ns_args['n_iter']):
 	print_prefix="%d %d" % (rank, i_ns_step)
 
+        if ns_args['debug'] >= 4:
+            for at in walkers:
+                print print_prefix, "INFO: 10 config_ind ", at.info['config_ind'], " from ", at.info['from_config_ind'], " at ", at.info['config_ind_time']
+
 	if movement_args['adjust_step_interval'] < 0:
 	    zero_stats(walk_stats_cumul, movement_args)
 
@@ -1306,6 +1315,8 @@ def do_ns_loop():
 	for r in range(size):
 	    entries_for_this_rank = np.where(cull_rank == r)[0]
 	    cull_list[r] = cull_ind[entries_for_this_rank]
+            if rank == 0 and ns_args['debug'] >= 4 and len(cull_ind[entries_for_this_rank]) > 0:
+                print print_prefix, "INFO: 20 cull ", cull_ind[entries_for_this_rank], " on ",r
 
 
 	# record Emax walkers energies
@@ -1341,8 +1352,15 @@ def do_ns_loop():
 		#QUIP_IO else:
 		    #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
 
+                # store culled config in list to be written (when snapshot_interval has passed) every traj_interval steps
 	        if ns_args['traj_interval'] > 0 and i_ns_step % ns_args['traj_interval'] == 0:
 		    walker_list.append(walkers[i].copy())
+
+                # if tracking all configs, save this one that has been culled
+                if track_traj_io is not None:
+                    at = walkers[i].copy()
+                    at.info['culled'] = True
+                    ase.io.write(track_traj_io, at, format=ns_args['config_file_format'])
 
 	# print the recorded Emax walkers configurations to output file
         if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
@@ -1457,22 +1475,28 @@ def do_ns_loop():
 	rng.switch_to_local()
 
 	if n_cull == 1:
-	    if send_rank[0] == recv_rank[0] and send_rank[0] == rank:
+	    if send_rank[0] == recv_rank[0] and send_rank[0] == rank: # local copy
 		walkers[recv_ind[0]].set_positions(walkers[send_ind[0]].get_positions())
 		walkers[recv_ind[0]].set_cell(walkers[send_ind[0]].get_cell())
 		if movement_args['do_velocities']:
 		    walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
 		if ns_args['n_extra_data'] > 0:
 		    walkers[recv_ind[0]].arrays['ns_extra_data'][...] = walkers[send_ind[0]].arrays['ns_extra_data']
+		if ns_args['track_configs']:
+                    walkers[recv_ind[0]].info['config_ind'] = walkers[send_ind[0]].info['config_ind']
+                    walkers[recv_ind[0]].info['from_config_ind'] = walkers[send_ind[0]].info['from_config_ind']
+                    walkers[recv_ind[0]].info['config_ind_time'] = walkers[send_ind[0]].info['config_ind_time']
 		walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 		if ns_args['debug'] >= 10 and size <= 1:
 		    walkers[recv_ind[0]].info['n_walks'] = 0
-	    else:
+	    else: # need send/recv
 		n_send = 3*(n_atoms + 3)
 		if movement_args['do_velocities']:
 		    n_send += 3*n_atoms
 		if ns_args['n_extra_data'] > 0:
 		    n_send += ns_args['n_extra_data']*n_atoms
+                if ns_args['track_configs']:
+                    n_send += 3
 		buf = np.zeros ( n_send )
 		if send_rank[0] == rank: # only one config is sent/received
 		    buf_o = 0
@@ -1482,6 +1506,10 @@ def do_ns_loop():
 			buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].get_velocities().reshape( (3*n_atoms) ); buf_o += 3*n_atoms
 		    if ns_args['n_extra_data'] > 0:
 			buf[buf_o:buf_o+ns_args['n_extra_data']*n_atoms] = walkers[send_ind[0]].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) ); buf_o += ns_args['n_extra_data']*n_atoms
+                    if ns_args['track_configs']:
+                        buf[buf_o] = walkers[send_ind[0]].info['config_ind']; buf_o += 1
+                        buf[buf_o] = walkers[send_ind[0]].info['from_config_ind']; buf_o += 1
+                        buf[buf_o] = walkers[send_ind[0]].info['config_ind_time']; buf_o += 1
 		    comm.Send([buf,  MPI.DOUBLE], dest=recv_rank[0], tag=100)
 		elif recv_rank[0] == rank:
 		    comm.Recv([buf, MPI.DOUBLE], source=send_rank[0], tag=100)
@@ -1492,6 +1520,10 @@ def do_ns_loop():
 			walkers[recv_ind[0]].set_velocities(buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, 3) )); buf_o += 3*n_atoms
 		    if ns_args['n_extra_data'] > 0:
 			walkers[recv_ind[0]].arrays['ns_extra_data'][...] = buf[buf_o:buf_o+3*n_atoms].reshape( walkers[recv_ind[0]].arrays['ns_extra_data'].shape ); buf_o += ns_args['n_extra_data']*n_atoms
+		    if ns_args['track_configs']:
+                        walkers[recv_ind[0]].info['config_ind'] = int(buf[buf_o]); buf_o += 1
+                        walkers[recv_ind[0]].info['from_config_ind'] = int(buf[buf_o]); buf_o += 1
+                        walkers[recv_ind[0]].info['config_ind_time'] = int(buf[buf_o]); buf_o += 1
 		    walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
 
 	else: # complicated construction of sending/receiving buffers
@@ -1501,6 +1533,8 @@ def do_ns_loop():
 		n_data_per_config += 3*n_atoms
 	    if ns_args['n_extra_data'] > 0:
 		n_data_per_config += ns_args['n_extra_data']*n_atoms
+	    if ns_args['track_configs']:
+                n_data_per_config += 3
 
 	    # figure out send counts
 	    send_count = [0] * size
@@ -1532,6 +1566,10 @@ def do_ns_loop():
 		    send_data[data_o:data_o+3*n_atoms] = walkers[i_send].get_velocities().reshape( (3*n_atoms) ); data_o += 3*n_atoms
 		if ns_args['n_extra_data'] > 0:
 		    send_data[data_o:data_o+ns_args['n_extra_data']*n_atoms] = walkers[i_send].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) ); data_o += ns_args['n_extra_data']*n_atoms
+		if ns_args['track_configs']:
+                    send_data[data_o] = walkers[i_send].info['config_ind']; data_o += 1
+                    send_data[data_o] = walkers[i_send].info['from_config_ind']; data_o += 1
+                    send_data[data_o] = walkers[i_send].info['config_ind_time']; data_o += 1
 		send_displ_t[r_recv] = data_o
 
 	    # figure out recv counts
@@ -1569,6 +1607,10 @@ def do_ns_loop():
 		    walkers[i_recv].set_velocities( recv_data[data_o:data_o+3*n_atoms].reshape( (n_atoms, 3) )); data_o += 3*n_atoms
 		if ns_args['n_extra_data'] > 0:
 		    walkers[i_recv].arrays['ns_extra_data'][...] = recv_data[data_o:data_o+ns_args['n_extra_data']*n_atoms].reshape( walkers[i_recv].arrays['ns_extra_data'].shape ); data_o += ns_args['n_extra_data']*n_atoms
+		if ns_args['track_configs']:
+                    walkers[i_recv].info['config_ind'] = int(recv_data[data_o]); data_o += 1
+                    walkers[i_recv].info['from_config_ind'] = int(recv_data[data_o]); data_o += 1
+                    walkers[i_recv].info['config_ind_time'] = int(recv_data[data_o]); data_o += 1
 		recv_displ_t[r_send] = data_o
 
 	if ns_args['debug'] >= 20:
@@ -1576,17 +1618,31 @@ def do_ns_loop():
 	    print print_prefix, "%30s" % ": LOOP_PE POST_CLONE 21 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
 	    print print_prefix, "%30s" % ": LOOP_X POST_CLONE 22 ",i_ns_step, [ at.positions[0,0] for at in walkers ]
 
+        if ns_args['track_configs']:
+            # loop over _all_ clone targets and increment cur_config_ind, setting appropriate configs' new config_ind as needed 
+            for r in range(size):
+                clone_walk_ind = np.where(status[r,:] == 'c_t_a')[0]
+                for i_at in clone_walk_ind:
+                    if r == rank:
+                        walkers[i_at].info['from_config_ind'] = walkers[i_at].info['config_ind']
+                        walkers[i_at].info['config_ind'] = cur_config_ind
+                        walkers[i_at].info['config_ind_time'] = i_ns_step
+                    cur_config_ind += 1
 	# move cloned walkers
 
 	# walk clone targets
-	if ns_args['debug'] >= 5:
+	if ns_args['debug'] >= 4:
 	    for i in np.where(status[rank,:] == 'c_s')[0]:
-		print print_prefix, "clone source ", rank, i
+		print print_prefix, "INFO: 30 clone source ", rank, i
 	clone_walk_ind = np.where(status[rank,:] == 'c_t_a')[0]
 	for i_at in clone_walk_ind:
-	    if ns_args['debug'] >= 5:
-		print print_prefix, "WALK clone_target ", rank, i_at
+	    if ns_args['debug'] >= 4:
+		print print_prefix, "INFO: 40 WALK clone_target ", rank, i_at
 	    walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step, KEmax)
+            # if tracking all configs, save this one that has been walked
+            if track_traj_io is not None:
+                walkers[i_at].info['iter'] = i_ns_step
+                ase.io.write(track_traj_io, walkers[i_at], format=ns_args['config_file_format'])
 	    #print "WALK on rank ", rank, "at iteration ", i_ns_step, " walker ", i_at
 	    if ns_args['debug'] >= 10 and size <= 1:
 		walkers[i_at].info['n_walks'] += movement_args['n_steps']
@@ -1623,9 +1679,13 @@ def do_ns_loop():
 		# WARNING: this may select walkers for extra walks multiple times, yet never re-walk ones that were walked as clone targets
 		while status[rank,r_i] != '' and status[rank,r_i] != 'c_s':
 		    r_i = rng.int_uniform(0, n_walkers)
-		if ns_args['debug'] >= 5:
-		    print print_prefix, "WALK extra ",rank, r_i
+		if ns_args['debug'] >= 4:
+		    print print_prefix, "INFO: 50 WALK extra ",rank, r_i
 		walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step, KEmax)
+                # if tracking all configs, save this one that has been walked
+                if track_traj_io is not None:
+                    walkers[i_at].info['iter'] = i_ns_step
+                    ase.io.write(track_traj_io, walkers[i_at], format=ns_args['config_file_format'])
 	        #print "WALK EXTRA on rank ", rank, "at iteration ", i_ns_step, " walker ", r_i
 		if ns_args['debug'] >= 10 and size <= 1:
 		    walkers[r_i].info['n_walks'] += movement_args['n_steps']
@@ -1664,6 +1724,7 @@ def main():
         global energy_io, traj_io, walkers
         global n_atoms, KEmax, pot
         global MPI, quippy, f_MC_MD
+        global track_traj_io, cur_config_ind
 
 	import sys
 
@@ -1833,6 +1894,8 @@ def main():
 	    exit_error("energy_calculator=%s unknown\n" % ns_args['energy_calculator'], 3)
 
 	ns_args['no_extra_walks_at_all'] = str_to_logical(args.pop('no_extra_walks_at_all', "F"))
+
+	ns_args['track_configs'] = str_to_logical(args.pop('track_configs', "F"))
 
 	ns_args['config_file_format'] = args.pop('config_file_format', 'extxyz')
 
@@ -2070,10 +2133,23 @@ def main():
 	    for i_walker in range(n_walkers):
 		walkers.append(init_atoms.copy())
 
+            if ns_args['track_configs']:
+                if comm is None:
+                    config_ind = 0
+                else:
+                    config_ind = comm.rank*n_walkers
 	    for at in walkers:
 		at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
+                if ns_args['track_configs']:
+                    at.info['config_ind'] = config_ind
+                    at.info['from_config_ind'] = -1
+                    at.info['config_ind_time'] = -1
+                    config_ind += 1
 		if do_calc_quip or do_calc_lammps:
 		    at.set_calculator(pot)
+
+            print "WARNING setting cur_config_ind"
+            cur_config_ind = comm.size*n_walkers
 
 	    # V should have prob distrib p(V) = V^N.
 	    # Using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^N and p(x) = 1,
@@ -2199,8 +2275,16 @@ def main():
         # open the file where the trajectory will be printed
 	if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
             traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
+            if ns_args['track_configs']:
+                track_traj_io = open(ns_args['out_file_prefix']+'track_traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
+            else:
+                track_traj_io = None
         else: # restart, so the existing file should be appended
             traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
+            if ns_args['track_configs']:
+                track_traj_io = open(ns_args['out_file_prefix']+'track_traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
+            else:
+                track_traj_io = None
 
             # Read the existing traj file and look for the point where we restart from. Truncate the rest. 
 	    # This part is not used because the ASE.io.read takes soooo long, that it makes a restart impossible.
@@ -2253,6 +2337,8 @@ def main():
 	if rank == 0:
 	    energy_io.close()
 	traj_io.close()
+        if track_traj_io is not None:
+            track_traj_io.close()
 
 	if comm is not None:
 	    MPI.Finalize()
