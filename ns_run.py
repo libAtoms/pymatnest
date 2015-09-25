@@ -120,9 +120,9 @@ def usage():
     ``MD_atom_velo_flip_accept=[T | F]`` 
        | default: F
     ``MD_atom_timestep=float`` 
-       | default: 1.0
+       | default: 1.0 (fs)
     ``MD_atom_timestep_max=float`` 
-     | default: 2.0
+     | default: 2.0 (fs)
     ``MD_atom_energy_fuzz=float``
      |  (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)
     ``MD_atom_reject_energy_violation=[ T | F ]``
@@ -261,8 +261,8 @@ def usage():
     sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
     sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory\n")
     sys.stderr.write("MD_atom_velo_flip_accept=[T | F] (F)\n")
-    sys.stderr.write("MD_atom_timestep=float (1.0)\n")
-    sys.stderr.write("MD_atom_timestep_max=float (2.0)\n")
+    sys.stderr.write("MD_atom_timestep=float (1.0, in fs)\n")
+    sys.stderr.write("MD_atom_timestep_max=float (2.0, in fs)\n")
     sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)\n")
     sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)\n")
     sys.stderr.write("\n")
