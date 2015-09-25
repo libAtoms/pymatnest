@@ -120,9 +120,9 @@ def usage():
     ``MD_atom_velo_flip_accept=[T | F]`` 
        | default: F
     ``MD_atom_timestep=float`` 
-       | default: 1.0 (fs)
+       | default: 0.1 (ASE time units)
     ``MD_atom_timestep_max=float`` 
-     | default: 2.0 (fs)
+     | default: 0.5 (ASE time units)
     ``MD_atom_energy_fuzz=float``
      |  (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)
     ``MD_atom_reject_energy_violation=[ T | F ]``
@@ -261,8 +261,8 @@ def usage():
     sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
     sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory\n")
     sys.stderr.write("MD_atom_velo_flip_accept=[T | F] (F)\n")
-    sys.stderr.write("MD_atom_timestep=float (1.0, in fs)\n")
-    sys.stderr.write("MD_atom_timestep_max=float (2.0, in fs)\n")
+    sys.stderr.write("MD_atom_timestep=float (0.1, in ASE time units)\n")
+    sys.stderr.write("MD_atom_timestep_max=float (0.5, in ASE time units)\n")
     sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)\n")
     sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)\n")
     sys.stderr.write("\n")
@@ -389,6 +389,7 @@ def propagate_NVE_quippy(at, dt, n_steps):
 	at.velo[:,:] = old_velo.transpose()/(ase.units.Ang/ase.units.fs)
     ds=quippy.DynamicalSystem(at)
 
+    # dt is being converted from ASE units to fs
     if ns_args['debug'] >= 10:
 	ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=1, write_interval=0, save_interval=0)
     else:
@@ -404,6 +405,7 @@ def propagate_NVE_lammps(at, dt, n_steps):
     # NB maybe not do this every time?
     at.wrap()
 
+    # dt being passed in ASE units
     pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
 
 def velo_rv_mag(n):
