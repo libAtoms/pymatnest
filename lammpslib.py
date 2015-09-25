@@ -311,7 +311,8 @@ End LAMMPSlib Interface Documentation
 	stress_mat[2,0] = stress[4]
 	stress_mat[0,1] = stress[5]
 	stress_mat[1,0] = stress[5]
-	stress_mat = np.dot(self.coord_transform.T, np.dot(stress_mat, self.coord_transform))
+        if self.coord_transform is not None:
+            stress_mat = np.dot(self.coord_transform.T, np.dot(stress_mat, self.coord_transform))
 	stress[0] = stress_mat[0,0]
 	stress[1] = stress_mat[1,1]
 	stress[2] = stress_mat[2,2]
@@ -329,7 +330,10 @@ End LAMMPSlib Interface Documentation
             f[:, i] = np.asarray(self.lmp.extract_variable(
                     var, 'all', 1)[:len(atoms)])
             
-        self.results['forces'] = np.dot(f, self.coord_transform)
+        if self.coord_transform is not None:
+            self.results['forces'] = np.dot(f, self.coord_transform)
+        else:
+            self.results['forces'] = f.copy()
 
         if not self.parameters.keep_alive:
             self.lmp.close()
