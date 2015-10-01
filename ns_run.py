@@ -1591,9 +1591,12 @@ def do_ns_loop():
 	    recv_data = np.zeros(recv_count_tot)
 
 	    # do communications
-	    send_buf = [send_data, send_count, send_displ, MPI.DOUBLE]
-	    recv_buf = (recv_data, recv_count, recv_displ, MPI.DOUBLE)
-	    comm.Alltoallv(send_buf, recv_buf)
+            if comm is not None:
+                send_buf = [send_data, send_count, send_displ, MPI.DOUBLE]
+                recv_buf = (recv_data, recv_count, recv_displ, MPI.DOUBLE)
+                comm.Alltoallv(send_buf, recv_buf)
+            else:
+                recv_data = send_data.copy()
 
 	    # copy data from recv buffer to walkers
 	    recv_displ_t = list(recv_displ)
@@ -1656,8 +1659,11 @@ def do_ns_loop():
 
 	# check that everything that should have been changed has, and things that shouldn't have, haven't
 	if ns_args['debug'] >= 10:
-	    final_PE_loc = [ eval_energy(at, do_KE=False) for at in walkers ]
-	    final_PE = np.array(comm.allgather(final_PE_loc)).flatten()
+            final_PE_loc = [ eval_energy(at, do_KE=False) for at in walkers ]
+            if comm is not None:
+                final_PE = np.array(comm.allgather(final_PE_loc)).flatten()
+            else:
+                final_PE = final_PE_loc
 	    if rank == 0:
 		final_status = status.flatten()
 		for e in initial_unchanged:
@@ -2150,8 +2156,11 @@ def main():
 		if do_calc_quip or do_calc_lammps:
 		    at.set_calculator(pot)
 
-            print "WARNING setting cur_config_ind"
-            cur_config_ind = comm.size*n_walkers
+            if ns_args['track_configs']:
+                if comm is not None:
+                    cur_config_ind = comm.size*n_walkers
+                else:
+                    cur_config_ind = n_walkers
 
 	    # V should have prob distrib p(V) = V^N.
 	    # Using transformation rule p(y) = p(x) |dx/dy|, with p(y) = y^N and p(x) = 1,
