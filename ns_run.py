@@ -1277,7 +1277,7 @@ def do_ns_loop():
     for i_ns_step in range(start_first_iter, ns_args['n_iter']):
 	print_prefix="%d %d" % (rank, i_ns_step)
 
-        if ns_args['debug'] >= 4:
+        if ns_args['debug'] >= 4 and ns_args['track_configs']:
             for at in walkers:
                 print print_prefix, "INFO: 10 config_ind ", at.info['config_ind'], " from ", at.info['from_config_ind'], " at ", at.info['config_ind_time']
 
