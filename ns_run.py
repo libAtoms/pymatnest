@@ -597,7 +597,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
     #DOC \begin{itemize}
     if reject_fuzz or reject_Emax or reject_KEmax: # reject
 	#DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)
-	print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " velo perturbed E ", pre_MD_E, " final E ",final_E, " KEmax ", KEmax, " KE ", final_KE
+	# print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " velo perturbed E ", pre_MD_E, " final E ",final_E, " KEmax ", KEmax, " KE ", final_KE
 	at.set_positions(pre_MD_pos)
 	if movement_args['MD_atom_velo_flip_accept']:
 	    at.set_velocities(pre_MD_velo)
