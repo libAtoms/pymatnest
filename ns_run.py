@@ -586,8 +586,8 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
     if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']*final_KE:
 	if movement_args['MD_atom_reject_energy_violation']:
 	    reject_fuzz = True
-	else:
-	    print print_prefix, ": WARNING: MD energy deviation > fuzz*final_KE. Pre-MD, post-MD, difference, final_KE ", pre_MD_E, final_E, final_E-pre_MD_E, final_KE
+	# else:
+	    # print print_prefix, ": WARNING: MD energy deviation > fuzz*final_KE. Pre-MD, post-MD, difference, final_KE ", pre_MD_E, final_E, final_E-pre_MD_E, final_KE
 
     #DOC \item accept/reject entire move on E $<$ Emax
     reject_Emax = (final_E >= Emax)
