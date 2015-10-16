@@ -485,8 +485,9 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 	else:
 	    # pick new random magnitude - count on dimensionality to make change small
 	    # WARNING: check this for variable masses
-	    masses_2D = at.get_masses().reshape( (len(at),1) )
-	    momenta = gen_random_velo(at, KEmax_use, velo/velo_mag) * masses_2D
+
+	    sqrt_masses_2D = np.sqrt(at.get_masses().reshape( (len(at),1) ))
+	    scaled_vel = gen_random_velo(at, KEmax_use, velo/velo_mag) * sqrt_masses_2D
 
 	    if rotate:
 		# apply random rotations
@@ -496,12 +497,12 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 		    ang = rng.float_uniform(-movement_args['atom_velo_rej_free_perturb_angle'],movement_args['atom_velo_rej_free_perturb_angle'])
 		    c_ang = np.cos(ang)
 		    s_ang = np.sin(ang)
-		    v_1 = momenta[ind_1_a,ind_1_c] * c_ang + momenta[ind_2_a,ind_2_c] * s_ang
-		    v_2 = -momenta[ind_1_a,ind_1_c] * s_ang + momenta[ind_2_a,ind_2_c] * c_ang
-		    momenta[ind_1_a,ind_1_c] = v_1
-		    momenta[ind_2_a,ind_2_c] = v_2
+		    v_1 = scaled_vel[ind_1_a,ind_1_c] * c_ang + scaled_vel[ind_2_a,ind_2_c] * s_ang
+		    v_2 = -scaled_vel[ind_1_a,ind_1_c] * s_ang + scaled_vel[ind_2_a,ind_2_c] * c_ang
+		    scaled_vel[ind_1_a,ind_1_c] = v_1
+		    scaled_vel[ind_2_a,ind_2_c] = v_2
 
-	    at.set_velocities(momenta / masses_2D)
+	    at.set_velocities(scaled_vel / sqrt_masses_2D)
 
     new_KE = at.get_kinetic_energy()
     # rej_free_perturb_velo expects at.info['ns_energy'] to be set correctly initially
@@ -1382,7 +1383,13 @@ def do_ns_loop():
 
 	if ns_args['debug'] >= 10:
 	    initial_PE_loc = [ eval_energy(at, do_KE=False) for at in walkers ]
-	    initial_PE = np.array(comm.allgather(initial_PE_loc)).flatten()
+            initial_E_loc = [ eval_energy(at) for at in walkers ]
+            if comm is not None:
+                initial_PE = np.array(comm.allgather(initial_PE_loc)).flatten()
+                initial_E = np.array(comm.allgather(initial_E_loc)).flatten()
+            else:
+                initial_PE = initial_PE_loc
+                initial_E = initial_E_loc
 	    initial_changed = initial_PE[np.where(status.flatten() == 'c_t')]
 	    initial_unchanged = initial_PE[np.where(status.flatten() == '')]
 
@@ -1660,22 +1667,29 @@ def do_ns_loop():
 	# check that everything that should have been changed has, and things that shouldn't have, haven't
 	if ns_args['debug'] >= 10:
             final_PE_loc = [ eval_energy(at, do_KE=False) for at in walkers ]
+            final_E_loc = [ eval_energy(at) for at in walkers ]
             if comm is not None:
                 final_PE = np.array(comm.allgather(final_PE_loc)).flatten()
+                final_E = np.array(comm.allgather(final_E_loc)).flatten()
             else:
                 final_PE = final_PE_loc
+                final_E = final_E_loc
 	    if rank == 0:
 		final_status = status.flatten()
 		for e in initial_unchanged:
 		    if e not in final_PE:
 			print "initial_PE ", initial_PE
 			print "final_PE ", final_PE
+			print "initial_E ", initial_E
+			print "final_E ", final_E
 			print "final_status ", final_status
 			print "WARNING: energy that should have been unchanged ", e," missing from final energies"
 		for e in initial_changed:
 		    if e in final_PE:
 			print "initial_PE ", initial_PE
 			print "final_PE ", final_PE
+			print "initial_E ", initial_E
+			print "final_E ", final_E
 			print "final_status ", final_status
 			print "WARNING: energy that should have been changed ", e," still there in final energies"
 
