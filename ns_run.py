@@ -2127,7 +2127,7 @@ def main():
 		    else:
 			exit_error("Each entry is start_species must include atomic number, multiplicity, and optionally mass", 5)
 		init_atoms.set_cell(init_atoms.get_cell()*float(len(init_atoms))**(1.0/3.0), scale_atoms=True)
-		if have_quippy:
+		if do_calc_quip:
 		    init_atoms = quippy.Atoms(init_atoms)
 		ase.io.write(sys.stdout, init_atoms, format=ns_args['config_file_format'])
 	    else:
@@ -2281,7 +2281,7 @@ def main():
 		    print "WARNING: no volume information was found in the restart file. If volume changes will be done, the starting stepsize will be the default"
 	            
 
-	    if have_quippy:
+	    if do_calc_quip:
                 walkers = [quippy.Atoms(at) for at in walkers]
 
 	# scale MC_atom_step_size by max_vol^(1/3)
