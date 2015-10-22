@@ -1768,8 +1768,10 @@ def main():
 	try:
 	    import quippy
 	    have_quippy=True
+            print "successfully loaded quippy module"
 	except:
 	    have_quippy=False
+            print "WARNING: no quippy module loaded"
 
 	# initialize mpi
 	comm = None
