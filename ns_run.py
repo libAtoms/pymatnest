@@ -59,38 +59,39 @@ def usage():
        | Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.
        | default: 1.0e9
 
-    ``n_steps_expected=int``
+    ``n_model_calls_expected=int``
        | (0, one of these is required)
 
-    ``n_steps=int``
+    ``n_model_calls=int``
        | (0, one of these is required)
 
-    ``n_steps_unblocked_atom=int``
-       | (0, one of these is required)
+    ``do_blocks=[T | F]``
+       | (T, whether to do steps in blocks)
 
-    ``n_steps_unblocked_cell_volume=int``
-       | (0, one of these is required)
+    ``do_partial_blocks=[T | F]``
+       | (F, whether to do partial blocks if n_model_calls(_expected) is met)
 
-    ``n_steps_unblocked_cell_shear=int``
-       | (0, one of these is required)
+    ``n_atom_steps=int`` 
+       | (1, number of atomic trajectoris in each block)
 
-    ``n_steps_unblocked_cell_stretch=int``
-       | (0, one of these is required)
+    ``atom_traj_len=int`` 
+       | (8, length of atomic trajectory (MD steps or MC sweeps) in each step)
 
-    ``n_steps_unblocked_swap=int``
-       | (0, one of these is required)
+    ``break_up_atom_traj=[T | F]`` 
+       | (F, whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps)
 
-    ``atom_n_substeps=int`` 
-       | (10, number of steps (MC sweeps or MD time steps in each segement))
+    ``n_cell_volume_steps=int`` 
+       | (1, number of cell volume steps each block)
+    ``n_cell_shear_steps=int`` 
+       | (1, number of cell shear steps each block)
+    ``n_cell_stretch_steps=int`` 
+       | (1, number of cell stretch steps each block)
 
-    ``cell_n_substeps=int`` 
-       | (1, number of MC sweeps in each segement)
+    ``n_swap_steps=int`` 
+       | (0, number of species swap steps each block)
 
-    ``swap_n_substeps=int`` 
-       | (0, number of atom swaps in each segement)
-
-    ``velo_n_substeps=int`` 
-       | (0, number of MC sweeps in each velocity MC segement)
+    ``velo_traj_len=int`` 
+       | (0, number of MC steps in (optional) explicit velocity MC traj)
 
     ``random_energy_perturbation=float`` 
        | (1.0e-12)
@@ -107,9 +108,6 @@ def usage():
     ``MC_atom_step_size_max=float`` 
        | (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3) 
     ``MC_atom_uniform_rv=[T | F]`` 
-       | default: F
-    ``atom_velo_random_order_perturb=[T | F]`` 
-       | Perturb velocities as part of main loop steps
        | default: F
     ``MD_atom_velo_pre_perturb=[T | F]`` 
        | Perturb velocities before MD trajectory
@@ -234,18 +232,21 @@ def usage():
     sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K))\n")
     sys.stderr.write("start_energy_ceiling=float (1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("n_steps_expected=int (0, one of these is required)\n")
-    sys.stderr.write("n_steps=int (0, one of these is required)\n")
-    sys.stderr.write("n_steps_unblocked_atom=int (0, one of these is required)\n")
-    sys.stderr.write("n_steps_unblocked_cell_volume=int (0, one of these is required)\n")
-    sys.stderr.write("n_steps_unblocked_cell_shear=int (0, one of these is required)\n")
-    sys.stderr.write("n_steps_unblocked_cell_stretch=int (0, one of these is required)\n")
-    sys.stderr.write("n_steps_unblocked_swap=int (0, one of these is required)\n")
+    sys.stderr.write("n_model_calls_expected=int (0, one of these is required)\n")
+    sys.stderr.write("n_model_calls=int (0, one of these is required)\n")
+    sys.stderr.write("do_blocks=[T | F] (T, whether to do steps in blocks\n")
+    sys.stderr.write("do_partial_blocks=[T | F] (F, whether to allow partial blocks if n_model_calls(_expected) is met\n")
     sys.stderr.write("\n")
-    sys.stderr.write("atom_n_substeps=int (10, number of steps (MC sweeps or MD time steps in each segement))\n")
-    sys.stderr.write("cell_n_substeps=int (1, number of MC sweeps in each segement)\n")
-    sys.stderr.write("swap_n_substeps=int (0, number of atom swaps in each segement)\n")
-    sys.stderr.write("velo_n_substeps=int (0, number of MC sweeps in each velocity MC segement)\n")
+    sys.stderr.write("n_atom_steps=int (1, number of atomic trajectories per block\n")
+    sys.stderr.write("atom_traj_len=int (8, length of atomic trajectory (MD steps or MC sweeps) in each step\n")
+    sys.stderr.write("break_up_atom_traj=[T | F] (F, whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps\n")
+    sys.stderr.write("\n")
+    sys.stderr.write("n_cell_volume_steps=int (1, number of cell MC volume steps each block)\n")
+    sys.stderr.write("n_cell_shear_steps=int (1, number of cell MC shear steps each block)\n")
+    sys.stderr.write("n_cell_stretch_steps=int (1, number of cell MC stretch steps each block)\n")
+    sys.stderr.write("n_swap_steps=int (0, number of atom swaps in each block)\n")
+    sys.stderr.write("\n")
+    sys.stderr.write("velo_traj_len=int (0, number of MC sweeps in each velocity MC segement)\n")
     sys.stderr.write("\n")
     sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
     sys.stderr.write("atom_algorithm=[MC | MD] (MANDATORY)\n")
@@ -255,8 +256,6 @@ def usage():
     sys.stderr.write("MC_atom_step_size=float (0.1, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
     sys.stderr.write("MC_atom_step_size_max=float (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
     sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
-    sys.stderr.write("\n")
-    sys.stderr.write("atom_velo_random_order_perturb=[T | F] (F. Perturb velocities as part of main loop steps\n")
     sys.stderr.write("\n")
     sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
     sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory\n")
@@ -515,7 +514,7 @@ def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax):
 	rej_free_perturb_velo(at, Emax, KEmax)
 	return {}
 
-    n_steps = movement_args['velo_n_substeps']
+    n_steps = movement_args['velo_traj_len']
     step_size = movement_args['MC_atom_velo_step_size']
 
     initial_KE = eval_energy(at, do_PE=False, do_PV=False)
@@ -570,13 +569,13 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 
     #DOC \item propagate in time atom\_n\_substeps time steps of length MD\_atom\_timestep
     if do_calc_quip:
-	propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_n_substeps'])
+	propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
 	final_E = eval_energy(at)
     elif do_calc_lammps:
-	propagate_NVE_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_n_substeps'])
+	propagate_NVE_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
 	final_E = eval_energy(at)
     elif do_calc_fortran:
-	final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_n_substeps'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
+	final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_traj_len'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
 	final_E += eval_energy(at,do_PE=False, do_KE=False)
     else:
 	exit_error("Need some non-quippy, non-fortran, non-lammps way of doing MD\n",3)
@@ -633,7 +632,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 #DOC do\_MC\_atom\_walk
 #DOC \begin{itemize}
 
-    n_steps = movement_args['atom_n_substeps']
+    n_steps = movement_args['atom_traj_len']
     step_size = movement_args['MC_atom_step_size']
     step_size_velo = movement_args['MC_atom_velo_step_size']
     n_accept=0
@@ -806,125 +805,101 @@ def do_cell_shape_walk(at, movement_args):
 	    (p_accept, transform) = propose_step_func(at, movement_args[key+"_step_size"])
 	    do_cell_step(at, None, p_accept, transform)
 
-def do_MC_swap_walk(at, movement_args, Emax, KEmax):
+def do_MC_swap_step(at, movement_args, Emax, KEmax):
 #DOC
 #DOC \vspace*{\baselineskip}
 #DOC do\_MC\_swap\_walk
 #DOC \begin{itemize}
-    if movement_args['swap_n_substeps'] <= 0:
-	return {}
-
     Z = at.get_atomic_numbers()
 
     #DOC \item return if all atomic numbers are identical
     if (Z[:] == Z[0]).all(): 
         # don't try to swap when all atoms are the same
-        return {}
+        return (0, {})
 
-    #DOC \item loop swap\_n\_substeps times:
-    #DOC \begin{itemize}
-    for i in range(movement_args['swap_n_substeps']):
-	#DOC \item pick two atoms with distinct atomic numbers
-	i1 = rng.int_uniform(0,len(at))
-	i2 = rng.int_uniform(0,len(at))
-	while Z[i1] == Z[i2]:
-	    i2 = rng.int_uniform(0,len(at))
-	p_1_orig = at.positions[i1,:].copy()
-	p_2_orig = at.positions[i2,:].copy()
-	at.positions[i1,:] = p_2_orig
-	at.positions[i2,:] = p_1_orig
-	if ns_args['n_extra_data'] > 0:
-	    extra_data_1_orig = at.arrays['ns_extra_data'][i1,...].copy()
-	    extra_data_2_orig = at.arrays['ns_extra_data'][i2,...].copy()
-	    at.arrays['ns_extra_data'][i1,...] = extra_data_2_orig
-	    at.arrays['ns_extra_data'][i2,...] = extra_data_1_orig
+    #DOC \item pick two atoms with distinct atomic numbers
+    i1 = rng.int_uniform(0,len(at))
+    i2 = rng.int_uniform(0,len(at))
+    while Z[i1] == Z[i2]:
+        i2 = rng.int_uniform(0,len(at))
+    p_1_orig = at.positions[i1,:].copy()
+    p_2_orig = at.positions[i2,:].copy()
+    at.positions[i1,:] = p_2_orig
+    at.positions[i2,:] = p_1_orig
+    if ns_args['n_extra_data'] > 0:
+        extra_data_1_orig = at.arrays['ns_extra_data'][i1,...].copy()
+        extra_data_2_orig = at.arrays['ns_extra_data'][i2,...].copy()
+        at.arrays['ns_extra_data'][i1,...] = extra_data_2_orig
+        at.arrays['ns_extra_data'][i2,...] = extra_data_1_orig
 
-	#DOC \item accept swap if energy < Emax
-	new_energy = eval_energy(at)
+    #DOC \item accept swap if energy < Emax
+    new_energy = eval_energy(at)
 
-	if new_energy < Emax: # accept
-	    at.info['ns_energy'] = new_energy
-	else:
-	    t = at.positions[i1,:]
-	    at.positions[i1,:] = p_1_orig
-	    at.positions[i2,:] = p_2_orig
-	    if ns_args['n_extra_data'] > 0:
-		at.arrays['ns_extra_data'][i1,...] = extra_data_1_orig
-		at.arrays['ns_extra_data'][i2,...] = extra_data_2_orig
+    if new_energy < Emax: # accept
+        at.info['ns_energy'] = new_energy
+    else:
+        t = at.positions[i1,:]
+        at.positions[i1,:] = p_1_orig
+        at.positions[i2,:] = p_2_orig
+        if ns_args['n_extra_data'] > 0:
+            at.arrays['ns_extra_data'][i1,...] = extra_data_1_orig
+            at.arrays['ns_extra_data'][i2,...] = extra_data_2_orig
 
-    #DOC \end{itemize}
-    return {}
+    return (1, {})
 #DOC \end{itemize}
 
 def do_MC_cell_volume_step(at, movement_args, Emax, KEmax):
-    (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_per_atom_step_size'])
-    if do_cell_step(at, Emax, p_accept, transform):
-	return {'MC_cell_volume_per_atom' : (1, 1) }
-    else:
-	return {'MC_cell_volume_per_atom' : (1, 0) }
-
-def do_MC_cell_shear_step(at, movement_args, Emax, KEmax):
-    (p_accept, transform) = propose_shear_step(at, movement_args['MC_cell_shear_step_size'])
-    if do_cell_step(at, Emax, p_accept, transform):
-	return {'MC_cell_shear' : (1, 1) }
-    else:
-	return {'MC_cell_shear' : (1, 0) }
-
-def do_MC_cell_stretch_step(at, movement_args, Emax, KEmax):
-    (p_accept, transform) = propose_stretch_step(at, movement_args['MC_cell_stretch_step_size'])
-    if do_cell_step(at, Emax, p_accept, transform):
-	return {'MC_cell_stretch' : (1, 1) }
-    else:
-	return {'MC_cell_stretch' : (1, 0) }
-
-
-def do_MC_cell_walk(at, movement_args, Emax, KEmax):
 #DOC
 #DOC \vspace*{\baselineskip}
-#DOC do\_MC\_cell\_walk
-#DOC \begin{itemize}
-    if movement_args['cell_n_substeps'] <= 0:
-	return {}
+#DOC do\_MC\_cell\_volume\_step
+    step_rv = rng.float_uniform(0.0, 1.0)
+    if step_rv > movement_args['MC_cell_volume_per_atom_prob']:
+        return (0, {})
+    (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_per_atom_step_size'])
+    if do_cell_step(at, Emax, p_accept, transform):
+	return (1, {'MC_cell_volume_per_atom' : (1, 1) })
+    else:
+	return (1, {'MC_cell_volume_per_atom' : (1, 0) })
 
-    if movement_args['MC_cell_P'] <= 0.0 and rank == 0:
-	sys.stderr.write("WARNING: doing MC_cell_walk but pressure == %f <= 0.0\n" % movement_args['MC_cell_P'])
+def do_MC_cell_shear_step(at, movement_args, Emax, KEmax):
+#DOC
+#DOC \vspace*{\baselineskip}
+#DOC do\_MC\_cell\_shear\_step
+    step_rv = rng.float_uniform(0.0, 1.0)
+    if step_rv > movement_args['MC_cell_shear_prob']:
+        return (0, {})
+    (p_accept, transform) = propose_shear_step(at, movement_args['MC_cell_shear_step_size'])
+    if do_cell_step(at, Emax, p_accept, transform):
+	return (1, {'MC_cell_shear' : (1, 1) })
+    else:
+	return (1, {'MC_cell_shear' : (1, 0) })
 
-    possible_moves = {
-       'MC_cell_volume_per_atom': do_MC_cell_volume_step,
-       'MC_cell_shear': do_MC_cell_shear_step,
-       'MC_cell_stretch': do_MC_cell_stretch_step }
-
-    items = possible_moves.items()
-    out = {}
-    #DOC \item loop cell\_n\_substeps times:
-    #DOC \begin{itemize}
-    for i in range(movement_args['cell_n_substeps']):
-	rng.shuffle_in_place(items)
-	#DOC \item do in random order
-	#DOC \begin{itemize}
-	for key, do_step_func in items:
-	    #DOC \item volume move if rng $<$ attempt probablity
-	    #DOC \item shear move if rng $<$ attempt probablity
-	    #DOC \item stretch move if rng $<$ attempt probablity
-	    step_rv = rng.float_uniform(0.0, 1.0)
-	    if step_rv < movement_args[key+"_prob"]:
-		accumulate_stats(out, do_step_func(at, movement_args, Emax, KEmax))
-	#DOC \end{itemize}
-    #DOC \end{itemize}
-
-    return out
-#DOC \end{itemize}
+def do_MC_cell_stretch_step(at, movement_args, Emax, KEmax):
+#DOC
+#DOC \vspace*{\baselineskip}
+#DOC do\_MC\_cell\_stretch\_step
+    step_rv = rng.float_uniform(0.0, 1.0)
+    if step_rv > movement_args['MC_cell_stretch_prob']:
+        return (0, {})
+    (p_accept, transform) = propose_stretch_step(at, movement_args['MC_cell_stretch_step_size'])
+    if do_cell_step(at, Emax, p_accept, transform):
+	return (1, {'MC_cell_stretch' : (1, 1) })
+    else:
+	return (1, {'MC_cell_stretch' : (1, 0) })
 
 
 def do_atom_walk(at, movement_args, Emax, KEmax):
-    if movement_args['atom_algorithm'] == 'MC':
-	out = do_MC_atom_walk(at, movement_args, Emax, KEmax)
-    elif movement_args['atom_algorithm'] == 'MD':
-	out = do_MD_atom_walk(at, movement_args, Emax, KEmax)
-    else:
-	exit_error("do_atom_walk got unknown 'atom_algorithm' = '%s'\n" % movement_args['atom_algorithm'], 5)
+    n_reps = movement_args['n_atom_steps_per_call']
+    out={}
+    for i in range(n_reps):
+        if movement_args['atom_algorithm'] == 'MC':
+            accumulate_stats(out, do_MC_atom_walk(at, movement_args, Emax, KEmax))
+        elif movement_args['atom_algorithm'] == 'MD':
+            accumulate_stats(out, do_MD_atom_walk(at, movement_args, Emax, KEmax))
+        else:
+            exit_error("do_atom_walk got unknown 'atom_algorithm' = '%s'\n" % movement_args['atom_algorithm'], 5)
 
-    return out
+    return (n_reps*movement_args['atom_traj_len'], out)
 
 def rand_perturb_energy(energy, perturbation, Emax=None):
     if Emax is None:
@@ -961,38 +936,59 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
 #DOC walk\_single\_walker
 #DOC \begin{itemize}
 
-    #DEBUG print "walk_single_walker start w/o PE ", eval_energy(at, do_PE=False), " w/ PE ", eval_energy(at), "Emax ", Emax #DEBUG
-    possible_moves = [do_atom_walk, do_MC_cell_walk, do_MC_swap_walk]
-    if movement_args['do_velocities'] and movement_args['atom_velo_random_order_perturb']:
-	possible_moves.append(do_MC_atom_velo_walk)
+    #DOC \item create block list
+    #DOC \begin{itemize}
+                        #DOC \item do\_atom\_walk $\times$ n\_atom\_step\_calls
+    possible_moves = ( [do_atom_walk] * movement_args['n_atom_steps_n_calls'] +
+                        #DOC \item do\_cell\_volume\_step $\times$ n\_cell\_volume\_steps
+                       [do_MC_cell_volume_step] * movement_args['n_cell_volume_steps'] + 
+                        #DOC \item do\_cell\_shear\_step $\times$ n\_cell\_shear\_steps
+                       [do_MC_cell_shear_step] * movement_args['n_cell_shear_steps'] + 
+                        #DOC \item do\_cell\_stretch\_step $\times$ n\_cell\_stretch\_steps
+                       [do_MC_cell_stretch_step] * movement_args['n_cell_stretch_steps'] + 
+                            #DOC \item do\_swap\_step $\times$ n\_swap\_steps
+                       [do_MC_swap_step] * movement_args['n_swap_steps'] )
+    #DOC \end{itemize}
+
     out = {}
+    n_model_calls_used=0
 
-    #DOC \item loop n\_steps times
+    #DOC \item if do\_blocks
     #DOC \begin{itemize}
-    for i_step in range(movement_args['n_steps']):
-	#DOC \item do in random order
-	#DOC \begin{itemize}
-	rng.shuffle_in_place(possible_moves)
-	for move in possible_moves:
-	    #DOC \item do\_(MC $|$ MD)\_atom\_walk
-	    #DOC \item do\_MC\_cell\_walk
-	    #DOC \item do\_MC\_swap\_walk
-	    accumulate_stats(out, move(at, movement_args, Emax, KEmax))
-	#DOC \end{itemize}
+    if movement_args['do_blocks']:
+        #DOC \item loop while n_model_calls_used < n_model_calls
+        #DOC \begin{itemize}
+        while n_model_calls_used < movement_args['n_model_calls']:
+            #DOC \item shuffle block list
+            rng.shuffle_in_place(possible_moves)
+            #DOC \item loop over items in list
+            #DOC \begin{itemize}
+            for move in possible_moves:
+                #DOC \item do move
+                (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
+                n_model_calls_used += t_n_model_calls
+                accumulate_stats(out, t_out)
+                #DOC \item break if do_partial_blocks and n_model_calls is reached
+                if movement_args['do_partial_blocks'] and n_model_calls_used >= movement_args['n_model_calls']:
+                    break
+            #DOC \end{itemize}
+        #DOC \end{itemize}
+    #DOC \end{itemize}
+    #DOC \item else
+    #DOC \begin{itemize}
+    else:
+        #DOC \item loop while n_model_calls_used < n_model_calls
+        #DOC \begin{itemize}
+        while n_model_calls_used < movement_args['n_model_calls']:
+            #DOC \item pick random item from list
+            move = possible_moves[rng.int_uniform(0,len(possible_moves)-1)]
+            #DOC \item do move
+            (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
+            n_model_calls_used += t_n_model_calls
+            accumulate_stats(out, t_out)
+        #DOC \end{itemize}
     #DOC \end{itemize}
 
-    #DOC \item create list of possible unblocked moves, each type x repeated n\_steps\_unblocked\_x times (x=do\_atom\_walk, do\_MC\_cell\_*\_step, do\_MC\_swap\_walk)
-    possible_moves = ( [ do_atom_walk ] * movement_args['n_steps_unblocked_atom'] +
-		       [ do_MC_cell_volume_step ] * movement_args['n_steps_unblocked_cell_volume'] +
-		       [ do_MC_cell_shear_step ] * movement_args['n_steps_unblocked_cell_shear'] +
-		       [ do_MC_cell_stretch_step ] * movement_args['n_steps_unblocked_cell_stretch'] +
-		       [ do_MC_swap_walk ] * movement_args['n_steps_unblocked_swap'] )
-    #DOC \begin{itemize}
-    #DOC \item do in random order
-    rng.shuffle_in_place(possible_moves)
-    for move in possible_moves:
-	accumulate_stats(out, move(at, movement_args, Emax, KEmax))
-    #DOC \end{itemize}
 
     #DOC \item perturb final energy by random\_energy\_perturbation
     # perturb final energy
@@ -1119,7 +1115,7 @@ def accumulate_stats(d_cumul, d):
 
 
 # figure out n_steps to walk on each iteration to get correct expected number
-def set_n_steps(prop):
+def set_n_from_expected(prop):
     if movement_args[prop+'_expected'] > 0:
 	if movement_args[prop] > 0:
 	    exit_error("Got both "+prop+" and "+prop+"_expected, conflict\n", 5)
@@ -1948,31 +1944,42 @@ def main():
 
 	movement_args={}
 
-	movement_args['n_steps_expected'] = int(args.pop('n_steps_expected', 0))
-	movement_args['n_steps'] = int(args.pop('n_steps', 0))
-	movement_args['n_steps_unblocked_atom'] = int(args.pop('n_steps_unblocked_atom', 0))
-	movement_args['n_steps_unblocked_cell_volume'] = int(args.pop('n_steps_unblocked_cell_volume', 0))
-	movement_args['n_steps_unblocked_cell_shear'] = int(args.pop('n_steps_unblocked_cell_shear', 0))
-	movement_args['n_steps_unblocked_cell_stretch'] = int(args.pop('n_steps_unblocked_cell_stretch', 0))
-	movement_args['n_steps_unblocked_swap'] = int(args.pop('n_steps_unblocked_swap', 0))
-	if (movement_args['n_steps_expected'] <= 0 and
-	    movement_args['n_steps'] <= 0 and
-	    movement_args['n_steps_unblocked_atom'] <= 0 and
-	    movement_args['n_steps_unblocked_cell_volume'] <= 0 and
-	    movement_args['n_steps_unblocked_cell_shear'] <= 0 and
-	    movement_args['n_steps_unblocked_cell_stretch'] <= 0 and
-	    movement_args['n_steps_unblocked_swap'] <= 0):
+	movement_args['n_model_calls_expected'] = int(args.pop('n_model_calls_expected', 0))
+	movement_args['n_model_calls'] = int(args.pop('n_model_calls', 0))
+	movement_args['do_blocks'] = str_to_logical(args.pop('do_blocks', "T"))
+	movement_args['do_partial_blocks'] = str_to_logical(args.pop('do_partial_blocks', "F"))
+
+	movement_args['n_atom_steps'] = int(args.pop('n_atom_steps', 1))
+	movement_args['atom_traj_len'] = int(args.pop('atom_traj_len', 8))
+	movement_args['break_up_atom_traj'] = str_to_logical(args.pop('break_up_atom_traj', "F"))
+        if movement_args['break_up_atom_traj']:
+            movement_args['n_atom_steps_per_call'] = 1
+            movement_args['n_atom_steps_n_calls'] = movement_args['n_atom_steps']
+        else:
+            movement_args['n_atom_steps_per_call'] = movement_args['n_atom_steps']
+            movement_args['n_atom_steps_n_calls'] = 1
+
+	movement_args['n_cell_volume_steps'] = int(args.pop('n_cell_volume_steps', 1))
+	movement_args['n_cell_shear_steps'] = int(args.pop('n_cell_shear_steps', 1))
+	movement_args['n_cell_stretch_steps'] = int(args.pop('n_cell_stretch_steps', 1))
+
+	movement_args['n_swap_steps'] = int(args.pop('n_swap_steps', 0))
+
+	if (movement_args['n_model_calls_expected'] <= 0 and
+	    movement_args['n_model_calls'] <= 0 and
+	    movement_args['n_atom_steps'] <= 0 and
+	    movement_args['n_cell_volume_steps'] <= 0 and
+	    movement_args['n_cell_shear_steps'] <= 0 and
+	    movement_args['n_cell_stretch_steps'] <= 0 and
+	    movement_args['n_swap_steps'] <= 0):
 	    exit_error("Got all of n_steps_* == 0\n", 3)
 
-	movement_args['atom_n_substeps'] = int(args.pop('atom_n_substeps', 10))
-	movement_args['cell_n_substeps'] = int(args.pop('cell_n_substeps', 1))
-	movement_args['swap_n_substeps'] = int(args.pop('swap_n_substeps', 0))
-	movement_args['velo_n_substeps'] = int(args.pop('velo_n_substeps', 8))
+	movement_args['velo_traj_len'] = int(args.pop('velo_traj_len', 8))
+
 	try:
 	    movement_args['atom_algorithm'] = args.pop('atom_algorithm')
 	except:
 	    exit_error("Failed to read algorithm for atom motion atom_algorithm", 1)
-
 	if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD':
 	    exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorith,'], 3)
 
@@ -1984,8 +1991,6 @@ def main():
 	movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 1.0))
 	movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
 	movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
-
-	movement_args['atom_velo_random_order_perturb'] = str_to_logical(args.pop('atom_velo_random_order_perturb', "F"))
 
 	movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))
 	movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_velo_post_perturb', "T"))
@@ -2104,9 +2109,9 @@ def main():
 	internal_cutoff = 3.0
 	Eshift = internal_cutoff**-12 - internal_cutoff**-6
 
-	set_n_steps('n_steps')
+	set_n_from_expected('n_model_calls')
 	if  rank == 0:
-	    print "Using n_steps = ", movement_args['n_steps']
+	    print "Using n_model_calls = ", movement_args['n_model_calls']
 
 	walkers=[]
 	if ns_args['restart_file'] == '': # start from scratch
