@@ -11,11 +11,16 @@ p.add_option('-w','--n_walkers', action='store', help="""number of walkers (need
 p.add_option('-c','--n_cull', action='store', help="""number culled (needed for T weight calculation)""", type='int', default=0)
 p.add_option('-k','--kB', action='store', help="""Boltzmann constant (defaults to 8.6173324e-5 eV/K)""", type='float', default=8.6173324e-5)
 p.add_option('-s','--shift', action='store', help="""energy shift""", type='float', default=0.0)
+p.add_option('-f','--format', action='store', help="""trajectory file format""", type='string', default=None)
 
 opt, args = p.parse_args()
 
 import sys, re, subprocess
 import numpy as np
+
+if len(args) <= 0:
+    sys.stderr.write("Need at least one trajectory file to process\n")
+    sys.exit(2)
 
 if len(opt.temperatures) > 0:
     opt.temperatures = np.array( [ float(T) for T in opt.temperatures.split(',') ] )
@@ -61,7 +66,7 @@ def process_headers(file):
    return data
 
 def traj_iter(files, interval=1, Ts=[]):
-    print "traj_iter ", files, interval, Ts
+    # print "traj_iter files interval Ts ", files, interval, Ts
     n_files=len(files)
     n_done=0
     global_i = 0
@@ -74,13 +79,16 @@ def traj_iter(files, interval=1, Ts=[]):
     for i in range(n_files):
         # print i
         # print "starting file ",files[i]
-        ar = iter(quippy.AtomsReader(files[i]))
+        sys.stderr.write("%d" % (i % 10))
+        ar = iter(quippy.AtomsReader(files[i], format=opt.format))
         atom_readers.append(ar)
         configs[i] = ar.next()
         energies[i] = configs[i].info['ns_energy']
+    sys.stderr.write("\n")
 
-    betas = 1.0/(opt.kB*Ts)
-    log_X_n = 0.0
+    if len(Ts) > 0:
+        betas = 1.0/(opt.kB*Ts)
+        log_X_n = 0.0
 
     # print "starting iterator"
     while True:
@@ -92,12 +100,14 @@ def traj_iter(files, interval=1, Ts=[]):
         highest_E_i = energies.argmax()
         # print "highest_E_i ",highest_E_i
         if opt.trajectory:
-            log_X_n_term = np.log(opt.n_walkers - (global_i % opt.n_cull)) - np.log(opt.n_walkers + 1 - (global_i % opt.n_cull))
-            log_X_n += log_X_n_term
-            log_a = log_X_n - np.log(opt.n_walkers + 1 - ( (global_i+1) % opt.n_cull) )
-            weights = np.exp(log_a - betas*configs[highest_E_i].info['ns_energy'] - opt.shift)
+            if len(Ts) > 0:
+                log_X_n_term = np.log(opt.n_walkers - (global_i % opt.n_cull)) - np.log(opt.n_walkers + 1 - (global_i % opt.n_cull))
+                log_X_n += log_X_n_term
+                log_a = log_X_n - np.log(opt.n_walkers + 1 - ( (global_i+1) % opt.n_cull) )
+                weights = np.exp(log_a - betas*configs[highest_E_i].info['ns_energy'] - opt.shift)
             if global_i % interval == 0:
-                configs[highest_E_i].info['ns_weights'] = ' '.join(['%.10f' % x for x in weights])
+                if len(Ts) > 0:
+                    configs[highest_E_i].info['ns_weights'] = ' '.join(['%.10f' % x for x in weights])
                 yield configs[highest_E_i]
             global_i += 1
         else:
@@ -108,6 +118,7 @@ def traj_iter(files, interval=1, Ts=[]):
             if global_i % interval == 0:
                 yield [configs[highest_E_i].info['iter'], configs[highest_E_i].info['ns_energy'], configs[highest_E_i].get_volume(), KE]
             global_i += 1
+
 
         try:
             configs[highest_E_i] = atom_readers[highest_E_i].next()
