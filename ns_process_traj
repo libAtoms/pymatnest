@@ -5,19 +5,35 @@ import optparse
 p = optparse.OptionParser(usage='%prog [options] <infile> [ <infile> ... ]')
 p.add_option('-n','--no-headers', action='store_true', help="""process a file with V and KE missing from headers""")
 p.add_option('-t','--trajectory', action='store_true', help="""produce combined trajectory""")
+p.add_option('-i','--interval', action='store', help="""interval to output trajectory""", type='int', default=1)
+p.add_option('-T','--temperatures', action='store', help="""temperatures to calculate weights for""", type='string', default='')
+p.add_option('-w','--n_walkers', action='store', help="""number of walkers (needed for T weight calculation)""", type='int')
+p.add_option('-c','--n_cull', action='store', help="""number culled (needed for T weight calculation)""", type='int', default=0)
+p.add_option('-k','--kB', action='store', help="""Boltzmann constant (defaults to 8.6173324e-5 eV/K)""", type='float', default=8.6173324e-5)
+p.add_option('-s','--shift', action='store', help="""energy shift""", type='float', default=0.0)
 
 opt, args = p.parse_args()
 
 import sys, re, subprocess
+import numpy as np
+
+if len(opt.temperatures) > 0:
+    opt.temperatures = np.array( [ float(T) for T in opt.temperatures.split(',') ] )
+    if opt.n_walkers <= 0 or opt.n_cull <= 0:
+        sys.stderr.write("For temperature weight calculations, need n_walkers and n_cull\n")
+        sys.exit(1)
+else:
+    opt.temperatures = []
+
 if opt.trajectory or opt.no_headers:
    import quippy
 
 re_e =      re.compile('ns_energy=([^ ]*)')
 re_volume = re.compile('volume=([^ ]*)')
+re_iter = re.compile('iter=([^ ]*)')
 re_KE =     re.compile('ns_KE=([^ ]*)')
 
 def process_headers(file):
-   sys.stderr.write(".")
    proc = subprocess.Popen(['fgrep','Lattice',file],stdout=subprocess.PIPE)
    data = []
    for l in proc.stdout:
@@ -30,6 +46,10 @@ def process_headers(file):
       if r_volume is not None:
 	 r_volume = float(r_volume.group(1))
 
+      r_iter = re_iter.search(l)
+      if r_iter is not None:
+	 r_iter = int(r_iter.group(1))
+
       r_KE = re_KE.search(l)
       if r_KE is not None:
 	 try:
@@ -37,46 +57,82 @@ def process_headers(file):
 	 except:
 	    r_KE = 0.0
 
-      data.append([r_e, r_volume, r_KE])
+      data.append([r_iter, r_e, r_volume, r_KE])
    return data
 
-def process_traj(file):
-   sys.stderr.write("read %s " %  file)
-   ar = quippy.AtomsReader(file)
-   data = []
-   i = 0
-   for at in ar:
-      if opt.trajectory:
-	 data.append(at)
-      else:
-	 if at.has('masses') and at.has('momenta'):
-	    KE = at.get_kinetic_energy()
-	 else:
-	    KE = None
-	 data.append([at.info['ns_energy'], at.get_volume(), KE])
-      if i%1000 == 0:
-	 sys.stderr.write("%d" % ((i/1000)%10))
-      i += 1
-   sys.stderr.write("\n")
-   return data
+def traj_iter(files, interval=1, Ts=[]):
+    print "traj_iter ", files, interval, Ts
+    n_files=len(files)
+    n_done=0
+    global_i = 0
 
-data=[]
-for file in args:
-   if opt.trajectory or opt.no_headers:
-      data.extend(process_traj(file))
-   else:
-      data.extend(process_headers(file))
+    configs=[None]*n_files
+    energies=np.zeros(n_files)
+    atom_readers=[]
+    # print "n_files ",n_files
+    # print "files ", files
+    for i in range(n_files):
+        # print i
+        # print "starting file ",files[i]
+        ar = iter(quippy.AtomsReader(files[i]))
+        atom_readers.append(ar)
+        configs[i] = ar.next()
+        energies[i] = configs[i].info['ns_energy']
 
-sys.stderr.write("\n")
+    betas = 1.0/(opt.kB*Ts)
+    log_X_n = 0.0
 
-if opt.trajectory:
-   data.sort(key = lambda d: d.info['ns_energy'] )
-   for at in reversed(data):
-      at.write("stdout")
-else:
+    # print "starting iterator"
+    while True:
+        # print "n_done ",n_done, "n_files", n_files
+        if n_done == n_files:
+            raise StopIteration()
+
+        # print "energies ", energies
+        highest_E_i = energies.argmax()
+        # print "highest_E_i ",highest_E_i
+        if opt.trajectory:
+            log_X_n_term = np.log(opt.n_walkers - (global_i % opt.n_cull)) - np.log(opt.n_walkers + 1 - (global_i % opt.n_cull))
+            log_X_n += log_X_n_term
+            log_a = log_X_n - np.log(opt.n_walkers + 1 - ( (global_i+1) % opt.n_cull) )
+            weights = np.exp(log_a - betas*configs[highest_E_i].info['ns_energy'] - opt.shift)
+            if global_i % interval == 0:
+                configs[highest_E_i].info['ns_weights'] = ' '.join(['%.10f' % x for x in weights])
+                yield configs[highest_E_i]
+            global_i += 1
+        else:
+            if configs[highest_E_i].has('masses') and configs[highest_E_i].has('momenta'):
+                KE = configs[highest_E_i].get_kinetic_energy()
+            else:
+                KE = None
+            if global_i % interval == 0:
+                yield [configs[highest_E_i].info['iter'], configs[highest_E_i].info['ns_energy'], configs[highest_E_i].get_volume(), KE]
+            global_i += 1
+
+        try:
+            configs[highest_E_i] = atom_readers[highest_E_i].next()
+            energies[highest_E_i] = configs[highest_E_i].info['ns_energy']
+            # print "incremented energies for stream ",highest_E_i,"to",energies[highest_E_i]
+        except:
+            # print "stream ",highest_E_i,"out of entries"
+            n_done += 1
+            configs[highest_E_i] = None
+            energies[highest_E_i] = float('-inf')
+
+
+if not opt.trajectory:
    print "# i     H      V        KE"
-   data.sort(key = lambda d: d[0])
-   i=0
-   for d in reversed(data):
-      print i, d[0], d[1], d[2]
-      i += 1
+
+if not opt.trajectory and not opt.no_headers:
+    data=[]
+    for file in args:
+        data.extend(process_headers(file))
+    data.sort(key = lambda d: -d[1])
+    for d in data[0::opt.interval]:
+        print d[0], d[1], d[2], d[3]
+else:
+   for d in traj_iter(args, opt.interval, opt.temperatures):
+      if opt.trajectory:
+         d.write("stdout")
+      else:
+         print d[0], d[1], d[2], d[3]
