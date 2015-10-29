@@ -2249,11 +2249,10 @@ def main():
 	    if rank == 0: # read on head task and send to other tasks
 		for r in range(size):
                     # read a slice with file@:
-                    print "read walkers ",(r*n_walkers),"-",(r*n_walkers+n_walkers-1),"from ",ns_args['restart_file']
                     if comm is None or r == 0:
-                        walkers = ase.io.read(ns_args['restart_file']+"@%d:%d" (% r*n_walkers, n_walkers)))
+                        walkers = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, (r+1)*n_walkers))
                     else:
-                        at_list = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, n_walkers)))
+                        at_list = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, (r+1)*n_walkers))
 
 		    if r > 0:
 			comm.send(at_list, dest=r, tag=1)
@@ -2285,7 +2284,6 @@ def main():
 		if not key_found:
 		    print "WARNING: no volume information was found in the restart file. If volume changes will be done, the starting stepsize will be the default"
 	            
-
 	    if do_calc_quip:
                 walkers = [quippy.Atoms(at) for at in walkers]
 
