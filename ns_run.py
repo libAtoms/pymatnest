@@ -2247,16 +2247,14 @@ def main():
 
 	else: # doing a restart
 	    if rank == 0: # read on head task and send to other tasks
-		i_at = 0
 		for r in range(size):
-		    at_list=[]
-		    for i_walker in range(n_walkers):
-			print "read walker ",i_at, " from ",ns_args['restart_file']
-			if comm is None or r == 0:
-			    walkers.append(ase.io.read(ns_args['restart_file'], i_at))
-			else:
-			    at_list.append(ase.io.read(ns_args['restart_file'], i_at))
-			i_at += 1
+                    # read a slice with file@:
+                    print "read walkers ",(r*n_walkers),"-",(r*n_walkers+n_walkers-1),"from ",ns_args['restart_file']
+                    if comm is None or r == 0:
+                        walkers = ase.io.read(ns_args['restart_file']+"@%d:%d" (% r*n_walkers, n_walkers)))
+                    else:
+                        at_list = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, n_walkers)))
+
 		    if r > 0:
 			comm.send(at_list, dest=r, tag=1)
 	    else: # receive from head task
