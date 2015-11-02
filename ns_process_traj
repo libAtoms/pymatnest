@@ -6,12 +6,11 @@ p = optparse.OptionParser(usage='%prog [options] <infile> [ <infile> ... ]')
 p.add_option('-n','--no-headers', action='store_true', help="""process a file with V and KE missing from headers""")
 p.add_option('-t','--trajectory', action='store_true', help="""produce combined trajectory""")
 p.add_option('-i','--interval', action='store', help="""interval to output trajectory""", type='int', default=1)
-p.add_option('-T','--temperatures', action='store', help="""temperatures to calculate weights for""", type='string', default='')
-p.add_option('-w','--n_walkers', action='store', help="""number of walkers (needed for T weight calculation)""", type='int')
+p.add_option('-w','--n_walkers', action='store', help="""number of walkers (needed for T weight calculation)""", type='int', default=0)
 p.add_option('-c','--n_cull', action='store', help="""number culled (needed for T weight calculation)""", type='int', default=0)
 p.add_option('-k','--kB', action='store', help="""Boltzmann constant (defaults to 8.6173324e-5 eV/K)""", type='float', default=8.6173324e-5)
-p.add_option('-s','--shift', action='store', help="""energy shift""", type='float', default=0.0)
-p.add_option('-f','--format', action='store', help="""trajectory file format""", type='string', default=None)
+p.add_option('-f','--format', action='store', help="""input (and if stdout also output) file format""", type='string', default=None)
+p.add_option('-o','--output', action='store', help="""output file name""", type='string', default='stdout')
 
 opt, args = p.parse_args()
 
@@ -22,13 +21,10 @@ if len(args) <= 0:
     sys.stderr.write("Need at least one trajectory file to process\n")
     sys.exit(2)
 
-if len(opt.temperatures) > 0:
-    opt.temperatures = np.array( [ float(T) for T in opt.temperatures.split(',') ] )
+if opt.n_walkers > 0 or opt.n_cull > 0:
     if opt.n_walkers <= 0 or opt.n_cull <= 0:
-        sys.stderr.write("For temperature weight calculations, need n_walkers and n_cull\n")
+        sys.stderr.write("Need both n_walkers and n_cull for weights calculations, otherwise neither\n")
         sys.exit(1)
-else:
-    opt.temperatures = []
 
 if opt.trajectory or opt.no_headers:
    import quippy
@@ -65,7 +61,7 @@ def process_headers(file):
       data.append([r_iter, r_e, r_volume, r_KE])
    return data
 
-def traj_iter(files, interval=1, Ts=[]):
+def traj_iter(files, interval=1, n_walkers=0, n_cull=0):
     # print "traj_iter files interval Ts ", files, interval, Ts
     n_files=len(files)
     n_done=0
@@ -86,8 +82,7 @@ def traj_iter(files, interval=1, Ts=[]):
         energies[i] = configs[i].info['ns_energy']
     sys.stderr.write("\n")
 
-    if len(Ts) > 0:
-        betas = 1.0/(opt.kB*Ts)
+    if n_walkers > 0 and n_cull > 0:
         log_X_n = 0.0
 
     # print "starting iterator"
@@ -100,14 +95,14 @@ def traj_iter(files, interval=1, Ts=[]):
         highest_E_i = energies.argmax()
         # print "highest_E_i ",highest_E_i
         if opt.trajectory:
-            if len(Ts) > 0:
+            if n_walkers > 0 and n_cull > 0:
                 log_X_n_term = np.log(opt.n_walkers - (global_i % opt.n_cull)) - np.log(opt.n_walkers + 1 - (global_i % opt.n_cull))
                 log_X_n += log_X_n_term
                 log_a = log_X_n - np.log(opt.n_walkers + 1 - ( (global_i+1) % opt.n_cull) )
-                weights = np.exp(log_a - betas*configs[highest_E_i].info['ns_energy'] - opt.shift)
+                # weights = np.exp(log_a - betas*configs[highest_E_i].info['ns_energy'] - opt.shift)
             if global_i % interval == 0:
-                if len(Ts) > 0:
-                    configs[highest_E_i].info['ns_weights'] = ' '.join(['%.10f' % x for x in weights])
+                if n_walkers > 0 and n_cull > 0:
+                    configs[highest_E_i].info['ns_weights_log_a'] = log_a
                 yield configs[highest_E_i]
             global_i += 1
         else:
@@ -142,8 +137,10 @@ if not opt.trajectory and not opt.no_headers:
     for d in data[0::opt.interval]:
         print d[0], d[1], d[2], d[3]
 else:
-   for d in traj_iter(args, opt.interval, opt.temperatures):
+   outfile=quippy.AtomsWriter(opt.output, format=opt.format)
+   for d in traj_iter(args, opt.interval, opt.n_walkers, opt.n_cull):
       if opt.trajectory:
-         d.write("stdout")
+         outfile.write(d)
       else:
          print d[0], d[1], d[2], d[3]
+   outfile.close()
