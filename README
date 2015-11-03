@@ -116,3 +116,16 @@ Note: the ``-np 8`` may not be needed, depending on your queueing system.
 The ``LAMMPS ASE`` interface (``lammpslib.py``) is a heavily modified version of
 
 `<https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py>`_
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Temperature averaged analysis workflow
+
+Merge configurations and calculate iteration dependent part of weights using
+   ``ns_process_traj``
+
+Do analysis on output of ``ns_process_traj`` using ``structure_analysis_traj``.
+
+Add T-dependent weights to analysis using ``ns_set_analysis_weights``.  This will write new analysis files, one per temperature, with do_weights set in the header and each data line prepended by the weight.
+
+Finally, use ``mean_var_correl`` to calculated the weighted mean at each temperature.

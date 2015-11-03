@@ -5,16 +5,16 @@ import sys
 kB=8.6173324e-5
 
 if len(sys.argv) != 4:
-    sys.stderr.write("Usage: %s infile analysis_file Ts\n")
+    sys.stderr.write("Usage: %s atoms_infile analysis_file Ts\n" % sys.argv[0])
     sys.exit(1)
 
-infile=sys.argv[1]
+atoms_infile=sys.argv[1]
 analysis_file=sys.argv[2]
 Ts=sys.argv[3]
 
 import quippy, re, numpy as np
 
-ar = iter(quippy.AtomsReader(infile))
+ar = iter(quippy.AtomsReader(atoms_infile))
 analysis = open(analysis_file, "r")
 Ts = [float(T) for T in Ts.split(",")]
 # comment
@@ -33,20 +33,23 @@ data=[]
 log_a=[]
 Es=[]
 for i in range(n_data):
-    if (i % 100) == 0:
+    if ((i+1) % 100) == 0:
         sys.stderr.write("%d" % (int(i/100)%10))
+    if ((i+1) % 10000) == 0:
+        sys.stderr.write("\n")
     at = ar.next()
     log_a.append(at.ns_weights_log_a)
     Es.append(at.ns_energy)
     data.append(analysis.readline().strip())
-sys.stderr.write("\n")
+if n_data % 10000 != 0:
+    sys.stderr.write("\n")
 
 log_a = np.array(log_a)
 Es = np.array(Es)
 
 for T in Ts:
     beta = 1.0/(kB*T)
-    outfile=open(infile+".%f" % T, "w")
+    outfile=open(atoms_infile+".T_%f" % T, "w")
     outfile.write(comment_line+"\n")
     outfile.write(desc_line+" do_weights\n")
     for i in range(n_bins):
@@ -55,7 +58,7 @@ for T in Ts:
     Z_terms = np.exp(log_a[:] - beta*Es[:] - shift)
     Z = np.sum(Z_terms)
     for i in range(n_data):
-        outfile.write("%f %s\n" % (Z_terms[i]/Z, data[i]))
+        outfile.write("%.10f %s\n" % (Z_terms[i]/Z, data[i]))
     outfile.close()
 
 
