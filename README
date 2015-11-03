@@ -121,11 +121,11 @@ The ``LAMMPS ASE`` interface (``lammpslib.py``) is a heavily modified version of
 
 Temperature averaged analysis workflow
 
-Merge configurations and calculate iteration dependent part of weights using
-   ``ns_process_traj``
+Merge configurations using
+   ``ns_process_traj -t``
 
 Do analysis on output of ``ns_process_traj`` using ``structure_analysis_traj``.
 
-Add T-dependent weights to analysis using ``ns_set_analysis_weights``.  This will write new analysis files, one per temperature, with do_weights set in the header and each data line prepended by the weight.
+Add T-dependent weights to analyses using ``ns_set_analysis_weights``.  This will write new analysis files, one per temperature per analysis, with do_weights set in the header and each data line prepended by the weight.
 
-Finally, use ``mean_var_correl`` to calculated the weighted mean at each temperature.
+Finally, use ``mean_var_correl`` to calculated the weighted mean of each analysis at each temperature.

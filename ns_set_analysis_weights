@@ -4,61 +4,84 @@ import sys
 
 kB=8.6173324e-5
 
-if len(sys.argv) != 4:
-    sys.stderr.write("Usage: %s atoms_infile analysis_file Ts\n" % sys.argv[0])
+if len(sys.argv) < 5:
+    sys.stderr.write("Usage: %s Ts energies_infile  interval  analysis_file [ analysis_file ... ]\n" % sys.argv[0])
     sys.exit(1)
 
-atoms_infile=sys.argv[1]
-analysis_file=sys.argv[2]
-Ts=sys.argv[3]
+Ts = [float(T) for T in sys.argv[1].split(",")]
+energies_infile=sys.argv[2]
+interval=int(sys.argv[3])
+analysis_files=sys.argv[4:]
 
-import quippy, re, numpy as np
+import quippy, re, numpy as np, ns_analyse
 
-ar = iter(quippy.AtomsReader(atoms_infile))
-analysis = open(analysis_file, "r")
-Ts = [float(T) for T in Ts.split(",")]
-# comment
-comment_line = analysis.readline().strip()
-# description
-desc_line = analysis.readline().strip()
-p = re.search("^\s*n_bins=(\d+)\s+n_data=(\d+)\s*$", desc_line)
-if p is None:
-    sys.stderr.write("Failed to parse description line '%s'\n" % desc_line)
-n_bins=int(p.group(1))
-n_data=int(p.group(2))
-bin_labels=[]
-for i in range(n_bins):
-    bin_labels.append(analysis.readline().strip())
-data=[]
-log_a=[]
-Es=[]
-for i in range(n_data):
-    if ((i+1) % 100) == 0:
-        sys.stderr.write("%d" % (int(i/100)%10))
-    if ((i+1) % 10000) == 0:
+
+analyses = []
+comment_lines =[]
+desc_lines =[]
+bin_labels = []
+n_bins = []
+n_data = []
+sys.stderr.write("reading analysis headers\n")
+for i in range(len(analysis_files)):
+    analysis = open(analysis_files[i], "r")
+    comment_lines.append(analysis.readline().strip())
+    desc_line = analysis.readline().strip()
+
+    analyses.append(analysis)
+    desc_lines.append(desc_line)
+
+    p = re.search("^\s*n_bins=(\d+)\s+n_data=(\d+)\s*$", desc_line)
+    if p is None:
+        sys.stderr.write("Failed to parse description line '%s'\n" % desc_line)
+        sys.exit(2)
+    n_bins.append(int(p.group(1)))
+    n_data.append(int(p.group(2)))
+    bin_labels.append([])
+    for i_bin in range(n_bins[i]):
+        bin_labels[i].append(analysis.readline().strip())
+
+# should really detect non-equal n_data
+
+sys.stderr.write("reading analysis data\n")
+analysis_data=[ [] ] * len(analyses)
+log_a=[ [] ] * len(analyses)
+Es=[ [] ] * len(analyses)
+for i_data in range(n_data[0]):
+    if ((i_data+1) % 100) == 0:
+        sys.stderr.write("%d" % (int(i_data/100)%10))
+    if ((i_data+1) % 10000) == 0:
         sys.stderr.write("\n")
-    at = ar.next()
-    log_a.append(at.ns_weights_log_a)
-    Es.append(at.ns_energy)
-    data.append(analysis.readline().strip())
-if n_data % 10000 != 0:
+    for i in range(len(analyses)):
+        analysis_data[i].append(analysis.readline().strip())
+if n_data[0] % 10000 != 0:
     sys.stderr.write("\n")
 
-log_a = np.array(log_a)
-Es = np.array(Es)
+sys.stderr.write("reading energies\n")
+(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs([energies_infile])
+Es = Es[0:n_data[0]*interval]
+sys.stderr.write("got n_walkers %d n_cull %d len(Es) %d\n" % (n_walkers, n_cull, len(Es)))
+sys.stderr.write("calculating log_a\n")
+log_a = ns_analyse.calc_log_a(len(Es), kB, n_walkers, n_cull)
 
 for T in Ts:
+    sys.stderr.write("doing T %f\n" % T)
     beta = 1.0/(kB*T)
-    outfile=open(atoms_infile+".T_%f" % T, "w")
-    outfile.write(comment_line+"\n")
-    outfile.write(desc_line+" do_weights\n")
-    for i in range(n_bins):
-        outfile.write(bin_labels[i]+"\n")
-    shift = np.amax(log_a[:] - beta*Es[:])
-    Z_terms = np.exp(log_a[:] - beta*Es[:] - shift)
-    Z = np.sum(Z_terms)
-    for i in range(n_data):
-        outfile.write("%.10f %s\n" % (Z_terms[i]/Z, data[i]))
-    outfile.close()
+    sys.stderr.write("calculating Z terms\n")
+    Z_terms = ns_analyse.calc_Z_terms(beta, log_a, Es)
 
+    Z_terms_reduced=np.zeros(int(len(Es)/interval)+1)
+    for i in range(len(Es)/interval):
+        Z_terms_reduced[i]  = np.sum(Z_terms[i*interval:(i+1)*interval])
+    Z = np.sum(Z_terms_reduced)
 
+    sys.stderr.write("writing analyses\n")
+    for i in range(len(analyses)):
+        outfile=open(analysis_files[i]+".T_%f" % T, "w")
+        outfile.write(comment_lines[i]+"\n")
+        outfile.write(desc_lines[i]+" do_weights\n")
+        for i_bin in range(n_bins[i]):
+            outfile.write(bin_labels[i][i_bin]+"\n")
+        for i_data in range(n_data[0]):
+            outfile.write("%.10f %s\n" % (Z_terms_reduced[i_data]/Z, analysis_data[i][i_data]))
+        outfile.close()
