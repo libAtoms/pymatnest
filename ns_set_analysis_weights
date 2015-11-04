@@ -4,17 +4,17 @@ import sys
 
 kB=8.6173324e-5
 
-if len(sys.argv) < 5:
-    sys.stderr.write("Usage: %s Ts energies_infile  interval  analysis_file [ analysis_file ... ]\n" % sys.argv[0])
-    sys.exit(1)
+import argparse
 
-Ts = [float(T) for T in sys.argv[1].split(",")]
-energies_infile=sys.argv[2]
-interval=int(sys.argv[3])
-analysis_files=sys.argv[4:]
+parser = argparse.ArgumentParser(description="Set weights of analyses (structure_analysis_traj format) for const T ensemble average from nested sampling energies file")
+parser.add_argument('analysis_files', type=str, nargs='+', help='files with unweighted analysis results')
+parser.add_argument('--temperatures','-T', action='store', type=float, nargs='+', help='temperature to do ensemble average at')
+parser.add_argument('--interval','-i', action='store', type=int, help='interval at which analyses were calculated relative to entries in energy file')
+parser.add_argument('--energy_file','-e', action='store', type=str, help='energies file (ns_run format)')
+
+args = parser.parse_args()
 
 import quippy, re, numpy as np, ns_analyse
-
 
 analyses = []
 comment_lines =[]
@@ -23,8 +23,8 @@ bin_labels = []
 n_bins = []
 n_data = []
 sys.stderr.write("reading analysis headers\n")
-for i in range(len(analysis_files)):
-    analysis = open(analysis_files[i], "r")
+for i in range(len(args.analysis_files)):
+    analysis = open(args.analysis_files[i], "r")
     comment_lines.append(analysis.readline().strip())
     desc_line = analysis.readline().strip()
 
@@ -41,47 +41,51 @@ for i in range(len(analysis_files)):
     for i_bin in range(n_bins[i]):
         bin_labels[i].append(analysis.readline().strip())
 
-# should really detect non-equal n_data
+# check for non-equal n_data, if OK make n_data a scalar
+if np.sum(np.array(n_data) != n_data[0]) != 0:
+    sys.stderr.write("Found some analysis with n_data not the same %s" % np.array_str(n_data))
+n_data = n_data[0]
 
 sys.stderr.write("reading analysis data\n")
 analysis_data=[ [] ] * len(analyses)
 log_a=[ [] ] * len(analyses)
 Es=[ [] ] * len(analyses)
-for i_data in range(n_data[0]):
+for i_data in range(n_data):
     if ((i_data+1) % 100) == 0:
         sys.stderr.write("%d" % (int(i_data/100)%10))
     if ((i_data+1) % 10000) == 0:
         sys.stderr.write("\n")
     for i in range(len(analyses)):
         analysis_data[i].append(analysis.readline().strip())
-if n_data[0] % 10000 != 0:
+if n_data % 10000 != 0:
     sys.stderr.write("\n")
 
 sys.stderr.write("reading energies\n")
-(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs([energies_infile])
-Es = Es[0:n_data[0]*interval]
+(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs([args.energy_file])
+Es = Es[0:n_data*args.interval]
 sys.stderr.write("got n_walkers %d n_cull %d len(Es) %d\n" % (n_walkers, n_cull, len(Es)))
 sys.stderr.write("calculating log_a\n")
 log_a = ns_analyse.calc_log_a(len(Es), kB, n_walkers, n_cull)
 
-for T in Ts:
+for T in args.temperatures:
     sys.stderr.write("doing T %f\n" % T)
     beta = 1.0/(kB*T)
     sys.stderr.write("calculating Z terms\n")
     Z_terms = ns_analyse.calc_Z_terms(beta, log_a, Es)
 
-    Z_terms_reduced=np.zeros(int(len(Es)/interval)+1)
-    for i in range(len(Es)/interval):
-        Z_terms_reduced[i]  = np.sum(Z_terms[i*interval:(i+1)*interval])
+    # create reduced Z terms by summing over relevant steps
+    Z_terms_reduced=np.zeros(n_data)
+    for i in range(n_data):
+        Z_terms_reduced[i]  = np.sum(Z_terms[i*args.interval:(i+1)*args.interval])
     Z = np.sum(Z_terms_reduced)
 
     sys.stderr.write("writing analyses\n")
     for i in range(len(analyses)):
-        outfile=open(analysis_files[i]+".T_%f" % T, "w")
+        outfile=open(args.analysis_files[i]+".T_%f" % T, "w")
         outfile.write(comment_lines[i]+"\n")
         outfile.write(desc_lines[i]+" do_weights\n")
         for i_bin in range(n_bins[i]):
             outfile.write(bin_labels[i][i_bin]+"\n")
-        for i_data in range(n_data[0]):
+        for i_data in range(n_data):
             outfile.write("%.10f %s\n" % (Z_terms_reduced[i_data]/Z, analysis_data[i][i_data]))
         outfile.close()

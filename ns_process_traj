@@ -85,7 +85,7 @@ def traj_iter(files, interval=1):
         # print "highest_E_i ",highest_E_i
         if opt.trajectory:
             if global_i % interval == interval-1:
-                configs.info['ns_global_i'] = global_i
+                configs[highest_E_i].info['ns_global_i'] = global_i
                 yield configs[highest_E_i]
             global_i += 1
         else:
