@@ -62,7 +62,7 @@ for T in args.temperatures:
     sys.stderr.write("doing T %f\n" % T)
     beta = 1.0/(kB*T)
     sys.stderr.write("calculating Z terms\n")
-    Z_terms = ns_analyse.calc_Z_terms(beta, log_a, Es)
+    (Z_terms, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es)
 
     # create reduced Z terms by summing over relevant steps
     Z_terms_reduced=np.zeros(n_data)
