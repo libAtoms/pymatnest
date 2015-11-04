@@ -47,18 +47,9 @@ if np.sum(np.array(n_data) != n_data[0]) != 0:
 n_data = n_data[0]
 
 sys.stderr.write("reading analysis data\n")
-analysis_data=[ [] ] * len(analyses)
-log_a=[ [] ] * len(analyses)
-Es=[ [] ] * len(analyses)
-for i_data in range(n_data):
-    if ((i_data+1) % 100) == 0:
-        sys.stderr.write("%d" % (int(i_data/100)%10))
-    if ((i_data+1) % 10000) == 0:
-        sys.stderr.write("\n")
-    for i in range(len(analyses)):
-        analysis_data[i].append(analysis.readline().strip())
-if n_data % 10000 != 0:
-    sys.stderr.write("\n")
+analysis_data = []
+for i in range(len(analyses)):
+    analysis_data.append( [ s.strip() for s in analyses[i].readlines() ] )
 
 sys.stderr.write("reading energies\n")
 (n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs([args.energy_file])
