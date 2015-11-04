@@ -36,7 +36,9 @@ print "# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(
 Es -= np.amin(Es)
 
 def analyse(log_a, Es, T):
-    Z_term = ns_analyse.calc_Z_terms(1/(k_Boltzmann*T), log_a, Es)
+    beta = 1.0/(k_Boltzmann*T)
+
+    (Z_term, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es)
 
     if debug:
         for i in range(len(Z_term)):
@@ -45,6 +47,7 @@ def analyse(log_a, Es, T):
         print "Z_term"
 
     Z = sum(Z_term)
+
 
     U_pot = sum(Z_term*Es)/Z
     U = n_Extra_DOF/(2.0*beta) + U_pot

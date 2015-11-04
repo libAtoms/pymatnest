@@ -42,4 +42,4 @@ def calc_log_a(n_iter, k_Boltzmann, n_walkers, n_cull):
 def calc_Z_terms(beta, log_a, Es):
     shift = np.amax(log_a[:] - beta*Es[:])
     Z_term = np.exp(log_a[:] - beta*Es[:] - shift)
-    return Z_term
+    return (Z_term, shift)
