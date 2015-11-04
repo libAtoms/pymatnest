@@ -7,14 +7,18 @@ kB=8.6173324e-5
 import argparse
 
 parser = argparse.ArgumentParser(description="Set weights of analyses (structure_analysis_traj format) for const T ensemble average from nested sampling energies file")
-parser.add_argument('analysis_files', type=str, nargs='+', help='files with unweighted analysis results')
 parser.add_argument('--temperatures','-T', action='store', type=float, nargs='+', help='temperature to do ensemble average at')
 parser.add_argument('--interval','-i', action='store', type=int, help='interval at which analyses were calculated relative to entries in energy file')
 parser.add_argument('--energy_file','-e', action='store', type=str, help='energies file (ns_run format)')
+parser.add_argument('--analysis_files', '-a', type=str, nargs='*', help='files with unweighted analysis results')
+parser.add_argument('--sparse_traj_file','-t', action='store', type=str, help='if present, sparsified trajectory file, for printing most likely config at each T')
 
 args = parser.parse_args()
 
-import quippy, re, numpy as np, ns_analyse
+import quippy, re, numpy as np, ns_analyse, os.path
+
+if args.analysis_files is None:
+    args.analysis_files = []
 
 analyses = []
 comment_lines =[]
@@ -22,8 +26,8 @@ desc_lines =[]
 bin_labels = []
 n_bins = []
 n_data = []
-sys.stderr.write("reading analysis headers\n")
 for i in range(len(args.analysis_files)):
+    sys.stderr.write("reading analysis %d headers\n" % i)
     analysis = open(args.analysis_files[i], "r")
     comment_lines.append(analysis.readline().strip())
     desc_line = analysis.readline().strip()
@@ -41,22 +45,32 @@ for i in range(len(args.analysis_files)):
     for i_bin in range(n_bins[i]):
         bin_labels[i].append(analysis.readline().strip())
 
-# check for non-equal n_data, if OK make n_data a scalar
-if np.sum(np.array(n_data) != n_data[0]) != 0:
-    sys.stderr.write("Found some analysis with n_data not the same %s" % np.array_str(n_data))
-n_data = n_data[0]
+if len(args.analysis_files) > 0:
+    # check for non-equal n_data, if OK make n_data a scalar
+    if np.sum(np.array(n_data) != n_data[0]) != 0:
+        sys.stderr.write("Found some analysis with n_data not the same %s" % np.array_str(n_data))
+    n_data = n_data[0]
 
-sys.stderr.write("reading analysis data\n")
-analysis_data = []
-for i in range(len(analyses)):
-    analysis_data.append( [ s.strip() for s in analyses[i].readlines() ] )
+    sys.stderr.write("reading analysis data\n")
+    analysis_data = []
+    for i in range(len(analyses)):
+        analysis_data.append( [ s.strip() for s in analyses[i].readlines() ] )
+else:
+    n_data = None
+
+print "got orig n_data ", n_data
 
 sys.stderr.write("reading energies\n")
 (n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs([args.energy_file])
-Es = Es[0:n_data*args.interval]
+if n_data is not None: 
+    # clip Es to be as long as necessary to match n_data
+    Es = Es[0:n_data*args.interval]
 sys.stderr.write("got n_walkers %d n_cull %d len(Es) %d\n" % (n_walkers, n_cull, len(Es)))
 sys.stderr.write("calculating log_a\n")
 log_a = ns_analyse.calc_log_a(len(Es), kB, n_walkers, n_cull)
+
+n_data = len(Es) / args.interval
+print "got n_data from (clipped) Es ", n_data
 
 for T in args.temperatures:
     sys.stderr.write("doing T %f\n" % T)
@@ -70,8 +84,19 @@ for T in args.temperatures:
         Z_terms_reduced[i]  = np.sum(Z_terms[i*args.interval:(i+1)*args.interval])
     Z = np.sum(Z_terms_reduced)
 
-    sys.stderr.write("writing analyses\n")
+    if args.sparse_traj_file is not None:
+        sys.stderr.write("writing most likley trajectory\n")
+        i_most_likely_config = np.argmax(Z_terms_reduced)
+        ar = quippy.AtomsReader(args.sparse_traj_file, start=i_most_likely_config)
+        at = iter(ar).next()
+        ar.close()
+        (filebase, ext) = os.path.splitext(args.sparse_traj_file)
+        aw = quippy.AtomsWriter(filebase+(".config_T_%f" % T)+ext)
+        aw.write(at)
+        aw.close()
+
     for i in range(len(analyses)):
+        sys.stderr.write("writing analysis %d\n" % i)
         outfile=open(args.analysis_files[i]+".T_%f" % T, "w")
         outfile.write(comment_lines[i]+"\n")
         outfile.write(desc_lines[i]+" do_weights\n")
