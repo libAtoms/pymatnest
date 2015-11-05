@@ -5,7 +5,7 @@ start_energy_ceiling=500.0
 
 n_walkers=256
 n_cull=1
-n_iter_per_walker=5000
+n_iter_times_fraction_killed=5000
 out_file_prefix=test.periodic.MD.lammps_noswaps
 
 ################################################################################

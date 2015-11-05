@@ -31,9 +31,9 @@ def usage():
     ``n_extra_walk_per_task=int``
        | default: 0
 
-    ``n_iter_per_walker=int``
+    ``n_iter_times_fraction_killed=int``
        | MANDATORY
-       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_walkers`` * ``n_iter_per_walker``
+       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``
 
     ``min_Emax=float``
        | Termination condition based on Emax.
@@ -223,7 +223,7 @@ def usage():
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
     sys.stderr.write("n_extra_walk_per_task=int (0)\n")
-    sys.stderr.write("n_iter_per_walker=int (MANDATORY)\n")
+    sys.stderr.write("n_iter_times_fraction_killed=int (MANDATORY)\n")
     sys.stderr.write("min_Emax=float (None.  Termination condition based on Emax)\n")
     sys.stderr.write("out_file_prefix=str (None)\n")
     sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
@@ -1267,8 +1267,8 @@ def do_ns_loop():
 
     # to avoid errors of unassigned values, if in case of a restart the final number of iter is the same as the satring, stop.
     if start_first_iter == ns_args['n_iter']:
-	print "WARNING: Increase the n_iter_per_walker variable in the input if you want NS cycles to be performed."
-        exit_error("satring iteration and the total number of required iterations are the same,hence no NS cycles will be performed\n",11)
+	print "WARNING: Increase the n_iter_times_fraction_killed variable in the input if you want NS cycles to be performed."
+        exit_error("starting iteration and the total number of required iterations are the same,hence no NS cycles will be performed\n",11)
 
     # actual iteration cycle starts here
     for i_ns_step in range(start_first_iter, ns_args['n_iter']):
@@ -1826,10 +1826,10 @@ def main():
 	ns_args['n_cull'] = int(args.pop('n_cull', 1))
 
 	try:
-	    ns_args['n_iter_per_walker'] = int(args.pop('n_iter_per_walker'))
+	    ns_args['n_iter_times_fraction_killed'] = float(args.pop('n_iter_times_fraction_killed'))
 	except:
-	    exit_error("need number of iterations n_iter_per_walker\n",1)
-	ns_args['n_iter'] = ns_args['n_iter_per_walker']*ns_args['n_walkers']
+	    exit_error("need number of iterations n_iter_times_fraction_killed\n",1)
+	ns_args['n_iter'] = ns_args['n_iter_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))
 
 	try:
 	    ns_args['min_Emax'] = float(args.pop('min_Emax'))
