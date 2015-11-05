@@ -58,8 +58,6 @@ if len(args.analysis_files) > 0:
 else:
     n_data = None
 
-print "got orig n_data ", n_data
-
 sys.stderr.write("reading energies\n")
 (n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs([args.energy_file])
 if n_data is not None: 
@@ -70,7 +68,6 @@ sys.stderr.write("calculating log_a\n")
 log_a = ns_analyse.calc_log_a(len(Es), kB, n_walkers, n_cull)
 
 n_data = len(Es) / args.interval
-print "got n_data from (clipped) Es ", n_data
 
 for T in args.temperatures:
     sys.stderr.write("doing T %f\n" % T)
