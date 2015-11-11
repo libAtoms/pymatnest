@@ -956,7 +956,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
     #DOC \item if do\_blocks
     #DOC \begin{itemize}
     if movement_args['do_blocks']:
-        #DOC \item loop while n_model_calls_used < n_model_calls
+        #DOC \item loop while n\_model\_calls\_used $<$ n\_model\_calls
         #DOC \begin{itemize}
         while n_model_calls_used < movement_args['n_model_calls']:
             #DOC \item shuffle block list
@@ -968,7 +968,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
                 (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
                 n_model_calls_used += t_n_model_calls
                 accumulate_stats(out, t_out)
-                #DOC \item break if do_partial_blocks and n_model_calls is reached
+                #DOC \item break if do\_partial\_blocks and n\_model\_calls is reached
                 if movement_args['do_partial_blocks'] and n_model_calls_used >= movement_args['n_model_calls']:
                     break
             #DOC \end{itemize}
@@ -977,7 +977,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
     #DOC \item else
     #DOC \begin{itemize}
     else:
-        #DOC \item loop while n_model_calls_used < n_model_calls
+        #DOC \item loop while n\_model\_calls\_used $<$ n\_model\_calls
         #DOC \begin{itemize}
         while n_model_calls_used < movement_args['n_model_calls']:
             #DOC \item pick random item from list
