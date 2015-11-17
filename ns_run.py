@@ -164,7 +164,7 @@ def usage():
      |  (1000)
     ``adjust_step_interval_per_walker=float`` 
      | Multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust.
-     | default: 0.25
+     | default: 0.5
     ``MC_adjust_step_factor=float``
      |  default: 1.5
     ``MC_adjust_min_rate=float``
@@ -286,7 +286,7 @@ def usage():
     sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
     sys.stderr.write("cell_shape_equil_steps=int (1000)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("adjust_step_interval_per_walker=float (0.25, multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
+    sys.stderr.write("adjust_step_interval_per_walker=float (0.5, multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
     sys.stderr.write("full_auto_step_sizes=[T | F] (T) (T. Automatically calibrate all sizes by performing additional short explorations, including at start of run. F. Use initial input step sizes and make small adjustments to step sizes during run.)\n")
     sys.stderr.write("MC_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MC_adjust_min_rate=float (0.2)\n")
@@ -2299,7 +2299,7 @@ def main():
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
 	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 1000))
 
-	movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.25))
+	movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.5))
 	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "T"))
 	movement_args['adjust_step_interval'] = int(movement_args['adjust_step_interval_per_walker']*ns_args['n_walkers'])
 	if movement_args['adjust_step_interval'] < 20:
