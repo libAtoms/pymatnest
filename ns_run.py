@@ -166,11 +166,11 @@ def usage():
      | Multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust.
      | default: 0.5
     ``MC_adjust_step_factor=float``
-     |  default: 1.5
+     |  default: 1.1
     ``MC_adjust_min_rate=float``
-     |  default: 0.25
+     |  default: 0.2
     ``MC_adjust_max_rate=float``
-     |  default: 0.75
+     |  default: 0.3
     ``MD_adjust_step_factor=float``
      |  default: 1.5
     ``MD_adjust_min_rate=float``
@@ -2306,9 +2306,9 @@ def main():
 	    print "WARNING: step size adjustment would be done too often, at every ", movement_args['adjust_step_interval'], " iteration"
 	    print "WARNING: adjust_step_interval is increased to 20"
 	    movement_args['adjust_step_interval'] = 20
-	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
-	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
-	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
+	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.1))
+	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.2))
+	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.3))
 	movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.5))
 	movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.95))
 	movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 1.00))
