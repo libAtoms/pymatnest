@@ -105,9 +105,9 @@ def usage():
     ``MC_atom_velocities_pre_perturb=[T | F]``
        | (F, Perturb velocities (rejection free) before MC + velocities walk)
     ``MC_atom_step_size=float`` 
-       | (0.1, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+       | (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) 
     ``MC_atom_step_size_max=float`` 
-       | (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+       | (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) 
     ``MC_atom_uniform_rv=[T | F]`` 
        | default: F
     ``MD_atom_velo_pre_perturb=[T | F]`` 
@@ -131,9 +131,9 @@ def usage():
     ``atom_velo_rej_free_perturb_angle=float``
      |  (0.3. Max angle in radians for random rotations.)
     ``MC_atom_velo_step_size=float``
-     |  (0.1)
+     |  (50.0)
     ``MC_atom_velo_step_size_max=float``
-     |  (1.0)
+     |  (10000.0)
     ``MC_atom_velo_walk_rej_free=[T | F]``
      |  (T. If true, use rejection free algorithm for MC_atom_walk
     ``MC_cell_P=float``
@@ -143,25 +143,25 @@ def usage():
      | Initial volume stepsize for volume change.
      | Default: 5% of the maximum allowed volume
     ``MC_cell_volume_per_atom_step_size_max=float``
-     |  (5000.0)
+     |  (50% of the maximum allowed volume)
     ``MC_cell_volume_per_atom_prob=float``
      |  (1.0)
     ``MC_cell_stretch_step_size=float``
-     |  (0.01)
+     |  (0.35)
     ``MC_cell_stretch_step_size_max=float``
-     |  (0.05)
+     |  (1.0)
     ``MC_cell_stretch_prob=float``
      |  (1.0)
     ``MC_cell_shear_step_size=float``
-     |  (0.01)
+     |  (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)
     ``MC_cell_shear_step_size_max=float``
-     |  (0.05)
+     |  (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)
     ``MC_cell_shear_prob=float``
      |  (1.0)
     ``MC_cell_min_aspect_ratio=float``
      |  (0.9)
     ``cell_shape_equil_steps=int``
-     |  (100)
+     |  (1000)
     ``adjust_step_interval_per_walker=float`` 
      | Multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust.
      | default: 0.25
@@ -254,8 +254,8 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("MC_atom_velocities=[T | F] (F, supported only for energy_calculator=fortran)\n")
     sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F, Perturb velocities (rejection free) before MC + velocities walk)\n")
-    sys.stderr.write("MC_atom_step_size=float (0.1, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
-    sys.stderr.write("MC_atom_step_size_max=float (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
+    sys.stderr.write("MC_atom_step_size=float (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
+    sys.stderr.write("MC_atom_step_size_max=float (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
     sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
     sys.stderr.write("\n")
     sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
@@ -268,29 +268,29 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("atom_velo_rej_free_perturb_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
     sys.stderr.write("atom_velo_rej_free_perturb_angle=float (0.3. Max angle in radians for random rotations.)\n")
-    sys.stderr.write("MC_atom_velo_step_size=float (0.1)\n")
-    sys.stderr.write("MC_atom_velo_step_size_max=float (1.0)\n")
+    sys.stderr.write("MC_atom_velo_step_size=float (50.0)\n")
+    sys.stderr.write("MC_atom_velo_step_size_max=float (10000.0)\n")
     sys.stderr.write("MC_atom_velo_walk_rej_free=[T | F] (T. If true, use rejection free algorithm for MC_atom_walk\n")
     sys.stderr.write("\n")
     sys.stderr.write("\n")
     sys.stderr.write("MC_cell_P=float (0.0)\n")
-    sys.stderr.write("MC_cell_volume_per_atom_step_size=float (100.0)\n")
-    sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (5000.0)\n")
+    sys.stderr.write("MC_cell_volume_per_atom_step_size=float (5% of the maximum allowed volume)\n")
+    sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (50% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_prob=float (1.0)\n")
-    sys.stderr.write("MC_cell_stretch_step_size=float (0.01)\n")
-    sys.stderr.write("MC_cell_stretch_step_size_max=float (0.05)\n")
+    sys.stderr.write("MC_cell_stretch_step_size=float (0.35)\n")
+    sys.stderr.write("MC_cell_stretch_step_size_max=float (1.0)\n")
     sys.stderr.write("MC_cell_stretch_prob=float (1.0)\n")
-    sys.stderr.write("MC_cell_shear_step_size=float (0.01)\n")
-    sys.stderr.write("MC_cell_shear_step_size_max=float (0.05)\n")
+    sys.stderr.write("MC_cell_shear_step_size=float (0.5 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
+    sys.stderr.write("MC_cell_shear_step_size_max=float (1.0 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
     sys.stderr.write("MC_cell_shear_prob=float (1.0)\n")
     sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
-    sys.stderr.write("cell_shape_equil_steps=int (100)\n")
+    sys.stderr.write("cell_shape_equil_steps=int (1000)\n")
     sys.stderr.write("\n")
     sys.stderr.write("adjust_step_interval_per_walker=float (0.25, multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
     sys.stderr.write("full_auto_step_sizes=[T | F] (T) (T. Automatically calibrate all sizes by performing additional short explorations, including at start of run. F. Use initial input step sizes and make small adjustments to step sizes during run.)\n")
-    sys.stderr.write("MC_adjust_step_factor=float (1.5)\n")
-    sys.stderr.write("MC_adjust_min_rate=float (0.25)\n")
-    sys.stderr.write("MC_adjust_max_rate=float (0.75)\n")
+    sys.stderr.write("MC_adjust_step_factor=float (1.1)\n")
+    sys.stderr.write("MC_adjust_min_rate=float (0.2)\n")
+    sys.stderr.write("MC_adjust_max_rate=float (0.3)\n")
     sys.stderr.write("MD_adjust_step_factor=float (1.5)\n")
     sys.stderr.write("MD_adjust_min_rate=float (0.95)\n")
     sys.stderr.write("MD_adjust_max_rate=float (1.00)\n")
@@ -2264,10 +2264,10 @@ def main():
 
 	movement_args['MC_atom_velocities'] = str_to_logical(args.pop('MC_atom_velocities', "F"))
 	movement_args['MC_atom_velocities_pre_perturb'] = str_to_logical(args.pop('MC_atom_velocities_pre_perturb', "F"))
-	movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
-	movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 0.5))
-	movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 0.1))
-	movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 1.0))
+	movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 1.0))
+	movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
+	movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 50.0))
+	movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 10000.0))
 	movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
 	movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
@@ -2279,7 +2279,7 @@ def main():
 	movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "T"))
 
 	movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
-	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
+	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.5))
 	movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
 	movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
@@ -2287,17 +2287,17 @@ def main():
 
 	default_value = ns_args['max_volume_per_atom']/20.0 # 5% of maximum allowed volume per atom
 	movement_args['MC_cell_volume_per_atom_step_size'] = float(args.pop('MC_cell_volume_per_atom_step_size', default_value))
-	movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 5000.0))
+	movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 10.0*default_value)) # 50% of maximum allowed volume per atom
 	movement_args['MC_cell_volume_per_atom_prob'] = float(args.pop('MC_cell_volume_per_atom_prob', 1.0))
-	movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.01))
-	movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 0.05))
+	movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.35))
+	movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 1.0))
 	movement_args['MC_cell_stretch_prob'] = float(args.pop('MC_cell_stretch_prob', 1.0))
-	movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.01))
-	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 0.05))
+	movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.5))
+	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 1.0))
 	movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
-	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 100))
+	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 1000))
 
 	movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.25))
 	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "T"))
@@ -2572,6 +2572,9 @@ def main():
 	max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
 	movement_args['MC_atom_step_size'] *= max_lc
 	movement_args['MC_atom_step_size_max'] *= max_lc
+	# scale MC_cell_shear_step_size by max_vol^1.0)
+    movement_args['MC_cell_shear_step_size'] *= max_lc
+    movement_args['MC_cell_shear_step_size_max'] *= max_lc
 
 	n_atoms = len(walkers[0])
 	prev_snapshot_iter = None
