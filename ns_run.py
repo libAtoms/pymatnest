@@ -2573,8 +2573,8 @@ def main():
 	movement_args['MC_atom_step_size'] *= max_lc
 	movement_args['MC_atom_step_size_max'] *= max_lc
 	# scale MC_cell_shear_step_size by max_vol^1.0)
-    movement_args['MC_cell_shear_step_size'] *= max_lc
-    movement_args['MC_cell_shear_step_size_max'] *= max_lc
+ 	movement_args['MC_cell_shear_step_size'] *= max_lc
+ 	movement_args['MC_cell_shear_step_size_max'] *= max_lc
 
 	n_atoms = len(walkers[0])
 	prev_snapshot_iter = None
