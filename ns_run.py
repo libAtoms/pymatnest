@@ -3,6 +3,7 @@ import numpy as np, ase, ase.io
 import ns_rng
 import stacktrace
 from itertools import izip
+from copy import deepcopy
 
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
@@ -104,9 +105,9 @@ def usage():
     ``MC_atom_velocities_pre_perturb=[T | F]``
        | (F, Perturb velocities (rejection free) before MC + velocities walk)
     ``MC_atom_step_size=float`` 
-       | (0.1, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+       | (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) 
     ``MC_atom_step_size_max=float`` 
-       | (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+       | (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) 
     ``MC_atom_uniform_rv=[T | F]`` 
        | default: F
     ``MD_atom_velo_pre_perturb=[T | F]`` 
@@ -130,9 +131,9 @@ def usage():
     ``atom_velo_rej_free_perturb_angle=float``
      |  (0.3. Max angle in radians for random rotations.)
     ``MC_atom_velo_step_size=float``
-     |  (0.1)
+     |  (50.0)
     ``MC_atom_velo_step_size_max=float``
-     |  (1.0)
+     |  (10000.0)
     ``MC_atom_velo_walk_rej_free=[T | F]``
      |  (T. If true, use rejection free algorithm for MC_atom_walk
     ``MC_cell_P=float``
@@ -142,34 +143,34 @@ def usage():
      | Initial volume stepsize for volume change.
      | Default: 5% of the maximum allowed volume
     ``MC_cell_volume_per_atom_step_size_max=float``
-     |  (5000.0)
+     |  (50% of the maximum allowed volume)
     ``MC_cell_volume_per_atom_prob=float``
      |  (1.0)
     ``MC_cell_stretch_step_size=float``
-     |  (0.01)
+     |  (0.35)
     ``MC_cell_stretch_step_size_max=float``
-     |  (0.05)
+     |  (1.0)
     ``MC_cell_stretch_prob=float``
      |  (1.0)
     ``MC_cell_shear_step_size=float``
-     |  (0.01)
+     |  (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)
     ``MC_cell_shear_step_size_max=float``
-     |  (0.05)
+     |  (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)
     ``MC_cell_shear_prob=float``
      |  (1.0)
     ``MC_cell_min_aspect_ratio=float``
      |  (0.9)
     ``cell_shape_equil_steps=int``
-     |  (100)
+     |  (1000)
     ``adjust_step_interval_per_walker=float`` 
      | Multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust.
-     | default: 0.25
+     | default: 0.5
     ``MC_adjust_step_factor=float``
-     |  default: 1.5
+     |  default: 1.1
     ``MC_adjust_min_rate=float``
-     |  default: 0.25
+     |  default: 0.2
     ``MC_adjust_max_rate=float``
-     |  default: 0.75
+     |  default: 0.3
     ``MD_adjust_step_factor=float``
      |  default: 1.5
     ``MD_adjust_min_rate=float``
@@ -253,8 +254,8 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("MC_atom_velocities=[T | F] (F, supported only for energy_calculator=fortran)\n")
     sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F, Perturb velocities (rejection free) before MC + velocities walk)\n")
-    sys.stderr.write("MC_atom_step_size=float (0.1, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
-    sys.stderr.write("MC_atom_step_size_max=float (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
+    sys.stderr.write("MC_atom_step_size=float (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
+    sys.stderr.write("MC_atom_step_size_max=float (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
     sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
     sys.stderr.write("\n")
     sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
@@ -267,28 +268,29 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("atom_velo_rej_free_perturb_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
     sys.stderr.write("atom_velo_rej_free_perturb_angle=float (0.3. Max angle in radians for random rotations.)\n")
-    sys.stderr.write("MC_atom_velo_step_size=float (0.1)\n")
-    sys.stderr.write("MC_atom_velo_step_size_max=float (1.0)\n")
+    sys.stderr.write("MC_atom_velo_step_size=float (50.0)\n")
+    sys.stderr.write("MC_atom_velo_step_size_max=float (10000.0)\n")
     sys.stderr.write("MC_atom_velo_walk_rej_free=[T | F] (T. If true, use rejection free algorithm for MC_atom_walk\n")
     sys.stderr.write("\n")
     sys.stderr.write("\n")
     sys.stderr.write("MC_cell_P=float (0.0)\n")
-    sys.stderr.write("MC_cell_volume_per_atom_step_size=float (100.0)\n")
-    sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (5000.0)\n")
+    sys.stderr.write("MC_cell_volume_per_atom_step_size=float (5% of the maximum allowed volume)\n")
+    sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (50% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_prob=float (1.0)\n")
-    sys.stderr.write("MC_cell_stretch_step_size=float (0.01)\n")
-    sys.stderr.write("MC_cell_stretch_step_size_max=float (0.05)\n")
+    sys.stderr.write("MC_cell_stretch_step_size=float (0.35)\n")
+    sys.stderr.write("MC_cell_stretch_step_size_max=float (1.0)\n")
     sys.stderr.write("MC_cell_stretch_prob=float (1.0)\n")
-    sys.stderr.write("MC_cell_shear_step_size=float (0.01)\n")
-    sys.stderr.write("MC_cell_shear_step_size_max=float (0.05)\n")
+    sys.stderr.write("MC_cell_shear_step_size=float (0.5 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
+    sys.stderr.write("MC_cell_shear_step_size_max=float (1.0 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
     sys.stderr.write("MC_cell_shear_prob=float (1.0)\n")
     sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
-    sys.stderr.write("cell_shape_equil_steps=int (100)\n")
+    sys.stderr.write("cell_shape_equil_steps=int (1000)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("adjust_step_interval_per_walker=float (0.25, multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
-    sys.stderr.write("MC_adjust_step_factor=float (1.5)\n")
-    sys.stderr.write("MC_adjust_min_rate=float (0.25)\n")
-    sys.stderr.write("MC_adjust_max_rate=float (0.75)\n")
+    sys.stderr.write("adjust_step_interval_per_walker=float (0.5, multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
+    sys.stderr.write("full_auto_step_sizes=[T | F] (T) (T. Automatically calibrate all sizes by performing additional short explorations, including at start of run. F. Use initial input step sizes and make small adjustments to step sizes during run.)\n")
+    sys.stderr.write("MC_adjust_step_factor=float (1.1)\n")
+    sys.stderr.write("MC_adjust_min_rate=float (0.2)\n")
+    sys.stderr.write("MC_adjust_max_rate=float (0.3)\n")
     sys.stderr.write("MD_adjust_step_factor=float (1.5)\n")
     sys.stderr.write("MD_adjust_min_rate=float (0.95)\n")
     sys.stderr.write("MD_adjust_max_rate=float (1.00)\n")
@@ -697,6 +699,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     if n_accept_velo is not None:
 	out['MC_atom_velo'] = (n_steps*len(at), n_accept_velo)
     out['MC_atom'] = (n_steps*len(at), n_accept)
+
     return out
 #DOC \end{itemize}
 
@@ -956,7 +959,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
     #DOC \item if do\_blocks
     #DOC \begin{itemize}
     if movement_args['do_blocks']:
-        #DOC \item loop while n_model_calls_used < n_model_calls
+        #DOC \item loop while n\_model\_calls\_used $<$ n\_model\_calls
         #DOC \begin{itemize}
         while n_model_calls_used < movement_args['n_model_calls']:
             #DOC \item shuffle block list
@@ -968,7 +971,8 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
                 (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
                 n_model_calls_used += t_n_model_calls
                 accumulate_stats(out, t_out)
-                #DOC \item break if do_partial_blocks and n_model_calls is reached
+
+                #DOC \item break if do\_partial\_blocks and n\_model\_calls is reached
                 if movement_args['do_partial_blocks'] and n_model_calls_used >= movement_args['n_model_calls']:
                     break
             #DOC \end{itemize}
@@ -977,7 +981,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
     #DOC \item else
     #DOC \begin{itemize}
     else:
-        #DOC \item loop while n_model_calls_used < n_model_calls
+        #DOC \item loop while n\_model\_calls\_used $<$ n\_model\_calls
         #DOC \begin{itemize}
         while n_model_calls_used < movement_args['n_model_calls']:
             #DOC \item pick random item from list
@@ -1040,6 +1044,260 @@ def median_PV(walkers):
 	PV_median = PVs[int(len(PVs)/2)]
 
     return PV_median
+
+
+def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEmax, size_n_proc):
+    """Automatically set all step sizes. Returns the time (in seconds) taken for the routine to run."""
+    #DOC
+    #DOC \vspace*{\baselineskip}
+    #DOC full\_auto\_set\_stepsizes
+    #DOC \begin{itemize}
+    #DOC \item Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range. 
+
+    full_auto_start_time = time.time()
+    n_samples_per_move_type=200 # total number of (H)MC moves used to set each step length
+
+    if comm is not None:
+        walk_n_walkers = int(np.ceil(float(n_samples_per_move_type)/size_n_proc)) 
+        # in each trial we will evolve walk_n_walkers configurations
+    else:
+        walk_n_walkers = n_samples_per_move_type
+    #DOC \item The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes 
+
+    key_list=[]
+    if (comm is None or comm.rank == 0): 
+    # make sure all processes go through dictoray walk_stats in the same order
+        for key, value in walk_stats.iteritems():
+            key_list.append(key)
+    if (comm is not None):
+        key_list = comm.bcast(key_list,root=0)
+
+    #DOC \item For each (H)MC move type the following is performed
+    #DOC \begin{itemize}
+    for key in key_list:
+
+        #DOC \item Set ``movement\_args'' parameters so that only one (H)MC call is made at a time
+        # reprogram n_atom_steps_n_calls, n_cell_volume_steps, n_cell_shear_steps, n_cell_stretch_steps, n_swap_steps according to key
+        # possible key values:
+        # MD_atom # atoms HMC
+        # MC_atom # MC atom sweeps
+        # MC_atom_velo # MC velocity sweeps
+        # MC_cell_shear # cell shear move
+        # MC_cell_stretch # cell stretch move
+        # MC_cell_volume_per_atom # volume move
+
+        exploration_movement_args = deepcopy(movement_args)
+        # turn all step types off to begin with
+        exploration_movement_args['n_atom_steps_n_calls'] = 0
+        exploration_movement_args['n_cell_volume_steps'] = 0
+        exploration_movement_args['n_cell_shear_steps'] = 0
+        exploration_movement_args['n_cell_stretch_steps'] = 0
+        exploration_movement_args['n_swap_steps'] = 0
+        exploration_movement_args['MC_atom_velocities']=False
+
+        # check that the total number of attempts for this key is not zero
+        (n_try, n_accept) = walk_stats[key]
+        n_try_g = np.zeros( (1), dtype=np.int)
+        if (comm is not None):
+            n_try_s = np.array( [n_try], dtype = np.int)
+            comm.Allreduce([n_try_s, MPI.INT], [n_try_g, MPI.INT], MPI.SUM)
+        else:
+            n_try_g[0] = n_try
+
+        if (n_try_g[0]==0):
+            continue # skip this key - it is not used
+
+        if (key=="MD_atom" or key=="MC_atom"):
+            exploration_movement_args['n_atom_steps_n_calls'] = 1 
+            # one call to do_atom_walk per walk_single_walker call
+            
+            exploration_movement_args['n_atom_steps_per_call'] = 1 
+            # do_atom_walk makes one do_MC_walk/do_MD_walk per call
+
+            if (key=="MC_atom"):
+                exploration_movement_args['atom_traj_len'] = 1 
+                # 1 atom sweep per do_MC_walk call
+                exploration_movement_args['n_model_calls'] = 1
+                # The do_atom_walk routine reports that it has performed
+                # #model_calls = the number of complete MC sweeps performed, 
+                # rather than single point evaluations.
+            else:
+                exploration_movement_args['n_model_calls'] = exploration_movement_args['atom_traj_len']
+                # The do_atom_walk routine reports that it has performed 
+                # #model_calls = number of single point evaluations (time steps)
+
+        elif (key=="MC_atom_velo"):
+            exploration_movement_args['velo_traj_len']=1 
+            exploration_movement_args['MC_atom_velo_walk_rej_free']=False
+            # one velocities sweep
+
+        elif (key=="MC_cell_shear"):
+            exploration_movement_args['n_cell_shear_steps'] = 1
+            exploration_movement_args['n_model_calls'] = 1
+            # one call to do_MC_cell_shear_step per walk_single_walker call
+
+        elif (key=="MC_cell_stretch"):
+            exploration_movement_args['n_cell_stretch_steps'] = 1
+            exploration_movement_args['n_model_calls'] = 1
+            # one call to do_MC_cell_stretch_step per walk_single_walker call
+
+        elif (key=="MC_cell_volume_per_atom"):
+            exploration_movement_args['n_cell_volume_steps'] = 1
+            exploration_movement_args['n_model_calls'] = 1
+            # one call to do_MC_cell_volume_step per walk_single_walker call
+        
+        else:
+            exit_error("full_auto_set_stepsizes got key '%s', unkown to this routine\n" % key, 5)
+
+        #DOC \item Min and max acceptance rates are copied from parameters MC\_adjust\_min\_rate / MD\_adjust\_min\_rate and MC\_adjust\_max\_rate / MD\_adjust\_max\_rate
+
+        if key.find("MC") == 0:
+            min_rate = movement_args['MC_adjust_min_rate']
+            max_rate = movement_args['MC_adjust_max_rate']
+            suffix="step_size"
+        elif key.find("MD") == 0:
+            min_rate = movement_args['MD_adjust_min_rate']
+            max_rate = movement_args['MD_adjust_max_rate']
+            suffix="timestep"
+        else:
+            exit_error("full_auto_set_stepsizes got key '%s', neither MC nor MD\n" % key, 5)
+
+        first_walker = rng.int_uniform(0, len(walkers)-1) # random starting point for config selection
+        first_time = True # we will make at least two tries. Logical flag ensures this.
+
+        steplength_store = movement_args[key+"_"+suffix] 
+        # protects against possible future bugs that would be hard to detect
+
+
+        #DOC \item Step size calibration loop:
+        #DOC \begin{itemize}
+        dir = None
+        while True:
+            stats = {} # clear acceptance / trial stats for new step size 
+            stats_cumul = {} # clear acceptance / trial stats for new step size 
+            #DOC \item Repeat the following 200/num\_of\_MPI\_processes times:
+            #DOC \begin{itemize}
+            #DOC \item Copy a configuration from the live set (each MPI process chooses a different configuration)
+            for i in xrange(first_walker,first_walker + walk_n_walkers):
+
+                k = i%len(walkers) # cycle through walkers array
+                buf = walkers[k] # copy config k into buffer "buf" for walking (walkers array unchanged)
+
+                #DOC \item Each MPI processes performs one (H)MC move on its cloned configuration
+                # build up stats from walkers
+                if (not key=="MC_atom_velo"):
+                    stats = walk_single_walker(buf, exploration_movement_args, Emax, KEmax)
+                else:
+                    stats = do_MC_atom_velo_walk(buf, exploration_movement_args, Emax, KEmax)
+
+                #DOC running statistics for the number of accepted/rejected moves on each process are recorded 
+                accumulate_stats(stats_cumul, stats)
+            #DOC \end{itemize}
+
+            first_walker = first_walker + walk_n_walkers # cycle through local samples
+            (n_try, n_accept) = stats_cumul[key]
+
+            if comm is not None:
+                n_try_s = np.array( [n_try], dtype = np.int)
+                n_accept_s = np.array( [n_accept], dtype = np.int)
+                n_try_g = np.zeros( (1), dtype=np.int)
+                n_accept_g = np.zeros( (1), dtype=np.int)
+                # comm.barrier() #BARRIER
+                comm.Allreduce([n_try_s, MPI.INT], [n_try_g, MPI.INT], MPI.SUM)
+                comm.Allreduce([n_accept_s, MPI.INT], [n_accept_g, MPI.INT], MPI.SUM)
+                n_try = n_try_g[0]
+                n_accept = n_accept_g[0]
+
+            rate = float(n_accept)/float(n_try)
+            #DOC \item The total number of accepted/rejected moves for this step size (summed across all MPI processes) are estabilshed
+
+            if ((comm is None or comm.rank == 0) and (ns_args['debug'] >= 1)):
+                print print_prefix, "trial stepsize and accept rate for %s = %e , %f (%d)" % (key, movement_args[key+"_"+suffix], rate, n_try)
+
+            if (rate>min_rate and rate<max_rate):
+                #DOC \item If the total acceptance rate is within the desired range, return this stepsize
+                if (comm is None or comm.rank == 0):
+                    print print_prefix, "full_auto_set_stepsizes adjusted %s to %f" % (key+"_"+suffix, movement_args[key+"_"+suffix])
+                break
+            else:
+                if( not first_time ): # dodge this the first time round
+                    # Check whether rate and rate_store are on different sides 
+                    # of interval
+                    if ((min(rate,rate_store) < min_rate) and (max(rate,rate_store)>max_rate)):
+                        #DOC \item If this is NOT the first time the loop has been performed for this (H)MC move AND we previously obtained an acceptance rate on one side of the desired range, and now find an acceptance rate on the other side of the desired range
+                        #DOC \begin{itemize}
+                            #DOC \item Return the step size that gave an acceptance rate closest to the middle of the desired range.
+
+                        # check which gives a accept_rate closer to centre of acceptable window
+                        # and take that
+                        target = 0.5*(min_rate+max_rate)
+                        if (abs(rate-target)<abs(rate_store-target)):
+                            # take current step length
+                            if (comm is None or comm.rank == 0):
+                                print print_prefix, "full_auto_set_stepsizes adjusted %s to %f" % (key+"_"+suffix , movement_args[key+"_"+suffix])
+                            break
+                        else:
+                            # take saved step length
+                            movement_args[key+"_"+suffix] = steplength_store
+                            exploration_movement_args[key+"_"+suffix] = steplength_store
+                            rate = rate_store
+                            if (comm is None or comm.rank == 0):
+                                print print_prefix, "full_auto_set_stepsizes adjusted %s to %f" % (key+"_"+suffix, movement_args[key+"_"+suffix])
+                            break
+
+                else: # this is the first time
+                    first_time = False
+                #DOC \end{itemize}
+
+                #DOC \item Store step length and acceptance rate
+                # save current step length and acceptance rate
+                steplength_store = movement_args[key+"_"+suffix]
+                rate_store = rate
+
+                #DOC \item update step length, by $\times$ or $\div$ by MC\_adjust\_step\_factor, to improve acceptance rate
+                #update step length
+                dir = None
+                if rate < min_rate:
+                    exp = -1.0
+                    dir = "down"
+                elif rate >= max_rate:
+                    exp = 1.0
+                    dir = "up"
+                else:
+                    exp = None
+
+                # try to adjust
+                if dir is not None:
+                    movement_args[key+"_"+suffix] *= movement_args['MC_adjust_step_factor']**exp
+                    exploration_movement_args[key+"_"+suffix] *= exploration_movement_args['MC_adjust_step_factor']**exp
+                    if (comm is None or comm.rank == 0) and (ns_args['debug'] >= 1):
+                        print print_prefix, "new trial step size for %s = %e" % (key, movement_args[key+"_"+suffix])
+
+                #DOC \item Check that step size is not larger than max allowed value (specified by user), and also that step size is not smaller than $10^{-20}$ (useful for detecting errors).
+                # if exceeded maximum, cap change
+                if movement_args[key+"_"+suffix] > movement_args[key+"_"+suffix+"_max"]:
+                    movement_args[key+"_"+suffix] = movement_args[key+"_"+suffix+"_max"]
+                    exploration_movement_args[key+"_"+suffix] = exploration_movement_args[key+"_"+suffix+"_max"]
+                # Error check:
+                if (movement_args[key+"_"+suffix] < 1.0e-20):
+                    exit_error("full_auto_set_stepsizes got '%s'_'%s' = '%e': too small. Is everything correct?\n" % (key, suffix, movement_args[key+"_"+suffix]), 25)
+
+                # if was already at max and didn't really change, break
+                if (movement_args[key+"_"+suffix] == steplength_store):
+                    dir = None
+                    if (comm is None or comm.rank == 0):
+                        print print_prefix, "full_auto_set_stepsizes adjusted %s to %f" % (key+"_"+suffix, movement_args[key+"_"+suffix])
+                    break
+    #DOC \end{itemize}
+    #DOC \end{itemize}
+
+    #DOC \item Return step sizes and time taken for routine to run
+    #DOC \end{itemize}
+
+    full_auto_end_time = time.time()
+    duration = full_auto_end_time - full_auto_start_time
+    return duration
+
 
 def adjust_step_sizes(walk_stats, movement_args, comm):
     """
@@ -1257,6 +1515,8 @@ def do_ns_loop():
 
     initial_time = time.time()
     prev_time = initial_time
+    step_size_setting_duration = 0.0
+    total_step_size_setting_duration = 0.0
 
     Emax_of_step = None
     Emax_save = []
@@ -1307,8 +1567,9 @@ def do_ns_loop():
 	if rank == 0:
 	    cur_time=time.time()
 	    if (cur_time > prev_time+60 or i_ns_step == 0 or i_ns_step == ns_args['n_iter'] or (ns_args['n_iter'] > 0 and i_ns_step % max(int(ns_args['n_iter']/1000),1) == 0)):
-		print i_ns_step, "Emax_of_step ", Emax_of_step, " loop time ", cur_time-prev_time
+		print i_ns_step, "Emax_of_step ", Emax_of_step, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration
 		prev_time = cur_time
+		step_size_setting_duration = 0.0
 
 	cull_list=[None] * size
 	for r in range(size):
@@ -1638,6 +1899,18 @@ def do_ns_loop():
                     cur_config_ind += 1
 	# move cloned walkers
 
+ 	if (i_ns_step == start_first_iter and movement_args['full_auto_step_sizes']):
+   	    # set initial step sizes. Performed here since this is the first time all the arrays are in place
+   	    conf_pre=deepcopy(walkers[0])
+   	    move_args_pre=deepcopy(movement_args)
+   	    walk_stats_pre=walk_single_walker(conf_pre, move_args_pre, Emax_of_step, KEmax)
+   	    delta_step_size_setting_duration = full_auto_set_stepsizes(walkers, walk_stats_pre, movement_args, comm, Emax_of_step, KEmax, size)
+   	    total_step_size_setting_duration += delta_step_size_setting_duration
+   	    step_size_setting_duration += delta_step_size_setting_duration
+   	    del(walk_stats_pre)
+   	    del(move_args_pre)
+   	    del(conf_pre)
+
 	# walk clone targets
 	if ns_args['debug'] >= 4:
 	    for i in np.where(status[rank,:] == 'c_s')[0]:
@@ -1710,7 +1983,12 @@ def do_ns_loop():
 		accumulate_stats(walk_stats_cumul, walk_stats)
 
 	if movement_args['adjust_step_interval'] != 0 and i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
-	    adjust_step_sizes(walk_stats_cumul, movement_args, comm)
+	    if (not movement_args['full_auto_step_sizes']):
+	        adjust_step_sizes(walk_stats_cumul, movement_args, comm)
+	    else:
+	        delta_step_size_setting_duration = full_auto_set_stepsizes(walkers, walk_stats_cumul, movement_args, comm, Emax_of_step, KEmax, size)
+ 	        total_step_size_setting_duration += delta_step_size_setting_duration
+ 	        step_size_setting_duration += delta_step_size_setting_duration
 	    zero_stats(walk_stats_cumul, movement_args)
 
 	if ns_args['debug'] >= 20:
@@ -1728,7 +2006,8 @@ def do_ns_loop():
 	    prev_snapshot_iter = i_ns_step
     cur_time = time.time()
     if rank == 0:
-	print "LOOP TIME total ",cur_time-initial_time, " per iter ", (cur_time-initial_time)/(i_ns_step+1)
+	print "LOOP TIME total ",cur_time-initial_time-total_step_size_setting_duration, " per iter ", (cur_time-initial_time-total_step_size_setting_duration)/(i_ns_step+1)
+	print "TIME SPENT SETTING STEP SIZES total ",total_step_size_setting_duration
 
 def main():
 	""" Main function """
@@ -1985,10 +2264,10 @@ def main():
 
 	movement_args['MC_atom_velocities'] = str_to_logical(args.pop('MC_atom_velocities', "F"))
 	movement_args['MC_atom_velocities_pre_perturb'] = str_to_logical(args.pop('MC_atom_velocities_pre_perturb', "F"))
-	movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 0.1))
-	movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 0.5))
-	movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 0.1))
-	movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 1.0))
+	movement_args['MC_atom_step_size'] = float(args.pop('MC_atom_step_size', 1.0))
+	movement_args['MC_atom_step_size_max'] = float(args.pop('MC_atom_step_size_max', 1.0))
+	movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 50.0))
+	movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 10000.0))
 	movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
 	movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
@@ -2000,7 +2279,7 @@ def main():
 	movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "T"))
 
 	movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
-	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.2))
+	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.5))
 	movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
 	movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
@@ -2008,27 +2287,28 @@ def main():
 
 	default_value = ns_args['max_volume_per_atom']/20.0 # 5% of maximum allowed volume per atom
 	movement_args['MC_cell_volume_per_atom_step_size'] = float(args.pop('MC_cell_volume_per_atom_step_size', default_value))
-	movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 5000.0))
+	movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 10.0*default_value)) # 50% of maximum allowed volume per atom
 	movement_args['MC_cell_volume_per_atom_prob'] = float(args.pop('MC_cell_volume_per_atom_prob', 1.0))
-	movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.01))
-	movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 0.05))
+	movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.35))
+	movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 1.0))
 	movement_args['MC_cell_stretch_prob'] = float(args.pop('MC_cell_stretch_prob', 1.0))
-	movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.01))
-	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 0.05))
+	movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.5))
+	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 1.0))
 	movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
-	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 100))
+	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 1000))
 
-	movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.25))
+	movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.5))
+	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "T"))
 	movement_args['adjust_step_interval'] = int(movement_args['adjust_step_interval_per_walker']*ns_args['n_walkers'])
 	if movement_args['adjust_step_interval'] < 20:
 	    print "WARNING: step size adjustment would be done too often, at every ", movement_args['adjust_step_interval'], " iteration"
 	    print "WARNING: adjust_step_interval is increased to 20"
 	    movement_args['adjust_step_interval'] = 20
-	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
-	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
-	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
+	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.1))
+	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.2))
+	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.3))
 	movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.5))
 	movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.95))
 	movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 1.00))
@@ -2054,6 +2334,7 @@ def main():
 	if rank == 0:
 	    print "ns_args ",ns_args
 	    print "movement_args ",movement_args
+
 
 	# initialise potential
 	if do_calc_quip:
@@ -2291,6 +2572,9 @@ def main():
 	max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
 	movement_args['MC_atom_step_size'] *= max_lc
 	movement_args['MC_atom_step_size_max'] *= max_lc
+	# scale MC_cell_shear_step_size by max_vol^1.0)
+ 	movement_args['MC_cell_shear_step_size'] *= max_lc
+ 	movement_args['MC_cell_shear_step_size_max'] *= max_lc
 
 	n_atoms = len(walkers[0])
 	prev_snapshot_iter = None
@@ -2348,6 +2632,7 @@ def main():
                     if tmp_iter == start_first_iter-1:     # if this is the iteration same as in the snapshot, 
                         energy_io.truncate()                #delete the rest of the file, as we are restarting from here
                         break
+
 
 	if ns_args['profile'] == rank:
 	    import cProfile

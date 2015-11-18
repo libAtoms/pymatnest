@@ -1,4 +1,9 @@
 TO DO:
+
+MC_atom_velo_step_size : It would be good to have this depend on masses and the inital KEmax.]
+MC_atom_velo_step_size_max : t would be good to have this depend on masses and the inital KEmax.] 
+
+DONE:
 2. Automatically adjust initial step sizes to within the acceptance tolerances used throughout the calculation.
 3. Update stepsize setting routine so that it fixes the stepsize within certain acceptance rate tolerances. Routine should perform a small amount of additional exploration, starting from random configurations stored on each process. This will help to avoid "pan handle" problems.
 5. add routine to do short explorations, and use the results to set stepsizes
