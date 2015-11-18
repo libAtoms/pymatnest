@@ -840,6 +840,7 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
 
     if new_energy < Emax: # accept
         at.info['ns_energy'] = new_energy
+        accept_n = 1
     else:
         t = at.positions[i1,:]
         at.positions[i1,:] = p_1_orig
@@ -847,8 +848,9 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         if ns_args['n_extra_data'] > 0:
             at.arrays['ns_extra_data'][i1,...] = extra_data_1_orig
             at.arrays['ns_extra_data'][i2,...] = extra_data_2_orig
+        accept_n = 0
 
-    return (1, {})
+    return (1, {'MC_swap' : (1, accept_n) })
 #DOC \end{itemize}
 
 def do_MC_cell_volume_step(at, movement_args, Emax, KEmax):
@@ -2108,7 +2110,7 @@ def main():
 	    ns_args['n_iter_times_fraction_killed'] = float(args.pop('n_iter_times_fraction_killed'))
 	except:
 	    exit_error("need number of iterations n_iter_times_fraction_killed\n",1)
-	ns_args['n_iter'] = ns_args['n_iter_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))
+	ns_args['n_iter'] = int(round(ns_args['n_iter_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
 
 	try:
 	    ns_args['min_Emax'] = float(args.pop('min_Emax'))
@@ -2295,6 +2297,10 @@ def main():
 	movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.5))
 	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 1.0))
 	movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
+
+        # ignored - just to adjust_step_size will report acceptance rates
+	movement_args['MC_swap_step_size'] = float(args.pop('MC_swap_step_size', 0.01))
+	movement_args['MC_swap_step_size_max'] = float(args.pop('MC_swap_step_size_max', 0.05))
 
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
 	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 1000))
