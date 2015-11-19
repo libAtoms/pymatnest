@@ -5,15 +5,19 @@ start_energy_ceiling=1.0e9
 
 n_walkers=640
 n_cull=1
-n_iter_per_walker=3000
+n_iter_times_fraction_killed=3000
 out_file_prefix=test.periodic.MC
 
 ################################################################################
 
 atom_algorithm=MC
-n_steps_expected=32
-atom_n_substeps=8
-cell_n_substeps=4
+n_model_calls_expected=640
+
+n_atom_steps=1
+atom_traj_len=8
+n_cell_volume_steps=4
+n_cell_shear_steps=4
+n_cell_stretch_steps=4
 
 
 MC_atom_step_size=5.0

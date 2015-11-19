@@ -5,15 +5,20 @@ start_energy_ceiling=100.0
 
 n_walkers=640
 n_cull=1
-n_iter_per_walker=5000
+n_iter_times_fraction_killed=5000
 out_file_prefix=test.periodic.MD
 
 ################################################################################
 
 atom_algorithm=MD
-n_steps_expected=32
-atom_n_substeps=32
-cell_n_substeps=4
+n_model_calls_expected=1408
+
+
+n_atom_steps=1
+atom_traj_len=32
+n_cell_volume_steps=4
+n_cell_stretch_steps=4
+n_cell_shear_steps=4
 
 MD_atom_timestep=0.01
 MD_atom_timestep_max=0.025
