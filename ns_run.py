@@ -1573,13 +1573,10 @@ def do_ns_loop():
 		prev_time = cur_time
 		step_size_setting_duration = 0.0
 
-	cull_list=[None] * size
-	for r in range(size):
-	    entries_for_this_rank = np.where(cull_rank == r)[0]
-	    cull_list[r] = cull_ind[entries_for_this_rank]
-            if rank == 0 and ns_args['debug'] >= 4 and len(cull_ind[entries_for_this_rank]) > 0:
-                print print_prefix, "INFO: 20 cull ", cull_ind[entries_for_this_rank], " on ",r
-
+        entries_for_this_rank = np.where(cull_rank == rank)[0]
+        cull_list = cull_ind[entries_for_this_rank]
+        if rank == 0 and ns_args['debug'] >= 4 and len(cull_ind[entries_for_this_rank]) > 0:
+            print print_prefix, "INFO: 20 cull ", cull_ind[entries_for_this_rank], " on ",rank
 
 	# record Emax walkers energies
 	if rank == 0:
@@ -1600,22 +1597,24 @@ def do_ns_loop():
             #    i_ns_step_save[:]=[]
 
 	# record Emax walkers configurations
-	if cull_list[rank] is not None:
-	    for i in cull_list[rank]:
+	if cull_list is not None:
+	    for (i, global_n_offset) in zip(cull_list, entries_for_this_rank):
 		if ns_args['debug'] >= 10 and size <= 1:
 		    print print_prefix, "walker killed at age ",walkers[i].info['n_walks']
-		walkers[i].info['volume'] = walkers[i].get_volume()
-		walkers[i].info['ns_P'] = movement_args['MC_cell_P']
-		walkers[i].info['iter'] = i_ns_step
-		if walkers[i].has('masses') and walkers[i].has('momenta'):
-		    walkers[i].info['ns_KE'] = walkers[i].get_kinetic_energy()
-		#QUIP_IO if have_quippy:
-		    #QUIP_IO walkers[i].write(traj_io)
-		#QUIP_IO else:
-		    #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
-
                 # store culled config in list to be written (when snapshot_interval has passed) every traj_interval steps
-	        if ns_args['traj_interval'] > 0 and i_ns_step % ns_args['traj_interval'] == 0:
+                global_n = i_ns_step*n_cull + global_n_offset
+	        if ns_args['traj_interval'] > 0 and global_n % ns_args['traj_interval'] == ns_args['traj_interval']-1:
+                    walkers[i].info['volume'] = walkers[i].get_volume()
+                    walkers[i].info['ns_P'] = movement_args['MC_cell_P']
+                    walkers[i].info['iter'] = i_ns_step
+                    walkers[i].info['config_n_global'] = global_n
+                    if walkers[i].has('masses') and walkers[i].has('momenta'):
+                        walkers[i].info['ns_KE'] = walkers[i].get_kinetic_energy()
+                    #QUIP_IO if have_quippy:
+                        #QUIP_IO walkers[i].write(traj_io)
+                    #QUIP_IO else:
+                        #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
+
 		    walker_list.append(walkers[i].copy())
 
                 # if tracking all configs, save this one that has been culled
@@ -2006,6 +2005,13 @@ def do_ns_loop():
 	    save_snapshot(i_ns_step)
 	    clean_prev_snapshot(prev_snapshot_iter)
 	    prev_snapshot_iter = i_ns_step
+
+    # flush remaining traj configs
+    for at in walker_list:
+        ase.io.write(traj_io, at, format=ns_args['config_file_format'])
+    traj_io.flush()
+    walker_list=[]
+
     cur_time = time.time()
     if rank == 0:
 	print "LOOP TIME total ",cur_time-initial_time-total_step_size_setting_duration, " per iter ", (cur_time-initial_time-total_step_size_setting_duration)/(i_ns_step+1)
