@@ -3,6 +3,7 @@ import numpy as np, ase, ase.io
 import ns_rng
 import stacktrace
 from itertools import izip
+from copy import deepcopy
 
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
@@ -1085,7 +1086,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
         # MC_cell_stretch # cell stretch move
         # MC_cell_volume_per_atom # volume move
 
-        exploration_movement_args = movement_args.copy()
+        exploration_movement_args = deepcopy(movement_args)
         # turn all step types off to begin with
         exploration_movement_args['n_atom_steps_n_calls'] = 0
         exploration_movement_args['n_cell_volume_steps'] = 0
@@ -1901,7 +1902,7 @@ def do_ns_loop():
  	if (i_ns_step == start_first_iter and movement_args['full_auto_step_sizes']):
    	    # set initial step sizes. Performed here since this is the first time all the arrays are in place
    	    conf_pre=walkers[0].copy()
-   	    move_args_pre=movement_args.copy()
+   	    move_args_pre=deepcopy(movement_args)
    	    walk_stats_pre=walk_single_walker(conf_pre, move_args_pre, Emax_of_step, KEmax)
    	    delta_step_size_setting_duration = full_auto_set_stepsizes(walkers, walk_stats_pre, movement_args, comm, Emax_of_step, KEmax, size)
    	    total_step_size_setting_duration += delta_step_size_setting_duration
