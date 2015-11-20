@@ -33,7 +33,8 @@ else:
 # check this: a = N_w/(N_w+N_c)
 print "# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
 
-Es -= np.amin(Es)
+E_min = np.amin(Es)
+Es -= E_min
 
 def analyse(log_a, Es, T):
     beta = 1.0/(k_Boltzmann*T)
@@ -49,16 +50,23 @@ def analyse(log_a, Es, T):
     Z = sum(Z_term)
 
 
-    U_pot = sum(Z_term*Es)/Z
+    U_pot = sum(Z_term*Es)/Z + E_min
     U = n_Extra_DOF/(2.0*beta) + U_pot
 
     Cv = n_Extra_DOF*k_Boltzmann/2.0 + beta*beta * (sum(Z_term * Es**2)/Z - U_pot**2)
 
     log_Z = math.log(Z)+shift
 
-    return (log_Z, U, Cv)
+    Z_max = np.amax(Z_term)
+    low_percentile_config = np.where(Z_term > Z_max/10.0)[0][0]
+    high_percentile_config = np.where(Z_term > Z_max/10.0)[0][-1]
+    mode_config = np.argmax(Z_term)
 
-print "# T      log_Z(T)               U(T)          Cv(T)"
+    Z_fract = np.sum(Z_term[low_percentile_config:high_percentile_config+1])/Z
+
+    return (log_Z, U, Cv, low_percentile_config, mode_config, high_percentile_config, Z_fract)
+
+print "# T      log_Z(T)               U(T)          Cv(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
 #      0.05 1.88949677673e-75 8.88841272769 56975.5011109
 
 log_a = ns_analyse.calc_log_a(len(Es), k_Boltzmann, n_walkers, n_cull)
@@ -66,7 +74,7 @@ for i_T in range(n_T):
     T = T_min + i_T * dT
     if opt.profile and i_T == 0:
         import cProfile
-        cProfile.run('(log_Z, U, Cv) = analyse(log_a, Es, T)','ns_analyse.stats')
+        cProfile.run('(log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T)','ns_analyse.stats')
     else:
-        (log_Z, U, Cv) = analyse(log_a, Es, T)
-    print T, log_Z, U, Cv
+        (log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T)
+    print T, log_Z, U, Cv, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract
