@@ -4,6 +4,7 @@ import ns_rng
 import stacktrace
 from itertools import izip
 from copy import deepcopy
+import pick_interconnected_clump
 
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
@@ -90,6 +91,12 @@ def usage():
 
     ``n_swap_steps=int`` 
        | (0, number of species swap steps each block)
+    ``swap_max_cluster=int`` 
+       | (1, maximum size of interconnected cluster to try to swap)
+    ``swap_r_cut=float`` 
+       | (2.5, cutoff radius for defining connected atoms for cluster)
+    ``swap_cluster_probability_increment=float`` 
+       | (0.75, factor between prob. of picking increasing larger clusters)
 
     ``velo_traj_len=int`` 
        | (0, number of MC steps in (optional) explicit velocity MC traj)
@@ -246,6 +253,9 @@ def usage():
     sys.stderr.write("n_cell_shear_steps=int (1, number of cell MC shear steps each block)\n")
     sys.stderr.write("n_cell_stretch_steps=int (1, number of cell MC stretch steps each block)\n")
     sys.stderr.write("n_swap_steps=int (0, number of atom swaps in each block)\n")
+    sys.stderr.write("swap_max_cluster=int (1, maximum size of interconnected cluster to try to swap)\n")
+    sys.stderr.write("swap_r_cut=float (2.5, cutoff radius for defining connected atoms for cluster)\n")
+    sys.stderr.write("swap_cluster_probability_increment=float (0.75, factor between prob. of picking increasing larger clusters)\n")
     sys.stderr.write("\n")
     sys.stderr.write("velo_traj_len=int (0, number of MC sweeps in each velocity MC segement)\n")
     sys.stderr.write("\n")
@@ -820,20 +830,33 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         # don't try to swap when all atoms are the same
         return (0, {})
 
-    #DOC \item pick two atoms with distinct atomic numbers
-    i1 = rng.int_uniform(0,len(at))
-    i2 = rng.int_uniform(0,len(at))
-    while Z[i1] == Z[i2]:
-        i2 = rng.int_uniform(0,len(at))
-    p_1_orig = at.positions[i1,:].copy()
-    p_2_orig = at.positions[i2,:].copy()
-    at.positions[i1,:] = p_2_orig
-    at.positions[i2,:] = p_1_orig
+    r_cut = movement_args['swap_r_cut']
+    #DOC \item pick two clusters with distinct atomic numbers
+    max_tries = 50
+    rv = rng.float_uniform(0,1)
+    cluster_size = np.where(rv < movement_args['swap_probs'])[0][0]+1
+    (c1, r_cut_used_1) = pick_interconnected_clump.pick_interconnected(rng, at, cluster_size, r_cut, max_r_cut=1.0e6)
+    (c2, r_cut_used_2) = pick_interconnected_clump.pick_interconnected(rng, at, cluster_size, r_cut, max_r_cut=1.0e6)
+    i_tries = 1
+    while (c1 is None or c2 is None or np.all(Z[c1] == Z[c2])) and i_tries < max_tries:
+        r_cut = np.amax([r_cut_used_1, r_cut_used_2])
+        i_tries += 1
+        (c1, r_cut_used_1) = pick_interconnected_clump.pick_interconnected(rng, at, cluster_size, r_cut, max_r_cut=1.0e6)
+        (c2, r_cut_used_2) = pick_interconnected_clump.pick_interconnected(rng, at, cluster_size, r_cut, max_r_cut=1.0e6)
+
+    # failed to find appropriate 
+    if c1 is None or c2 is None:
+        return (0, {})
+
+    p_1_orig = at.positions[c1,:].copy()
+    p_2_orig = at.positions[c2,:].copy()
+    at.positions[c1,:] = p_2_orig
+    at.positions[c2,:] = p_1_orig
     if ns_args['n_extra_data'] > 0:
-        extra_data_1_orig = at.arrays['ns_extra_data'][i1,...].copy()
-        extra_data_2_orig = at.arrays['ns_extra_data'][i2,...].copy()
-        at.arrays['ns_extra_data'][i1,...] = extra_data_2_orig
-        at.arrays['ns_extra_data'][i2,...] = extra_data_1_orig
+        extra_data_1_orig = at.arrays['ns_extra_data'][c1,...].copy()
+        extra_data_2_orig = at.arrays['ns_extra_data'][c2,...].copy()
+        at.arrays['ns_extra_data'][c1,...] = extra_data_2_orig
+        at.arrays['ns_extra_data'][c2,...] = extra_data_1_orig
 
     #DOC \item accept swap if energy < Emax
     new_energy = eval_energy(at)
@@ -842,12 +865,12 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         at.info['ns_energy'] = new_energy
         accept_n = 1
     else:
-        t = at.positions[i1,:]
-        at.positions[i1,:] = p_1_orig
-        at.positions[i2,:] = p_2_orig
+        t = at.positions[c1,:]
+        at.positions[c1,:] = p_1_orig
+        at.positions[c2,:] = p_2_orig
         if ns_args['n_extra_data'] > 0:
-            at.arrays['ns_extra_data'][i1,...] = extra_data_1_orig
-            at.arrays['ns_extra_data'][i2,...] = extra_data_2_orig
+            at.arrays['ns_extra_data'][c1,...] = extra_data_1_orig
+            at.arrays['ns_extra_data'][c2,...] = extra_data_2_orig
         accept_n = 0
 
     return (1, {'MC_swap' : (1, accept_n) })
@@ -2251,6 +2274,18 @@ def main():
 	movement_args['n_cell_stretch_steps'] = int(args.pop('n_cell_stretch_steps', 1))
 
 	movement_args['n_swap_steps'] = int(args.pop('n_swap_steps', 0))
+	movement_args['swap_max_cluster'] = int(args.pop('swap_max_cluster', 1))
+	movement_args['swap_r_cut'] = float(args.pop('swap_r_cut', 2.5))
+	movement_args['swap_cluster_probability_increment'] = float(args.pop('cluster_probability_increment', 0.75))
+
+        # initialize swap cluster size probabilities
+        movement_args['swap_probs'] = np.zeros( (movement_args['swap_max_cluster']) )
+        movement_args['swap_probs'][0] = 1.0
+        for i in range(1,movement_args['swap_max_cluster']):
+            movement_args['swap_probs'][i] = movement_args['swap_probs'][i-1] * movement_args['swap_cluster_probability_increment']
+        movement_args['swap_probs'] /= np.sum(movement_args['swap_probs'])
+        for i in range(1,movement_args['swap_max_cluster']):
+            movement_args['swap_probs'][i] = movement_args['swap_probs'][i] +  movement_args['swap_probs'][i-1]
 
 	if (movement_args['n_model_calls_expected'] <= 0 and
 	    movement_args['n_model_calls'] <= 0 and
