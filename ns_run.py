@@ -5,6 +5,7 @@ import stacktrace
 from itertools import izip
 from copy import deepcopy
 import pick_interconnected_clump
+import matscipy.neighbours
 
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
@@ -831,23 +832,31 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         return (0, {})
 
     r_cut = movement_args['swap_r_cut']
+    cluster_size = np.where(rng.float_uniform(0,1) < movement_args['swap_probs'])[0][0]+1
+    if cluster_size > 1:
+        (i_list, j_list) = matscipy.neighbours.neighbour_list('ij', at, r_cut)
+    else:
+        i_list = None
+        j_list = None
     #DOC \item pick two clusters with distinct atomic numbers
-    max_tries = 50
-    rv = rng.float_uniform(0,1)
-    cluster_size = np.where(rv < movement_args['swap_probs'])[0][0]+1
-    (c1, r_cut_used_1) = pick_interconnected_clump.pick_interconnected(rng, at, cluster_size, r_cut, max_r_cut=1.0e6)
-    (c2, r_cut_used_2) = pick_interconnected_clump.pick_interconnected(rng, at, cluster_size, r_cut, max_r_cut=1.0e6)
-    i_tries = 1
+    max_tries = 2
+    c1 = None
+    c2 = None
+    i_tries = 0
     while (c1 is None or c2 is None or np.all(Z[c1] == Z[c2])) and i_tries < max_tries:
-        r_cut = np.amax([r_cut_used_1, r_cut_used_2])
+        # print print_prefix, ": do_MC_swap try to find cluster ", i_tries, cluster_size
         i_tries += 1
-        (c1, r_cut_used_1) = pick_interconnected_clump.pick_interconnected(rng, at, cluster_size, r_cut, max_r_cut=1.0e6)
-        (c2, r_cut_used_2) = pick_interconnected_clump.pick_interconnected(rng, at, cluster_size, r_cut, max_r_cut=1.0e6)
+        c1 = pick_interconnected_clump.pick_interconnected(rng, len(at), i_list, j_list, cluster_size, r_cut)
+        c2 = pick_interconnected_clump.pick_interconnected(rng, len(at), i_list, j_list, cluster_size, r_cut)
+        # print print_prefix, ": do_MC_swap got ", c1, c2
 
     # failed to find appropriate 
-    if c1 is None or c2 is None:
-        return (0, {})
+    if c1 is None or c2 is None or np.all(Z[c1] == Z[c2]):
+        # print print_prefix, ": do_MC_swap giving up on cluster ",c1,c2
+        # return 1 for number of model calls so walk will finish, even if no clusters are ever found
+        return (1, {})
 
+    # print print_prefix, ": do_MC_swap trying cluster", c1, c2
     p_1_orig = at.positions[c1,:].copy()
     p_2_orig = at.positions[c2,:].copy()
     at.positions[c1,:] = p_2_orig
@@ -1417,7 +1426,7 @@ def set_n_from_expected(prop):
 	    # n(1) <- f_c n_t + (1-f_c)*(1-f_e) n(1)
 	    # n(l >= 2) <- (1-f_c)(1-f_e) n(l) + (1-f_c) f_e n(l-1)
 
-	    # f = (1-f_c)f_e / (f_c+f_e-f_c f_e)
+	    # f = (1-f_c)f_e / (f_c+f_f_c f_e)
 
 	    # n(1)/n_t = f_c/(1-(1-f_c)(1-f_e)) = f_c/(f_c+f_e-f_c f_e)
 	    # n(l >= 2)/n_t = f n(l-1) = f^(l-1) n(1)/n_t
