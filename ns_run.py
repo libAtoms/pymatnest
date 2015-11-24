@@ -832,23 +832,25 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         return (0, {})
 
     r_cut = movement_args['swap_r_cut']
+    #DOC \item randomly pick a desired cluster size
     cluster_size = np.where(rng.float_uniform(0,1) < movement_args['swap_probs'])[0][0]+1
     if cluster_size > 1:
         (i_list, j_list) = matscipy.neighbours.neighbour_list('ij', at, r_cut)
     else:
         i_list = None
         j_list = None
-    #DOC \item pick two clusters with distinct atomic numbers
-    max_tries = 2
+    #DOC \item pick two clusters with distinct atomic numbers, backing off to smaller clusters on failure to find appropriate larger clusters, but always pick at least a pair of atoms to swap
     c1 = None
     c2 = None
-    i_tries = 0
-    while (c1 is None or c2 is None or np.all(Z[c1] == Z[c2])) and i_tries < max_tries:
-        # print print_prefix, ": do_MC_swap try to find cluster ", i_tries, cluster_size
-        i_tries += 1
+    while (c1 is None or c2 is None or np.all(Z[c1] == Z[c2])):
+        # print print_prefix, ": do_MC_swap try to find cluster ", cluster_size
         c1 = pick_interconnected_clump.pick_interconnected(rng, len(at), i_list, j_list, cluster_size, r_cut)
         c2 = pick_interconnected_clump.pick_interconnected(rng, len(at), i_list, j_list, cluster_size, r_cut)
         # print print_prefix, ": do_MC_swap got ", c1, c2
+        # decrement cluster size
+        cluster_size -= 1
+        if cluster_size < 1:
+            cluster_size = 1
 
     # failed to find appropriate 
     if c1 is None or c2 is None or np.all(Z[c1] == Z[c2]):
