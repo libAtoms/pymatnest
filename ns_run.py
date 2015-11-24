@@ -170,8 +170,11 @@ def usage():
      |  (0.9)
     ``cell_shape_equil_steps=int``
      |  (1000)
+    ``monitor_step_interval_per_walker=float`` 
+     | Multipled by number of walkers to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring
+     | default: 0.1
     ``adjust_step_interval_per_walker=float`` 
-     | Multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust.
+     | Multipled by number of walkers to get actual step adjustment interval in iterations, negative for only using last iteration, 0 for no adjust.
      | default: 0.5
     ``MC_adjust_step_factor=float``
      |  default: 1.1
@@ -297,7 +300,8 @@ def usage():
     sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
     sys.stderr.write("cell_shape_equil_steps=int (1000)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("adjust_step_interval_per_walker=float (0.5, multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
+    sys.stderr.write("monitor_step_interval_per_walker=float (0.1, multipled by number of walkers to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring)\n")
+    sys.stderr.write("adjust_step_interval_per_walker=float (0.5, multipled by number of walkers to get actual adjustment interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
     sys.stderr.write("full_auto_step_sizes=[T | F] (T) (T. Automatically calibrate all sizes by performing additional short explorations, including at start of run. F. Use initial input step sizes and make small adjustments to step sizes during run.)\n")
     sys.stderr.write("MC_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MC_adjust_min_rate=float (0.2)\n")
@@ -1336,7 +1340,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
     return duration
 
 
-def adjust_step_sizes(walk_stats, movement_args, comm):
+def adjust_step_sizes(walk_stats, movement_args, comm, do_print_rate=True, monitor_only=False):
     """
     Adjust step size to keep the acceptance ratio at the desired level.
     """
@@ -1356,8 +1360,11 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 	if n_try > 0:
 	    rate = float(n_accept)/float(n_try)
 
-	    if comm is None or comm.rank == 0:
+	    if do_print_rate and comm is None or comm.rank == 0:
 		print print_prefix, "accept rate for %s = %f (%d)" % (key, rate, n_try)
+
+            if monitor_only:
+                continue
 
 	    if key.find("MC") == 0:
 		min_rate = movement_args['MC_adjust_min_rate']
@@ -1368,7 +1375,8 @@ def adjust_step_sizes(walk_stats, movement_args, comm):
 		max_rate = movement_args['MD_adjust_max_rate']
 		suffix="timestep"
 	    else:
-		exit_error("adjust_step_size got key '%s', neither MC nor MD\n" % key, 5)
+                if (comm is None or comm.rank == 0):
+                    print "WARNING: adjust_step_size got key '%s', neither MC nor MD\n" % key
 
 	    dir = None
 	    exp = 0.0
@@ -1547,8 +1555,12 @@ def do_ns_loop():
 	else:
 	    print rank, ": initial energy ", at.info['ns_energy']
 
-    walk_stats_cumul={}
-    zero_stats(walk_stats_cumul, movement_args)
+    # stats for purpose of adjusting step size
+    walk_stats_adjust={}
+    # stats for purpose of monitoring acceptance rates
+    walk_stats_monitor={}
+    zero_stats(walk_stats_adjust, movement_args)
+    zero_stats(walk_stats_monitor, movement_args)
 
     initial_time = time.time()
     prev_time = initial_time
@@ -1576,7 +1588,9 @@ def do_ns_loop():
                 print print_prefix, "INFO: 10 config_ind ", at.info['config_ind'], " from ", at.info['from_config_ind'], " at ", at.info['config_ind_time']
 
 	if movement_args['adjust_step_interval'] < 0:
-	    zero_stats(walk_stats_cumul, movement_args)
+	    zero_stats(walk_stats_adjust, movement_args)
+	if movement_args['monitor_step_interval'] < 0:
+	    zero_stats(walk_stats_monitor, movement_args)
 
 	if ns_args['debug'] >= 20:
 	    print print_prefix, "%30s" % ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
@@ -1964,7 +1978,8 @@ def do_ns_loop():
 	    #print "WALK on rank ", rank, "at iteration ", i_ns_step, " walker ", i_at
 	    if ns_args['debug'] >= 10 and size <= 1:
 		walkers[i_at].info['n_walks'] += movement_args['n_steps']
-	    accumulate_stats(walk_stats_cumul, walk_stats)
+	    accumulate_stats(walk_stats_adjust, walk_stats)
+	    accumulate_stats(walk_stats_monitor, walk_stats)
 
 	if ns_args['debug'] >= 20:
 	    print print_prefix, "%30s" % ": LOOP_TE POST_CLONE_WALK 25 ",i_ns_step, [ eval_energy(at) for at in walkers ]
@@ -2017,16 +2032,23 @@ def do_ns_loop():
 	        #print "WALK EXTRA on rank ", rank, "at iteration ", i_ns_step, " walker ", r_i
 		if ns_args['debug'] >= 10 and size <= 1:
 		    walkers[r_i].info['n_walks'] += movement_args['n_steps']
-		accumulate_stats(walk_stats_cumul, walk_stats)
+		accumulate_stats(walk_stats_adjust, walk_stats)
+		accumulate_stats(walk_stats_monitor, walk_stats)
+
+        monitored_this_step=False
+	if movement_args['monitor_step_interval'] != 0 and i_ns_step % abs(movement_args['monitor_step_interval']) == abs(movement_args['monitor_step_interval'])-1:
+            adjust_step_sizes(walk_stats_adjust, movement_args, comm, monitor_only=True)
+	    zero_stats(walk_stats_monitor, movement_args)
+            monitored_this_step=True
 
 	if movement_args['adjust_step_interval'] != 0 and i_ns_step % abs(movement_args['adjust_step_interval']) == abs(movement_args['adjust_step_interval'])-1:
 	    if (not movement_args['full_auto_step_sizes']):
-	        adjust_step_sizes(walk_stats_cumul, movement_args, comm)
+	        adjust_step_sizes(walk_stats_adjust, movement_args, comm, do_print_rate=(not monitored_this_step))
 	    else:
-	        delta_step_size_setting_duration = full_auto_set_stepsizes(walkers, walk_stats_cumul, movement_args, comm, Emax_of_step, KEmax, size)
+	        delta_step_size_setting_duration = full_auto_set_stepsizes(walkers, walk_stats_adjust, movement_args, comm, Emax_of_step, KEmax, size)
  	        total_step_size_setting_duration += delta_step_size_setting_duration
  	        step_size_setting_duration += delta_step_size_setting_duration
-	    zero_stats(walk_stats_cumul, movement_args)
+	    zero_stats(walk_stats_adjust, movement_args)
 
 	if ns_args['debug'] >= 20:
 	    print print_prefix, "%30s" % ": LOOP_TE END 30 ",i_ns_step, [ eval_energy(at) for at in walkers ]
@@ -2359,8 +2381,10 @@ def main():
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
 	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 1000))
 
+	movement_args['monitor_step_interval_per_walker'] = float(args.pop('monitor_step_interval_per_walker', 0.1))
 	movement_args['adjust_step_interval_per_walker'] = float(args.pop('adjust_step_interval_per_walker', 0.5))
 	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "T"))
+	movement_args['monitor_step_interval'] = int(movement_args['monitor_step_interval_per_walker']*ns_args['n_walkers'])
 	movement_args['adjust_step_interval'] = int(movement_args['adjust_step_interval_per_walker']*ns_args['n_walkers'])
 	if movement_args['adjust_step_interval'] < 20:
 	    print "WARNING: step size adjustment would be done too often, at every ", movement_args['adjust_step_interval'], " iteration"
