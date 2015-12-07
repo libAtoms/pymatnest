@@ -26,7 +26,7 @@ def pick_interconnected(rng, N_at, i_list, j_list, N, max_n_attempts=3, print_pr
     while len(at_list) < N and n_attempts < max_n_attempts*N:
         n_attempts += 1
         if len(at_list) == 0: # pick a new seed atom
-            at_list = [rng.int_uniform(0,N_at-1)]
+            at_list = [rng.int_uniform(0,N_at)]
             if N == 1:
                 return at_list
             ##RNG at_list = [random.randint(0,len(at)-1)]
