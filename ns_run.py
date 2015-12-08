@@ -98,6 +98,8 @@ def usage():
        | (2.5, cutoff radius for defining connected atoms for cluster)
     ``swap_cluster_probability_increment=float`` 
        | (0.75, factor between prob. of picking increasing larger clusters)
+    ``swap_velo=[T | F]`` 
+       | (F, if true, swap velocities when swapping atoms)
 
     ``velo_traj_len=int`` 
        | (0, number of MC steps in (optional) explicit velocity MC traj)
@@ -172,10 +174,10 @@ def usage():
      |  (1000)
     ``monitor_step_interval_times_fraction_killed=float`` 
      | Divided by ``n_cull/n_walkers`` to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring
-     | default: 0.1
+     | default: 1
     ``adjust_step_interval_times_fraction_killed=float`` 
      | Divided by ``n_cull/n_walkers`` to get actual step adjustment interval in iterations, negative for only using last iteration, 0 for no adjust.
-     | default: 0.5
+     | default: 5
     ``MC_adjust_step_factor=float``
      |  default: 1.1
     ``MC_adjust_min_rate=float``
@@ -260,6 +262,7 @@ def usage():
     sys.stderr.write("swap_max_cluster=int (1, maximum size of interconnected cluster to try to swap)\n")
     sys.stderr.write("swap_r_cut=float (2.5, cutoff radius for defining connected atoms for cluster)\n")
     sys.stderr.write("swap_cluster_probability_increment=float (0.75, factor between prob. of picking increasing larger clusters)\n")
+    sys.stderr.write("swap_velo=[T | F] (F, if true, swap velocities when swapping atoms\n")
     sys.stderr.write("\n")
     sys.stderr.write("velo_traj_len=int (0, number of MC sweeps in each velocity MC segement)\n")
     sys.stderr.write("\n")
@@ -300,8 +303,8 @@ def usage():
     sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
     sys.stderr.write("cell_shape_equil_steps=int (1000)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("monitor_step_interval_times_fraction_killed=float (0.1, multipled by number of walkers to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring)\n")
-    sys.stderr.write("adjust_step_interval_times_fraction_killed=float (0.5, multipled by number of walkers to get actual adjustment interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
+    sys.stderr.write("monitor_step_interval_times_fraction_killed=float (1, divided by n_cull/n_walkers to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring)\n")
+    sys.stderr.write("adjust_step_interval_times_fraction_killed=float (5, divided by n_cull/n_walkers to get actual adjustment interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
     sys.stderr.write("full_auto_step_sizes=[T | F] (T) (T. Automatically calibrate all sizes by performing additional short explorations, including at start of run. F. Use initial input step sizes and make small adjustments to step sizes during run.)\n")
     sys.stderr.write("MC_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MC_adjust_min_rate=float (0.2)\n")
@@ -867,6 +870,13 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
     p_2_orig = at.positions[c2,:].copy()
     at.positions[c1,:] = p_2_orig
     at.positions[c2,:] = p_1_orig
+    if movement_args['swap_velo']:
+        velocities = at.get_velocities()
+        v_1_orig = velocities[c1,:].copy()
+        v_2_orig = velocities[c2,:].copy()
+        velocities[c1,:] = v_2_orig
+        velocities[c2,:] = v_1_orig
+        at.set_velocities(velocities)
     if ns_args['n_extra_data'] > 0:
         extra_data_1_orig = at.arrays['ns_extra_data'][c1,...].copy()
         extra_data_2_orig = at.arrays['ns_extra_data'][c2,...].copy()
@@ -880,15 +890,18 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         at.info['ns_energy'] = new_energy
         accept_n = 1
     else:
-        t = at.positions[c1,:]
         at.positions[c1,:] = p_1_orig
         at.positions[c2,:] = p_2_orig
+        if movement_args['swap_velo']:
+            velocities[c1,:] = v_1_orig
+            velocities[c2,:] = v_2_orig
+            at.set_velocities(velocities)
         if ns_args['n_extra_data'] > 0:
             at.arrays['ns_extra_data'][c1,...] = extra_data_1_orig
             at.arrays['ns_extra_data'][c2,...] = extra_data_2_orig
         accept_n = 0
 
-    return (1, {'MC_swap' : (1, accept_n) })
+    return (1, {('MC_swap_%d' % len(c1)) : (1, accept_n) })
 #DOC \end{itemize}
 
 def do_MC_cell_volume_step(at, movement_args, Emax, KEmax):
@@ -1377,6 +1390,10 @@ def adjust_step_sizes(walk_stats, movement_args, comm, do_print_rate=True, monit
 	    else:
                 if (comm is None or comm.rank == 0):
                     print "WARNING: adjust_step_size got key '%s', neither MC nor MD\n" % key
+                continue
+
+            if key+"_"+suffix not in movement_args:
+                continue
 
 	    dir = None
 	    exp = 0.0
@@ -2312,6 +2329,7 @@ def main():
 	movement_args['swap_max_cluster'] = int(args.pop('swap_max_cluster', 1))
 	movement_args['swap_r_cut'] = float(args.pop('swap_r_cut', 2.5))
 	movement_args['swap_cluster_probability_increment'] = float(args.pop('cluster_probability_increment', 0.75))
+	movement_args['swap_velo'] = str_to_logical(args.pop('swap_velo', "F"))
 
         # initialize swap cluster size probabilities
         movement_args['swap_probs'] = np.zeros( (movement_args['swap_max_cluster']) )
@@ -2374,15 +2392,11 @@ def main():
 	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 1.0))
 	movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
-        # ignored - just to adjust_step_size will report acceptance rates
-	movement_args['MC_swap_step_size'] = float(args.pop('MC_swap_step_size', 0.01))
-	movement_args['MC_swap_step_size_max'] = float(args.pop('MC_swap_step_size_max', 0.05))
-
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
 	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 1000))
 
-	movement_args['monitor_step_interval_times_fraction_killed'] = float(args.pop('monitor_step_interval_times_fraction_killed', 0.1))
-	movement_args['adjust_step_interval_times_fraction_killed'] = float(args.pop('adjust_step_interval_times_fraction_killed', 0.5))
+	movement_args['monitor_step_interval_times_fraction_killed'] = float(args.pop('monitor_step_interval_times_fraction_killed', 1))
+	movement_args['adjust_step_interval_times_fraction_killed'] = float(args.pop('adjust_step_interval_times_fraction_killed', 5))
 	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "T"))
 	movement_args['monitor_step_interval'] = int(round(movement_args['monitor_step_interval_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
 	movement_args['adjust_step_interval'] = int(round(movement_args['adjust_step_interval_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
