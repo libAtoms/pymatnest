@@ -885,11 +885,12 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
 
     #DOC \item accept swap if energy < Emax
     new_energy = eval_energy(at)
+    new_KE = eval_energy(at, do_PE=False, do_PV=False)
 
-    if new_energy < Emax: # accept
+    if new_energy < Emax and (KEmax is None or new_KE < KEmax): # accept
         at.info['ns_energy'] = new_energy
         accept_n = 1
-    else:
+    else: # reject
         at.positions[c1,:] = p_1_orig
         at.positions[c2,:] = p_2_orig
         if movement_args['swap_velo']:
