@@ -185,7 +185,8 @@ End LAMMPSlib Interface Documentation
         keep_alive=False,
         lammps_header=['units metal',
                        'atom_style atomic',
-                       'atom_modify map array sort 0 0'])
+                       'atom_modify map array sort 0 0'],
+        comm=None)
 
     def set_cell(self, atoms, change=False):
         cell = self.convert_cell(atoms.get_cell())
@@ -397,7 +398,7 @@ End LAMMPSlib Interface Documentation
         self.cmd_args = cmd_args
 
         if not hasattr(self, 'lmp'):
-            self.lmp = lammps(self.parameters.lammps_name, self.cmd_args)
+            self.lmp = lammps(self.parameters.lammps_name, self.cmd_args, comm=self.parameters.comm)
 
         # Use metal units: Angstrom, ps, and eV
         for cmd in self.parameters.lammps_header:

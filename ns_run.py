@@ -2134,6 +2134,7 @@ def main():
 
 	# initialize mpi
 	comm = None
+	calculator_comm = None
 	rank = 0
 	size = 1
 	if use_mpi:
@@ -2143,6 +2144,7 @@ def main():
 		sys.stderr.write("Failed to import mpi4py\n")
 		sys.exit(10)
 	    comm = MPI.COMM_WORLD
+            calculator_comm = MPI.COMM_SELF
 
 	if use_mpi:
 	    try:
@@ -2446,10 +2448,10 @@ def main():
 	    header_extra_cmds = [s.strip() for s in ns_args['LAMMPS_header_extra'].split(';')]
 	    if ns_args['debug'] >= 5:
 		pot = LAMMPSlib(lmpcmds=init_cmds, atom_types=ns_args['LAMMPS_atom_types'], log_file='lammps.%d.log' % rank, keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
-				lammps_header=header_cmds, lammps_header_extra=header_extra_cmds)
+				lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=calculator_comm)
 	    else:
 		pot = LAMMPSlib(lmpcmds=init_cmds, atom_types=ns_args['LAMMPS_atom_types'], keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
-				lammps_header=header_cmds, lammps_header_extra=header_extra_cmds)
+				lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=calculator_comm)
 	    print "PRE START_LAMMPS"
 	    pot.start_lammps() # so that top level things like units will be set
 	    print "POST START_LAMMPS"
