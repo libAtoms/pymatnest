@@ -18,6 +18,7 @@ class fortran_MC_MD:
 
         # ll_init_config
         self.model_lib.ll_init_config_.argtypes = [ctypes.c_void_p, # N
+           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
            ctypes.c_void_p ] # Emax
@@ -25,6 +26,7 @@ class fortran_MC_MD:
         # ll_eval_energy
         self.model_lib.ll_eval_energy_.restype = ctypes.c_double
         self.model_lib.ll_eval_energy_.argtypes = [ctypes.c_void_p, # N
+           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
            ctypes.c_void_p, # n_extra_data
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # extra_data
@@ -33,6 +35,7 @@ class fortran_MC_MD:
         # ll_move_atom_1
         self.model_lib.ll_move_atom_1_.restype = ctypes.c_int
         self.model_lib.ll_move_atom_1_.argtypes = [ctypes.c_void_p, # N
+           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
            ctypes.c_void_p, # n_extra_data
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # extra_data
@@ -45,6 +48,7 @@ class fortran_MC_MD:
         # ll_eval_forces
         self.model_lib.ll_eval_forces_.restype = ctypes.c_double
         self.model_lib.ll_eval_forces_.argtypes = [ctypes.c_void_p, # N
+           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
            ctypes.c_void_p, # n_extra_data
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # extra_data
@@ -75,6 +79,7 @@ class fortran_MC_MD:
 
         # fortran_MC_atom
         self.lib.fortran_mc_atom_.argtypes = [ctypes.c_void_p, # N
+           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # velo
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # masses
@@ -92,6 +97,7 @@ class fortran_MC_MD:
 
         # fortran_MD_atom_NVE
         self.lib.fortran_md_atom_nve_.argtypes = [ctypes.c_void_p, # N
+           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # vel
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # mass
@@ -111,7 +117,7 @@ class fortran_MC_MD:
     def init_config(self, at, Emax):
         n = ctypes.c_int(len(at))
         Emax = ctypes.c_double(Emax)
-        self.model_lib.ll_init_config_(ctypes.byref(n), at.get_positions(), at.get_cell(), ctypes.byref(Emax))
+        self.model_lib.ll_init_config_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), at.get_positions(), at.get_cell(), ctypes.byref(Emax))
 
     def eval_energy(self, at):
         n = ctypes.c_int(len(at))
@@ -121,7 +127,7 @@ class fortran_MC_MD:
         else:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
-        return self.model_lib.ll_eval_energy_(ctypes.byref(n), at.get_positions(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell())
+        return self.model_lib.ll_eval_energy_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), at.get_positions(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell())
 
     def move_atom_1(self, at, d_i, d_pos, dEmax):
         n = ctypes.c_int(len(at))
@@ -135,7 +141,7 @@ class fortran_MC_MD:
         dEmax = ctypes.c_double(dEmax)
         dE = np.zeros( (1) )
         pos = at.get_positions()
-        accept = self.model_lib.ll_move_atom_1_(ctypes.byref(n), pos, ctypes.byref(n_extra_data_c), extra_data,
+        accept = self.model_lib.ll_move_atom_1_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, ctypes.byref(n_extra_data_c), extra_data,
                                                at.get_cell(), ctypes.byref(d_i), d_pos, ctypes.byref(dEmax), dE)
         if accept > 0:
             at.set_positions(pos)
@@ -200,7 +206,7 @@ class fortran_MC_MD:
         else:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
-        self.lib.fortran_mc_atom_(ctypes.byref(n), pos, velo, at.get_masses(), ctypes.byref(n_extra_data_c),
+        self.lib.fortran_mc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, velo, at.get_masses(), ctypes.byref(n_extra_data_c),
            extra_data, at.get_cell(),
            ctypes.byref(n_steps), ctypes.byref(step_size_pos), ctypes.byref(step_size_velo_c),
            ctypes.byref(Emax), ctypes.byref(KEmax), final_E, n_accept_pos, n_accept_velo)
@@ -227,7 +233,7 @@ class fortran_MC_MD:
         else:
             n_extra_data_c = ctypes.c_int(0)
             extra_data= np.zeros( (1) )
-        self.lib.fortran_md_atom_nve_(ctypes.byref(n),
+        self.lib.fortran_md_atom_nve_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32),
            pos, vel, at.get_masses(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell(),
            ctypes.byref(n_steps), ctypes.byref(timestep), final_E, ctypes.byref(debug))
         at.set_positions(pos)

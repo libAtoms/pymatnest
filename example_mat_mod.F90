@@ -1,4 +1,4 @@
-module mat_mod
+module example_mat_mod
 
 implicit none
 private
@@ -54,4 +54,4 @@ contains
      g(3,:) = (matrix(:,1) .cross. matrix(:,2))/stp
 
    end subroutine matrix3x3_inverse
-end module mat_mod
+end module example_mat_mod

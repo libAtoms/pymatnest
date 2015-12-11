@@ -61,10 +61,11 @@ subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, KEmax, final_K
 
 end subroutine fortran_MC_atom_velo
 
-subroutine fortran_MC_atom(N, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, &
+subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, &
 			   step_size_pos, step_size_vel, Emax, KEmax, final_E, n_accept_pos, n_accept_vel)
    implicit none
    integer :: N
+   integer :: Z(N)
    double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data,N)
@@ -87,7 +88,7 @@ subroutine fortran_MC_atom(N, pos, vel, mass, n_extra_data, extra_data, cell, n_
 
    n_accept_pos = 0
    n_accept_vel = 0
-   E = ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
+   E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
    if (do_vel) then
       KE = 0.5*sum(spread(mass,1,3)*vel**2)
       E = E + KE
@@ -128,7 +129,7 @@ subroutine fortran_MC_atom(N, pos, vel, mass, n_extra_data, extra_data, cell, n_
 
 	 call random_number(d_pos)
 	 d_pos = 2.0*step_size_pos*(d_pos-0.5)
-	 n_accept_pos = n_accept_pos + ll_move_atom_1(N, pos, n_extra_data, extra_data, cell, d_i, d_pos, Emax-E, dE)
+	 n_accept_pos = n_accept_pos + ll_move_atom_1(N, Z, pos, n_extra_data, extra_data, cell, d_i, d_pos, Emax-E, dE)
 	 E = E + dE
 
 	 if (do_vel .and.  vel_pos_rv >= 0.5) then
@@ -149,9 +150,10 @@ subroutine fortran_MC_atom(N, pos, vel, mass, n_extra_data, extra_data, cell, n_
 
 end subroutine fortran_MC_atom
 
-subroutine fortran_MD_atom_NVE(N, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, timestep, final_E, debug)
+subroutine fortran_MD_atom_NVE(N, Z, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, timestep, final_E, debug)
    implicit none
    integer :: N
+   integer :: Z(N)
    double precision :: pos(3,N), vel(3,N), mass(N), cell(3,3)
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data,N)
@@ -165,7 +167,7 @@ subroutine fortran_MD_atom_NVE(N, pos, vel, mass, n_extra_data, extra_data, cell
    double precision, external :: ll_eval_forces, ll_eval_energy
 
    ! initialize accelerations
-   PE = ll_eval_forces(N, pos, n_extra_data, extra_data, cell, forces)
+   PE = ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, forces)
    do i=1, 3
       acc(i,:) = forces(i,:) / mass(:)
    end do
@@ -179,7 +181,7 @@ subroutine fortran_MD_atom_NVE(N, pos, vel, mass, n_extra_data, extra_data, cell
       pos = pos + timestep*vel
 
       ! new accelerations at t+dt
-      PE = ll_eval_forces(N, pos, n_extra_data, extra_data, cell, forces)
+      PE = ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, forces)
       do i=1, 3
 	 acc(i,:) = forces(i,:) / mass(:)
       end do

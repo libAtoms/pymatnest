@@ -8,7 +8,7 @@ subroutine ll_init_config()
 end subroutine ll_init_config
 
 double precision function ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
-use mat_mod
+use example_mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
@@ -20,7 +20,7 @@ implicit none
 end function ll_eval_energy
 
 integer function ll_move_atom_1(N, pos, n_extra_data, extra_data, cell, d_i, d_pos, dEmax, dE)
-use mat_mod
+use example_mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3)
@@ -36,7 +36,7 @@ implicit none
 end function ll_move_atom_1
 
 function ll_eval_forces(N, pos, n_extra_data, extra_data, cell, forces) result(energy)
-use mat_mod
+use example_mat_mod
 implicit none
    integer :: N
    double precision :: pos(3,N), cell(3,3), forces(3,N)
