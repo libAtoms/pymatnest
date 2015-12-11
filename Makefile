@@ -1,5 +1,7 @@
 include Makefile.arch
 
+F90_MODEL_UTILS = example_mat_mod.F90
+
 F90_MODELS = $(wildcard *_model.F90)
 
 all: doc RngStream.so libs
@@ -15,9 +17,12 @@ MC_MD_steps.pdf: MC_MD_steps.tex ns_run.py
 # extra dependency for RngStream
 RngStream.so: RngStream.c RngStream.h
 
-# rules for making .so from .F90 and from .c
-%.so : %.F90
-	$(FC) $(FFLAGS) $(SO_FLAGS) $< -o $@
+# rules for making .o and .so from .F90 and from .c
+%.so : %.F90 $(F90_MODEL_UTILS:.F90=.o) 
+	$(FC) $(FFLAGS) $(SO_FLAGS) $< $(F90_MODEL_UTILS:.F90=.o) -o $@
+
+%.o : %.F90
+	$(FC) $(FFLAGS) -c $< -o $@
 
 %.so : %.c
 	$(CC) $(CFLAGS) $(SO_FLAGS) $< -o $@
