@@ -1713,8 +1713,8 @@ def do_ns_loop():
                 initial_PE = np.array(comm.allgather(initial_PE_loc)).flatten()
                 initial_E = np.array(comm.allgather(initial_E_loc)).flatten()
             else:
-                initial_PE = initial_PE_loc
-                initial_E = initial_E_loc
+                initial_PE = np.array(initial_PE_loc)
+                initial_E = np.array(initial_E_loc)
 	    initial_changed = initial_PE[np.where(status.flatten() == 'c_t')]
 	    initial_unchanged = initial_PE[np.where(status.flatten() == '')]
 
@@ -1816,6 +1816,10 @@ def do_ns_loop():
 		    walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
 		if ns_args['n_extra_data'] > 0:
 		    walkers[recv_ind[0]].arrays['ns_extra_data'][...] = walkers[send_ind[0]].arrays['ns_extra_data']
+                if ns_args['swap_atomic_numbers']:
+                    walkers[recv_ind[0]].set_atomic_numbers(walkers[send_ind[0]].get_atomic_numbers())
+                    if movement_args['do_velocities']:
+                        walkers[recv_ind[0]].set_masses(walkers[send_ind[0]].get_masses())
 		if ns_args['track_configs']:
                     walkers[recv_ind[0]].info['config_ind'] = walkers[send_ind[0]].info['config_ind']
                     walkers[recv_ind[0]].info['from_config_ind'] = walkers[send_ind[0]].info['from_config_ind']
@@ -1829,6 +1833,10 @@ def do_ns_loop():
 		    n_send += 3*n_atoms
 		if ns_args['n_extra_data'] > 0:
 		    n_send += ns_args['n_extra_data']*n_atoms
+                if ns_args['swap_atomic_numbers']:
+                    n_send += n_atoms # Z
+                    if ns_args['do_velocities']:
+                        n_send += n_atoms # mass
                 if ns_args['track_configs']:
                     n_send += 3
 		buf = np.zeros ( n_send )
@@ -1840,6 +1848,10 @@ def do_ns_loop():
 			buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].get_velocities().reshape( (3*n_atoms) ); buf_o += 3*n_atoms
 		    if ns_args['n_extra_data'] > 0:
 			buf[buf_o:buf_o+ns_args['n_extra_data']*n_atoms] = walkers[send_ind[0]].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) ); buf_o += ns_args['n_extra_data']*n_atoms
+                    if ns_args['swap_atomic_numbers']:
+                        buf[buf_o:buf_o+n_atoms] = walkers[send_ind[0]].get_atomic_numbers(); buf_o += n_atoms
+                        if ns_args['do_velocities']:
+                            buf[buf_o:buf_o+n_atoms] = walkers[send_ind[0]].get_masses(); buf_o += n_atoms
                     if ns_args['track_configs']:
                         buf[buf_o] = walkers[send_ind[0]].info['config_ind']; buf_o += 1
                         buf[buf_o] = walkers[send_ind[0]].info['from_config_ind']; buf_o += 1
@@ -1854,6 +1866,10 @@ def do_ns_loop():
 			walkers[recv_ind[0]].set_velocities(buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, 3) )); buf_o += 3*n_atoms
 		    if ns_args['n_extra_data'] > 0:
 			walkers[recv_ind[0]].arrays['ns_extra_data'][...] = buf[buf_o:buf_o+3*n_atoms].reshape( walkers[recv_ind[0]].arrays['ns_extra_data'].shape ); buf_o += ns_args['n_extra_data']*n_atoms
+                    if ns_args['swap_atomic_numbers']:
+                        walkers[recv_ind[0]].set_atomic_numbers(buf[buf_o:buf_o+n_atoms].astype(int)); buf_o += n_atoms
+                        if ns_args['do_velocities']:
+                            walkers[recv_ind[0]].set_masses(buf[buf_o:buf_o+n_atoms]); buf_o += n_atoms
 		    if ns_args['track_configs']:
                         walkers[recv_ind[0]].info['config_ind'] = int(buf[buf_o]); buf_o += 1
                         walkers[recv_ind[0]].info['from_config_ind'] = int(buf[buf_o]); buf_o += 1
@@ -1867,6 +1883,10 @@ def do_ns_loop():
 		n_data_per_config += 3*n_atoms
 	    if ns_args['n_extra_data'] > 0:
 		n_data_per_config += ns_args['n_extra_data']*n_atoms
+            if ns_args['swap_atomic_numbers']:
+                n_send += n_atoms # Z
+                if ns_args['do_velocities']:
+                    n_send += n_atoms # mass
 	    if ns_args['track_configs']:
                 n_data_per_config += 3
 
@@ -1900,6 +1920,10 @@ def do_ns_loop():
 		    send_data[data_o:data_o+3*n_atoms] = walkers[i_send].get_velocities().reshape( (3*n_atoms) ); data_o += 3*n_atoms
 		if ns_args['n_extra_data'] > 0:
 		    send_data[data_o:data_o+ns_args['n_extra_data']*n_atoms] = walkers[i_send].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) ); data_o += ns_args['n_extra_data']*n_atoms
+		if ns_args['swap_atomic_numbers']:
+		    send_data[data_o:data_o+n_atoms] = walkers[i_send].get_atomic_numbers(); data_o += n_atoms
+                    if ns_args['do_velocities']:
+                        send_data[data_o:data_o+n_atoms] = walkers[i_send].get_masses(); data_o += n_atoms
 		if ns_args['track_configs']:
                     send_data[data_o] = walkers[i_send].info['config_ind']; data_o += 1
                     send_data[data_o] = walkers[i_send].info['from_config_ind']; data_o += 1
@@ -1944,6 +1968,10 @@ def do_ns_loop():
 		    walkers[i_recv].set_velocities( recv_data[data_o:data_o+3*n_atoms].reshape( (n_atoms, 3) )); data_o += 3*n_atoms
 		if ns_args['n_extra_data'] > 0:
 		    walkers[i_recv].arrays['ns_extra_data'][...] = recv_data[data_o:data_o+ns_args['n_extra_data']*n_atoms].reshape( walkers[i_recv].arrays['ns_extra_data'].shape ); data_o += ns_args['n_extra_data']*n_atoms
+		if ns_args['swap_atomic_numbers']:
+		    walkers[i_recv].set_atomic_numbers(recv_data[data_o:data_o+n_atoms].astype(int)); data_o += n_atoms
+                    if ns_args['do_velocities']:
+                        walkers[i_recv].set_masses(recv_data[data_o:data_o+n_atoms]); data_o += n_masses
 		if ns_args['track_configs']:
                     walkers[i_recv].info['config_ind'] = int(recv_data[data_o]); data_o += 1
                     walkers[i_recv].info['from_config_ind'] = int(recv_data[data_o]); data_o += 1
@@ -1995,7 +2023,7 @@ def do_ns_loop():
                 ase.io.write(track_traj_io, walkers[i_at], format=ns_args['config_file_format'])
 	    #print "WALK on rank ", rank, "at iteration ", i_ns_step, " walker ", i_at
 	    if ns_args['debug'] >= 10 and size <= 1:
-		walkers[i_at].info['n_walks'] += movement_args['n_steps']
+		walkers[i_at].info['n_walks'] += movement_args['n_model_calls']
 	    accumulate_stats(walk_stats_adjust, walk_stats)
 	    accumulate_stats(walk_stats_monitor, walk_stats)
 
@@ -2201,12 +2229,11 @@ def main():
 	except:
 	    ns_args['min_Emax'] = None
 
+        try:
+            ns_args['start_species'] = args.pop('start_species')
+        except:
+            exit_error("always need species, even if restart_file is specified\n",1)
 	ns_args['restart_file'] = args.pop('restart_file', '')
-	if ns_args['restart_file'] == '':
-	    try:
-		ns_args['start_species'] = args.pop('start_species')
-	    except:
-		exit_error("need species for initial configs start_species\n",1)
 
 	ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
 
@@ -2317,12 +2344,16 @@ def main():
 	movement_args['n_atom_steps'] = int(args.pop('n_atom_steps', 1))
 	movement_args['atom_traj_len'] = int(args.pop('atom_traj_len', 8))
 	movement_args['break_up_atom_traj'] = str_to_logical(args.pop('break_up_atom_traj', "F"))
-        if movement_args['break_up_atom_traj']:
-            movement_args['n_atom_steps_per_call'] = 1
-            movement_args['n_atom_steps_n_calls'] = movement_args['n_atom_steps']
+        if movement_args['n_atom_steps'] == 0:
+            movement_args['n_atom_steps_per_call'] = 0
+            movement_args['n_atom_steps_n_calls'] = 0
         else:
-            movement_args['n_atom_steps_per_call'] = movement_args['n_atom_steps']
-            movement_args['n_atom_steps_n_calls'] = 1
+            if movement_args['break_up_atom_traj']:
+                movement_args['n_atom_steps_per_call'] = 1
+                movement_args['n_atom_steps_n_calls'] = movement_args['n_atom_steps']
+            else:
+                movement_args['n_atom_steps_per_call'] = movement_args['n_atom_steps']
+                movement_args['n_atom_steps_n_calls'] = 1
 
 	movement_args['n_cell_volume_steps'] = int(args.pop('n_cell_volume_steps', 1))
 	movement_args['n_cell_shear_steps'] = int(args.pop('n_cell_shear_steps', 1))
@@ -2378,11 +2409,17 @@ def main():
 	movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "T"))
 
 	movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
-	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.5))
+	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 5.0))
 	movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
 	movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
 	movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
+        if movement_args['MC_cell_P'] <= 0.0 and (movement_args['n_cell_shear_steps'] > 0 or
+                                                  movement_args['n_cell_stretch_steps'] > 0 or
+                                                  movement_args['n_cell_volume_steps']):
+            exit_error("Got MC_cell_P %f <= 0 but some n_cell_*_steps %d %d %d > 0" % (movement_args['MC_cell_P'],
+                movement_args['n_cell_shear_steps'], movement_args['n_cell_stretch_steps'], movement_args['n_cell_volume_steps']) , 3)
+
 
 	default_value = ns_args['max_volume_per_atom']/20.0 # 5% of maximum allowed volume per atom
 	movement_args['MC_cell_volume_per_atom_step_size'] = float(args.pop('MC_cell_volume_per_atom_step_size', default_value))
@@ -2400,19 +2437,19 @@ def main():
 
 	movement_args['monitor_step_interval_times_fraction_killed'] = float(args.pop('monitor_step_interval_times_fraction_killed', 1))
 	movement_args['adjust_step_interval_times_fraction_killed'] = float(args.pop('adjust_step_interval_times_fraction_killed', 5))
-	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "T"))
+	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "F"))
 	movement_args['monitor_step_interval'] = int(round(movement_args['monitor_step_interval_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
 	movement_args['adjust_step_interval'] = int(round(movement_args['adjust_step_interval_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
 	if movement_args['adjust_step_interval'] < 20:
 	    print "WARNING: step size adjustment would be done too often, at every ", movement_args['adjust_step_interval'], " iteration"
 	    print "WARNING: adjust_step_interval is increased to 20"
 	    movement_args['adjust_step_interval'] = 20
-	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.1))
-	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.2))
-	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.3))
+	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
+	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
+	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
 	movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.5))
-	movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.95))
-	movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 1.00))
+	movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.50))
+	movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 0.95))
 
 	movement_args['2D'] = str_to_logical(args.pop('2D', "F"))
 
@@ -2495,6 +2532,8 @@ def main():
 	if  rank == 0:
 	    print "Using n_model_calls = ", movement_args['n_model_calls']
 
+        species_strs = ns_args['start_species'].split(',')
+
 	walkers=[]
 	if ns_args['restart_file'] == '': # start from scratch
             start_first_iter = 0
@@ -2503,18 +2542,19 @@ def main():
 		# create atoms structs from a list of atomic numbers and numbers of atoms
 		lc = ns_args['max_volume_per_atom']**(1.0/3.0)
 		init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
-		species = ns_args['start_species'].split(',')
-		for specie in species:
-		    specie_fields = specie.split()
-		    type_Z = int(specie_fields[0])
-		    type_n = int(specie_fields[1])
-		    if len(specie_fields) == 2:
+
+		for species in species_strs:
+		    species_fields = species.split()
+		    type_Z = int(species_fields[0])
+		    type_n = int(species_fields[1])
+		    if len(species_fields) == 2:
 			init_atoms += ase.Atoms([type_Z] * type_n)
-		    elif len(specie_fields) == 3:
-			type_mass = float(specie_fields[2])
+		    elif len(species_fields) == 3:
+			type_mass = float(species_fields[2])
 			init_atoms += ase.Atoms([type_Z] * type_n, masses=[type_mass] * type_n)
 		    else:
 			exit_error("Each entry is start_species must include atomic number, multiplicity, and optionally mass", 5)
+
 		init_atoms.set_cell(init_atoms.get_cell()*float(len(init_atoms))**(1.0/3.0), scale_atoms=True)
 		if do_calc_quip:
 		    init_atoms = quippy.Atoms(init_atoms)
@@ -2627,14 +2667,23 @@ def main():
 		if movement_args['do_velocities']:
 		    rej_free_perturb_velo(at, None, KEmax)
 
+            ns_args['swap_atomic_numbers'] = False
+
 	else: # doing a restart
+            ns_args['swap_atomic_numbers'] = False
 	    if rank == 0: # read on head task and send to other tasks
 		for r in range(size):
                     # read a slice with file@:
                     if comm is None or r == 0:
                         walkers = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, (r+1)*n_walkers))
+                        for at in walkers:
+                            if np.any(at.get_atomic_numbers() != walkers[0].get_atomic_numbers()):
+                                ns_args['swap_atomic_numbers'] = True
                     else:
                         at_list = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, (r+1)*n_walkers))
+                        for at in at_list:
+                            if np.any(at.get_atomic_numbers() != walkers[0].get_atomic_numbers()):
+                                ns_args['swap_atomic_numbers'] = True
 
 		    if r > 0:
 			comm.send(at_list, dest=r, tag=1)
@@ -2647,7 +2696,10 @@ def main():
 		if do_calc_quip or do_calc_lammps:
 		    at.set_calculator(pot)
 		at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
-                KEmax = at.info['KEmax']
+                if movement_args['do_velocities']:
+                    KEmax = at.info['KEmax']
+                else:
+                    KEmax = None
 
 		key_found = False
 		for key in at.info: # check if 'iter=' info is present in the file used for restart
@@ -2668,6 +2720,7 @@ def main():
 	            
 	    if do_calc_quip:
                 walkers = [quippy.Atoms(at) for at in walkers]
+
 
 	# scale MC_atom_step_size by max_vol^(1/3)
 	max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
