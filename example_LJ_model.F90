@@ -323,7 +323,7 @@ implicit none
 	 dr_mag_sq = sum(dr*dr)
 	 if (dr_mag_sq < cutoff_sq(Z_i,Z_j)) then
 	    dr_mag = sqrt(dr_mag_sq)
-	    E_term = epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6) - E_offset(Z_i,Z_i))
+	    E_term = epsilon(Z_i,Z_j)*((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6 - E_offset(Z_i,Z_i))
 	    if (i == j) E_term = E_term * 0.5
 	    energy = energy + E_term
 	    if (n_extra_data == 1) then
