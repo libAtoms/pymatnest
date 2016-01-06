@@ -148,7 +148,7 @@ implicit none
       dr = matmul(cell, dr_l)
       dr_mag = sqrt(sum(dr*dr))
       if (dr_mag < cutoff(Z_i,Z_j)) then
-	 energy = energy + epsilon(Z_i,Z_j)*((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag**6) - E_offset(Z_i,Z_j))
+	 energy = energy + epsilon(Z_i,Z_j)*((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6 - E_offset(Z_i,Z_j))
 	 forces(:,i) = forces(:,i) - epsilon(Z_i,Z_j)*(-12.0*sigma(Z_i,Z_j)**12/dr_mag**13 + 6.0*sigma(Z_i,Z_j)**6/dr_mag**7)*(dr/dr_mag)
 	 forces(:,j) = forces(:,j) + epsilon(Z_i,Z_j)*(-12.0*sigma(Z_i,Z_j)**12/dr_mag**13 + 6.0*sigma(Z_i,Z_j)**6/dr_mag**7)*(dr/dr_mag)
       endif
