@@ -13,6 +13,7 @@ p.add_option('-a','--accurate_sum', action='store_true', help="""use more accura
 p.add_option('-v','--verbose', action='store_true', help="""Verbose output (for debugging)""")
 p.add_option('-p','--profile', action='store_true', help="""do profiling""")
 p.add_option('-s','--skip', action='store', help="""number of lines to skip""", type='int', default=0)
+p.add_option('-l','--last_line', action='store', help="""last line to use""", type='int', default=-1)
 
 opt, args = p.parse_args()
 
@@ -28,7 +29,7 @@ if opt.accurate_sum:
 else:
     sum=np.sum
 
-(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs(args, skip=opt.skip)
+(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs(args, skip=opt.skip, last_line=opt.last_line)
 
 # check this: a = N_w/(N_w+N_c)
 print "# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
@@ -69,7 +70,7 @@ def analyse(log_a, Es, T):
 print "# T      log_Z(T)               U(T)          Cv(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
 #      0.05 1.88949677673e-75 8.88841272769 56975.5011109
 
-log_a = ns_analyse.calc_log_a(len(Es), k_Boltzmann, n_walkers, n_cull)
+log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull)
 for i_T in range(n_T):
     T = T_min + i_T * dT
     if opt.profile and i_T == 0:

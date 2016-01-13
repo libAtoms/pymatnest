@@ -2,7 +2,7 @@
 
 import numpy as np, fileinput
 
-def read_inputs(args, skip=0):
+def read_inputs(args, skip=0, last_line=-1):
 
     inputs = fileinput.input(files=args)
 
@@ -19,10 +19,12 @@ def read_inputs(args, skip=0):
             (n_iter, E) = line.split()
             Es.append(float(E))
         i += 1
+        if last_line > 0 and i >= last_line:
+            break
 
     return (n_walkers, n_cull, n_Extra_DOF, np.array(Es))
 
-def calc_log_a(n_iter, k_Boltzmann, n_walkers, n_cull):
+def calc_log_a(n_iter, n_walkers, n_cull):
     # log_a = math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
     # From SENS paper PRX v. 4 p 031034 (2014) Eq. 3
     i_range = np.array(range(n_iter))

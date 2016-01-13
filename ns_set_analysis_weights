@@ -65,7 +65,7 @@ if n_data is not None:
     Es = Es[0:n_data*args.interval]
 sys.stderr.write("got n_walkers %d n_cull %d len(Es) %d\n" % (n_walkers, n_cull, len(Es)))
 sys.stderr.write("calculating log_a\n")
-log_a = ns_analyse.calc_log_a(len(Es), kB, n_walkers, n_cull)
+log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull)
 
 n_data = len(Es) / args.interval
 
