@@ -10,8 +10,8 @@ implicit none
    epsilon(1,2) = 1.5
    epsilon(2,1) = epsilon(1,2)
 
-   sigma(1,1) = 3.0
-   sigma(2,2) = 3.3
+   sigma(1,1) = 1.0
+   sigma(2,2) = 1.1
    sigma(1,2) = (sigma(1,1)+sigma(2,2))/2.0
    sigma(2,1) = sigma(1,2)
 
