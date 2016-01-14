@@ -834,7 +834,7 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
     Z = at.get_atomic_numbers()
 
     #DOC \item return if all atomic numbers are identical
-    if (Z[:] == Z[0]).all(): 
+    if (Z[:] == Z[0]).all():
         # don't try to swap when all atoms are the same
         return (0, {})
 
@@ -870,7 +870,9 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
     p_2_orig = at.positions[c2,:].copy()
     at.positions[c1,:] = p_2_orig
     at.positions[c2,:] = p_1_orig
-    if movement_args['swap_velo']:
+    if not movement_args['swap_velo']:
+        # If we just swap particles by swapping positions, velocities will follow to the new position, and so will effectively be swapped
+        # Therefore, if we _don't_ want to actually swap velocities, we have to (apparently) swap them
         velocities = at.get_velocities()
         v_1_orig = velocities[c1,:].copy()
         v_2_orig = velocities[c2,:].copy()
@@ -893,7 +895,7 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
     else: # reject
         at.positions[c1,:] = p_1_orig
         at.positions[c2,:] = p_2_orig
-        if movement_args['swap_velo']:
+        if not movement_args['swap_velo']:
             velocities[c1,:] = v_1_orig
             velocities[c2,:] = v_2_orig
             at.set_velocities(velocities)
@@ -1119,7 +1121,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
     #DOC \item The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes 
 
     key_list=[]
-    if (comm is None or comm.rank == 0): 
+    if (comm is None or comm.rank == 0):
     # make sure all processes go through dictoray walk_stats in the same order
         for key, value in walk_stats.iteritems():
             key_list.append(key)
