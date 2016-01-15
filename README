@@ -76,9 +76,13 @@ in the ``LMP_INC`` makefile variable. Then
     ``make [machine] mode=shlib``
 
 Copy ``lammps_top_dir/python/lammps.py`` to the directory set in your ``PYTHONPATH``.
+
 Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where you copied ``lammps.py``.
+
 **Important note:** Check the ``lammps.py`` file as the path definition had a bug in the line:
+
 ``else: self.lib = CDLL(join(modpath,"/liblammps_%s.so" % name),RTLD_GLOBAL)`` 
+
 You HAVE TO delete the ``/`` before ``liblammps`` otherwise it is meant as an absolute path!!!
 
 Examples are in the ``tests_lammps/directory``.  ``LAMMPS_name`` is what you set for ``[machine]`` when compiling ``LAMMPS``.
@@ -116,3 +120,5 @@ Note: the ``-np 8`` may not be needed, depending on your queueing system.
 The ``LAMMPS ASE`` interface (``lammpslib.py``) is a heavily modified version of
 
 `<https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py>`_
+
+For more information on how the interface works, see :any:`lammpslib`.
