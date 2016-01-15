@@ -42,6 +42,8 @@ def calc_log_a(n_iter, n_walkers, n_cull):
     return log_a
 
 def calc_Z_terms(beta, log_a, Es):
+    #DEBUG for i in range(len(log_a)):
+        #DEBUG print "calc_Z_terms log_a ", log_a[i], beta*Es[i]
     shift = np.amax(log_a[:] - beta*Es[:])
     Z_term = np.exp(log_a[:] - beta*Es[:] - shift)
     return (Z_term, shift)

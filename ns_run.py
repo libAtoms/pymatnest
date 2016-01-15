@@ -5,7 +5,10 @@ import stacktrace
 from itertools import izip
 from copy import deepcopy
 import pick_interconnected_clump
-import matscipy.neighbours
+try:
+    import matscipy.neighbours
+except:
+    pass
 
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
@@ -36,7 +39,11 @@ def usage():
 
     ``n_iter_times_fraction_killed=int``
        | MANDATORY
-       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``
+       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``. Either this or converge_down_to_T is required.
+
+    ``converge_down_to_T=flot``
+       | MANDATORY
+       | temperature down to which Z(T) should be converged.  Either this or n_iter_times_fraction_killed is required.
 
     ``min_Emax=float``
        | Termination condition based on Emax.
@@ -237,7 +244,8 @@ def usage():
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
     sys.stderr.write("n_extra_walk_per_task=int (0)\n")
-    sys.stderr.write("n_iter_times_fraction_killed=int (MANDATORY)\n")
+    sys.stderr.write("n_iter_times_fraction_killed=int (MANDATORY, this or converge_down_to_T required)\n")
+    sys.stderr.write("converge_down_to_T=float (MANDATORY, this or n_iter_times_fraction_killed required)\n")
     sys.stderr.write("min_Emax=float (None.  Termination condition based on Emax)\n")
     sys.stderr.write("out_file_prefix=str (None)\n")
     sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
@@ -1599,8 +1607,20 @@ def do_ns_loop():
 	print "WARNING: Increase the n_iter_times_fraction_killed variable in the input if you want NS cycles to be performed."
         exit_error("starting iteration and the total number of required iterations are the same,hence no NS cycles will be performed\n",11)
 
+    last_log_X_n = 0.0
+    i_range_mod_n_cull = np.array(range(ns_args['n_cull']))
+    i_range_plus_1_mod_n_cull = np.mod(np.array(range(ns_args['n_cull']))+1, ns_args['n_cull'])
+    log_X_n_term = np.log(n_walkers-i_range_mod_n_cull) - np.log(n_walkers+1-i_range_mod_n_cull)
+    log_X_n_term_cumsum = np.cumsum(log_X_n_term)
+    log_X_n_term_cumsum_modified = log_X_n_term_cumsum - np.log(n_walkers+1-i_range_plus_1_mod_n_cull)
+    log_X_n_term_sum = log_X_n_term_cumsum[-1]
+    if ns_args['converge_down_to_T'] > 0:
+        beta = 1.0/(kB*ns_args['converge_down_to_T'])
+        Z_term_max = None
+
     # actual iteration cycle starts here
-    for i_ns_step in range(start_first_iter, ns_args['n_iter']):
+    i_ns_step = start_first_iter
+    while ns_args['n_iter'] < 0 or i_ns_step < ns_args['n_iter']:
 	print_prefix="%d %d" % (rank, i_ns_step)
 
         if ns_args['debug'] >= 4 and ns_args['track_configs']:
@@ -1634,6 +1654,18 @@ def do_ns_loop():
                 # if the termination was set by a minimum energy, and it is reached, stop.
 		print "Leaving loop because Emax=",Emax_of_step," < min_Emax =",ns_args['min_Emax']
 	    break
+        if ns_args['converge_down_to_T'] > 0:
+            # see ns_analyse.py calc_log_a() for math
+            log_a = log_X_n_term_sum*i_ns_step + log_X_n_term_cumsum_modified
+            #DEBUG for ii in range(len(log_a)):
+                #DEBUG print i_ns_step, "log_a beta*Es ", log_a[ii], beta*Emax[ii]
+            Z_term_max = max(Z_term_max, np.amax(log_a-beta*Emax))
+            Z_term_last = log_a[-1]-beta*Emax[-1]
+            print "Z_term max ", Z_term_max, "last ", Z_term_last, "diff ", Z_term_max-Z_term_last
+            if Z_term_last <  Z_term_max - 10.0:
+                if rank == 0:
+                    print "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
+                break
 
 	if rank == 0:
 	    cur_time=time.time()
@@ -2112,6 +2144,9 @@ def do_ns_loop():
 	    clean_prev_snapshot(prev_snapshot_iter)
 	    prev_snapshot_iter = i_ns_step
 
+        i_ns_step += 1
+        ### END OF MAIN LOOP
+
     # flush remaining traj configs
     for at in walker_list:
         ase.io.write(traj_io, at, format=ns_args['config_file_format'])
@@ -2126,7 +2161,7 @@ def do_ns_loop():
 def main():
 	""" Main function """
         global movement_args
-        global ns_args, start_first_iter
+        global ns_args, start_first_iter, kB
         global max_n_cull_per_task
         global size, rank, comm, rng, np, sys
         global n_cull, n_walkers, n_walkers_per_task
@@ -2220,11 +2255,14 @@ def main():
 
 	ns_args['n_cull'] = int(args.pop('n_cull', 1))
 
-	try:
-	    ns_args['n_iter_times_fraction_killed'] = float(args.pop('n_iter_times_fraction_killed'))
-	except:
-	    exit_error("need number of iterations n_iter_times_fraction_killed\n",1)
-	ns_args['n_iter'] = int(round(ns_args['n_iter_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
+        ns_args['n_iter_times_fraction_killed'] = float(args.pop('n_iter_times_fraction_killed', -1))
+        if ns_args['n_iter_times_fraction_killed'] > 0:
+            ns_args['n_iter'] = int(round(ns_args['n_iter_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
+        else:
+            ns_args['n_iter'] = -1
+        ns_args['converge_down_to_T'] = float(args.pop('converge_down_to_T', -1))
+        if ns_args['n_iter'] <= 0 and ns_args['converge_down_to_T'] <= 0:
+            exit_error("need either n_iter_times_fraction_killed or converge_down_to_T")
 
 	try:
 	    ns_args['min_Emax'] = float(args.pop('min_Emax'))
