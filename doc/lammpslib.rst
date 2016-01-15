@@ -1,4 +1,4 @@
-lammpslib module
+`lammpslib` module
 ================
 
 .. automodule:: lammpslib

@@ -1,5 +1,5 @@
 
-`pymatnest` 
+`pymatnest` module 
 ===================================
 
 .. automodule:: ns_run

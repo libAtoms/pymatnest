@@ -5,5 +5,6 @@
 .. automodule:: stacktrace
    :synopsis: debugging
    :members:
+   :undoc-members:
 
 

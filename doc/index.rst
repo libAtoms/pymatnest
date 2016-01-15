@@ -41,10 +41,11 @@ Features
 Contents
 ========
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    intro.rst
    install.rst
+   getstart.rst
    ns_run.rst
    ns_rng.rst
    rngstream.rst
