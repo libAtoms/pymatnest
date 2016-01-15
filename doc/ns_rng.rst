@@ -5,5 +5,6 @@
 .. automodule:: ns_rng
    :synopsis: something
    :members:
+   :undoc-members:
 
 

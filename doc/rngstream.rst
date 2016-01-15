@@ -1,4 +1,4 @@
-rngstream module
+`rngstream` module
 ================
 
 .. automodule:: rngstream
