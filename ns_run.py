@@ -1226,7 +1226,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
         else:
             exit_error("full_auto_set_stepsizes got key '%s', neither MC nor MD\n" % key, 5)
 
-        first_walker = rng.int_uniform(0, len(walkers)-1) # random starting point for config selection
+        first_walker = rng.int_uniform(0, len(walkers)) # random starting point for config selection
         first_time = True # we will make at least two tries. Logical flag ensures this.
 
         steplength_store = movement_args[key+"_"+suffix] 
