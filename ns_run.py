@@ -487,7 +487,7 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
     if Emax is not None:
 	initial_KE = eval_energy(at, do_PE=False, do_PV=False)
 	KEmax_use = Emax - (at.info['ns_energy'] - initial_KE)
-    if KEmax is not None:
+    if KEmax > 0.0:
 	if Emax is None:
 	    KEmax_use = KEmax
 	else:
@@ -547,7 +547,7 @@ def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax):
 
     initial_KE = eval_energy(at, do_PE=False, do_PV=False)
     KEmax_use = Emax - (at.info['ns_energy'] - initial_KE)
-    if KEmax is not None and KEmax < KEmax_use:
+    if KEmax > 0.0 and KEmax < KEmax_use:
 	KEmax_use = KEmax
 
     if do_calc_fortran:
@@ -619,7 +619,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 
     #DOC \item accept/reject entire move on E $<$ Emax
     reject_Emax = (final_E >= Emax)
-    reject_KEmax = (KEmax is not None and final_KE >= KEmax)
+    reject_KEmax = (KEmax > 0.0 and final_KE >= KEmax)
 
     #DOC \item if reject
     #DOC \begin{itemize}
@@ -672,7 +672,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 
     #DOC \item loop atom\_n\_substeps times
     #DOC \begin{itemize}
-    if do_calc_fortran:
+    if do_calc_fortran and not ns_args['reproducible']:
 	if movement_args['MC_atom_velocities']:
 	    (n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), KEmax, step_size_velo)
 	    at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
@@ -897,7 +897,7 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
     new_energy = eval_energy(at)
     new_KE = eval_energy(at, do_PE=False, do_PV=False)
 
-    if new_energy < Emax and (KEmax is None or new_KE < KEmax): # accept
+    if new_energy < Emax and (KEmax < 0.0 or new_KE < KEmax): # accept
         at.info['ns_energy'] = new_energy
         accept_n = 1
     else: # reject
@@ -1633,9 +1633,9 @@ def do_ns_loop():
 	    zero_stats(walk_stats_monitor, movement_args)
 
 	if ns_args['debug'] >= 20:
-	    print print_prefix, "%30s" % ": LOOP_TE START 00 ",i_ns_step, [ eval_energy(at) for at in walkers ]
-	    print print_prefix, "%30s" % ": LOOP_PE START 01 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
-	    print print_prefix, "%30s" % ": LOOP_X START 02 ",i_ns_step, [ at.positions[0,0] for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_TE START 00 ",i_ns_step, [ "%.10f" % eval_energy(at) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_PE START 01 ",i_ns_step, [ "%.10f" % eval_energy(at, do_KE=False) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_X START 02 ",i_ns_step, [ "%.10f" % at.positions[0,0] for at in walkers ]
 
 	# get list of highest energy configs
 	(Emax, cull_rank, cull_ind) = max_energy(walkers, n_cull)
@@ -1824,9 +1824,9 @@ def do_ns_loop():
 		    n_remaining_clones -= n_transfer
 
 	if ns_args['debug'] >= 20:
-	    print print_prefix, "%30s" % ": LOOP_TE POST_LOC_CLONE 15 ",i_ns_step, [ eval_energy(at) for at in walkers ]
-	    print print_prefix, "%30s" % ": LOOP_PE POST_LOC_CLONE 16 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
-	    print print_prefix, "%30s" % ": LOOP_X POST_LOC_CLONE 17 ",i_ns_step, [ at.positions[0,0] for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_TE POST_LOC_CLONE 15 ",i_ns_step, [ "%.10f" % eval_energy(at) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_PE POST_LOC_CLONE 16 ",i_ns_step, [ "%.10f" % eval_energy(at, do_KE=False) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_X POST_LOC_CLONE 17 ",i_ns_step, [ "%.10f" % at.positions[0,0] for at in walkers ]
 
 	# make into numpy arrays so that mathematical operations will work
 	send_rank = np.array(send_rank)
@@ -2013,9 +2013,9 @@ def do_ns_loop():
 		recv_displ_t[r_send] = data_o
 
 	if ns_args['debug'] >= 20:
-	    print print_prefix, "%30s" % ": LOOP_TE POST_CLONE 20 ",i_ns_step, [ eval_energy(at) for at in walkers ]
-	    print print_prefix, "%30s" % ": LOOP_PE POST_CLONE 21 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
-	    print print_prefix, "%30s" % ": LOOP_X POST_CLONE 22 ",i_ns_step, [ at.positions[0,0] for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_TE POST_CLONE 20 ",i_ns_step, [ "%.10f" % eval_energy(at) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_PE POST_CLONE 21 ",i_ns_step, [ "%.10f" % eval_energy(at, do_KE=False) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_X POST_CLONE 22 ",i_ns_step, [ "%.10f" % at.positions[0,0] for at in walkers ]
 
         if ns_args['track_configs']:
             # loop over _all_ clone targets and increment cur_config_ind, setting appropriate configs' new config_ind as needed 
@@ -2062,8 +2062,9 @@ def do_ns_loop():
 	    accumulate_stats(walk_stats_monitor, walk_stats)
 
 	if ns_args['debug'] >= 20:
-	    print print_prefix, "%30s" % ": LOOP_TE POST_CLONE_WALK 25 ",i_ns_step, [ eval_energy(at) for at in walkers ]
-	    print print_prefix, "%30s" % ": LOOP_PE POST_CLONE_WALK 26 ",i_ns_step, [ eval_energy(at, do_KE=False) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_TE POST_CLONE_WALK 25 ",i_ns_step, [ "%.10f" % eval_energy(at) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_PE POST_CLONE_WALK 26 ",i_ns_step, [ "%.10f" % eval_energy(at, do_KE=False) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_X POST_CLONE_WALK 27 ",i_ns_step, [ "%.10f" % at.positions[0,0] for at in walkers ]
 
 	# check that everything that should have been changed has, and things that shouldn't have, haven't
 	if ns_args['debug'] >= 10:
@@ -2131,8 +2132,9 @@ def do_ns_loop():
 	    zero_stats(walk_stats_adjust, movement_args)
 
 	if ns_args['debug'] >= 20:
-	    print print_prefix, "%30s" % ": LOOP_TE END 30 ",i_ns_step, [ eval_energy(at) for at in walkers ]
-	    print print_prefix, "%30s" % ": LOOP_PE END 31 ",i_ns_step, [ eval_energy(at,do_KE=False) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_TE END 30 ",i_ns_step, [ "%.10f" % eval_energy(at) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_PE END 31 ",i_ns_step, [ "%.10f" % eval_energy(at,do_KE=False) for at in walkers ]
+	    print print_prefix, "%30s" % ": LOOP_X END 32 ",i_ns_step, [ "%.10f" % at.positions[0,0] for at in walkers ]
 
 	if ns_args['debug'] >= 30:
 	    for r in range(len(status)):
@@ -2374,6 +2376,18 @@ def main():
 		seed[i] = rng.int_uniform(1,sys.maxint)
 	    f_MC_MD.set_seed(seed)
 
+	ns_args['reproducible'] = str_to_logical(args.pop('reproducible', "F"))
+        if ns_args['reproducible']:
+            # reset seed after using some random numbers to generate fortran seed, so that fortran adnd non-fortran have the same seed
+            if ns_args['rng'] == 'numpy':
+                rng = ns_rng.NsRngNumpy(ns_args['delta_random_seed'],comm)
+            elif ns_args['rng'] == 'rngstream':
+                rng = ns_rng.NsRngStream(ns_args['delta_random_seed'],comm)
+            elif ns_args['rng'] == 'internal':
+                rng = ns_rng.NsRngInternal(ns_args['delta_random_seed'],comm)
+            else:
+                exit_error("rng=%s unknown\n" % ns_args['rng'], 3)
+
 	movement_args={}
 
 	movement_args['n_model_calls_expected'] = int(args.pop('n_model_calls_expected', 0))
@@ -2415,8 +2429,10 @@ def main():
             movement_args['swap_probs'][i] = movement_args['swap_probs'][i] +  movement_args['swap_probs'][i-1]
 
 	if (movement_args['n_model_calls_expected'] <= 0 and
-	    movement_args['n_model_calls'] <= 0 and
-	    movement_args['n_atom_steps'] <= 0 and
+	    movement_args['n_model_calls'] <= 0):
+	    exit_error("Got all of n_model_calls* == 0\n", 3)
+
+        if (movement_args['n_atom_steps'] <= 0 and
 	    movement_args['n_cell_volume_steps'] <= 0 and
 	    movement_args['n_cell_shear_steps'] <= 0 and
 	    movement_args['n_cell_stretch_steps'] <= 0 and
@@ -2475,15 +2491,22 @@ def main():
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
 	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 1000))
 
-	movement_args['monitor_step_interval_times_fraction_killed'] = float(args.pop('monitor_step_interval_times_fraction_killed', 1))
-	movement_args['adjust_step_interval_times_fraction_killed'] = float(args.pop('adjust_step_interval_times_fraction_killed', 5))
+        try:
+            movement_args['monitor_step_interval'] = float(args.pop('monitor_step_interval'))
+        except:
+            movement_args['monitor_step_interval_times_fraction_killed'] = float(args.pop('monitor_step_interval_times_fraction_killed', 1))
+            movement_args['monitor_step_interval'] = int(round(movement_args['monitor_step_interval_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
+        try:
+            movement_args['adjust_step_interval'] = float(args.pop('adjust_step_interval'))
+        except:
+            movement_args['adjust_step_interval_times_fraction_killed'] = float(args.pop('adjust_step_interval_times_fraction_killed', 1))
+            movement_args['adjust_step_interval'] = int(round(movement_args['adjust_step_interval_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
+#	if movement_args['adjust_step_interval'] < 20:
+#	    print "WARNING: step size adjustment would be done too often, at every ", movement_args['adjust_step_interval'], " iteration"
+#	    print "WARNING: adjust_step_interval is increased to 20"
+#	    movement_args['adjust_step_interval'] = 20
 	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "F"))
-	movement_args['monitor_step_interval'] = int(round(movement_args['monitor_step_interval_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
-	movement_args['adjust_step_interval'] = int(round(movement_args['adjust_step_interval_times_fraction_killed']/(float(ns_args['n_cull'])/float(ns_args['n_walkers']))))
-	if movement_args['adjust_step_interval'] < 20:
-	    print "WARNING: step size adjustment would be done too often, at every ", movement_args['adjust_step_interval'], " iteration"
-	    print "WARNING: adjust_step_interval is increased to 20"
-	    movement_args['adjust_step_interval'] = 20
+
 	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
 	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
 	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
@@ -2701,7 +2724,7 @@ def main():
                     at.info['KEmax']=KEmax
                  
 		else:
-		    KEmax = None
+		    KEmax = -1.0
 
 		# set initial velocities, rejection free
 		if movement_args['do_velocities']:
@@ -2739,7 +2762,7 @@ def main():
                 if movement_args['do_velocities']:
                     KEmax = at.info['KEmax']
                 else:
-                    KEmax = None
+                    KEmax = -1.0
 
 		key_found = False
 		for key in at.info: # check if 'iter=' info is present in the file used for restart
