@@ -48,8 +48,8 @@ library written in Fortran 95/python for the purpose of carrying out
 nested sampling calculations with a variatey of options suitable for different systems. 
 It can be used with the in-built fortran potential models and it also has interfaces with the following packages:
 
-   - ``QUIP``
-
    - ``LAMMPS``
+
+   - ``QUIP``
 
 

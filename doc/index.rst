@@ -7,7 +7,7 @@ pymatnest documentation
 ==================================
 
 The ``pymatnest`` package is a software
-library written in Fortran 95/python for the purpose of carrying out
+library written by Noam Bernstein in Fortran 95/python for the purpose of carrying out
 nested sampling calculations.
 
 Long term support of the package is ensured by:
@@ -16,13 +16,10 @@ Long term support of the package is ensured by:
  - Rob Baldock  (University of Cambridge)
  - Livia Bartok-Partay (University of Cambridge)
  
-Contributors...
-
 Copyright 2015-2016.
 
-Most of the publicly available version is released under the GNU
-General Public license, version 2, with some portions in the public
-domain. ????
+Most of the publicly available version is in the public
+domain.
 
 Features
 ========
@@ -34,9 +31,9 @@ Features
 
    - the in-built fortran models
 
-   - ``QUIP``
-
    - ``LAMMPS``
+
+   - ``QUIP``
 
 Contents
 ========
