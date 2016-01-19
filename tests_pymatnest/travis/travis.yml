@@ -15,7 +15,8 @@ script:
   - ulimit -n 256
   # pymatnest should be built -> start tests
   #- travis_wait make test
-  
+after_success:
+  - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then tests/travis/build_docs.sh; fi
 addons:
   apt:
     packages:
