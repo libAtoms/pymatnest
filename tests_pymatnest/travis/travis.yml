@@ -14,7 +14,7 @@ script:
   # causing the build to time out
   - ulimit -n 256
   # pymatnest should be built -> start tests
-  - travis_wait make test
+  #- travis_wait make test
   
 addons:
   apt:
