@@ -52,4 +52,8 @@ It can be used with the in-built fortran potential models and it also has interf
 
    - ``QUIP``
 
+MC and MD step algorithms
++++++++++++++++++++++++++++++++++++++
+
+.. include:: MC_MD_steps.txt
 

@@ -92,8 +92,10 @@ def usage():
 
     ``n_cell_volume_steps=int`` 
        | (1, number of cell volume steps each block)
+
     ``n_cell_shear_steps=int`` 
        | (1, number of cell shear steps each block)
+
     ``n_cell_stretch_steps=int`` 
        | (1, number of cell stretch steps each block)
 
@@ -119,118 +121,171 @@ def usage():
        | Use either Monte Carlo or Molecular dynamics to explore.
     ``MC_atom_velocities=[T | F]`` 
        | (F, supported only for energy_calculator=fortran)
+
     ``MC_atom_velocities_pre_perturb=[T | F]``
        | (F, Perturb velocities (rejection free) before MC + velocities walk)
+
     ``MC_atom_step_size=float`` 
        | (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+
     ``MC_atom_step_size_max=float`` 
        | (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+
     ``MC_atom_uniform_rv=[T | F]`` 
        | default: F
+
     ``MD_atom_velo_pre_perturb=[T | F]`` 
        | Perturb velocities before MD trajectory
        | default: F
+
     ``MD_atom_velo_post_perturb=[T | F]`` 
        | Perturb velocities after MD trajectory
        | default: T
+
     ``MD_atom_velo_flip_accept=[T | F]`` 
        | default: F
+
     ``MD_atom_timestep=float`` 
        | default: 0.1 (ASE time units)
+
     ``MD_atom_timestep_max=float`` 
      | default: 0.5 (ASE time units)
+
     ``MD_atom_energy_fuzz=float``
      |  (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)
+
     ``MD_atom_reject_energy_violation=[ T | F ]``
      |  (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)
-    ``atom_velo_rej_free_perturb_randomize=[T | F]``
-     |  (F. If true, randomize velocities completely rather than actually perturbing.
+
+    ``atom_velo_rej_free_fully_randomize=[T | F]``
+     |  (F. If true, randomize velocities completely rather than just perturbing.
+
     ``atom_velo_rej_free_perturb_angle=float``
      |  (0.3. Max angle in radians for random rotations.)
+
     ``MC_atom_velo_step_size=float``
      |  (50.0)
+
     ``MC_atom_velo_step_size_max=float``
      |  (10000.0)
+
     ``MC_atom_velo_walk_rej_free=[T | F]``
      |  (T. If true, use rejection free algorithm for MC_atom_walk
+
     ``MC_cell_P=float``
      | Pressure value to be used. (Note: the unit of pressure depends on the energy calculator and the potential model used)
      | default: 0.0 
+
     ``MC_cell_volume_per_atom_step_size=float``
      | Initial volume stepsize for volume change.
      | Default: 5% of the maximum allowed volume
+
     ``MC_cell_volume_per_atom_step_size_max=float``
      |  (50% of the maximum allowed volume)
+
     ``MC_cell_volume_per_atom_prob=float``
      |  (1.0)
+
     ``MC_cell_stretch_step_size=float``
      |  (0.35)
+
     ``MC_cell_stretch_step_size_max=float``
      |  (1.0)
+
     ``MC_cell_stretch_prob=float``
      |  (1.0)
+
     ``MC_cell_shear_step_size=float``
      |  (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)
+
     ``MC_cell_shear_step_size_max=float``
      |  (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)
+
     ``MC_cell_shear_prob=float``
      |  (1.0)
+
     ``MC_cell_min_aspect_ratio=float``
      |  (0.9)
+
     ``cell_shape_equil_steps=int``
      |  (1000)
+
     ``monitor_step_interval_times_fraction_killed=float`` 
      | Divided by ``n_cull/n_walkers`` to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring
      | default: 1
+
     ``adjust_step_interval_times_fraction_killed=float`` 
      | Divided by ``n_cull/n_walkers`` to get actual step adjustment interval in iterations, negative for only using last iteration, 0 for no adjust.
      | default: 5
+
     ``MC_adjust_step_factor=float``
      |  default: 1.1
+
     ``MC_adjust_min_rate=float``
      |  default: 0.2
+
     ``MC_adjust_max_rate=float``
      |  default: 0.3
+
     ``MD_adjust_step_factor=float``
      |  default: 1.5
+
     ``MD_adjust_min_rate=float``
      |  default: 0.95
+
     ``MD_adjust_max_rate=float``
      |  default: 1.00
+
     ``QUIP_pot_args=str``
      |  (MANDATORY if energy_calculator=quip)
+
     ``QUIP_pot_params_file=str``
      |  (MANDATORY if energy_calculator=quip)
+
     ``FORTRAN_model=str``
      |  (MANDATORY if energy_calculator=fortran)
+
     ``LAMMPS_init_cmds=str``
      |  (MANDATORY if energy_calculator=lammps)
+
     ``LAMMPS_name=str``
      |  ('', arch name for lammps shared object file)
+
     ``LAMMPS_header=str``
      |  (lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps)
+
     ``LAMMPS_header_extra=str``
      |  ('', extra lammpslib.py header commands for energy_calculator=lammps)
+
     ``config_file_format=str``
      |  (extxyz)
+
     ``rng=( numpy | internal | rngstream )``
      |  (numpy)
+
     ``profile=rank_to_profile``
      |  (-1)
+
     ``2D=[ T | F ]``
      |  (F, unsupported)
+
     ``debug=debug_level``
      |  (0, <= 0 for no debugging tests/prints)
+
     ``snapshot_interval=int``
      |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
      |  default: 1000
+
     ``traj_interval=int``
      |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
      |  default: 1 
+
     ``random_seed=seed_shift``
      |  (-1, < 0 for seed from /dev/urandom)
+
     ``no_extra_walks_at_all=[ T | F ]``
      | (F)
+
     ``track_configs=[ T | F ]``
      | Track configrations across all walks/clones
      | (F)
@@ -291,7 +346,7 @@ def usage():
     sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)\n")
     sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("atom_velo_rej_free_perturb_randomize=[T | F] (F. If true, randomize velocities completely rather than actually perturbing.\n")
+    sys.stderr.write("atom_velo_rej_free_fully_randomize=[T | F] (F. If true, randomize velocities completely rather than just perturbing.\n")
     sys.stderr.write("atom_velo_rej_free_perturb_angle=float (0.3. Max angle in radians for random rotations.)\n")
     sys.stderr.write("MC_atom_velo_step_size=float (50.0)\n")
     sys.stderr.write("MC_atom_velo_step_size_max=float (10000.0)\n")
@@ -476,9 +531,7 @@ def pairwise(iterable):
 
 def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 #DOC
-#DOC \vspace*{\baselineskip}
-#DOC perturb\_velo
-#DOC \begin{itemize}
+#DOC ``rej_free_perturb_velo``
 
     if not at.has('momenta') or not at.has('masses'):
 	return
@@ -496,19 +549,18 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 	exit_error("rej_free_perturb_velo() called with Emax and KEmax both None\n", 9)
 
     orig_KE = at.get_kinetic_energy( )
-    #DOC \item if atom\_velo\_randomize, pick random velocities consistent with Emax
-    if movement_args['atom_velo_rej_free_perturb_randomize']:
+    #DOC \item if atom\_velo\_rej\_free\_fully\_randomize, pick random velocities consistent with Emax
+    if movement_args['atom_velo_rej_free_fully_randomize']:
 	# randomize completely
 	at.set_velocities(gen_random_velo(at, KEmax_use))
     #DOC \item else perturb velocities
-    #DOC \begin{itemize}
     else: # perturb
 	velo = at.get_velocities()
 	velo_mag = np.linalg.norm(velo)
 	#DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
 	if velo_mag == 0.0:
 	    at.set_velocities(gen_random_velo(at, KEmax_use))
-	#DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in $\pm$ atom\_velo\_perturb\_angle
+	#DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom\_velo\_rej\_free\_perturb\_angle
 	else:
 	    # pick new random magnitude - count on dimensionality to make change small
 	    # WARNING: check this for variable masses
@@ -534,13 +586,15 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
     new_KE = at.get_kinetic_energy()
     # rej_free_perturb_velo expects at.info['ns_energy'] to be set correctly initially
     at.info['ns_energy'] += new_KE-orig_KE
-    #DOC \end{itemize}
-#DOC \end{itemize}
 
 def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax):
+#DOC
+#DOC ``do_MC_atom_velo_walk``
+    #DOC \item If MC\_atom\_velo\_walk\_rej\_free is set, call rej\_free\_perturb\_velo()
     if movement_args['MC_atom_velo_walk_rej_free']:
 	rej_free_perturb_velo(at, Emax, KEmax)
 	return {}
+    #DOC \item else do some unsupported velo MC stuff
 
     n_steps = movement_args['velo_traj_len']
     step_size = movement_args['MC_atom_velo_step_size']
@@ -575,16 +629,14 @@ def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax):
 
 def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 #DOC
-#DOC \vspace*{\baselineskip}
-#DOC do\_MD\_atom\_walk
-#DOC \begin{itemize}
+#DOC ``do_MD_atom_walk``
 
     """ perform MD walk on the configuration """
     orig_E = at.info['ns_energy']
     if orig_E >= Emax:
 	print print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax
 
-    #DOC \item if MD\_atom\_velo\_pre\_perturb, call perturb\_velo() for magnitude and rotation
+    #DOC \item if MD\_atom\_velo\_pre\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation
     if movement_args['MD_atom_velo_pre_perturb']:
 	do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
 
@@ -595,7 +647,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 
     pre_MD_E = at.info['ns_energy']
 
-    #DOC \item propagate in time atom\_n\_substeps time steps of length MD\_atom\_timestep
+    #DOC \item propagate in time atom\_traj\_len time steps of length MD\_atom\_timestep
     if do_calc_quip:
 	propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
 	final_E = eval_energy(at)
@@ -610,19 +662,18 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 
     reject_fuzz = False
     final_KE = eval_energy(at, do_PE=False, do_PV=False)
-    #DOC \item optionally accept/reject entire move on E deviating by less than energy fuzz times kinetic energy
+    #DOC \item If MD\_atom\_reject\_energy\_violation is set, accept/reject entire move on E deviating by less than MD\_atom\_energy\_fuzz times kinetic energy
     if abs(final_E-pre_MD_E) > movement_args['MD_atom_energy_fuzz']*final_KE:
 	if movement_args['MD_atom_reject_energy_violation']:
 	    reject_fuzz = True
 	# else:
 	    # print print_prefix, ": WARNING: MD energy deviation > fuzz*final_KE. Pre-MD, post-MD, difference, final_KE ", pre_MD_E, final_E, final_E-pre_MD_E, final_KE
 
-    #DOC \item accept/reject entire move on E $<$ Emax
+    #DOC \item accept/reject entire move on E < Emax and KE < KEmax
     reject_Emax = (final_E >= Emax)
     reject_KEmax = (KEmax > 0.0 and final_KE >= KEmax)
 
     #DOC \item if reject
-    #DOC \begin{itemize}
     if reject_fuzz or reject_Emax or reject_KEmax: # reject
 	#DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)
 	# print print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " velo perturbed E ", pre_MD_E, " final E ",final_E, " KEmax ", KEmax, " KE ", final_KE
@@ -635,30 +686,24 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 	    at.arrays['ns_extra_data'][...] = pre_MD_extra_data
 	at.info['ns_energy'] = pre_MD_E
 	n_accept = 0
-    #DOC \end{itemize}
     #DOC \item else
     else: # accept
-    #DOC \begin{itemize}
-	#DOC \item flip velocities
+	#DOC \item flip velocities if MD\_atom\_velo\_flip\_accept
 	# remember to reverse velocities on acceptance to preserve detailed balance, since velocity is (sometimes) being perturbed, not completely randomized
 	if movement_args['MD_atom_velo_flip_accept']:
 	    at.set_velocities(-at.get_velocities()) # is there a faster way of doing this in ASE?  Can you do at.velocities?
 	at.info['ns_energy'] = final_E
 	n_accept = 1
-    #DOC \end{itemize}
 
-    #DOC \item if MD\_atom\_velo\_post\_perturb, call perturb\_velo() for magnitude and rotation
+    #DOC \item if MD\_atom\_velo\_post\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation
     if movement_args['MD_atom_velo_post_perturb']:
 	do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
 
     return {'MD_atom' : (1, n_accept) }
-#DOC \end{itemize}
 
 def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 #DOC
-#DOC \vspace*{\baselineskip}
-#DOC do\_MC\_atom\_walk
-#DOC \begin{itemize}
+#DOC ``do_MC_atom_walk``
 
     n_steps = movement_args['atom_traj_len']
     step_size = movement_args['MC_atom_step_size']
@@ -666,26 +711,29 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     n_accept=0
     n_accept_velo = None
 
-    #DOC \item if MC\_atom\_velocities and MC\_atom\_velocities\_pre\_perturb, perturb velocities, magnitude and and rotation
+    #DOC \item if MC\_atom\_velocities and MC\_atom\_velocities\_pre\_perturb, call do\_MC\_atom\_velo\_walk() to perturb velocities, magnitude and and rotation
     if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
 	do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
 
-    #DOC \item loop atom\_n\_substeps times
-    #DOC \begin{itemize}
+    #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
+        #DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk
+
 	if movement_args['MC_atom_velocities']:
 	    (n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), KEmax, step_size_velo)
 	    at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
 	else:
 	    (n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
 	    at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
+    #DOC \item else
     else:
+        #DOC \item do python MC
 	if movement_args['MC_atom_velocities']:
 	    exit_error("MC_atom_velocities only supported for FORTRAN calculator\n", 8)
 	dz=0.0
+        #DOC \item loop atom\_traj\_len times
 	for i_MC_step in range(n_steps):
 	    #DOC \item loop over atoms in random order
-	    #DOC \begin{itemize}
 	    at_list=list(range(len(at)))
 	    rng.shuffle_in_place(at_list)
 	    for i_at in at_list:
@@ -707,7 +755,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 		new_pos = orig_pos.copy()
 		new_pos[i_at,:] += (dx, dy,dz)
 		at.set_positions(new_pos)
-		#DOC \item accept/reject on E $<$ Emax
+		#DOC \item accept/reject on E < Emax
 		energy = eval_energy(at)
 		if energy >= Emax:
 		    # reject move
@@ -718,8 +766,6 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 		else:
 		    n_accept += 1
 		at.info['ns_energy'] = energy
-	    #DOC \end{itemize}
-     #DOC \end{itemize}
 
     out = {}
     if n_accept_velo is not None:
@@ -727,7 +773,6 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     out['MC_atom'] = (n_steps*len(at), n_accept)
 
     return out
-#DOC \end{itemize}
 
 
 def propose_volume_step(at, step_size):
@@ -836,9 +881,7 @@ def do_cell_shape_walk(at, movement_args):
 
 def do_MC_swap_step(at, movement_args, Emax, KEmax):
 #DOC
-#DOC \vspace*{\baselineskip}
-#DOC do\_MC\_swap\_walk
-#DOC \begin{itemize}
+#DOC ``do_MC_swap_step``
     Z = at.get_atomic_numbers()
 
     #DOC \item return if all atomic numbers are identical
@@ -912,13 +955,12 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
             at.arrays['ns_extra_data'][c2,...] = extra_data_2_orig
         accept_n = 0
 
+
     return (1, {('MC_swap_%d' % len(c1)) : (1, accept_n) })
-#DOC \end{itemize}
 
 def do_MC_cell_volume_step(at, movement_args, Emax, KEmax):
 #DOC
-#DOC \vspace*{\baselineskip}
-#DOC do\_MC\_cell\_volume\_step
+#DOC ``do_MC_cell_volume_step``
     step_rv = rng.float_uniform(0.0, 1.0)
     if step_rv > movement_args['MC_cell_volume_per_atom_prob']:
         return (0, {})
@@ -930,8 +972,7 @@ def do_MC_cell_volume_step(at, movement_args, Emax, KEmax):
 
 def do_MC_cell_shear_step(at, movement_args, Emax, KEmax):
 #DOC
-#DOC \vspace*{\baselineskip}
-#DOC do\_MC\_cell\_shear\_step
+#DOC ``do_MC_cell_shear_step``
     step_rv = rng.float_uniform(0.0, 1.0)
     if step_rv > movement_args['MC_cell_shear_prob']:
         return (0, {})
@@ -943,8 +984,7 @@ def do_MC_cell_shear_step(at, movement_args, Emax, KEmax):
 
 def do_MC_cell_stretch_step(at, movement_args, Emax, KEmax):
 #DOC
-#DOC \vspace*{\baselineskip}
-#DOC do\_MC\_cell\_stretch\_step
+#DOC ``do_MC_cell_stretch_step``
     step_rv = rng.float_uniform(0.0, 1.0)
     if step_rv > movement_args['MC_cell_stretch_prob']:
         return (0, {})
@@ -956,8 +996,11 @@ def do_MC_cell_stretch_step(at, movement_args, Emax, KEmax):
 
 
 def do_atom_walk(at, movement_args, Emax, KEmax):
+#DOC
+#DOC ``do_atom_walk``
     n_reps = movement_args['n_atom_steps_per_call']
     out={}
+    #DOC \item loop n\_atom\_steps\_per\_call times, calling do\_MC\_atom\_walk() or do\_MD\_atom\_walk()
     for i in range(n_reps):
         if movement_args['atom_algorithm'] == 'MC':
             accumulate_stats(out, do_MC_atom_walk(at, movement_args, Emax, KEmax))
@@ -999,37 +1042,30 @@ def rand_perturb_energy(energy, perturbation, Emax=None):
 def walk_single_walker(at, movement_args, Emax, KEmax):
     """Do random walk on a single atoms object."""
 #DOC
-#DOC \vspace*{\baselineskip}
-#DOC walk\_single\_walker
-#DOC \begin{itemize}
+#DOC ``walk_single_walker``
 
     #DOC \item create block list
-    #DOC \begin{itemize}
-                        #DOC \item do\_atom\_walk $\times$ n\_atom\_step\_calls
+			#DOC \item do\_atom\_walk :math:`*` n\_atom\_step\_n\_calls
     possible_moves = ( [do_atom_walk] * movement_args['n_atom_steps_n_calls'] +
-                        #DOC \item do\_cell\_volume\_step $\times$ n\_cell\_volume\_steps
+		        #DOC \item do\_cell\_volume\_step :math:`*` n\_cell\_volume\_steps
                        [do_MC_cell_volume_step] * movement_args['n_cell_volume_steps'] + 
-                        #DOC \item do\_cell\_shear\_step $\times$ n\_cell\_shear\_steps
+		        #DOC \item do\_cell\_shear\_step :math:`*` n\_cell\_shear\_steps
                        [do_MC_cell_shear_step] * movement_args['n_cell_shear_steps'] + 
-                        #DOC \item do\_cell\_stretch\_step $\times$ n\_cell\_stretch\_steps
+		        #DOC \item do\_cell\_stretch\_step :math:`*` n\_cell\_stretch\_steps
                        [do_MC_cell_stretch_step] * movement_args['n_cell_stretch_steps'] + 
-                            #DOC \item do\_swap\_step $\times$ n\_swap\_steps
+		        #DOC \item do\_swap\_step :math:`*` n\_swap\_steps
                        [do_MC_swap_step] * movement_args['n_swap_steps'] )
-    #DOC \end{itemize}
 
     out = {}
     n_model_calls_used=0
 
     #DOC \item if do\_blocks
-    #DOC \begin{itemize}
     if movement_args['do_blocks']:
-        #DOC \item loop while n\_model\_calls\_used $<$ n\_model\_calls
-        #DOC \begin{itemize}
+        #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
         while n_model_calls_used < movement_args['n_model_calls']:
             #DOC \item shuffle block list
             rng.shuffle_in_place(possible_moves)
             #DOC \item loop over items in list
-            #DOC \begin{itemize}
             for move in possible_moves:
                 #DOC \item do move
                 (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
@@ -1039,14 +1075,9 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
                 #DOC \item break if do\_partial\_blocks and n\_model\_calls is reached
                 if movement_args['do_partial_blocks'] and n_model_calls_used >= movement_args['n_model_calls']:
                     break
-            #DOC \end{itemize}
-        #DOC \end{itemize}
-    #DOC \end{itemize}
     #DOC \item else
-    #DOC \begin{itemize}
     else:
-        #DOC \item loop while n\_model\_calls\_used $<$ n\_model\_calls
-        #DOC \begin{itemize}
+        #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
         while n_model_calls_used < movement_args['n_model_calls']:
             #DOC \item pick random item from list
             move = possible_moves[rng.int_uniform(0,len(possible_moves)-1)]
@@ -1054,8 +1085,6 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
             (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
             n_model_calls_used += t_n_model_calls
             accumulate_stats(out, t_out)
-        #DOC \end{itemize}
-    #DOC \end{itemize}
 
 
     #DOC \item perturb final energy by random\_energy\_perturbation
@@ -1065,7 +1094,6 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
     #DEBUG print "walk_single_walker end ", eval_energy(at, do_PE=False), eval_energy(at) #DEBUG
 
     return out
-#DOC \end{itemize}
 
 
 
@@ -1112,10 +1140,8 @@ def median_PV(walkers):
 
 def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEmax, size_n_proc):
     """Automatically set all step sizes. Returns the time (in seconds) taken for the routine to run."""
-    #DOC
-    #DOC \vspace*{\baselineskip}
-    #DOC full\_auto\_set\_stepsizes
-    #DOC \begin{itemize}
+#DOC
+#DOC ``full_auto_set_stepsizes``
     #DOC \item Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range. 
 
     full_auto_start_time = time.time()
@@ -1137,10 +1163,9 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
         key_list = comm.bcast(key_list,root=0)
 
     #DOC \item For each (H)MC move type the following is performed
-    #DOC \begin{itemize}
     for key in key_list:
 
-        #DOC \item Set ``movement\_args'' parameters so that only one (H)MC call is made at a time
+        #DOC \item Set ''movement\_args'' parameters so that only one (H)MC call is made at a time
         # reprogram n_atom_steps_n_calls, n_cell_volume_steps, n_cell_shear_steps, n_cell_stretch_steps, n_swap_steps according to key
         # possible key values:
         # MD_atom # atoms HMC
@@ -1234,14 +1259,12 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
 
 
         #DOC \item Step size calibration loop:
-        #DOC \begin{itemize}
         dir = None
         while True:
             stats = {} # clear acceptance / trial stats for new step size 
             stats_cumul = {} # clear acceptance / trial stats for new step size 
             #DOC \item Repeat the following 200/num\_of\_MPI\_processes times:
-            #DOC \begin{itemize}
-            #DOC \item Copy a configuration from the live set (each MPI process chooses a different configuration)
+            	#DOC \item Copy a configuration from the live set (each MPI process chooses a different configuration)
             for i in xrange(first_walker,first_walker + walk_n_walkers):
 
                 k = i%len(walkers) # cycle through walkers array
@@ -1255,9 +1278,8 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                 else:
                     stats = do_MC_atom_velo_walk(buf, exploration_movement_args, Emax, KEmax)
 
-                #DOC running statistics for the number of accepted/rejected moves on each process are recorded 
+                  #DOC     running statistics for the number of accepted/rejected moves on each process are recorded 
                 accumulate_stats(stats_cumul, stats)
-            #DOC \end{itemize}
 
             first_walker = first_walker + walk_n_walkers # cycle through local samples
             (n_try, n_accept) = stats_cumul[key]
@@ -1290,7 +1312,6 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                     # of interval
                     if ((min(rate,rate_store) < min_rate) and (max(rate,rate_store)>max_rate)):
                         #DOC \item If this is NOT the first time the loop has been performed for this (H)MC move AND we previously obtained an acceptance rate on one side of the desired range, and now find an acceptance rate on the other side of the desired range
-                        #DOC \begin{itemize}
                             #DOC \item Return the step size that gave an acceptance rate closest to the middle of the desired range.
 
                         # check which gives a accept_rate closer to centre of acceptable window
@@ -1312,14 +1333,13 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
 
                 else: # this is the first time
                     first_time = False
-                #DOC \end{itemize}
 
                 #DOC \item Store step length and acceptance rate
                 # save current step length and acceptance rate
                 steplength_store = movement_args[key+"_"+suffix]
                 rate_store = rate
 
-                #DOC \item update step length, by $\times$ or $\div$ by MC\_adjust\_step\_factor, to improve acceptance rate
+		#DOC \item update step length, by :math:`*` or :math:`/` by MC\_adjust\_step\_factor, to improve acceptance rate
                 #update step length
                 dir = None
                 if rate < min_rate:
@@ -1338,7 +1358,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                     if (comm is None or comm.rank == 0) and (ns_args['debug'] >= 1):
                         print print_prefix, "new trial step size for %s = %e" % (key, movement_args[key+"_"+suffix])
 
-                #DOC \item Check that step size is not larger than max allowed value (specified by user), and also that step size is not smaller than $10^{-20}$ (useful for detecting errors).
+		#DOC \item Check that step size is not larger than max allowed value (specified by user), and also that step size is not smaller than 10\ :sup:`-20`\ (useful for detecting errors).
                 # if exceeded maximum, cap change
                 if movement_args[key+"_"+suffix] > movement_args[key+"_"+suffix+"_max"]:
                     movement_args[key+"_"+suffix] = movement_args[key+"_"+suffix+"_max"]
@@ -1353,11 +1373,8 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                     if (comm is None or comm.rank == 0):
                         print print_prefix, "full_auto_set_stepsizes adjusted %s to %f" % (key+"_"+suffix, movement_args[key+"_"+suffix])
                     break
-    #DOC \end{itemize}
-    #DOC \end{itemize}
 
     #DOC \item Return step sizes and time taken for routine to run
-    #DOC \end{itemize}
 
     full_auto_end_time = time.time()
     duration = full_auto_end_time - full_auto_start_time
@@ -2246,6 +2263,7 @@ def main():
 	if comm is not None:
 	    args = comm.bcast(args,root=0)
 
+#DOC ``main``: parse arguments
 	# parse args
 	ns_args={}
 
@@ -2395,6 +2413,14 @@ def main():
 	movement_args['do_blocks'] = str_to_logical(args.pop('do_blocks', "T"))
 	movement_args['do_partial_blocks'] = str_to_logical(args.pop('do_partial_blocks', "F"))
 
+        #DOC \item process n\_atom\_steps
+            #DOC \item If break\_up\_atom\_traj
+                #DOC \item n\_atom\_steps\_per\_call = 1
+                #DOC \item n\_atom\_steps\_n\_calls = n\_atom\_steps
+            #DOC \item else
+                #DOC \item n\_atom\_steps\_per\_call = n\_atom\_steps
+                #DOC \item n\_atom\_steps\_n\_calls = 1
+
 	movement_args['n_atom_steps'] = int(args.pop('n_atom_steps', 1))
 	movement_args['atom_traj_len'] = int(args.pop('atom_traj_len', 8))
 	movement_args['break_up_atom_traj'] = str_to_logical(args.pop('break_up_atom_traj', "F"))
@@ -2460,7 +2486,7 @@ def main():
 	movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))
 	movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_velo_post_perturb', "T"))
 	movement_args['MD_atom_velo_flip_accept'] = str_to_logical(args.pop('MD_atom_velo_flip_accept', "F"))
-	movement_args['atom_velo_rej_free_perturb_randomize'] = str_to_logical(args.pop('atom_velo_rej_free_perturb_randomize', "F"))
+	movement_args['atom_velo_rej_free_fully_randomize'] = str_to_logical(args.pop('atom_velo_rej_free_fully_randomize', "F"))
 	movement_args['atom_velo_rej_free_perturb_angle'] = float(args.pop('atom_velo_rej_free_perturb_angle', 0.3))
 	movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "T"))
 
