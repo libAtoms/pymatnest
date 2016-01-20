@@ -2,15 +2,15 @@ include Makefile.arch
 
 F90_MODELS = $(wildcard *_model.F90)
 
-all: doc RngStream.so libs
+all: RngStream.so libs
 
 libs: fortran_MC_MD.so $(F90_MODELS:.F90=.so)
 
-doc: MC_MD_steps.pdf
+#doc: MC_MD_steps.pdf
 
-MC_MD_steps.pdf: MC_MD_steps.tex ns_run.py
-	egrep '#DOC' ns_run.py | sed 's/#DOC[ ]*//' > MC_MD_steps_body.tex
-	pdflatex MC_MD_steps.tex
+#MC_MD_steps.pdf: MC_MD_steps.tex ns_run.py
+#	egrep '#DOC' ns_run.py | sed 's/#DOC[ ]*//' > MC_MD_steps_body.tex
+#	pdflatex MC_MD_steps.tex
 
 # extra dependency for RngStream
 RngStream.so: RngStream.c RngStream.h
