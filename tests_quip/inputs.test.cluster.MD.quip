@@ -16,15 +16,15 @@ out_file_prefix=test.cluster.MD.quip
 # use MD generating a new walker
 atom_algorithm=MD             
 n_model_calls_expected=3      
-n_atom_steps=2                
+n_atom_steps=5                
 # length of atomic trajectory in each step
 atom_traj_len=5               
 # number of cell volume steps
-n_cell_volume_steps=2         
+n_cell_volume_steps=0         
 # number of cell shear steps
-n_cell_shear_steps=2          
+n_cell_shear_steps=0          
 # number of cell strectch steps
-n_cell_stretch_steps=2        
+n_cell_stretch_steps=0        
 
 MD_atom_timestep=0.01
 MD_atom_timestep_max=1.0  
