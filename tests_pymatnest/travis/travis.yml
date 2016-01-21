@@ -1,4 +1,8 @@
 language: python
+env:
+  global:
+    secure: "lfEJSPnt+JYm1Ls/zz+PHiy6HWA3XzKiR39XPGk7ONlkG7CYRXKM/rt6vn33roPeTEbNQHerINqI1SxyWqcNHfRAlxW+OnqI/YTkAlopKDk+Fg1cZ2rINjM/M0nuwwG5CrkVf+KF4uY2g77o4hx+Bbi0Ib8ejf+lIwHWY4/Hyk9mj00AqBEYT4woG1UVtmzZyxw3ArK+kATVIeIXCG1FRwdupkvHGhNpPM7pBjYcWc2iQaKog2STKYytkleKxDtZvqPK2gVRukLxiU2OSnGt/y+Ux7JleT3k5ZTTCT4acopUVd6F5BxNYQebD/bTb5KSqr2nTnHCzcafXYqIXxGBG7E3DrBkwsikQ6waMtSoHTtDhjFXyTLjGSus+iAoxU5NDy/VzYBXrucqY2sZlkP5EY0orYauycYjUi0irRNbKuO/XQYRkDaIM1FWmK+7B/WbbLnlGZ09pVWxX6Ux1dgDqmAG90cLhzGw5C14FC0iJN8sdm6u7YhR0iGbHUB+LGJ+vytuwECvn8AFJD2CVBHTcREIaNuR1wx+/twEN5OGhggECdZNJtKRo3EC1KzCDFh8IWCtr7oQuQnfIqI4yty56WZbBSgZazPjGiTwV63a26B2mR1J83311GjcFgMkDsfddglR/YGqDCOkprLbAC+5beFe1CAVPxHltzsFyXNEPgI="
+    - DOCS=true
 python:
   - 2.6
   - 2.7
@@ -16,7 +20,7 @@ script:
   # pymatnest should be built -> start tests
   #- travis_wait make test
 after_success:
-  - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then tests/travis/build_docs.sh; fi
+  - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then tests_pymatnest/travis/build_docs.sh; fi
 addons:
   apt:
     packages:
