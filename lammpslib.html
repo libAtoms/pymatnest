@@ -1,0 +1,345 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>lammpslib module &mdash; ns_doc 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ns_doc 1 documentation" href="index.html" />
+    <link rel="next" title="stacktrace module" href="stacktrace.html" />
+    <link rel="prev" title="rngstream module" href="rngstream.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="stacktrace.html" title="stacktrace module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="rngstream.html" title="rngstream module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ns_doc 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="rngstream.html"
+                        title="previous chapter"><cite>rngstream</cite> module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="stacktrace.html"
+                        title="next chapter"><cite>stacktrace</cite> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/lammpslib.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="lammpslib-module">
+<h1><cite>lammpslib</cite> module<a class="headerlink" href="#lammpslib-module" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-lammpslib"></span><p>ASE LAMMPS Calculator Library Version</p>
+<dl class="class">
+<dt id="lammpslib.LAMMPSlib">
+<em class="property">class </em><code class="descclassname">lammpslib.</code><code class="descname">LAMMPSlib</code><span class="sig-paren">(</span><em>restart=None</em>, <em>ignore_bad_restart_file=False</em>, <em>label=None</em>, <em>atoms=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">ase.calculators.calculator.Calculator</span></code></p>
+<blockquote>
+<div>LAMMPSlib Interface Documentation</div></blockquote>
+<p><strong>Introduction</strong></p>
+<p>LAMMPSlib is an interface and calculator for <a class="reference external" href="http://lammps.sandia.gov/">LAMMPS</a>. LAMMPSlib uses
+the python interface that comes with LAMMPS to solve an atoms model
+for energy, atom forces and cell stress. This calculator creates a
+&#8216;.lmp&#8217; object which is a running lammps program, so further commands
+can be sent to this object executed until it is explicitly closed. Any
+additional variables calculated by lammps can also be extracted. This
+is still experimental code.</p>
+<p><strong>Arguments</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Keyword</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">lmpcmds</span></code></td>
+<td><p class="first">list of strings of LAMMPS commands. You need to supply
+enough to define the potential to be used e.g.</p>
+<dl class="last docutils">
+<dt>[&#8220;pair_style eam/alloy&#8221;,</dt>
+<dd>&#8220;pair_coeff * * potentials/NiAlH_jea.eam.alloy Ni Al&#8221;]</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">atom_types</span></code></td>
+<td>dictionary of &#8220;atomic_symbol&#8221;:lammps_atom_type pairs,
+e.g. {&#8216;Cu&#8217;:1} to bind copper to lammps atom type 1.
+Default method assigns lammps atom types in order that they
+appear in the atoms model</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">log_file</span></code></td>
+<td>string
+path to the desired LAMMPS log file</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal"><span class="pre">lammps_header</span></code></td>
+<td><p class="first">string to use for lammps setup. Default is to use
+metal units and simple atom simulation.</p>
+<dl class="last docutils">
+<dt>lammps_header=[&#8216;units metal&#8217;,</dt>
+<dd>&#8216;atom_style atomic&#8217;,
+&#8216;atom_modify map array sort 0 0&#8217;])</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal"><span class="pre">keep_alive</span></code></td>
+<td>Boolean
+whether to keep the lammps routine alive for more commands</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Requirements</strong></p>
+<p>To run this calculator you must have LAMMPS installed and compiled to
+enable the python interface. See the LAMMPS manual.</p>
+<p>If the following code runs then lammps is installed correctly.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lammps</span> <span class="kn">import</span> <span class="n">lammps</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">lmp</span> <span class="o">=</span> <span class="n">lammps</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The version of LAMMPS is also important. LAMMPSlib is suitable for
+versions after approximately 2011. Prior to this the python interface
+is slightly different from that used by LAMMPSlib. It is not difficult
+to change to the earlier format.</p>
+<p><strong>LAMMPS and LAMMPSlib</strong></p>
+<p>The LAMMPS calculator is another calculator that uses LAMMPS (the
+program) to calculate the energy by generating input files and running
+a separate LAMMPS job to perform the analysis. The output data is then
+read back into python. LAMMPSlib makes direct use of the LAMMPS (the
+program) python interface. As well as directly running any LAMMPS
+comand line it allows the values of any of LAMMPS variables to be
+extracted and returned to python.</p>
+<p><strong>Example</strong></p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Atoms</span>
+<span class="kn">from</span> <span class="nn">lammpslib</span> <span class="kn">import</span> <span class="n">LAMMPSlib</span>
+
+<span class="n">cmds</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;pair_style eam/alloy&quot;</span><span class="p">,</span>
+        <span class="s">&quot;pair_coeff * * NiAlH_jea.eam.alloy Al H&quot;</span><span class="p">]</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="mf">4.05</span>
+<span class="n">al</span> <span class="o">=</span> <span class="n">Atoms</span><span class="p">([</span><span class="n">Atom</span><span class="p">(</span><span class="s">&#39;Al&#39;</span><span class="p">)],</span> <span class="n">cell</span><span class="o">=</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">),</span> <span class="n">pbc</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">h</span> <span class="o">=</span> <span class="n">Atom</span><span class="p">([</span><span class="n">Atom</span><span class="p">(</span><span class="s">&#39;H&#39;</span><span class="p">)])</span>
+<span class="n">alh</span> <span class="o">=</span> <span class="n">al</span> <span class="o">+</span> <span class="n">h</span>
+
+<span class="n">lammps</span> <span class="o">=</span> <span class="n">LAMMPSlib</span><span class="p">(</span><span class="n">lmpcmds</span> <span class="o">=</span> <span class="n">cmds</span><span class="p">,</span> <span class="n">logfile</span><span class="o">=</span><span class="s">&#39;test.log&#39;</span><span class="p">)</span>
+
+<span class="n">alh</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">lammps</span><span class="p">)</span>
+<span class="k">print</span> <span class="s">&quot;Energy &quot;</span><span class="p">,</span> <span class="n">alh</span><span class="o">.</span><span class="n">get_potential_energy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><strong>Implementation</strong></p>
+<p>LAMMPS provides a set of python functions to allow execution of the
+underlying C++ LAMMPS code. The functions used by the LAMMPSlib
+interface are:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">lammps</span> <span class="kn">import</span> <span class="n">lammps</span>
+
+<span class="n">lmp</span> <span class="o">=</span> <span class="n">lammps</span><span class="p">(</span><span class="n">cmd_args</span><span class="p">)</span> <span class="c"># initiate LAMMPS object with command line args</span>
+
+<span class="n">lmp</span><span class="o">.</span><span class="n">scatter_atoms</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="n">positions</span><span class="p">)</span> <span class="c"># atom coords to LAMMPS C array</span>
+<span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span> <span class="c"># executes a one line cmd string</span>
+<span class="n">lmp</span><span class="o">.</span><span class="n">extract_variable</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="c"># extracts a per atom variable</span>
+<span class="n">lmp</span><span class="o">.</span><span class="n">extract_global</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="c"># extracts a global variable</span>
+<span class="n">lmp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span> <span class="c"># close the lammps object</span>
+</pre></div>
+</div>
+<p>For a single atom model the following lammps file commands would be run
+by invoking the get_potential_energy() method:</p>
+<div class="highlight-python"><div class="highlight"><pre>units metal
+atom_style atomic
+atom_modify map array sort 0 0
+
+region cell prism 0 xhi 0 yhi 0 zhi xy xz yz units box
+create_box 1 cell
+create_atoms 1 single 0 0 0 units box
+mass * 1.0
+
+## user lmpcmds get executed here
+pair_style eam/alloy
+pair_coeff * * lammps/potentials/NiAlH_jea.eam.alloy Al
+## end of user lmmpcmds
+
+run 0
+</pre></div>
+</div>
+<p><strong>Notes</strong></p>
+<ul class="simple">
+<li>Units: The default lammps_header sets the units to Angstrom and eV
+and for compatibility with ASE Stress is in GPa.</li>
+<li>The global energy is currently extracted from LAMMPS using
+extract_variable since lammps.lammps currently extract_global only
+accepts the following [&#8216;dt&#8217;, &#8216;boxxlo&#8217;, &#8216;boxxhi&#8217;, &#8216;boxylo&#8217;, &#8216;boxyhi&#8217;,
+&#8216;boxzlo&#8217;, &#8216;boxzhi&#8217;, &#8216;natoms&#8217;, &#8216;nlocal&#8217;].</li>
+<li>If an error occurs while lammps is in control it will crash
+Python. Check the output of the log file to find the lammps error.</li>
+<li>If the are commands directly sent to the LAMMPS object this may
+change the energy value of the model. However the calculator will not
+know of it and still return the original energy value.</li>
+</ul>
+<p>End LAMMPSlib Interface Documentation</p>
+<dl class="method">
+<dt id="lammpslib.LAMMPSlib.calculate">
+<code class="descname">calculate</code><span class="sig-paren">(</span><em>atoms</em>, <em>properties</em>, <em>system_changes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib.calculate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib.calculate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lammpslib.LAMMPSlib.convert_cell">
+<code class="descname">convert_cell</code><span class="sig-paren">(</span><em>ase_cell</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib.convert_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib.convert_cell" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a parallel piped (forming right hand basis)
+to lower triangular matrix LAMMPS can accept. This
+function transposes cell matrix so the bases are column vectors</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="lammpslib.LAMMPSlib.default_parameters">
+<code class="descname">default_parameters</code><em class="property"> = {'lammps_name': '', 'keep_alive': False, 'lammps_header': ['units metal', 'atom_style atomic', 'atom_modify map array sort 0 0'], 'atom_types': None, 'log_file': None}</em><a class="headerlink" href="#lammpslib.LAMMPSlib.default_parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="lammpslib.LAMMPSlib.implemented_properties">
+<code class="descname">implemented_properties</code><em class="property"> = ['energy', 'forces', 'stress']</em><a class="headerlink" href="#lammpslib.LAMMPSlib.implemented_properties" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lammpslib.LAMMPSlib.initialise_lammps">
+<code class="descname">initialise_lammps</code><span class="sig-paren">(</span><em>atoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib.initialise_lammps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib.initialise_lammps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="lammpslib.LAMMPSlib.initialized">
+<code class="descname">initialized</code><em class="property"> = False</em><a class="headerlink" href="#lammpslib.LAMMPSlib.initialized" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lammpslib.LAMMPSlib.is_upper_triangular">
+<code class="descname">is_upper_triangular</code><span class="sig-paren">(</span><em>mat</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib.is_upper_triangular"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib.is_upper_triangular" title="Permalink to this definition">¶</a></dt>
+<dd><p>test if 3x3 matrix is upper triangular</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lammpslib.LAMMPSlib.lammpsbc">
+<code class="descname">lammpsbc</code><span class="sig-paren">(</span><em>pbc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib.lammpsbc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib.lammpsbc" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lammpslib.LAMMPSlib.propagate">
+<code class="descname">propagate</code><span class="sig-paren">(</span><em>atoms</em>, <em>properties</em>, <em>system_changes</em>, <em>n_steps</em>, <em>dt=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib.propagate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib.propagate" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>&#8220;atoms: Atoms object</dt>
+<dd>Contains positions, unit-cell, ...</dd>
+<dt>properties: list of str</dt>
+<dd>List of what needs to be calculated.  Can be any combination
+of &#8216;energy&#8217;, &#8216;forces&#8217;, &#8216;stress&#8217;, &#8216;dipole&#8217;, &#8216;charges&#8217;, &#8216;magmom&#8217;
+and &#8216;magmoms&#8217;.</dd>
+<dt>system_changes: list of str</dt>
+<dd>List of what has changed since last calculation.  Can be
+any combination of these five: &#8216;positions&#8217;, &#8216;numbers&#8217;, &#8216;cell&#8217;,
+&#8216;pbc&#8217;, &#8216;charges&#8217; and &#8216;magmoms&#8217;.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="lammpslib.LAMMPSlib.set_cell">
+<code class="descname">set_cell</code><span class="sig-paren">(</span><em>atoms</em>, <em>change=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib.set_cell"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib.set_cell" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="lammpslib.LAMMPSlib.start_lammps">
+<code class="descname">start_lammps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib.start_lammps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#lammpslib.LAMMPSlib.start_lammps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="lammpslib.LAMMPSlib.started">
+<code class="descname">started</code><em class="property"> = False</em><a class="headerlink" href="#lammpslib.LAMMPSlib.started" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="stacktrace.html" title="stacktrace module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="rngstream.html" title="rngstream module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ns_doc 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, livia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,687 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Getting started &mdash; ns_doc 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ns_doc 1 documentation" href="index.html" />
+    <link rel="next" title="pymatnest module" href="ns_run.html" />
+    <link rel="prev" title="Installation of pymatnest" href="install.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ns_run.html" title="pymatnest module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation of pymatnest"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ns_doc 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Getting started</a><ul>
+<li><a class="reference internal" href="#module-ns_run">List of input parameters</a></li>
+<li><a class="reference internal" href="#example-input-files">Example input files</a><ul>
+<li><a class="reference internal" href="#cluster-with-quip-implemented-lennard-jones-potential-using-md">Cluster with <code class="docutils literal"><span class="pre">QUIP</span></code> implemented Lennard-Jones potential, using MD</a></li>
+<li><a class="reference internal" href="#periodic-lennard-jones-system-with-lammps-using-md">Periodic Lennard-Jones system with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="previous chapter">Installation of pymatnest</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ns_run.html"
+                        title="next chapter"><cite>pymatnest</cite> module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/getstart.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="getting-started">
+<h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-ns_run">
+<span id="list-of-input-parameters"></span><h2>List of input parameters<a class="headerlink" href="#module-ns_run" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ns_run.usage">
+<code class="descclassname">ns_run.</code><code class="descname">usage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.usage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:</p>
+<dl class="glossary docutils">
+<dt id="term-max-volume-per-atom-float"><code class="docutils literal"><span class="pre">max_volume_per_atom=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum volume per atom allowed during the run.</div>
+<div class="line">default: 1.0e3</div>
+</div>
+</dd>
+<dt id="term-start-species-int-int-float-int-int-float"><code class="docutils literal"><span class="pre">start_species=int</span> <span class="pre">int</span> <span class="pre">[</span> <span class="pre">float</span> <span class="pre">]</span> <span class="pre">[,</span> <span class="pre">int</span> <span class="pre">int</span> <span class="pre">[</span> <span class="pre">float</span> <span class="pre">]</span> <span class="pre">...</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">Atomic number; multiplicity; mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required</div>
+</div>
+</dd>
+<dt id="term-restart-file-path-to-file"><code class="docutils literal"><span class="pre">restart_file=path_to_file</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">File for restart configs. Mutually exclusive with start_*, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. </div>
+</div>
+</dd>
+<dt id="term-n-walkers-int"><code class="docutils literal"><span class="pre">n_walkers=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">Total number of walkers, i.e. the size of the live set used. It has to be a multiple of the number of processors used.</div>
+</div>
+</dd>
+<dt id="term-n-cull-int"><code class="docutils literal"><span class="pre">n_cull=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Number of walkers to kill at each NS iteration.</div>
+<div class="line">deafult: 1</div>
+</div>
+</dd>
+<dt id="term-n-extra-walk-per-task-int"><code class="docutils literal"><span class="pre">n_extra_walk_per_task=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-n-iter-per-walker-int"><code class="docutils literal"><span class="pre">n_iter_per_walker=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be <code class="docutils literal"><span class="pre">n_walkers</span></code> * <code class="docutils literal"><span class="pre">n_iter_per_walker</span></code></div>
+</div>
+</dd>
+<dt id="term-min-emax-float"><code class="docutils literal"><span class="pre">min_Emax=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Termination condition based on Emax.</div>
+<div class="line">No default.</div>
+</div>
+</dd>
+<dt id="term-out-file-prefix-str"><code class="docutils literal"><span class="pre">out_file_prefix=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">String used as prefix for the different output files. </div>
+<div class="line">(None)</div>
+</div>
+</dd>
+<dt id="term-energy-calculator-quip-lammps-internal-fortran"><code class="docutils literal"><span class="pre">energy_calculator=</span> <span class="pre">(</span> <span class="pre">quip</span> <span class="pre">|</span> <span class="pre">lammps</span> <span class="pre">|</span> <span class="pre">internal</span> <span class="pre">|</span> <span class="pre">fortran)</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Energy calculator.</div>
+<div class="line">default: fortran</div>
+</div>
+</dd>
+<dt id="term-n-extra-data-int"><code class="docutils literal"><span class="pre">n_extra_data=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Amount of extra data per atom to pass around.</div>
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-kemax-max-t-float"><code class="docutils literal"><span class="pre">KEmax_max_T=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum temperature for estimating KEmax if <em>P</em> = 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K)</div>
+<div class="line">default: 1.0e5</div>
+</div>
+</dd>
+<dt id="term-start-energy-ceiling-float"><code class="docutils literal"><span class="pre">start_energy_ceiling=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.</div>
+<div class="line">default: 1.0e9</div>
+</div>
+</dd>
+<dt id="term-n-model-calls-expected-int"><code class="docutils literal"><span class="pre">n_model_calls_expected=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(0, one of these is required)</div>
+</div>
+</dd>
+<dt id="term-n-model-calls-int"><code class="docutils literal"><span class="pre">n_model_calls=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(0, one of these is required)</div>
+</div>
+</dd>
+<dt id="term-do-blocks-t-f"><code class="docutils literal"><span class="pre">do_blocks=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(T, whether to do steps in blocks)</div>
+</div>
+</dd>
+<dt id="term-do-partial-blocks-t-f"><code class="docutils literal"><span class="pre">do_partial_blocks=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(F, whether to do partial blocks if n_model_calls(_expected) is met)</div>
+</div>
+</dd>
+<dt id="term-n-atom-steps-int"><code class="docutils literal"><span class="pre">n_atom_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(1, number of atomic trajectoris in each block)</div>
+</div>
+</dd>
+<dt id="term-atom-traj-len-int"><code class="docutils literal"><span class="pre">atom_traj_len=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(8, length of atomic trajectory (MD steps or MC sweeps) in each step)</div>
+</div>
+</dd>
+<dt id="term-break-up-atom-traj-t-f"><code class="docutils literal"><span class="pre">break_up_atom_traj=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(F, whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps)</div>
+</div>
+</dd>
+<dt id="term-n-cell-volume-steps-int"><code class="docutils literal"><span class="pre">n_cell_volume_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(1, number of cell volume steps each block)</div>
+</div>
+</dd>
+<dt id="term-n-cell-shear-steps-int"><code class="docutils literal"><span class="pre">n_cell_shear_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(1, number of cell shear steps each block)</div>
+</div>
+</dd>
+<dt id="term-n-cell-stretch-steps-int"><code class="docutils literal"><span class="pre">n_cell_stretch_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(1, number of cell stretch steps each block)</div>
+</div>
+</dd>
+<dt id="term-n-swap-steps-int"><code class="docutils literal"><span class="pre">n_swap_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(0, number of species swap steps each block)</div>
+</div>
+</dd>
+<dt id="term-velo-traj-len-int"><code class="docutils literal"><span class="pre">velo_traj_len=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(0, number of MC steps in (optional) explicit velocity MC traj)</div>
+</div>
+</dd>
+<dt id="term-random-energy-perturbation-float"><code class="docutils literal"><span class="pre">random_energy_perturbation=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0e-12)</div>
+</div>
+</dd>
+<dt id="term-atom-algorithm-mc-md"><code class="docutils literal"><span class="pre">atom_algorithm=[MC</span> <span class="pre">|</span> <span class="pre">MD]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(MANDATORY)</div>
+<div class="line">Use either Monte Carlo or Molecular dynamics to explore.</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velocities-t-f"><code class="docutils literal"><span class="pre">MC_atom_velocities=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(F, supported only for energy_calculator=fortran)</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velocities-pre-perturb-t-f"><code class="docutils literal"><span class="pre">MC_atom_velocities_pre_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(F, Perturb velocities (rejection free) before MC + velocities walk)</div>
+</div>
+</dd>
+<dt id="term-mc-atom-step-size-float"><code class="docutils literal"><span class="pre">MC_atom_step_size=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) </div>
+</div>
+</dd>
+<dt id="term-mc-atom-step-size-max-float"><code class="docutils literal"><span class="pre">MC_atom_step_size_max=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) </div>
+</div>
+</dd>
+<dt id="term-mc-atom-uniform-rv-t-f"><code class="docutils literal"><span class="pre">MC_atom_uniform_rv=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-md-atom-velo-pre-perturb-t-f"><code class="docutils literal"><span class="pre">MD_atom_velo_pre_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Perturb velocities before MD trajectory</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-md-atom-velo-post-perturb-t-f"><code class="docutils literal"><span class="pre">MD_atom_velo_post_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Perturb velocities after MD trajectory</div>
+<div class="line">default: T</div>
+</div>
+</dd>
+<dt id="term-md-atom-velo-flip-accept-t-f"><code class="docutils literal"><span class="pre">MD_atom_velo_flip_accept=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-md-atom-timestep-float"><code class="docutils literal"><span class="pre">MD_atom_timestep=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.1 (ASE time units)</div>
+</div>
+</dd>
+<dt id="term-md-atom-timestep-max-float"><code class="docutils literal"><span class="pre">MD_atom_timestep_max=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.5 (ASE time units)</div>
+</div>
+</dd>
+<dt id="term-md-atom-energy-fuzz-float"><code class="docutils literal"><span class="pre">MD_atom_energy_fuzz=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)</div>
+</div>
+</dd>
+<dt id="term-md-atom-reject-energy-violation-t-f"><code class="docutils literal"><span class="pre">MD_atom_reject_energy_violation=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)</div>
+</div>
+</dd>
+<dt id="term-atom-velo-rej-free-fully-randomize-t-f"><code class="docutils literal"><span class="pre">atom_velo_rej_free_fully_randomize=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(F. If true, randomize velocities completely rather than just perturbing.</div>
+</div>
+</dd>
+<dt id="term-atom-velo-rej-free-perturb-angle-float"><code class="docutils literal"><span class="pre">atom_velo_rej_free_perturb_angle=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(0.3. Max angle in radians for random rotations.)</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velo-step-size-float"><code class="docutils literal"><span class="pre">MC_atom_velo_step_size=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(50.0)</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velo-step-size-max-float"><code class="docutils literal"><span class="pre">MC_atom_velo_step_size_max=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(10000.0)</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velo-walk-rej-free-t-f"><code class="docutils literal"><span class="pre">MC_atom_velo_walk_rej_free=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(T. If true, use rejection free algorithm for MC_atom_walk</div>
+</div>
+</dd>
+<dt id="term-mc-cell-p-float"><code class="docutils literal"><span class="pre">MC_cell_P=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Pressure value to be used. (Note: the unit of pressure depends on the energy calculator and the potential model used)</div>
+<div class="line">default: 0.0 </div>
+</div>
+</dd>
+<dt id="term-mc-cell-volume-per-atom-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_step_size=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Initial volume stepsize for volume change.</div>
+<div class="line">Default: 5% of the maximum allowed volume</div>
+</div>
+</dd>
+<dt id="term-mc-cell-volume-per-atom-step-size-max-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_step_size_max=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(50% of the maximum allowed volume)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-volume-per-atom-prob-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_prob=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-stretch-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_stretch_step_size=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(0.35)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-stretch-step-size-max-float"><code class="docutils literal"><span class="pre">MC_cell_stretch_step_size_max=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-stretch-prob-float"><code class="docutils literal"><span class="pre">MC_cell_stretch_prob=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-shear-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_shear_step_size=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-shear-step-size-max-float"><code class="docutils literal"><span class="pre">MC_cell_shear_step_size_max=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-shear-prob-float"><code class="docutils literal"><span class="pre">MC_cell_shear_prob=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(1.0)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-min-aspect-ratio-float"><code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(0.9)</div>
+</div>
+</dd>
+<dt id="term-cell-shape-equil-steps-int"><code class="docutils literal"><span class="pre">cell_shape_equil_steps=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(1000)</div>
+</div>
+</dd>
+<dt id="term-adjust-step-interval-per-walker-float"><code class="docutils literal"><span class="pre">adjust_step_interval_per_walker=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust.</div>
+<div class="line">default: 0.5</div>
+</div>
+</dd>
+<dt id="term-mc-adjust-step-factor-float"><code class="docutils literal"><span class="pre">MC_adjust_step_factor=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.1</div>
+</div>
+</dd>
+<dt id="term-mc-adjust-min-rate-float"><code class="docutils literal"><span class="pre">MC_adjust_min_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.2</div>
+</div>
+</dd>
+<dt id="term-mc-adjust-max-rate-float"><code class="docutils literal"><span class="pre">MC_adjust_max_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.3</div>
+</div>
+</dd>
+<dt id="term-md-adjust-step-factor-float"><code class="docutils literal"><span class="pre">MD_adjust_step_factor=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.5</div>
+</div>
+</dd>
+<dt id="term-md-adjust-min-rate-float"><code class="docutils literal"><span class="pre">MD_adjust_min_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.95</div>
+</div>
+</dd>
+<dt id="term-md-adjust-max-rate-float"><code class="docutils literal"><span class="pre">MD_adjust_max_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.00</div>
+</div>
+</dd>
+<dt id="term-quip-pot-args-str"><code class="docutils literal"><span class="pre">QUIP_pot_args=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(MANDATORY if energy_calculator=quip)</div>
+</div>
+</dd>
+<dt id="term-quip-pot-params-file-str"><code class="docutils literal"><span class="pre">QUIP_pot_params_file=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(MANDATORY if energy_calculator=quip)</div>
+</div>
+</dd>
+<dt id="term-fortran-model-str"><code class="docutils literal"><span class="pre">FORTRAN_model=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(MANDATORY if energy_calculator=fortran)</div>
+</div>
+</dd>
+<dt id="term-lammps-init-cmds-str"><code class="docutils literal"><span class="pre">LAMMPS_init_cmds=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(MANDATORY if energy_calculator=lammps)</div>
+</div>
+</dd>
+<dt id="term-lammps-name-str"><code class="docutils literal"><span class="pre">LAMMPS_name=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(&#8216;&#8217;, arch name for lammps shared object file)</div>
+</div>
+</dd>
+<dt id="term-lammps-header-str"><code class="docutils literal"><span class="pre">LAMMPS_header=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps)</div>
+</div>
+</dd>
+<dt id="term-lammps-header-extra-str"><code class="docutils literal"><span class="pre">LAMMPS_header_extra=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(&#8216;&#8217;, extra lammpslib.py header commands for energy_calculator=lammps)</div>
+</div>
+</dd>
+<dt id="term-config-file-format-str"><code class="docutils literal"><span class="pre">config_file_format=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(extxyz)</div>
+</div>
+</dd>
+<dt id="term-rng-numpy-internal-rngstream"><code class="docutils literal"><span class="pre">rng=(</span> <span class="pre">numpy</span> <span class="pre">|</span> <span class="pre">internal</span> <span class="pre">|</span> <span class="pre">rngstream</span> <span class="pre">)</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(numpy)</div>
+</div>
+</dd>
+<dt id="term-profile-rank-to-profile"><code class="docutils literal"><span class="pre">profile=rank_to_profile</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(-1)</div>
+</div>
+</dd>
+<dt id="term-d-t-f"><code class="docutils literal"><span class="pre">2D=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(F, unsupported)</div>
+</div>
+</dd>
+<dt id="term-debug-debug-level"><code class="docutils literal"><span class="pre">debug=debug_level</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(0, &lt;= 0 for no debugging tests/prints)</div>
+</div>
+</dd>
+<dt id="term-snapshot-interval-int"><code class="docutils literal"><span class="pre">snapshot_interval=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set &lt;=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.</div>
+<div class="line">default: 1000</div>
+</div>
+</dd>
+<dt id="term-traj-interval-int"><code class="docutils literal"><span class="pre">traj_interval=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set &lt;=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. </div>
+<div class="line">default: 1 </div>
+</div>
+</dd>
+<dt id="term-random-seed-seed-shift"><code class="docutils literal"><span class="pre">random_seed=seed_shift</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(-1, &lt; 0 for seed from /dev/urandom)</div>
+</div>
+</dd>
+<dt id="term-no-extra-walks-at-all-t-f"><code class="docutils literal"><span class="pre">no_extra_walks_at_all=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">(F)</div>
+</div>
+</dd>
+<dt id="term-track-configs-t-f"><code class="docutils literal"><span class="pre">track_configs=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Track configrations across all walks/clones</div>
+<div class="line">(F)</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="example-input-files">
+<h2>Example input files<a class="headerlink" href="#example-input-files" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="cluster-with-quip-implemented-lennard-jones-potential-using-md">
+<h3>Cluster with <code class="docutils literal"><span class="pre">QUIP</span></code> implemented Lennard-Jones potential, using MD<a class="headerlink" href="#cluster-with-quip-implemented-lennard-jones-potential-using-md" title="Permalink to this headline">¶</a></h3>
+<p>This input file will start a calculation of 6 Lennard-Jones atoms
+in a cubic cell with volume 648 Angstrom^3, using the potential implemeted in <code class="docutils literal"><span class="pre">QUIP</span></code>
+and using MD trajectory for generating a new sample configuration. As the shape
+and volume of the cell will not be changed, a cluster will be formed by the atoms.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># starting volume (in this example it is Angstrom^3)</span>
+<span class="n">max_volume_per_atom</span><span class="o">=</span><span class="mf">108.0</span>     
+<span class="c"># 6 atoms with atomic number 1 and mass 1.0</span>
+<span class="n">start_species</span><span class="o">=</span><span class="mi">1</span> <span class="mi">6</span> <span class="mf">1.0</span>        
+<span class="n">start_energy_ceiling</span><span class="o">=</span><span class="mf">40.0</span>
+
+<span class="c"># size of live set</span>
+<span class="n">n_walkers</span><span class="o">=</span><span class="mi">256</span>                 
+<span class="c"># at each iteration 1 walker is killed</span>
+<span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>                      
+<span class="c"># total number of iterations will be n_iter_per_walker*n_walkers</span>
+<span class="n">n_iter_per_walker</span><span class="o">=</span><span class="mi">150</span>         
+<span class="c"># prefix of all the output files</span>
+<span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">quip</span>   
+
+<span class="c"># use MD generating a new walker</span>
+<span class="n">atom_algorithm</span><span class="o">=</span><span class="n">MD</span>             
+<span class="n">n_model_calls_expected</span><span class="o">=</span><span class="mi">3</span>      
+<span class="n">n_atom_steps</span><span class="o">=</span><span class="mi">5</span>                
+<span class="c"># length of atomic trajectory in each step</span>
+<span class="n">atom_traj_len</span><span class="o">=</span><span class="mi">5</span>               
+<span class="c"># number of cell volume steps</span>
+<span class="n">n_cell_volume_steps</span><span class="o">=</span><span class="mi">0</span>         
+<span class="c"># number of cell shear steps</span>
+<span class="n">n_cell_shear_steps</span><span class="o">=</span><span class="mi">0</span>          
+<span class="c"># number of cell strectch steps</span>
+<span class="n">n_cell_stretch_steps</span><span class="o">=</span><span class="mi">0</span>        
+
+<span class="n">MD_atom_timestep</span><span class="o">=</span><span class="mf">0.01</span>
+<span class="n">MD_atom_timestep_max</span><span class="o">=</span><span class="mf">1.0</span>  
+<span class="n">MD_adjust_max_rate</span><span class="o">=</span><span class="mf">0.95</span>
+<span class="n">MD_adjust_min_rate</span><span class="o">=</span><span class="mf">0.5</span>
+
+<span class="c"># param file to store potential parameters</span>
+<span class="n">QUIP_pot_params_file</span><span class="o">=</span><span class="n">quip_params</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">xml</span> 
+<span class="c"># Lennard-Jones potential</span>
+<span class="n">QUIP_pot_args</span><span class="o">=</span><span class="n">IP</span> <span class="n">LJ</span>           
+
+<span class="c"># use QUIP</span>
+<span class="n">energy_calculator</span><span class="o">=</span><span class="n">quip</span>        
+
+<span class="n">rng</span><span class="o">=</span><span class="n">numpy</span>
+
+<span class="c"># verbosity level</span>
+<span class="n">debug</span><span class="o">=</span><span class="mi">0</span>                       
+</pre></div>
+</div>
+<p>The corresponding <code class="docutils literal"><span class="pre">quip_params.cluster.xml</span></code> file is the following:</p>
+<div class="highlight-python"><div class="highlight"><pre>&lt;LJ_params n_types=&quot;1&quot; label=&quot;default&quot;&gt;
+&lt;!-- dummy paramters for testing purposes, no physical meaning --&gt;
+&lt;per_type_data type=&quot;1&quot; atomic_num=&quot;1&quot; /&gt;
+&lt;per_pair_data type1=&quot;1&quot; type2=&quot;1&quot; sigma=&quot;1.0&quot; eps6=&quot;1.0&quot; eps12=&quot;1.0&quot; cutoff=&quot;3.0&quot; energy_shift=&quot;T&quot; linear_force_shift=&quot;F&quot; /&gt;
+&lt;/LJ_params&gt;
+</pre></div>
+</div>
+</div>
+<div class="section" id="periodic-lennard-jones-system-with-lammps-using-md">
+<h3>Periodic Lennard-Jones system with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-lennard-jones-system-with-lammps-using-md" title="Permalink to this headline">¶</a></h3>
+<p>This input file will start a calculation of 64 Lennard-Jones atoms
+in a cell with variable shape and size at the set pressure value, using the potential implemented in <code class="docutils literal"><span class="pre">LAMMPS</span></code>
+and using MD trajectory for generating a new sample configuration.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># starting volume (in this example it is Angstrom^3)</span>
+<span class="n">max_volume_per_atom</span><span class="o">=</span><span class="mf">1000000.0</span>
+
+<span class="c"># 64 atoms with atomic number 1 and mass 1.0</span>
+<span class="n">start_species</span><span class="o">=</span><span class="mi">1</span> <span class="mi">64</span> <span class="mf">1.0</span>
+<span class="n">start_energy_ceiling</span><span class="o">=</span><span class="mf">100.0</span>
+
+<span class="c"># size of live set</span>
+<span class="n">n_walkers</span><span class="o">=</span><span class="mi">256</span>
+<span class="c"># at each iteration 1 walker is killed</span>
+<span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>
+<span class="c"># total number of iterations will be n_iter_per_walker*n_walkers</span>
+<span class="n">n_iter_per_walker</span><span class="o">=</span><span class="mi">5000</span>
+<span class="c"># prefix of all the output files</span>
+<span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">periodic</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">lammps</span>
+
+
+<span class="c"># use MD generating a new walker</span>
+<span class="n">atom_algorithm</span><span class="o">=</span><span class="n">MD</span>
+<span class="n">n_model_calls_expected</span><span class="o">=</span><span class="mi">8</span>      
+<span class="n">n_atom_steps</span><span class="o">=</span><span class="mi">5</span>                
+<span class="c"># length of atomic trajectory in each step</span>
+<span class="n">atom_traj_len</span><span class="o">=</span><span class="mi">5</span>               
+<span class="c"># number of cell volume steps</span>
+<span class="n">n_cell_volume_steps</span><span class="o">=</span><span class="mi">3</span>         
+<span class="c"># number of cell shear steps</span>
+<span class="n">n_cell_shear_steps</span><span class="o">=</span><span class="mi">2</span>          
+<span class="c"># number of cell strectch steps</span>
+<span class="n">n_cell_stretch_steps</span><span class="o">=</span><span class="mi">2</span>        
+
+<span class="n">MD_atom_timestep</span><span class="o">=</span><span class="mf">0.01</span>
+<span class="n">MD_atom_timestep_max</span><span class="o">=</span><span class="mf">0.025</span>
+<span class="n">MD_adjust_max_rate</span><span class="o">=</span><span class="mf">0.95</span>
+<span class="n">MD_adjust_min_rate</span><span class="o">=</span><span class="mf">0.5</span>
+
+<span class="c"># Pressure (in the units of the potential)                                      </span>
+<span class="n">MC_cell_P</span><span class="o">=</span><span class="mf">2.37e-2</span>
+
+<span class="c"># allowed torsion for the cell, ratio of the min lattice height</span>
+<span class="n">MC_cell_min_aspect_ratio</span><span class="o">=</span><span class="mf">0.9</span>
+
+<span class="c"># use LAMMPS</span>
+<span class="n">energy_calculator</span><span class="o">=</span><span class="n">lammps</span>
+<span class="c"># name of the LAMMPS machine (the one that *YOUR* LAMMPS was built with)</span>
+<span class="n">LAMMPS_name</span><span class="o">=</span><span class="n">mpi</span>
+<span class="c"># potential parameters</span>
+<span class="n">LAMMPS_init_cmds</span><span class="o">=</span><span class="n">pair_style</span> <span class="n">lj</span><span class="o">/</span><span class="n">cut</span> <span class="mf">9.00</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="o">*</span> <span class="o">*</span> <span class="mf">0.1</span> <span class="mf">3.0</span><span class="p">;</span> <span class="n">pair_modify</span> <span class="n">shift</span> <span class="n">yes</span>
+
+<span class="n">rng</span><span class="o">=</span><span class="n">numpy</span>
+
+<span class="c"># verbosity level</span>
+<span class="n">debug</span><span class="o">=</span><span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ns_run.html" title="pymatnest module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation of pymatnest"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ns_doc 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, livia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

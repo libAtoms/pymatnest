@@ -1,0 +1,494 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Nested sampling method &mdash; ns_doc 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ns_doc 1 documentation" href="index.html" />
+    <link rel="next" title="Installation of pymatnest" href="install.html" />
+    <link rel="prev" title="pymatnest documentation" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation of pymatnest"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pymatnest documentation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ns_doc 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Nested sampling method</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#algorithm">Algorithm</a></li>
+<li><a class="reference internal" href="#pymatnest"><code class="docutils literal"><span class="pre">pymatnest</span></code></a><ul>
+<li><a class="reference internal" href="#mc-and-md-step-algorithms">MC and MD step algorithms</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">pymatnest documentation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="install.html"
+                        title="next chapter">Installation of pymatnest</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/intro.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="nested-sampling-method">
+<h1>Nested sampling method<a class="headerlink" href="#nested-sampling-method" title="Permalink to this headline">¶</a></h1>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Authors:</th><td class="field-body">Noam, Rob, Gabor, Livia</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Date:</th><td class="field-body">2015</td>
+</tr>
+</tbody>
+</table>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>The nested sampling method was first introduced by John Skilling <a class="footnote-reference" href="#f1" id="id1">[1]</a>
+in the field of applied probability and inference to efficiently sample
+probability densities in high-dimensional spaces where the regions contributing
+most of the probability mass are exponentially localized.
+It is an annealing algorithm that creates a sequence of probability distributions,
+each more concentrated than the previous one near the high-likelihood region of the
+parameter space - i.e. in the context of materials, the low-energy region of configuration space.</p>
+<p>Since its original inception, nested sampling has also been applied to atomistic systems <a class="footnote-reference" href="#f2" id="id2">[2]</a> <a class="footnote-reference" href="#f3" id="id3">[3]</a>,
+and its several advantages mean it became a powerful method to uniformly sample atomic
+configuartion spaces.</p>
+<blockquote>
+<div><ul>
+<li><dl class="first docutils">
+<dt>calculate the partition function, hence all thermodynamic properties become accesible</dt>
+<dd><ul class="first last simple">
+<li>calculate the heat capacity and locate the phase transitions</li>
+<li>with an order parameter calculate the free energy</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step</p>
+</li>
+<li><p class="first">no prior knowledge is needed of the phases or phase transitions</p>
+</li>
+<li><p class="first">can be used with both constant volume and constant pressure calculations</p>
+</li>
+<li><p class="first">calculate the entire phase diagram in an automated way</p>
+</li>
+<li><p class="first">considerable computational gain over parallel tempering</p>
+</li>
+</ul>
+</div></blockquote>
+<table class="docutils footnote" frame="void" id="f1" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td><ol class="first last upperalpha simple" start="10">
+<li>Skilling, in Nested Sampling, edited by Rainer Fischer, Roland Preuss, and Udo von Toussaint, AIP Conf. Proc. No. 735 (AIP, New York, 2004), p. 395</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f2" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><ol class="first last upperalpha simple" start="12">
+<li><ol class="first upperalpha" start="2">
+<li>Partay, A. P. Bartok, and G. Csanyi, J. Phys. Chem. B 114, 10502 (2010)</li>
+</ol>
+</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="f3" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><ol class="first last upperalpha simple" start="12">
+<li><ol class="first upperalpha" start="2">
+<li>Partay, A. P. Bartok, and G. Csanyi, Phys. Rev. E 89, 022302 (2014)</li>
+</ol>
+</li>
+</ol>
+</td></tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="algorithm">
+<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
+<p>Nested sampling is an iterative method...
+Top-down, Size of live set, random walk...etc.</p>
+</div>
+<div class="section" id="pymatnest">
+<h2><code class="docutils literal"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">pymatnest</span></code> package is a software
+library written in Fortran 95/python for the purpose of carrying out
+nested sampling calculations with a variatey of options suitable for different systems.
+It can be used with the supplied fortran potential models and it also has interfaces with the following packages:</p>
+<blockquote>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">LAMMPS</span></code></li>
+<li><code class="docutils literal"><span class="pre">QUIP</span></code></li>
+</ul>
+</div></blockquote>
+<div class="section" id="mc-and-md-step-algorithms">
+<h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Permalink to this headline">¶</a></h3>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">rej_free_perturb_velo</span></code></dt>
+<dd><ul class="first last">
+<li><p class="first">if atom_velo_rej_free_fully_randomize, pick random velocities consistent with Emax</p>
+</li>
+<li><dl class="first docutils">
+<dt>else perturb velocities</dt>
+<dd><ul class="first last simple">
+<li>if current velocity=0, can&#8217;t rescale, so pick random velocities consistent with Emax</li>
+<li>else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom_velo_rej_free_perturb_angle</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal"><span class="pre">do_MC_atom_velo_walk</span></code></dt>
+<dd><ul class="first last simple">
+<li>If MC_atom_velo_walk_rej_free is set, call rej_free_perturb_velo()</li>
+<li>else do some unsupported velo MC stuff</li>
+</ul>
+</dd>
+<dt><code class="docutils literal"><span class="pre">do_MD_atom_walk</span></code></dt>
+<dd><ul class="first last">
+<li><p class="first">if MD_atom_velo_pre_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</p>
+</li>
+<li><p class="first">propagate in time atom_traj_len time steps of length MD_atom_timestep</p>
+</li>
+<li><p class="first">If MD_atom_reject_energy_violation is set, accept/reject entire move on E deviating by less than MD_atom_energy_fuzz times kinetic energy</p>
+</li>
+<li><p class="first">accept/reject entire move on E &lt; Emax and KE &lt; KEmax</p>
+</li>
+<li><dl class="first docutils">
+<dt>if reject</dt>
+<dd><ul class="first last simple">
+<li>set positions, velocities, energy back to value before perturbation (maybe should be after?)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>else</dt>
+<dd><ul class="first last simple">
+<li>flip velocities if MD_atom_velo_flip_accept</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">if MD_atom_velo_post_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</p>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal"><span class="pre">do_MC_atom_walk</span></code></dt>
+<dd><ul class="first last">
+<li><p class="first">if MC_atom_velocities and MC_atom_velocities_pre_perturb, call do_MC_atom_velo_walk() to perturb velocities, magnitude and and rotation</p>
+</li>
+<li><dl class="first docutils">
+<dt>if using fortran calculator</dt>
+<dd><ul class="first last simple">
+<li>call fortran MC code f_MC_MD.MC_atom_walk</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>else</dt>
+<dd><ul class="first last">
+<li><p class="first">do python MC</p>
+</li>
+<li><dl class="first docutils">
+<dt>loop atom_traj_len times</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>loop over atoms in random order</dt>
+<dd><ul class="first last simple">
+<li>propose single atom move</li>
+<li>accept/reject on E &lt; Emax</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal"><span class="pre">do_MC_swap_step</span></code></dt>
+<dd><ul class="first last simple">
+<li>return if all atomic numbers are identical</li>
+<li>pick two atoms with distinct atomic numbers</li>
+<li>accept swap if energy &lt; Emax</li>
+</ul>
+</dd>
+</dl>
+<p><code class="docutils literal"><span class="pre">do_MC_cell_volume_step</span></code></p>
+<p><code class="docutils literal"><span class="pre">do_MC_cell_shear_step</span></code></p>
+<p><code class="docutils literal"><span class="pre">do_MC_cell_stretch_step</span></code></p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">do_atom_walk</span></code></dt>
+<dd><ul class="first last simple">
+<li>loop n_atom_steps_per_call times, calling do_MC_atom_walk() or do_MD_atom_walk()</li>
+</ul>
+</dd>
+<dt><code class="docutils literal"><span class="pre">walk_single_walker</span></code></dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>create block list</dt>
+<dd><ul class="first last simple">
+<li>do_atom_walk <span class="math">*</span> n_atom_step_n_calls</li>
+<li>do_cell_volume_step <span class="math">*</span> n_cell_volume_steps</li>
+<li>do_cell_shear_step <span class="math">*</span> n_cell_shear_steps</li>
+<li>do_cell_stretch_step <span class="math">*</span> n_cell_stretch_steps</li>
+<li>do_swap_step <span class="math">*</span> n_swap_steps</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>if do_blocks</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>loop while n_model_calls_used &lt; n_model_calls</dt>
+<dd><ul class="first last">
+<li><p class="first">shuffle block list</p>
+</li>
+<li><dl class="first docutils">
+<dt>loop over items in list</dt>
+<dd><ul class="first last simple">
+<li>do move</li>
+<li>break if do_partial_blocks and n_model_calls is reached</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>else</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>loop while n_model_calls_used &lt; n_model_calls</dt>
+<dd><ul class="first last simple">
+<li>pick random item from list</li>
+<li>do move</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">perturb final energy by random_energy_perturbation</p>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal"><span class="pre">full_auto_set_stepsizes</span></code></dt>
+<dd><ul class="first last">
+<li><p class="first">Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.</p>
+</li>
+<li><p class="first">The routine is MPI parallelised, so that the wall time goes as 1/num_of_processes</p>
+</li>
+<li><dl class="first docutils">
+<dt>For each (H)MC move type the following is performed</dt>
+<dd><ul class="first last">
+<li><p class="first">Set &#8216;&#8217;movement_args&#8217;&#8217; parameters so that only one (H)MC call is made at a time</p>
+</li>
+<li><p class="first">Min and max acceptance rates are copied from parameters MC_adjust_min_rate / MD_adjust_min_rate and MC_adjust_max_rate / MD_adjust_max_rate</p>
+</li>
+<li><dl class="first docutils">
+<dt>Step size calibration loop:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>Repeat the following 200/num_of_MPI_processes times:</dt>
+<dd><ul class="first last simple">
+<li>Copy a configuration from the live set (each MPI process chooses a different configuration)</li>
+<li>Each MPI processes performs one (H)MC move on its cloned configuration
+running statistics for the number of accepted/rejected moves on each process are recorded</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>The total number of accepted/rejected moves for this step size (summed across all MPI processes) are estabilshed</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>If the total acceptance rate is within the desired range, return this stepsize</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>If this is NOT the first time the loop has been performed for this (H)MC move AND we previously obtained an acceptance rate on one side of the desired range, and now find an acceptance rate on the other side of the desired range</dt>
+<dd><ul class="first last simple">
+<li>Return the step size that gave an acceptance rate closest to the middle of the desired range.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Store step length and acceptance rate</p>
+</li>
+<li><p class="first">update step length, by <span class="math">*</span> or <span class="math">/</span> by MC_adjust_step_factor, to improve acceptance rate</p>
+</li>
+<li><p class="first">Check that step size is not larger than max allowed value (specified by user), and also that step size is not smaller than 10<sup>-20</sup>(useful for detecting errors).</p>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">Return step sizes and time taken for routine to run</p>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal"><span class="pre">main</span></code>: parse arguments</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>process n_atom_steps</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>If break_up_atom_traj</dt>
+<dd><ul class="first last simple">
+<li>n_atom_steps_per_call = 1</li>
+<li>n_atom_steps_n_calls = n_atom_steps</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>else</dt>
+<dd><ul class="first last simple">
+<li>n_atom_steps_per_call = n_atom_steps</li>
+<li>n_atom_steps_n_calls = 1</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="install.html" title="Installation of pymatnest"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pymatnest documentation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ns_doc 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, livia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Installation of pymatnest &mdash; ns_doc 1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="ns_doc 1 documentation" href="index.html" />
+    <link rel="next" title="Getting started" href="getstart.html" />
+    <link rel="prev" title="Nested sampling method" href="intro.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="getstart.html" title="Getting started"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Nested sampling method"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ns_doc 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Installation of pymatnest</a><ul>
+<li><a class="reference internal" href="#system-requirements">System requirements</a></li>
+<li><a class="reference internal" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">Compilation of the streamlined FORTRAN models and MC/MD walkers.</a></li>
+<li><a class="reference internal" href="#using-with-quip">Using with <code class="docutils literal"><span class="pre">QUIP</span></code></a></li>
+<li><a class="reference internal" href="#using-with-lammps">Using with <code class="docutils literal"><span class="pre">LAMMPS</span></code></a></li>
+<li><a class="reference internal" href="#running">Running</a></li>
+<li><a class="reference internal" href="#analysis">Analysis</a></li>
+<li><a class="reference internal" href="#about-the-documentation">About the documentation</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="intro.html"
+                        title="previous chapter">Nested sampling method</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="getstart.html"
+                        title="next chapter">Getting started</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/install.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="installation-of-pymatnest">
+<h1>Installation of pymatnest<a class="headerlink" href="#installation-of-pymatnest" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="system-requirements">
+<h2>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">¶</a></h2>
+<p>You have to have <code class="docutils literal"><span class="pre">numpy</span></code> and <code class="docutils literal"><span class="pre">ASE</span></code> installed (check that you have a newer ASE
+version otherwise the extended xyz version will not be recognised).
+You have to have <code class="docutils literal"><span class="pre">mpi4py</span></code> too.</p>
+</div>
+<div class="section" id="compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">
+<h2>Compilation of the streamlined FORTRAN models and MC/MD walkers.<a class="headerlink" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li>edit <code class="docutils literal"><span class="pre">Makefile.arch</span></code> (by default Linux appropriate variables are set)</li>
+<li><code class="docutils literal"><span class="pre">make</span></code></li>
+</ol>
+</div>
+<div class="section" id="using-with-quip">
+<h2>Using with <code class="docutils literal"><span class="pre">QUIP</span></code><a class="headerlink" href="#using-with-quip" title="Permalink to this headline">¶</a></h2>
+<p>Make sure <code class="docutils literal"><span class="pre">PYTHONPATH</span></code> is set correctly to find the <code class="docutils literal"><span class="pre">quippy</span></code> module.
+(Note: Check the <code class="docutils literal"><span class="pre">QUIP_ARCH</span></code> with which you build quippy, as some might result in segmentaion fault when running
+<code class="docutils literal"><span class="pre">ns_run</span></code> (e.g. try gfortan_openmpi if gfortran fails)</p>
+<p>Examples are in <code class="docutils literal"><span class="pre">tests_quip/</span></code> directory.</p>
+</div>
+<div class="section" id="using-with-lammps">
+<h2>Using with <code class="docutils literal"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#using-with-lammps" title="Permalink to this headline">¶</a></h2>
+<p>These instructions assume the latest (git/svn) version of <code class="docutils literal"><span class="pre">LAMMPS</span></code>.  It is not tested how
+far back older versions would also work.</p>
+<p>Apply the <code class="docutils literal"><span class="pre">MPI</span></code> patch to the <code class="docutils literal"><span class="pre">LAMMPS</span></code> source by doing</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">cd</span> <span class="pre">lammps_top_dir/src</span></code></p>
+<p><code class="docutils literal"><span class="pre">patch</span> <span class="pre">&lt;</span> <span class="pre">ns_run_dir/lammps.patch</span></code></p>
+</div></blockquote>
+<p>where <code class="docutils literal"><span class="pre">ns_run_dir</span></code> is the directory where <code class="docutils literal"><span class="pre">ns_run</span></code> is, and <code class="docutils literal"><span class="pre">lammps_top_dir</span></code> is the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory.
+Create a Makefile for <strong>parallel</strong> lammps in <code class="docutils literal"><span class="pre">lammps_top_dir/MAKE</span></code>, and define <code class="docutils literal"><span class="pre">-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF</span></code>
+in the <code class="docutils literal"><span class="pre">LMP_INC</span></code> makefile variable. Then</p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></div></blockquote>
+<p>Copy <code class="docutils literal"><span class="pre">lammps_top_dir/python/lammps.py</span></code> to the directory set in your <code class="docutils literal"><span class="pre">PYTHONPATH</span></code>.</p>
+<p>Copy <code class="docutils literal"><span class="pre">lammps_top_dir/src/liblammps_[machine].so</span></code> to the same place where you copied <code class="docutils literal"><span class="pre">lammps.py</span></code>.</p>
+<p><strong>Important note:</strong> Check the <code class="docutils literal"><span class="pre">lammps.py</span></code> file as the path definition had a bug in the line:</p>
+<p><code class="docutils literal"><span class="pre">else:</span> <span class="pre">self.lib</span> <span class="pre">=</span> <span class="pre">CDLL(join(modpath,&quot;/liblammps_%s.so&quot;</span> <span class="pre">%</span> <span class="pre">name),RTLD_GLOBAL)</span></code></p>
+<p>You HAVE TO delete the <code class="docutils literal"><span class="pre">/</span></code> before <code class="docutils literal"><span class="pre">liblammps</span></code> otherwise it is meant as an absolute path!!!</p>
+<p>Examples are in the <code class="docutils literal"><span class="pre">tests_lammps/directory</span></code>.  <code class="docutils literal"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal"><span class="pre">[machine]</span></code> when compiling <code class="docutils literal"><span class="pre">LAMMPS</span></code>.</p>
+<p>Note that you <strong>have</strong> to compile a parallel version of <code class="docutils literal"><span class="pre">LAMMPS</span></code> with the source patch provided in <code class="docutils literal"><span class="pre">pymatnest</span></code>.
+<code class="docutils literal"><span class="pre">LAMMPS</span></code> &#8220;serial&#8221; compilation still links to fake <code class="docutils literal"><span class="pre">MPI</span></code> routines, which then conflict in unpredictable ways with
+the true mpi routines that <code class="docutils literal"><span class="pre">mpi4py</span></code> includes.</p>
+<p>It is possible to use <code class="docutils literal"><span class="pre">OpenMP</span></code> to parallelize each <code class="docutils literal"><span class="pre">LAMMPS</span></code> task.  This has been tested to run, but not for correctness or efficiency.</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">cd</span> <span class="pre">lammps_top_dir/src</span></code></p>
+<p><code class="docutils literal"><span class="pre">make</span> <span class="pre">yes-user-omp</span></code></p>
+</div></blockquote>
+<p>Add openmp enabling flag (e.g. <code class="docutils literal"><span class="pre">-fopenmp</span></code> for gfortran) to <code class="docutils literal"><span class="pre">CCFLAGS</span></code> in the <code class="docutils literal"><span class="pre">MAKE/MINE/Makefile.[machine]</span></code></p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></div></blockquote>
+<p>Copy <code class="docutils literal"><span class="pre">liblammps_[machine].so</span></code> as before.</p>
+<p>When running:</p>
+<p>Set <code class="docutils literal"><span class="pre">OMP_NUM_THREADS</span></code> environment variable for number of <code class="docutils literal"><span class="pre">OpenMP</span></code> threads per task, and
+add <code class="docutils literal"><span class="pre">LAMMPS_header_extra='package</span> <span class="pre">omp</span> <span class="pre">0'</span></code> input file argument.
+Use <code class="docutils literal"><span class="pre">LAMMPS</span></code> pair style that activates omp, e.g. <code class="docutils literal"><span class="pre">pair_style</span> <span class="pre">lj/cut/omp</span> <span class="pre">3.00</span></code>.
+Pass flags to <code class="docutils literal"><span class="pre">mpirun</span></code> to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are
+available for OpenMP parallelization.
+Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task&#8217;s <code class="docutils literal"><span class="pre">LAMMPS</span></code> work over all 16 cores:</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">export</span> <span class="pre">OMP_NUM_THREADS=16</span></code></p>
+<p><code class="docutils literal"><span class="pre">mpirun</span> <span class="pre">-np</span> <span class="pre">8</span> <span class="pre">-x</span> <span class="pre">OMP_NUM_THREADS</span> <span class="pre">--map-by</span> <span class="pre">slot:pe=$OMP_NUM_THREADS</span> <span class="pre">ns_run</span> <span class="pre">&lt;</span> <span class="pre">inputs</span></code></p>
+</div></blockquote>
+<p>Note: the <code class="docutils literal"><span class="pre">-np</span> <span class="pre">8</span></code> may not be needed, depending on your queueing system.
+The <code class="docutils literal"><span class="pre">LAMMPS</span> <span class="pre">ASE</span></code> interface (<code class="docutils literal"><span class="pre">lammpslib.py</span></code>) is a heavily modified version of</p>
+<p><a class="reference external" href="https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py">https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py</a></p>
+<p>For more information on how the interface works, see the <a class="reference internal" href="lammpslib.html"><em>lammpslib module</em></a>.</p>
+</div>
+<div class="section" id="running">
+<h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
+<p>To start a nested sampling run type</p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">ns_run</span> <span class="pre">&lt;</span> <span class="pre">input</span></code></div></blockquote>
+<p>Example input files for clusters and periodic systems, both with MC and MD, are in the <code class="docutils literal"><span class="pre">tests/</span></code> directory.
+For further help see also</p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">ns_run</span> <span class="pre">--help</span></code></div></blockquote>
+<p>If you get weird errors about modules and/or <code class="docutils literal"><span class="pre">.so</span></code> files not found, do (in sh syntax)</p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">export</span> <span class="pre">PYTHONPATH=ns_run_dir:$PYTHONPATH</span></code></div></blockquote>
+<p>where <code class="docutils literal"><span class="pre">ns_run_dir</span></code> is the directory where <code class="docutils literal"><span class="pre">ns_run</span></code> is.
+This appears to be necessary on some HPC machines where mpirun copies the executable,
+because <code class="docutils literal"><span class="pre">ns_run</span></code> by default looks for modules in the same directory as the top level
+python script itself. If it is still not sufficient, you might have to copy the entire <code class="docutils literal"><span class="pre">ns_run_dir</span></code>
+to the directory where the jobs are submitted from.</p>
+</div>
+<div class="section" id="analysis">
+<h2>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h2>
+<p>To analyse the results you can use</p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">ns_analyze</span> <span class="pre">-M</span> <span class="pre">0.01</span> <span class="pre">-D</span> <span class="pre">0.01</span> <span class="pre">-n</span> <span class="pre">100</span> <span class="pre">file.energies</span> <span class="pre">&gt;</span> <span class="pre">analysis</span></code></div></blockquote>
+<p>For furher help see also</p>
+<blockquote>
+<div><code class="docutils literal"><span class="pre">ns_analyze</span> <span class="pre">--help</span></code></div></blockquote>
+</div>
+<div class="section" id="about-the-documentation">
+<h2>About the documentation<a class="headerlink" href="#about-the-documentation" title="Permalink to this headline">¶</a></h2>
+<p>The documentation is generated by Sphinx, using the files within the <code class="docutils literal"><span class="pre">doc</span></code> library.
+Modules are autodocumented with <code class="docutils literal"><span class="pre">..</span> <span class="pre">automodule::</span></code> so all the properly formatted comments
+in the python code (i.e. within triple quote) appear.
+The installation and basic usage guidelines in the documentation are shown as the content of the README.md file
+is <code class="docutils literal"><span class="pre">..</span> <span class="pre">included:</span></code>-d.
+Example inputs are shown as some ./tests_xxx/xxx.inp files are included in the documentation as well.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="getstart.html" title="Getting started"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="intro.html" title="Nested sampling method"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ns_doc 1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2015, livia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
+    </div>
+  </body>
+</html>
