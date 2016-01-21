@@ -21,5 +21,5 @@ make html
 cd $PAGES_DIR
 git add .
 git commit -m "update docs"
-git push origin gh-pages
+git push origin gh-pages > /dev/null 2>&1
 
