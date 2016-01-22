@@ -8,7 +8,7 @@ Nested sampling method
 Overview
 -------------------------------------
 
-The nested sampling method was first introduced by John Skilling[#f1]_ 
+The nested sampling method was first introduced by John Skilling [#f1]_ 
 in the field of applied probability and inference to efficiently sample 
 probability densities in high-dimensional spaces where the regions contributing 
 most of the probability mass are exponentially localized.
@@ -17,7 +17,7 @@ each more concentrated than the previous one near the high-likelihood region of 
 parameter space - i.e. in the context of materials, the low-energy region of configuration space.
 
 
-Since its original inception, nested sampling has also been applied to atomistic systems[#f2]_ [#f3]_,
+Since its original inception, nested sampling has also been applied to atomistic systems [#f2]_ [#f3]_,
 and its several advantages mean it became a powerful method to uniformly sample atomic 
 configuartion spaces.
  * calculate the partition function, hence all thermodynamic properties become accesible
@@ -46,7 +46,7 @@ Top-down, Size of live set, random walk...etc.
 The ``pymatnest`` package is a software
 library written in Fortran 95/python for the purpose of carrying out
 nested sampling calculations with a variatey of options suitable for different systems. 
-It can be used with the in-built fortran potential models and it also has interfaces with the following packages:
+It can be used with the supplied fortran potential models and it also has interfaces with the following packages:
 
    - ``LAMMPS``
 
