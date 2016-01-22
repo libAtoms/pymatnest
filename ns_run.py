@@ -2577,7 +2577,10 @@ def main():
 		if do_calc_quip or do_calc_lammps:
 		    at.set_calculator(pot)
 		at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
-                KEmax = at.info['KEmax']
+		if movement_args['do_velocities']:
+                    KEmax = at.info['KEmax']
+		else:
+		    KEmax = None
 
 		key_found = False
 		for key in at.info: # check if 'iter=' info is present in the file used for restart
