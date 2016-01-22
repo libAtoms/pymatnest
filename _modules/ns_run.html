@@ -2643,7 +2643,10 @@
 		<span class="k">if</span> <span class="n">do_calc_quip</span> <span class="ow">or</span> <span class="n">do_calc_lammps</span><span class="p">:</span>
 		    <span class="n">at</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
 		<span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand_perturb_energy</span><span class="p">(</span><span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">])</span>
-                <span class="n">KEmax</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;KEmax&#39;</span><span class="p">]</span>
+		<span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]:</span>
+                    <span class="n">KEmax</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;KEmax&#39;</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+		    <span class="n">KEmax</span> <span class="o">=</span> <span class="bp">None</span>
 
 		<span class="n">key_found</span> <span class="o">=</span> <span class="bp">False</span>
 		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">:</span> <span class="c1"># check if &#39;iter=&#39; info is present in the file used for restart</span>
