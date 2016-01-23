@@ -33,3 +33,22 @@ and using MD trajectory for generating a new sample configuration.
 
 .. literalinclude:: ../tests_lammps/inputs.test.periodic.MD.lammps
     :language: python
+
+
+Restart a run
+++++++++++++++++++++++++++++++++
+
+If one needs to continue a run, i.e. perform more iteration cycles, the input file has to be modified as
+
+::
+
+    #start_species=1 64 1.0
+    restart_file=my_output.snapshot.all.extxyz
+
+
+Comment out the ``start_species`` option and include a keyword ``restart_file``. This defines the name of the file 
+where all the walker configurations can be read from. This file should be a produced by
+concatenating the last saved snapshot files of all the processors. You might also need to increase the ``n_iter_per_walker``
+value if the run already reached the number of iterations set previously.
+
+
