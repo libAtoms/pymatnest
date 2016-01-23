@@ -29,7 +29,7 @@ Features
 * Monte Carlo and Molecular Dynamics exploration
 * can be used with
 
-   - the in-built fortran models
+   - the supplied fortran models
 
    - ``LAMMPS``
 
