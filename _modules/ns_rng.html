@@ -193,16 +193,16 @@
 
 <span class="c1"># import rngstream</span>
 <span class="kn">import</span> <span class="nn">rngstream</span><span class="o">,</span> <span class="nn">ctypes</span><span class="o">,</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">struct</span><span class="o">,</span> <span class="nn">math</span>
-<div class="viewcode-block" id="NsRngStream"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream">[docs]</a><span class="k">class</span> <span class="nc">NsRngStream</span><span class="p">(</span><span class="n">NsRng</span><span class="p">):</span></div>
+<div class="viewcode-block" id="NsRngStream"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream">[docs]</a><span class="k">class</span> <span class="nc">NsRngStream</span><span class="p">(</span><span class="n">NsRng</span><span class="p">):</span>
 
-   <span class="k">def</span> <span class="nf">set_package_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta_seed</span><span class="p">):</span>
+<div class="viewcode-block" id="NsRngStream.set_package_seed"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream.set_package_seed">[docs]</a>   <span class="k">def</span> <span class="nf">set_package_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta_seed</span><span class="p">):</span>
 
       <span class="k">if</span> <span class="n">delta_seed</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
 	 <span class="n">seed</span> <span class="o">=</span> <span class="p">[</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulong</span><span class="p">(</span><span class="n">delta_seed</span><span class="p">)</span> <span class="p">]</span> <span class="o">*</span> <span class="mi">6</span>
       <span class="k">else</span><span class="p">:</span>
 	 <span class="n">seed</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">os_random_uint32</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4294967087</span><span class="p">))</span>
 	 <span class="n">seed</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">os_random_uint32</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4294944443</span><span class="p">))</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">set_package_seed</span><span class="p">((</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulong</span><span class="o">*</span><span class="mi">6</span><span class="p">)(</span><span class="o">*</span><span class="n">seed</span><span class="p">))</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">set_package_seed</span><span class="p">((</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_ulong</span><span class="o">*</span><span class="mi">6</span><span class="p">)(</span><span class="o">*</span><span class="n">seed</span><span class="p">))</span></div>
 
    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">delta_seed</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">comm</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
       <span class="bp">self</span><span class="o">.</span><span class="n">r</span> <span class="o">=</span> <span class="n">rngstream</span><span class="o">.</span><span class="n">RngStream</span><span class="p">()</span>
@@ -247,26 +247,26 @@
 	 <span class="k">print</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span><span class="p">,</span> <span class="s2">&quot;Initialized RngStream l_rng to &quot;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
       <span class="bp">self</span><span class="o">.</span><span class="n">saved_normal_rv</span> <span class="o">=</span> <span class="bp">None</span>
 
-   <span class="k">def</span> <span class="nf">switch_to_common</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="NsRngStream.switch_to_common"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream.switch_to_common">[docs]</a>   <span class="k">def</span> <span class="nf">switch_to_common</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
       <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_rng</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
 	 <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">g_rng</span>
-	 <span class="bp">self</span><span class="o">.</span><span class="n">saved_normal_rv</span> <span class="o">=</span> <span class="bp">None</span>
-   <span class="k">def</span> <span class="nf">switch_to_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+	 <span class="bp">self</span><span class="o">.</span><span class="n">saved_normal_rv</span> <span class="o">=</span> <span class="bp">None</span></div>
+<div class="viewcode-block" id="NsRngStream.switch_to_local"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream.switch_to_local">[docs]</a>   <span class="k">def</span> <span class="nf">switch_to_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
       <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_rng</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
 	 <span class="bp">self</span><span class="o">.</span><span class="n">rng</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">l_rng</span>
-	 <span class="bp">self</span><span class="o">.</span><span class="n">saved_normal_rv</span> <span class="o">=</span> <span class="bp">None</span>
+	 <span class="bp">self</span><span class="o">.</span><span class="n">saved_normal_rv</span> <span class="o">=</span> <span class="bp">None</span></div>
 
-   <span class="k">def</span> <span class="nf">int_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">):</span>
-      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">low</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">high</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
-   <span class="k">def</span> <span class="nf">float_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="NsRngStream.int_uniform"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream.int_uniform">[docs]</a>   <span class="k">def</span> <span class="nf">int_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">):</span>
+      <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">low</span><span class="p">),</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_int</span><span class="p">(</span><span class="n">high</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span></div>
+<div class="viewcode-block" id="NsRngStream.float_uniform"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream.float_uniform">[docs]</a>   <span class="k">def</span> <span class="nf">float_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
       <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
 	 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">float_uniform_01</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">high</span><span class="o">-</span><span class="n">low</span><span class="p">)</span><span class="o">+</span><span class="n">low</span>
       <span class="k">else</span><span class="p">:</span>
 	 <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
 	 <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">nditer</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">op_flags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;readwrite&#39;</span><span class="p">]):</span>
 	    <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">float_uniform_01</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">high</span><span class="o">-</span><span class="n">low</span><span class="p">)</span><span class="o">+</span><span class="n">low</span>
-	 <span class="k">return</span> <span class="n">out</span>
-   <span class="k">def</span> <span class="nf">normal_variate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">std_dev</span><span class="p">):</span>
+	 <span class="k">return</span> <span class="n">out</span></div>
+<div class="viewcode-block" id="NsRngStream.normal_variate"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream.normal_variate">[docs]</a>   <span class="k">def</span> <span class="nf">normal_variate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">std_dev</span><span class="p">):</span>
       <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_normal_rv</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
 	 <span class="n">rsq</span> <span class="o">=</span> <span class="mf">0.0</span>
 	 <span class="k">while</span> <span class="n">rsq</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">rsq</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
@@ -279,17 +279,17 @@
       <span class="k">else</span><span class="p">:</span>
 	 <span class="n">rv</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_normal_rv</span>
 	 <span class="bp">self</span><span class="o">.</span><span class="n">saved_normal_rv</span> <span class="o">=</span> <span class="bp">None</span>
-	 <span class="k">return</span> <span class="n">rv</span>
-   <span class="k">def</span> <span class="nf">normal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">std_dev</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+	 <span class="k">return</span> <span class="n">rv</span></div>
+<div class="viewcode-block" id="NsRngStream.normal"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream.normal">[docs]</a>   <span class="k">def</span> <span class="nf">normal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">std_dev</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
       <span class="k">if</span> <span class="n">size</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
 	 <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">normal_variate</span><span class="p">(</span><span class="n">std_dev</span><span class="p">)</span>
       <span class="k">else</span><span class="p">:</span>
 	 <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
 	 <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">nditer</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">op_flags</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;readwrite&#39;</span><span class="p">]):</span>
 	    <span class="n">x</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">normal_variate</span><span class="p">(</span><span class="n">std_dev</span><span class="p">)</span>
-	 <span class="k">return</span> <span class="n">out</span>
-   <span class="k">def</span> <span class="nf">shuffle_in_place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-      <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">float_uniform_01</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">)</span> <span class="p">)</span>
+	 <span class="k">return</span> <span class="n">out</span></div>
+<div class="viewcode-block" id="NsRngStream.shuffle_in_place"><a class="viewcode-back" href="../ns_rng.html#ns_rng.NsRngStream.shuffle_in_place">[docs]</a>   <span class="k">def</span> <span class="nf">shuffle_in_place</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+      <span class="n">random</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="k">lambda</span> <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">r</span><span class="o">.</span><span class="n">float_uniform_01</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">)</span> <span class="p">)</span></div></div>
 </pre></div>
 
           </div>
@@ -312,7 +312,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>

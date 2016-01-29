@@ -568,7 +568,7 @@
     <span class="n">a</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">izip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="rej_free_perturb_velo"><a class="viewcode-back" href="../ns_run.html#ns_run.rej_free_perturb_velo">[docs]</a><span class="k">def</span> <span class="nf">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span></div>
+<div class="viewcode-block" id="rej_free_perturb_velo"><a class="viewcode-back" href="../ns_run.html#ns_run.rej_free_perturb_velo">[docs]</a><span class="k">def</span> <span class="nf">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``rej_free_perturb_velo``</span>
 
@@ -624,9 +624,9 @@
 
     <span class="n">new_KE</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span>
     <span class="c1"># rej_free_perturb_velo expects at.info[&#39;ns_energy&#39;] to be set correctly initially</span>
-    <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_KE</span><span class="o">-</span><span class="n">orig_KE</span>
+    <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_KE</span><span class="o">-</span><span class="n">orig_KE</span></div>
 
-<div class="viewcode-block" id="do_MC_atom_velo_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_velo_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span></div>
+<div class="viewcode-block" id="do_MC_atom_velo_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_velo_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_atom_velo_walk``</span>
     <span class="c1">#DOC \item If MC\_atom\_velo\_walk\_rej\_free is set, call rej\_free\_perturb\_velo()</span>
@@ -664,9 +664,9 @@
 	<span class="n">at</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">velocities</span><span class="p">)</span>
 	<span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">KE</span><span class="o">-</span><span class="n">initial_KE</span>
 
-    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;MC_atom_velo&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="n">n_steps</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">n_accept</span><span class="p">)}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;MC_atom_velo&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="n">n_steps</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">n_accept</span><span class="p">)}</span></div>
 
-<div class="viewcode-block" id="do_MD_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MD_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MD_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span></div>
+<div class="viewcode-block" id="do_MD_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MD_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MD_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MD_atom_walk``</span>
 
@@ -738,9 +738,9 @@
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_velo_post_perturb&#39;</span><span class="p">]:</span>
 	<span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;MD_atom&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_accept</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;MD_atom&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_accept</span><span class="p">)</span> <span class="p">}</span></div>
 
-<div class="viewcode-block" id="do_MC_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span></div>
+<div class="viewcode-block" id="do_MC_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_atom_walk``</span>
 
@@ -810,7 +810,7 @@
 	<span class="n">out</span><span class="p">[</span><span class="s1">&#39;MC_atom_velo&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_steps</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">n_accept_velo</span><span class="p">)</span>
     <span class="n">out</span><span class="p">[</span><span class="s1">&#39;MC_atom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_steps</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">n_accept</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">out</span>
+    <span class="k">return</span> <span class="n">out</span></div>
 
 
 <div class="viewcode-block" id="propose_volume_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_volume_step">[docs]</a><span class="k">def</span> <span class="nf">propose_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
@@ -825,7 +825,7 @@
     <span class="n">p_accept</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">new_V</span><span class="o">/</span><span class="n">orig_V</span><span class="p">)</span><span class="o">**</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="propose_shear_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_shear_step">[docs]</a><span class="k">def</span> <span class="nf">propose_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span></div>
+<div class="viewcode-block" id="propose_shear_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_shear_step">[docs]</a><span class="k">def</span> <span class="nf">propose_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
     <span class="c1"># pick random vector</span>
     <span class="n">rnd_vec_ind</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
     <span class="c1"># turn other two into orthonormal pair</span>
@@ -844,7 +844,7 @@
     <span class="n">new_cell</span> <span class="o">=</span> <span class="n">orig_cell</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
     <span class="n">new_cell</span><span class="p">[</span><span class="n">rnd_vec_ind</span><span class="p">,:]</span> <span class="o">+=</span> <span class="n">rv1</span><span class="o">*</span><span class="n">v1</span> <span class="o">+</span> <span class="n">rv2</span><span class="o">*</span><span class="n">v2</span>
     <span class="n">transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">orig_cell</span><span class="p">),</span> <span class="n">new_cell</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="propose_stretch_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_stretch_step">[docs]</a><span class="k">def</span> <span class="nf">propose_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
     <span class="n">rnd_v1_ind</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -917,7 +917,7 @@
 	    <span class="p">(</span><span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span> <span class="o">=</span> <span class="n">propose_step_func</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_step_size&quot;</span><span class="p">])</span>
 	    <span class="n">do_cell_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="do_MC_swap_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_swap_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_swap_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span></div>
+<div class="viewcode-block" id="do_MC_swap_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_swap_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_swap_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_swap_step``</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
@@ -955,9 +955,9 @@
             <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="n">i1</span><span class="p">,</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra_data_1_orig</span>
             <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="n">i2</span><span class="p">,</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra_data_2_orig</span>
 
-    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_volume_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_volume_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span></div>
+<div class="viewcode-block" id="do_MC_cell_volume_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_volume_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_volume_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -967,9 +967,9 @@
     <span class="k">if</span> <span class="n">do_cell_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">):</span>
 	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_volume_per_atom&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">})</span>
     <span class="k">else</span><span class="p">:</span>
-	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_volume_per_atom&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span>
+	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_volume_per_atom&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_shear_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_shear_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span></div>
+<div class="viewcode-block" id="do_MC_cell_shear_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_shear_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_shear_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -979,9 +979,9 @@
     <span class="k">if</span> <span class="n">do_cell_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">):</span>
 	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_shear&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">})</span>
     <span class="k">else</span><span class="p">:</span>
-	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_shear&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span>
+	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_shear&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_stretch_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_stretch_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span></div>
+<div class="viewcode-block" id="do_MC_cell_stretch_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_stretch_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_stretch_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -991,10 +991,10 @@
     <span class="k">if</span> <span class="n">do_cell_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">):</span>
 	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_stretch&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">})</span>
     <span class="k">else</span><span class="p">:</span>
-	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_stretch&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span>
+	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_stretch&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
 
-<div class="viewcode-block" id="do_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span></div>
+<div class="viewcode-block" id="do_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_atom_walk``</span>
     <span class="n">n_reps</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_atom_steps_per_call&#39;</span><span class="p">]</span>
@@ -1008,7 +1008,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;do_atom_walk got unknown &#39;atom_algorithm&#39; = &#39;</span><span class="si">%s</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">],</span> <span class="mi">5</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="p">(</span><span class="n">n_reps</span><span class="o">*</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_traj_len&#39;</span><span class="p">],</span> <span class="n">out</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">n_reps</span><span class="o">*</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_traj_len&#39;</span><span class="p">],</span> <span class="n">out</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="rand_perturb_energy"><a class="viewcode-back" href="../ns_run.html#ns_run.rand_perturb_energy">[docs]</a><span class="k">def</span> <span class="nf">rand_perturb_energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">perturbation</span><span class="p">,</span> <span class="n">Emax</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">Emax</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
@@ -1117,7 +1117,7 @@
 
     <span class="k">return</span> <span class="p">(</span><span class="n">Emax</span><span class="p">,</span> <span class="n">rank_of_max</span><span class="p">,</span> <span class="n">ind_of_max</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="median_PV"><a class="viewcode-back" href="../ns_run.html#ns_run.median_PV">[docs]</a><span class="k">def</span> <span class="nf">median_PV</span><span class="p">(</span><span class="n">walkers</span><span class="p">):</span></div>
+<div class="viewcode-block" id="median_PV"><a class="viewcode-back" href="../ns_run.html#ns_run.median_PV">[docs]</a><span class="k">def</span> <span class="nf">median_PV</span><span class="p">(</span><span class="n">walkers</span><span class="p">):</span>
     <span class="c1"># do local max</span>
     <span class="n">PVs_loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">])</span>
 
@@ -1134,7 +1134,7 @@
     <span class="k">else</span><span class="p">:</span>
 	<span class="n">PV_median</span> <span class="o">=</span> <span class="n">PVs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">PVs</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)]</span>
 
-    <span class="k">return</span> <span class="n">PV_median</span>
+    <span class="k">return</span> <span class="n">PV_median</span></div>
 
 
 <div class="viewcode-block" id="full_auto_set_stepsizes"><a class="viewcode-back" href="../ns_run.html#ns_run.full_auto_set_stepsizes">[docs]</a><span class="k">def</span> <span class="nf">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size_n_proc</span><span class="p">):</span>
@@ -2778,7 +2778,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.4.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.5.
     </div>
   </body>
 </html>
