@@ -157,7 +157,7 @@ class fortran_MC_MD:
         else:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
-        return self.model_lib.ll_eval_forces_(ctypes.byref(n), at.get_positions(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell(), forces)
+        return self.model_lib.ll_eval_forces_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32),  at.get_positions(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell(), forces)
 
 # MC/MD WALK ###############################################################################
 
