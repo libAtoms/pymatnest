@@ -325,7 +325,7 @@
 <span class="sd">     |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set &lt;=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. </span>
 <span class="sd">     |  default: 1 </span>
 
-<span class="sd">    ``random_seed=seed_shift``</span>
+<span class="sd">    ``delta_random_seed=seed_shift``</span>
 <span class="sd">     |  (-1, &lt; 0 for seed from /dev/urandom)</span>
 
 <span class="sd">    ``no_extra_walks_at_all=[ T | F ]``</span>
@@ -431,7 +431,7 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;debug=debug_level (0, &lt;= 0 for no debugging tests/prints)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;snapshot_interval=int (1000, &lt;=0 for no snapshots except final positions)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;traj_interval=int (1, &lt;=0 for no trajectory)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;random_seed=seed_shift (-1, &lt; 0 for seed from /dev/urandom)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;delta_random_seed=seed_shift (-1, &lt; 0 for seed from /dev/urandom)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;no_extra_walks_at_all=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;track_configs=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
