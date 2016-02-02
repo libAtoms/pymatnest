@@ -117,11 +117,11 @@ Analysis
 
 To analyse the results you can use
 
-   ``ns_analyze -M 0.01 -D 0.01 -n 100 file.energies > analysis``
+   ``ns_analyse -M 0.01 -D 0.01 -n 100 file.energies > analysis``
 
 For furher help see also
 
-   ``ns_analyze --help``
+   ``ns_analyse --help``
 
 
 Temperature averaged analysis workflow

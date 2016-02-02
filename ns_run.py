@@ -280,7 +280,7 @@ def usage():
      |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
      |  default: 1 
 
-    ``random_seed=seed_shift``
+    ``delta_random_seed=seed_shift``
      |  (-1, < 0 for seed from /dev/urandom)
 
     ``no_extra_walks_at_all=[ T | F ]``
@@ -392,7 +392,7 @@ def usage():
     sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
     sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
     sys.stderr.write("traj_interval=int (1, <=0 for no trajectory)\n")
-    sys.stderr.write("random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
+    sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
     sys.stderr.write("track_configs=[ T | F ] (F)\n")
 
