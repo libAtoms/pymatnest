@@ -557,6 +557,7 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 	    at.set_velocities(scaled_vel / sqrt_masses_2D)
 
     new_KE = at.get_kinetic_energy()
+
     # rej_free_perturb_velo expects at.info['ns_energy'] to be set correctly initially
     at.info['ns_energy'] += new_KE-orig_KE
 
@@ -2545,7 +2546,7 @@ def main():
 		# set KEmax from P and Vmax
 		if movement_args['do_velocities']:
 		    if movement_args['MC_cell_P'] > 0.0:
-			KEmax = median_PV(walkers)
+			KEmax = movement_args['MC_cell_P']*len(at)*ns_args['max_volume_per_atom']*3.0*len(walkers[0]) # scale by 3*N
 		    else:
 			KEmax = kB*ns_args['KEmax_max_T']
                     at.info['KEmax']=KEmax
