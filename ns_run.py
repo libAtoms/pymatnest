@@ -2546,7 +2546,7 @@ def main():
 		# set KEmax from P and Vmax
 		if movement_args['do_velocities']:
 		    if movement_args['MC_cell_P'] > 0.0:
-			KEmax = movement_args['MC_cell_P']*len(at)*ns_args['max_volume_per_atom']*3.0*len(walkers[0]) # scale by 3*N
+			KEmax = movement_args['MC_cell_P']*len(at)*ns_args['max_volume_per_atom']
 		    else:
 			KEmax = kB*ns_args['KEmax_max_T']
                     at.info['KEmax']=KEmax
