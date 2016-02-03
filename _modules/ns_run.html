@@ -623,6 +623,7 @@
 	    <span class="n">at</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">scaled_vel</span> <span class="o">/</span> <span class="n">sqrt_masses_2D</span><span class="p">)</span>
 
     <span class="n">new_KE</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span>
+
     <span class="c1"># rej_free_perturb_velo expects at.info[&#39;ns_energy&#39;] to be set correctly initially</span>
     <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_KE</span><span class="o">-</span><span class="n">orig_KE</span></div>
 
@@ -2611,7 +2612,7 @@
 		<span class="c1"># set KEmax from P and Vmax</span>
 		<span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]:</span>
 		    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-			<span class="n">KEmax</span> <span class="o">=</span> <span class="n">median_PV</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span>
+			<span class="n">KEmax</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;max_volume_per_atom&#39;</span><span class="p">]</span><span class="o">*</span><span class="mf">3.0</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># scale by 3*N</span>
 		    <span class="k">else</span><span class="p">:</span>
 			<span class="n">KEmax</span> <span class="o">=</span> <span class="n">kB</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;KEmax_max_T&#39;</span><span class="p">]</span>
                     <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;KEmax&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">KEmax</span>
