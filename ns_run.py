@@ -1545,6 +1545,8 @@ def save_snapshot(id):
 	    #QUIP_IO snapshot_file=ns_args['out_file_prefix']+'snapshot.'+('%d' % id)+'.%05d.'+('%04d' % rank)+'.extxyz'
 	#QUIP_IO except:
 	    #QUIP_IO snapshot_file=ns_args['out_file_prefix']+'snapshot.'+id+'.%05d.'+('%04d' % rank)+'.extxyz'
+
+    comm.barrier() # to ensure that we are always in sync, so snapshots are always a consistent set
     try:
 	snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%s.%d.%s' % (id,rank, ns_args['config_file_format']), "w")
     except:
@@ -1860,6 +1862,9 @@ def do_ns_loop():
 	# save new common state, and restore to local state
 	rng.switch_to_local()
 
+        prev_snapshot_iter = None
+        pprev_snapshot_iter = None
+
 	if n_cull == 1:
 	    if send_rank[0] == recv_rank[0] and send_rank[0] == rank: # local copy
 		walkers[recv_ind[0]].set_positions(walkers[send_ind[0]].get_positions())
@@ -2159,9 +2164,9 @@ def do_ns_loop():
 		print print_prefix, ": final status ", r, [ s for s in status[r,:] ]
 
 	if ns_args['snapshot_interval'] > 0 and i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
-	    global prev_snapshot_iter
 	    save_snapshot(i_ns_step)
-	    clean_prev_snapshot(prev_snapshot_iter)
+	    clean_prev_snapshot(pprev_snapshot_iter)
+            pprev_snapshot_iter = prev_snapshot_iter
 	    prev_snapshot_iter = i_ns_step
 
         i_ns_step += 1
@@ -2185,7 +2190,7 @@ def main():
         global max_n_cull_per_task
         global size, rank, comm, rng, np, sys
         global n_cull, n_walkers, n_walkers_per_task
-        global n_extra_walk_per_task, prev_snapshot_iter
+        global n_extra_walk_per_task
         global do_calc_quip, do_calc_lammps, do_calc_internal, do_calc_fortran
         global energy_io, traj_io, walkers
         global n_atoms, KEmax, pot
@@ -2772,11 +2777,13 @@ def main():
 		for r in range(size):
                     # read a slice with file@:
                     if comm is None or r == 0:
+                        print rank, "local read restart slice %d:%d" % (r*n_walkers, (r+1)*n_walkers)
                         walkers = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, (r+1)*n_walkers))
                         for at in walkers:
                             if np.any(at.get_atomic_numbers() != walkers[0].get_atomic_numbers()):
                                 ns_args['swap_atomic_numbers'] = True
                     else:
+                        print rank, "remote read restart slice %d:%d" % (r*n_walkers, (r+1)*n_walkers)
                         at_list = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, (r+1)*n_walkers))
                         for at in at_list:
                             if np.any(at.get_atomic_numbers() != walkers[0].get_atomic_numbers()):
@@ -2785,6 +2792,7 @@ def main():
 		    if r > 0:
 			comm.send(at_list, dest=r, tag=1)
 	    else: # receive from head task
+                print rank, "waiting for walkers"
 		walkers = comm.recv(source=0, tag=1)
 
 	    for at in walkers:
@@ -2828,7 +2836,6 @@ def main():
  	movement_args['MC_cell_shear_step_size_max'] *= max_lc
 
 	n_atoms = len(walkers[0])
-	prev_snapshot_iter = None
 	# do NS
 	#QUIP_IO if have_quippy:
 	    #QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.extxyz' % rank, action=quippy.OUTPUT)
@@ -2877,13 +2884,15 @@ def main():
                         print "WARNING: end of .energies file reached without finding the iteration number", start_first_iter
 			break
 		    i = i+1
+                    if (i%10000 == 0):
+                        print rank, "reading .energies file line %d" % i
 		    if i%n_cull==0:                        # if this is n_cull-th line, examine the stored iteration
                         tmp_split = line.split()
                         tmp_iter = int(tmp_split[0])       # tmp_iter contains the iteration number of the line as an integer number
                     if tmp_iter == start_first_iter-1:     # if this is the iteration same as in the snapshot, 
+                        print rank, "truncating energy file at line ", i
                         energy_io.truncate()                #delete the rest of the file, as we are restarting from here
                         break
-
 
 	if ns_args['profile'] == rank:
 	    import cProfile
