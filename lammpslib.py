@@ -275,7 +275,7 @@ End LAMMPSlib Interface Documentation
  
         # Run for 0 time to calculate
         if dt is not None:
-            self.lmp.command('timestep %f' % (dt/(1.0e-12*ase.units.s)))
+            self.lmp.command('timestep %.30f' % (dt/(1.0e-12*ase.units.s)))
         self.lmp.command('run %d' % n_steps)
 
         if n_steps > 0:
@@ -459,7 +459,7 @@ End LAMMPSlib Interface Documentation
         for sym in self.atom_types:
             for i in range(len(atoms)):
                 if symbols[i] == sym:
-                    self.lmp.command('mass %d %f' % (self.atom_types[sym], masses[i]/(1.0e-3 * ase.units.kg /ase.units.mol))) # convert from amu (ASE) to g/mole (metal))
+                    self.lmp.command('mass %d %.30f' % (self.atom_types[sym], masses[i]/(1.0e-3 * ase.units.kg /ase.units.mol))) # convert from amu (ASE) to g/mole (metal))
                     break
 
         # execute the user commands

@@ -2657,15 +2657,22 @@ def main():
 	    if do_calc_quip:
 		init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
 
-	    # make sure masses are set if MD is going to be used
-	    if movement_args['do_velocities'] and not init_atoms.has('masses'):
-		if have_quippy:
-		    if not hasattr(init_atoms,'mass'):
+	    # make sure masses are set if velocities are going to be used
+	    if movement_args['do_velocities']:
+                if init_atoms.has('masses'):
+                    if do_calc_quip: # quip will need 'mass' field, convert from masses
 			init_atoms.add_property('mass', 0.0)
-			init_atoms.mass[:] = quippy.ElementMass[init_atoms.Z]
-		    init_atoms.set_masses(init_atoms.mass/quippy.MASSCONVERT)
-		else:
-		    exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
+			init_atoms.mass[:] = init_atoms.get_masses()*quippy.MASSCONVERT
+                else: # no 'masses'
+                    if have_quippy: # use quippy.Atoms.mass[:] or quippy.ElementMass[Z[:]]
+                        if not init_atoms.has('mass'): # set Atoms.mass from quippy.ElementMass
+                            init_atoms.add_property('mass', 0.0)
+                            init_atoms.mass[:] = quippy.ElementMass[init_atoms.Z]
+                        # convert masses from mass
+                        init_atoms.set_masses(init_atoms.mass/quippy.MASSCONVERT)
+                    else:
+                        exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
+
 	    # create extra data arrays if needed
 	    if ns_args['n_extra_data'] > 0:
 		init_atoms.arrays['ns_extra_data'] = np.zeros( (len(init_atoms), ns_args['n_extra_data']) )
