@@ -1942,7 +1942,7 @@ def do_ns_loop():
                 ase.io.write(track_traj_io, walkers[i_at], format=ns_args['config_file_format'])
 	    #print "WALK on rank ", rank, "at iteration ", i_ns_step, " walker ", i_at
 	    if ns_args['debug'] >= 10 and size <= 1:
-		walkers[i_at].info['n_walks'] += movement_args['n_steps']
+		walkers[i_at].info['n_walks'] += movement_args['n_model_calls_expected']
 	    accumulate_stats(walk_stats_cumul, walk_stats)
 
 	if ns_args['debug'] >= 20:
