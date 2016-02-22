@@ -64,7 +64,7 @@
           <div class="body" role="main">
             
   <h1>Source code for ns_run</h1><div class="highlight"><pre>
-<span class="kn">import</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">math</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">os</span>
+<span></span><span class="kn">import</span> <span class="nn">re</span><span class="o">,</span> <span class="nn">math</span><span class="o">,</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span><span class="o">,</span> <span class="nn">ase</span><span class="o">,</span> <span class="nn">ase.io</span>
 <span class="kn">import</span> <span class="nn">ns_rng</span>
 <span class="kn">import</span> <span class="nn">stacktrace</span>
@@ -2008,7 +2008,7 @@
                 <span class="n">ase</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">track_traj_io</span><span class="p">,</span> <span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">],</span> <span class="n">format</span><span class="o">=</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;config_file_format&#39;</span><span class="p">])</span>
 	    <span class="c1">#print &quot;WALK on rank &quot;, rank, &quot;at iteration &quot;, i_ns_step, &quot; walker &quot;, i_at</span>
 	    <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">10</span> <span class="ow">and</span> <span class="n">size</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-		<span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;n_walks&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_steps&#39;</span><span class="p">]</span>
+		<span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;n_walks&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls_expected&#39;</span><span class="p">]</span>
 	    <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">walk_stats_cumul</span><span class="p">,</span> <span class="n">walk_stats</span><span class="p">)</span>
 
 	<span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">20</span><span class="p">:</span>

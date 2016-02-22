@@ -537,7 +537,7 @@
 in a cubic cell with volume 648 Angstrom^3, using the potential implemeted in <code class="docutils literal"><span class="pre">QUIP</span></code>
 and using MD trajectory for generating a new sample configuration. As the shape
 and volume of the cell will not be changed, a cluster will be formed by the atoms.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># starting volume (in this example it is Angstrom^3)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># starting volume (in this example it is Angstrom^3)</span>
 <span class="n">max_volume_per_atom</span><span class="o">=</span><span class="mf">108.0</span>     
 <span class="c1"># 6 atoms with atomic number 1 and mass 1.0</span>
 <span class="n">start_species</span><span class="o">=</span><span class="mi">1</span> <span class="mi">6</span> <span class="mf">1.0</span>        
@@ -585,7 +585,7 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
 </pre></div>
 </div>
 <p>The corresponding <code class="docutils literal"><span class="pre">quip_params.cluster.xml</span></code> file is the following:</p>
-<div class="highlight-python"><div class="highlight"><pre>&lt;LJ_params n_types=&quot;1&quot; label=&quot;default&quot;&gt;
+<div class="highlight-python"><div class="highlight"><pre><span></span>&lt;LJ_params n_types=&quot;1&quot; label=&quot;default&quot;&gt;
 &lt;!-- dummy paramters for testing purposes, no physical meaning --&gt;
 &lt;per_type_data type=&quot;1&quot; atomic_num=&quot;1&quot; /&gt;
 &lt;per_pair_data type1=&quot;1&quot; type2=&quot;1&quot; sigma=&quot;1.0&quot; eps6=&quot;1.0&quot; eps12=&quot;1.0&quot; cutoff=&quot;3.0&quot; energy_shift=&quot;T&quot; linear_force_shift=&quot;F&quot; /&gt;
@@ -598,7 +598,7 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
 <p>This input file will start a calculation of 64 Lennard-Jones atoms
 in a cell with variable shape and size at the set pressure value, using the potential implemented in <code class="docutils literal"><span class="pre">LAMMPS</span></code>
 and using MD trajectory for generating a new sample configuration.</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1"># starting volume (in this example it is Angstrom^3)</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># starting volume (in this example it is Angstrom^3)</span>
 <span class="n">max_volume_per_atom</span><span class="o">=</span><span class="mf">1000000.0</span>
 
 <span class="c1"># 64 atoms with atomic number 1 and mass 1.0</span>
@@ -657,7 +657,7 @@ and using MD trajectory for generating a new sample configuration.</p>
 <div class="section" id="restart-a-run">
 <h2>Restart a run<a class="headerlink" href="#restart-a-run" title="Permalink to this headline">¶</a></h2>
 <p>If one needs to continue a run, i.e. perform more iteration cycles, the input file has to be modified as</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c1">#start_species=1 64 1.0</span>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1">#start_species=1 64 1.0</span>
 <span class="n">restart_file</span><span class="o">=</span><span class="n">my_output</span><span class="o">.</span><span class="n">snapshot</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="n">extxyz</span>
 </pre></div>
 </div>
