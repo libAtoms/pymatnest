@@ -1,3 +1,9 @@
+
+The ``pymatnest`` package is a software library for carrying out nested sampling calculations. 
+It can be used to explore the energy landscape of different materials, calculate thermodynamic variables at
+arbitrary temperatures, locate phase transitions and calculate the phase diagram. It can be used with LAMMPS,
+QUIP, and supplied fortran model, and both with MC and MD.
+
 System requirements
 ------------------------------------------------------------------------------
 
