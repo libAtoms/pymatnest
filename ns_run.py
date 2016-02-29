@@ -28,10 +28,10 @@ def usage():
 
     ``n_walkers=int``
        | MANDATORY
-       | Total number of walkers, i.e. the size of the live set used. It has to be a multiple of the number of processors used.
+       | Total number of walkers, i.e. the size of the live set used. It has to be the multiple of the number of processors used and it also has to be larger than the number of processors.
 
     ``n_cull=int``
-       | Number of walkers to kill at each NS iteration.
+       | Number of walkers to kill at each NS iteration. Use of default 1 is strongly recommended.
        | deafult: 1
 
     ``n_extra_walk_per_task=int``
@@ -46,12 +46,12 @@ def usage():
        | temperature down to which Z(T) should be converged.  Either this or n_iter_times_fraction_killed is required.
 
     ``min_Emax=float``
-       | Termination condition based on Emax.
+       | Termination condition based on Emax: if this value is reached, the iteration will stop.
        | No default.
 
     ``out_file_prefix=str``
        | String used as prefix for the different output files. 
-       | (None)
+       | No default.
 
     ``energy_calculator= ( quip | lammps | internal | fortran)``
        | Energy calculator.
@@ -70,66 +70,87 @@ def usage():
        | default: 1.0e9
 
     ``n_model_calls_expected=int``
-       | (0, one of these is required)
+       | Number of model calls. Either this or the keyword n_model_calls is mandatory.
+       | default: 0
 
     ``n_model_calls=int``
-       | (0, one of these is required)
+       | Number of model calls. Either this or the keyword n_model_calls_expected is mandatory.
+       | default: 0
 
     ``do_blocks=[T | F]``
-       | (T, whether to do steps in blocks)
+       | Whether to do steps in blocks or not.
+       | default: T
 
     ``do_partial_blocks=[T | F]``
-       | (F, whether to do partial blocks if n_model_calls(_expected) is met)
+       | Whether to do partial blocks if n_model_calls(_expected) is met.
+       | default: F
 
     ``n_atom_steps=int`` 
-       | (1, number of atomic trajectoris in each block)
+       | Number of atomic trajectoris in each block.
+       | default: 1
 
     ``atom_traj_len=int`` 
-       | (8, length of atomic trajectory (MD steps or MC sweeps) in each step)
+       | Length of atomic trajectory (MD steps or MC sweeps) in each step.
+       | default: 8
 
     ``break_up_atom_traj=[T | F]`` 
-       | (F, whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps)
+       | Whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps.
+       | default: F 
 
     ``n_cell_volume_steps=int`` 
-       | (1, number of cell volume steps each block)
+       | Number of cell volume steps in each block.
+       | default: 1
 
     ``n_cell_shear_steps=int`` 
-       | (1, number of cell shear steps each block)
+       | Number of cell shear steps in each block.
+       | default: 1
 
     ``n_cell_stretch_steps=int`` 
-       | (1, number of cell stretch steps each block)
+       | Number of cell stretch steps in each block.
+       | default: 1
 
     ``n_swap_steps=int`` 
-       | (0, number of species swap steps each block)
+       | Number of species swap steps in each block. Has to be set other than zero for a multicomponent system.
+       | default: 0
     ``swap_max_cluster=int`` 
-       | (1, maximum size of interconnected cluster to try to swap)
+       | (maximum size of interconnected cluster to try to swap)
+       | default: 1
     ``swap_r_cut=float`` 
-       | (2.5, cutoff radius for defining connected atoms for cluster)
+       | (cutoff radius for defining connected atoms for cluster)
+       | default: 2.5
     ``swap_cluster_probability_increment=float`` 
-       | (0.75, factor between prob. of picking increasing larger clusters)
+       | (factor between prob. of picking increasing larger clusters)
+       | default: 0.75
     ``swap_velo=[T | F]`` 
-       | (F, if true, swap velocities when swapping atoms)
+       | (if true, swap velocities when swapping atoms)
+       | default: F
 
     ``velo_traj_len=int`` 
-       | (0, number of MC steps in (optional) explicit velocity MC traj)
+       | Number of MC steps in (optional) explicit velocity MC trajectory.
+       | default: 0
 
     ``random_energy_perturbation=float`` 
-       | (1.0e-12)
+       | default: 1.0e-12
 
     ``atom_algorithm=[MC | MD]``
-       | (MANDATORY)
+       | MANDATORY
        | Use either Monte Carlo or Molecular dynamics to explore.
+
     ``MC_atom_velocities=[T | F]`` 
-       | (F, supported only for energy_calculator=fortran)
+       | This keyword is supported only for energy_calculator=fortran.
+       | default: F 
 
     ``MC_atom_velocities_pre_perturb=[T | F]``
-       | (F, Perturb velocities (rejection free) before MC + velocities walk)
+       | Perturb velocities (rejection free) before MC + velocities walk.
+       | default: F 
 
     ``MC_atom_step_size=float`` 
-       | (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+       | Initial atom move step size in units of (max_volume_per_atom * N_atoms)^(1/3)
+       | default: 1.0
 
     ``MC_atom_step_size_max=float`` 
-       | (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) 
+       | Maximum atom step size in units of (max_volume_per_atom * N_atoms)^(1/3).
+       | default: 1.0
 
     ``MC_atom_uniform_rv=[T | F]`` 
        | default: F
@@ -149,66 +170,76 @@ def usage():
        | default: 0.1 (ASE time units)
 
     ``MD_atom_timestep_max=float`` 
-     | default: 0.5 (ASE time units)
+       | default: 0.5 (ASE time units)
 
     ``MD_atom_energy_fuzz=float``
-     |  (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)
+       | Tolerance for rejecting non-energy conserving trajectories, as fraction of Kinetic Energy
+       | default: 1.0e-2
 
     ``MD_atom_reject_energy_violation=[ T | F ]``
-     |  (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)
+       | Use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories.
+       | default: F
 
     ``atom_velo_rej_free_fully_randomize=[T | F]``
-     |  (F. If true, randomize velocities completely rather than just perturbing.
+       | If true, randomize velocities completely rather than just perturbing.
+       | default: F
 
     ``atom_velo_rej_free_perturb_angle=float``
-     |  (0.3. Max angle in radians for random rotations.)
+       | Max angle in radians for random rotations.
+       | default: 0.3
 
     ``MC_atom_velo_step_size=float``
-     |  (50.0)
+       | default: 50.0
 
     ``MC_atom_velo_step_size_max=float``
-     |  (10000.0)
+       | default: 10000.0
 
     ``MC_atom_velo_walk_rej_free=[T | F]``
-     |  (T. If true, use rejection free algorithm for MC_atom_walk
+       | default: T. If true, use rejection free algorithm for MC_atom_walk
 
     ``MC_cell_P=float``
-     | Pressure value to be used. (Note: the unit of pressure depends on the energy calculator and the potential model used)
-     | default: 0.0 
+       | Pressure value to be used. (Note: the unit of pressure depends on both the energy calculator and on the potential model used)
+       | default: 0.0 
 
     ``MC_cell_volume_per_atom_step_size=float``
-     | Initial volume stepsize for volume change.
-     | Default: 5% of the maximum allowed volume
+       | Initial volume stepsize for volume change.
+       | default: 5% of the maximum allowed volume
 
     ``MC_cell_volume_per_atom_step_size_max=float``
-     |  (50% of the maximum allowed volume)
+       | Maximum allowed volume step size.
+       | default: 50% of the maximum allowed volume
 
     ``MC_cell_volume_per_atom_prob=float``
-     |  (1.0)
+       | default: 1.0
 
     ``MC_cell_stretch_step_size=float``
-     |  (0.35)
+       | default: 0.35
 
     ``MC_cell_stretch_step_size_max=float``
-     |  (1.0)
+       | default: 1.0
 
     ``MC_cell_stretch_prob=float``
-     |  (1.0)
+       | default: 1.0
 
     ``MC_cell_shear_step_size=float``
-     |  (0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)
+       | default: 0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)
 
     ``MC_cell_shear_step_size_max=float``
-     |  (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)
+       | default: 1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)
 
     ``MC_cell_shear_prob=float``
-     |  (1.0)
+       | default: 1.0
 
     ``MC_cell_min_aspect_ratio=float``
-     |  (0.9)
+       | Ratio of smallest cell height relative to the longest one. A higher value of MC_cell_min_aspect_ratio restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of MC_cell_min_aspect_ratio < 0.65 *does* effect the melting transition.
+       | default: 0.9
 
     ``cell_shape_equil_steps=int``
-     |  (1000)
+       | default: 1000
+
+     ``full_auto_step_sizes=[T | F]``
+       | If true (T), automatically calibrate all sizes by performing additional short explorations, including at the start of run. If false (F), use initial input step sizes and make small adjustments to these during the run.
+       | default: T
 
     ``monitor_step_interval_times_fraction_killed=float`` 
      | Divided by ``n_cull/n_walkers`` to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring
@@ -216,79 +247,84 @@ def usage():
 
     ``adjust_step_interval_times_fraction_killed=float`` 
      | Divided by ``n_cull/n_walkers`` to get actual step adjustment interval in iterations, negative for only using last iteration, 0 for no adjust.
-     | default: 5
+     | default: 1
 
     ``MC_adjust_step_factor=float``
-     |  default: 1.1
+       |  default: 1.1
 
     ``MC_adjust_min_rate=float``
-     |  default: 0.2
+       |  default: 0.2
 
     ``MC_adjust_max_rate=float``
-     |  default: 0.3
+       |  default: 0.3
 
     ``MD_adjust_step_factor=float``
-     |  default: 1.5
+       |  default: 1.5
 
     ``MD_adjust_min_rate=float``
-     |  default: 0.95
+       |  default: 0.95
 
     ``MD_adjust_max_rate=float``
-     |  default: 1.00
+       |  default: 1.00
 
     ``QUIP_pot_args=str``
-     |  (MANDATORY if energy_calculator=quip)
+       |  MANDATORY if energy_calculator=quip
 
     ``QUIP_pot_params_file=str``
-     |  (MANDATORY if energy_calculator=quip)
+       |  MANDATORY if energy_calculator=quip
 
     ``FORTRAN_model=str``
-     |  (MANDATORY if energy_calculator=fortran)
+       |  MANDATORY if energy_calculator=fortran
 
     ``LAMMPS_init_cmds=str``
-     |  (MANDATORY if energy_calculator=lammps)
+       |  MANDATORY if energy_calculator=lammps
 
     ``LAMMPS_name=str``
-     |  ('', arch name for lammps shared object file)
+       |  '', arch name for lammps shared object file
 
     ``LAMMPS_header=str``
-     |  (lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps)
+       |  lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps
 
     ``LAMMPS_header_extra=str``
-     |  ('', extra lammpslib.py header commands for energy_calculator=lammps)
+       |  '', extra lammpslib.py header commands for energy_calculator=lammps
 
     ``config_file_format=str``
-     |  (extxyz)
+       | File format in which configurations are printed, e.g. for trajectory and snapshot files.
+       | default: extxyz
 
     ``rng=( numpy | internal | rngstream )``
-     |  (numpy)
+       | Random number generator.
+       | default: numpy
 
     ``profile=rank_to_profile``
-     |  (-1)
+       | default: -1
 
     ``2D=[ T | F ]``
-     |  (F, unsupported)
+       | Perform 2D simulation. This option is unsupported.
+       | default: F
 
-    ``debug=debug_level``
-     |  (0, <= 0 for no debugging tests/prints)
+    ``debug=int``
+       | Verbosity level used in the output file. The larger its value the more info is printed.
+       | default: 0
 
     ``snapshot_interval=int``
-     |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
-     |  default: 1000
+       |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
+       |  default: 1000
 
     ``traj_interval=int``
      |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
      |  default: 1 
 
-    ``delta_random_seed=seed_shift``
-     |  (-1, < 0 for seed from /dev/urandom)
+    ``delta_random_seed=int``
+     | Random number seed to be used in the run. If smaller than 0, a seed from /dev/urandom is used.
+     | default: -1
 
     ``no_extra_walks_at_all=[ T | F ]``
-     | (F)
+     | default: F
 
     ``track_configs=[ T | F ]``
-     | Track configrations across all walks/clones
-     | (F)
+     | Track configrations across all walks/clones.
+     | default: F
 
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
@@ -392,7 +428,7 @@ def usage():
     sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
     sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
     sys.stderr.write("traj_interval=int (1, <=0 for no trajectory)\n")
-    sys.stderr.write("delta_random_seed=seed_shift (-1, < 0 for seed from /dev/urandom)\n")
+    sys.stderr.write("delta_random_seed=int (-1, < 0 for seed from /dev/urandom)\n")
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
     sys.stderr.write("track_configs=[ T | F ] (F)\n")
 
