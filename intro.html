@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="ns_doc 1 documentation" href="index.html" />
-    <link rel="next" title="Installation of pymatnest" href="install.html" />
+    <link rel="next" title="Installation and quick start guide" href="install.html" />
     <link rel="prev" title="pymatnest documentation" href="index.html" /> 
   </head>
   <body role="document">
@@ -38,7 +38,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="install.html" title="Installation of pymatnest"
+          <a href="install.html" title="Installation and quick start guide"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="index.html" title="pymatnest documentation"
@@ -52,6 +52,7 @@
   <ul>
 <li><a class="reference internal" href="#">Nested sampling method</a><ul>
 <li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#publications">Publications</a></li>
 <li><a class="reference internal" href="#algorithm">Algorithm</a></li>
 <li><a class="reference internal" href="#pymatnest"><code class="docutils literal"><span class="pre">pymatnest</span></code></a><ul>
 <li><a class="reference internal" href="#mc-and-md-step-algorithms">MC and MD step algorithms</a></li>
@@ -66,7 +67,7 @@
                         title="previous chapter">pymatnest documentation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="install.html"
-                        title="next chapter">Installation of pymatnest</a></p>
+                        title="next chapter">Installation and quick start guide</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -116,13 +117,13 @@ most of the probability mass are exponentially localized.
 It is an annealing algorithm that creates a sequence of probability distributions,
 each more concentrated than the previous one near the high-likelihood region of the
 parameter space - i.e. in the context of materials, the low-energy region of configuration space.</p>
-<p>Since its original inception, nested sampling has also been applied to atomistic systems <a class="footnote-reference" href="#f2" id="id2">[2]</a> <a class="footnote-reference" href="#f3" id="id3">[3]</a>,
-and its several advantages mean it became a powerful method to uniformly sample atomic
-configuartion spaces.</p>
+<p>Since its original inception, nested sampling has also been applied to atomistic systems,
+and its several advantages mean it became a powerful method to sample atomic
+configuration spaces.</p>
 <blockquote>
 <div><ul>
 <li><dl class="first docutils">
-<dt>calculate the partition function, hence all thermodynamic properties become accesible</dt>
+<dt>calculate the partition function, hence all thermodynamic properties become accessible</dt>
 <dd><ul class="first last simple">
 <li>calculate the heat capacity and locate the phase transitions</li>
 <li>with an order parameter calculate the free energy</li>
@@ -151,30 +152,13 @@ configuartion spaces.</p>
 </td></tr>
 </tbody>
 </table>
-<table class="docutils footnote" frame="void" id="f2" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id2">[2]</a></td><td><ol class="first last upperalpha simple" start="12">
-<li><ol class="first upperalpha" start="2">
-<li>Partay, A. P. Bartok, and G. Csanyi, J. Phys. Chem. B 114, 10502 (2010)</li>
-</ol>
-</li>
-</ol>
-</td></tr>
-</tbody>
-</table>
-<table class="docutils footnote" frame="void" id="f3" rules="none">
-<colgroup><col class="label" /><col /></colgroup>
-<tbody valign="top">
-<tr><td class="label"><a class="fn-backref" href="#id3">[3]</a></td><td><ol class="first last upperalpha simple" start="12">
-<li><ol class="first upperalpha" start="2">
-<li>Partay, A. P. Bartok, and G. Csanyi, Phys. Rev. E 89, 022302 (2014)</li>
-</ol>
-</li>
-</ol>
-</td></tr>
-</tbody>
-</table>
+</div>
+<div class="section" id="publications">
+<h2>Publications<a class="headerlink" href="#publications" title="Permalink to this headline">¶</a></h2>
+<p>L.B. Partay, A.P. Bartok, G. Csanyi, <em>Efficient Sampling of Atomic Configurational Spaces</em>,
+J. Phys. Chem. B (2010), 114, 10502–10512, <a class="reference external" href="http://pubs.acs.org/doi/abs/10.1021/jp1012973">http://pubs.acs.org/doi/abs/10.1021/jp1012973</a></p>
+<p>L.B. Partay, A.P. Bartok, G. Csanyi, <em>Nested sampling for materials: The case of hard spheres</em>,
+Phys. Rev. E (2014), 89, 022302 <a class="reference external" href="http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302">http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302</a></p>
 </div>
 <div class="section" id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
@@ -185,7 +169,7 @@ Top-down, Size of live set, random walk...etc.</p>
 <h2><code class="docutils literal"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal"><span class="pre">pymatnest</span></code> package is a software
 library written in Fortran 95/python for the purpose of carrying out
-nested sampling calculations with a variatey of options suitable for different systems.
+nested sampling calculations with a variety of options suitable for different systems.
 It can be used with the supplied fortran potential models and it also has interfaces with the following packages:</p>
 <blockquote>
 <div><ul class="simple">
@@ -478,7 +462,7 @@ running statistics for the number of accepted/rejected moves on each process are
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="install.html" title="Installation of pymatnest"
+          <a href="install.html" title="Installation and quick start guide"
              >next</a> |</li>
         <li class="right" >
           <a href="index.html" title="pymatnest documentation"

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Installation of pymatnest &mdash; ns_doc 1 documentation</title>
+    <title>Installation and quick start guide &mdash; ns_doc 1 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -50,7 +50,7 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Installation of pymatnest</a><ul>
+<li><a class="reference internal" href="#">Installation and quick start guide</a><ul>
 <li><a class="reference internal" href="#system-requirements">System requirements</a></li>
 <li><a class="reference internal" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">Compilation of the streamlined FORTRAN models and MC/MD walkers.</a></li>
 <li><a class="reference internal" href="#using-with-quip">Using with <code class="docutils literal"><span class="pre">QUIP</span></code></a></li>
@@ -97,12 +97,8 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installation-of-pymatnest">
-<h1>Installation of pymatnest<a class="headerlink" href="#installation-of-pymatnest" title="Permalink to this headline">¶</a></h1>
-<p>The <code class="docutils literal"><span class="pre">pymatnest</span></code> package is a software library for carrying out nested sampling calculations.
-It can be used to explore the energy landscape of different materials, calculate thermodynamic variables at
-arbitrary temperatures, locate phase transitions and calculate the phase diagram. It can be used with LAMMPS,
-QUIP, and supplied fortran model, and both with MC and MD.</p>
+  <div class="section" id="installation-and-quick-start-guide">
+<h1>Installation and quick start guide<a class="headerlink" href="#installation-and-quick-start-guide" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="system-requirements">
 <h2>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">¶</a></h2>
 <p>You have to have <code class="docutils literal"><span class="pre">numpy</span></code> and <code class="docutils literal"><span class="pre">ASE</span></code> installed (check that you have a newer ASE
@@ -118,8 +114,8 @@ You have to have <code class="docutils literal"><span class="pre">mpi4py</span><
 </div>
 <div class="section" id="using-with-quip">
 <h2>Using with <code class="docutils literal"><span class="pre">QUIP</span></code><a class="headerlink" href="#using-with-quip" title="Permalink to this headline">¶</a></h2>
-<p>Make sure <code class="docutils literal"><span class="pre">PYTHONPATH</span></code> is set correctly to find the <code class="docutils literal"><span class="pre">quippy</span></code> module.
-(Note: Check the <code class="docutils literal"><span class="pre">QUIP_ARCH</span></code> with which you build quippy, as some might result in segmentaion fault when running
+<p>Make sure your <code class="docutils literal"><span class="pre">PYTHONPATH</span></code> is set correctly to find the <code class="docutils literal"><span class="pre">quippy</span></code> module.
+(Note: Check the <code class="docutils literal"><span class="pre">QUIP_ARCH</span></code> with which you build quippy, as some might result in segmentation fault when running
 <code class="docutils literal"><span class="pre">ns_run</span></code> (e.g. try gfortan_openmpi if gfortran fails)</p>
 <p>Examples are in <code class="docutils literal"><span class="pre">tests_quip/</span></code> directory.</p>
 </div>
