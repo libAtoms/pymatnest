@@ -17,12 +17,12 @@ in a cubic cell with volume 648 Angstrom^3, using the potential implemented in `
 and using MD trajectory for generating a new sample configuration. As the shape 
 and volume of the cell will not be changed, a cluster will be formed by the atoms.
 
-.. literalinclude:: ../tests_quip/inputs.test.cluster.MD.quip
+.. literalinclude:: ../example_inputs/inputs.test.cluster.MD.quip
     :language: python
 
 The corresponding ``quip_params.cluster.xml`` file is the following:
 
-.. literalinclude:: ../tests_quip/quip_params.cluster.xml
+.. literalinclude:: ../example_inputs/quip_params.cluster.xml
 
 Periodic Lennard-Jones system with ``LAMMPS``, using MD
 --------------------------------------------------------
@@ -31,9 +31,19 @@ This input file will start a calculation of 64 Lennard-Jones atoms
 in a cell with variable shape and size at the set pressure value, using the potential implemented in ``LAMMPS``
 and using MD trajectory for generating a new sample configuration. 
 
-.. literalinclude:: ../tests_lammps/inputs.test.periodic.MD.lammps
+.. literalinclude:: ../example_inputs/inputs.test.periodic.MD.lammps
     :language: python
 
+Periodic binary Lennard-Jones system with ``LAMMPS``, using MD
+--------------------------------------------------------
+
+This input file will start a calculation of a binary Lennard-Jones system, with 48 A-type atoms and 16 B-type atoms.
+Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are changed.
+The cell is of variable shape and size at the set pressure value, using the potential implemented in ``LAMMPS``
+and using MD trajectory for generating a new sample configuration. 
+
+.. literalinclude:: ../example_inputs/inputs.test.periodic_binary.MD.lammps
+    :language: python
 
 Restart a run
 ++++++++++++++++++++++++++++++++
