@@ -166,5 +166,5 @@ Modules are autodocumented with ``.. automodule::`` so all the properly formatte
 in the python code (i.e. within triple quote) appear.
 The installation and basic usage guidelines in the documentation are shown as the content of the README.md file
 is ``.. included:``-d.
-Example inputs are shown as some ./tests_xxx/xxx.inp files are included in the documentation as well. 
+Example inputs are located in the folder ``./example_inputs`` and these files are also included in the documentation togather with additonal comments. 
 
