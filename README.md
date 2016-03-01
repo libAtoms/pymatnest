@@ -61,7 +61,7 @@ Copy ``lammps_top_dir/python/lammps.py`` to the directory set in your ``PYTHONPA
 
 Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where you copied ``lammps.py``.
 
-**Important note:** Check the ``lammps.py`` file as the path definition had a bug in the line:
+**Important note:** Check the ``lammps.py`` file as the path definition used to have a bug in the line:
 
 ``else: self.lib = CDLL(join(modpath,"/liblammps_%s.so" % name),RTLD_GLOBAL)`` 
 
@@ -151,7 +151,7 @@ To analyse the results you can use
 
    ``ns_analyse -M 0.01 -D 0.01 -n 100 file.energies > analysis``
 
-For furher help see also
+For further help see also
 
    ``ns_analyse --help``
 
@@ -166,5 +166,5 @@ Modules are autodocumented with ``.. automodule::`` so all the properly formatte
 in the python code (i.e. within triple quote) appear.
 The installation and basic usage guidelines in the documentation are shown as the content of the README.md file
 is ``.. included:``-d.
-Example inputs are located in the folder ``./example_inputs`` and these files are also included in the documentation togather with additonal comments. 
+Example inputs are located in the folder ``./example_inputs`` and these files are also included in the documentation together with additional comments. 
 
