@@ -17,7 +17,7 @@ each more concentrated than the previous one near the high-likelihood region of 
 parameter space - i.e. in the context of materials, the low-energy region of configuration space.
 
 
-Since its original inception, nested sampling has also been applied to atomistic systems [#f2]_ [#f3]_,
+Since its original inception, nested sampling has also been applied to atomistic systems,
 and its several advantages mean it became a powerful method to sample atomic 
 configuration spaces.
  * calculate the partition function, hence all thermodynamic properties become accessible
@@ -30,8 +30,12 @@ configuration spaces.
  * considerable computational gain over parallel tempering
 
 .. [#f1] J. Skilling, in Nested Sampling, edited by Rainer Fischer, Roland Preuss, and Udo von Toussaint, AIP Conf. Proc. No. 735 (AIP, New York, 2004), p. 395
-.. [#f2] L. B. Partay, A. P. Bartok, and G. Csanyi, J. Phys. Chem. B 114, 10502 (2010)
-.. [#f3] L. B. Partay, A. P. Bartok, and G. Csanyi, Phys. Rev. E 89, 022302 (2014)
+
+Publications
+-------------------------------------
+.. include:: ../README.md
+   :start-after: Publications:
+   :end-before: ******
 
 Algorithm
 -------------------------------------
