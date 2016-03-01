@@ -1,0 +1,53 @@
+# starting volume (in this example it is Angstrom^3)
+max_volume_per_atom=1000000.0
+
+# 48 atoms of atomic number 1 and 16 atoms of atomic number 2. All masses are 1.0
+start_species=1 48 1.0, 2 16 1.0
+start_energy_ceiling=500.0
+
+# size of live set
+n_walkers=512
+# at each iteration 1 walker is killed
+n_cull=1
+# total number of iterations will be n_iter_per_walker*n_walkers
+n_iter_per_walker=5000
+# prefix of all the output files
+out_file_prefix=test.periodic_binary.MD.lammps
+
+# use MD generating a new walker
+atom_algorithm=MD
+n_model_calls_expected=96
+n_atom_steps=1
+# length of atomic trajectory in each step
+atom_traj_len=8
+# number of cell volume steps
+n_cell_volume_steps=2
+# number of cell shear steps
+n_cell_shear_steps=2
+# number of cell strectch steps
+n_cell_stretch_steps=2
+# number of swaps beween different species
+n_swap_steps=1
+
+MD_atom_timestep=0.01
+MD_atom_timestep_max=0.025
+MD_adjust_max_rate=0.95
+MD_adjust_min_rate=0.5
+
+# Pressure (in the units of the potential) 
+MC_cell_P=1.0e-1
+
+# allowed torsion for the cell, ratio of the min lattice height
+MC_cell_min_aspect_ratio=0.9
+
+# use LAMMPS
+energy_calculator=lammps
+# name of the LAMMPS machine (the one that *YOUR* LAMMPS was built with)
+LAMMPS_name=mpi
+# potential parameters
+LAMMPS_init_cmds=pair_style lj/cut 9.00; pair_coeff 1 1 0.1 3.0; pair_coeff 1 2 0.2 3.0; pair_coeff 2 2 0.1 3.0; pair_modify shift yes
+
+
+rng=numpy
+
+debug=0
