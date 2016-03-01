@@ -9,6 +9,17 @@ List of input parameters
 Example input files
 +++++++++++++++++++++++++++++++
 
+Cluster with the supplied fortran code Lennard-Jones potential, using MC
+--------------------------------------------------------
+
+This input file will start a calculation of 8 Lennard-Jones atoms 
+in a cubic cell with volume 648 Angstrom^3, using the potential implemented in the supplied fortran routine,
+and using MC trajectory for generating a new sample configuration. As the shape 
+and volume of the cell will not be changed, a cluster will be formed by the atoms.
+
+.. literalinclude:: ../example_inputs/inputs.test.cluster.MC.fortran
+    :language: python
+
 Cluster with ``QUIP`` implemented Lennard-Jones potential, using MD
 --------------------------------------------------------
 

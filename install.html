@@ -135,7 +135,7 @@ in the <code class="docutils literal"><span class="pre">LMP_INC</span></code> ma
 <div><code class="docutils literal"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></div></blockquote>
 <p>Copy <code class="docutils literal"><span class="pre">lammps_top_dir/python/lammps.py</span></code> to the directory set in your <code class="docutils literal"><span class="pre">PYTHONPATH</span></code>.</p>
 <p>Copy <code class="docutils literal"><span class="pre">lammps_top_dir/src/liblammps_[machine].so</span></code> to the same place where you copied <code class="docutils literal"><span class="pre">lammps.py</span></code>.</p>
-<p><strong>Important note:</strong> Check the <code class="docutils literal"><span class="pre">lammps.py</span></code> file as the path definition had a bug in the line:</p>
+<p><strong>Important note:</strong> Check the <code class="docutils literal"><span class="pre">lammps.py</span></code> file as the path definition used to have a bug in the line:</p>
 <p><code class="docutils literal"><span class="pre">else:</span> <span class="pre">self.lib</span> <span class="pre">=</span> <span class="pre">CDLL(join(modpath,&quot;/liblammps_%s.so&quot;</span> <span class="pre">%</span> <span class="pre">name),RTLD_GLOBAL)</span></code></p>
 <p>You HAVE TO delete the <code class="docutils literal"><span class="pre">/</span></code> before <code class="docutils literal"><span class="pre">liblammps</span></code> otherwise it is meant as an absolute path!!!</p>
 <p>Examples are in the <code class="docutils literal"><span class="pre">tests_lammps/directory</span></code>.  <code class="docutils literal"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal"><span class="pre">[machine]</span></code> when compiling <code class="docutils literal"><span class="pre">LAMMPS</span></code>.</p>
@@ -202,7 +202,7 @@ able to read all the relevant python files.</p>
 <p>To analyse the results you can use</p>
 <blockquote>
 <div><code class="docutils literal"><span class="pre">ns_analyse</span> <span class="pre">-M</span> <span class="pre">0.01</span> <span class="pre">-D</span> <span class="pre">0.01</span> <span class="pre">-n</span> <span class="pre">100</span> <span class="pre">file.energies</span> <span class="pre">&gt;</span> <span class="pre">analysis</span></code></div></blockquote>
-<p>For furher help see also</p>
+<p>For further help see also</p>
 <blockquote>
 <div><code class="docutils literal"><span class="pre">ns_analyse</span> <span class="pre">--help</span></code></div></blockquote>
 </div>
@@ -215,7 +215,7 @@ Modules are autodocumented with <code class="docutils literal"><span class="pre"
 in the python code (i.e. within triple quote) appear.
 The installation and basic usage guidelines in the documentation are shown as the content of the README.md file
 is <code class="docutils literal"><span class="pre">..</span> <span class="pre">included:</span></code>-d.
-Example inputs are located in the folder <code class="docutils literal"><span class="pre">./example_inputs</span></code> and these files are also included in the documentation togather with additonal comments.</p>
+Example inputs are located in the folder <code class="docutils literal"><span class="pre">./example_inputs</span></code> and these files are also included in the documentation together with additional comments.</p>
 </div>
 </div>
 
