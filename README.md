@@ -2,7 +2,17 @@
 The ``pymatnest`` package is a software library for carrying out nested sampling calculations. 
 It can be used to explore the energy landscape of different materials, calculate thermodynamic variables at
 arbitrary temperatures, locate phase transitions and calculate the phase diagram. It can be used with LAMMPS,
-QUIP, and supplied fortran model, and both with MC and MD.
+QUIP, and the supplied fortran model, and both with MC and MD.
+
+Publications:
+
+L.B. Partay, A.P. Bartok, G. Csanyi, *Efficient Sampling of Atomic Configurational Spaces*, 
+J. Phys. Chem. B (2010), 114, 10502–10512, http://pubs.acs.org/doi/abs/10.1021/jp1012973
+
+L.B. Partay, A.P. Bartok, G. Csanyi, *Nested sampling for materials: The case of hard spheres*, 
+Phys. Rev. E (2014), 89, 022302 http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302
+
+******
 
 System requirements
 ------------------------------------------------------------------------------
@@ -22,8 +32,8 @@ Compilation of the streamlined FORTRAN models and MC/MD walkers.
 Using with ``QUIP``
 ------------------------------------------------------------------------------
 
-Make sure ``PYTHONPATH`` is set correctly to find the ``quippy`` module.
-(Note: Check the ``QUIP_ARCH`` with which you build quippy, as some might result in segmentaion fault when running
+Make sure your ``PYTHONPATH`` is set correctly to find the ``quippy`` module.
+(Note: Check the ``QUIP_ARCH`` with which you build quippy, as some might result in segmentation fault when running
 ``ns_run`` (e.g. try gfortan_openmpi if gfortran fails)
 
 Examples are in ``tests_quip/`` directory.
