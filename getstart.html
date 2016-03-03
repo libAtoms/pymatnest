@@ -499,6 +499,13 @@
 <div class="line">&#8216;&#8217;, extra lammpslib.py header commands for energy_calculator=lammps</div>
 </div>
 </dd>
+<dt id="term-lammps-atom-types-str"><code class="docutils literal"><span class="pre">LAMMPS_atom_types=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY if energy_calculator=lammps</div>
+<div class="line">atomic_symbol1 lammps_type1 [, atomic_symbol2 lammps_type2, ...]</div>
+<div class="line">mapping between atom species and lammps potential types</div>
+</div>
+</dd>
 <dt id="term-config-file-format-str"><code class="docutils literal"><span class="pre">config_file_format=str</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">File format in which configurations are printed, e.g. for trajectory and snapshot files.</div>
@@ -684,6 +691,7 @@ and using MD trajectory for generating a new sample configuration.</p>
 <span class="n">LAMMPS_name</span><span class="o">=</span><span class="n">mpi</span>
 <span class="c1"># potential parameters</span>
 <span class="n">LAMMPS_init_cmds</span><span class="o">=</span><span class="n">pair_style</span> <span class="n">lj</span><span class="o">/</span><span class="n">cut</span> <span class="mf">9.00</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="o">*</span> <span class="o">*</span> <span class="mf">0.1</span> <span class="mf">3.0</span><span class="p">;</span> <span class="n">pair_modify</span> <span class="n">shift</span> <span class="n">yes</span>
+<span class="n">LAMMPS_atom_types</span><span class="o">=</span><span class="n">H</span> <span class="mi">1</span>
 
 <span class="n">rng</span><span class="o">=</span><span class="n">numpy</span>
 
@@ -746,6 +754,7 @@ and using MD trajectory for generating a new sample configuration.</p>
 <span class="n">LAMMPS_name</span><span class="o">=</span><span class="n">mpi</span>
 <span class="c1"># potential parameters</span>
 <span class="n">LAMMPS_init_cmds</span><span class="o">=</span><span class="n">pair_style</span> <span class="n">lj</span><span class="o">/</span><span class="n">cut</span> <span class="mf">9.00</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mf">0.1</span> <span class="mf">3.0</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mf">0.2</span> <span class="mf">3.0</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mf">0.1</span> <span class="mf">3.0</span><span class="p">;</span> <span class="n">pair_modify</span> <span class="n">shift</span> <span class="n">yes</span>
+<span class="n">LAMMPS_atom_types</span><span class="o">=</span><span class="n">H</span> <span class="mi">1</span><span class="p">,</span><span class="n">He</span> <span class="mi">2</span>
 
 
 <span class="n">rng</span><span class="o">=</span><span class="n">numpy</span>
