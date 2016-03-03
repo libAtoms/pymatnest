@@ -59,6 +59,10 @@
 <li><a class="reference internal" href="#periodic-binary-lennard-jones-system-with-lammps-using-md">Periodic binary Lennard-Jones system with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#some-tips-on-setting-the-input-parameters">Some tips on setting the input parameters</a><ul>
+<li><a class="reference internal" href="#minimum-lattice-height-mc-cell-min-aspect-ratio">Minimum lattice height: <code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#restart-a-run">Restart a run</a></li>
 </ul>
 </li>
@@ -761,6 +765,31 @@ and using MD trajectory for generating a new sample configuration.</p>
 
 <span class="n">debug</span><span class="o">=</span><span class="mi">0</span>
 </pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="some-tips-on-setting-the-input-parameters">
+<h2>Some tips on setting the input parameters<a class="headerlink" href="#some-tips-on-setting-the-input-parameters" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="minimum-lattice-height-mc-cell-min-aspect-ratio">
+<h3>Minimum lattice height: <code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio</span></code><a class="headerlink" href="#minimum-lattice-height-mc-cell-min-aspect-ratio" title="Permalink to this headline">¶</a></h3>
+<p>The fully flexible cell is introduced to remove the finite size effect whereby
+it may not be possible to arrange a fixed number of particles
+in a fixed shape cell into certain crystal structures. In unfortunate cases this can exclude
+thermodynamically relevant structures from the results of the calculation.
+But for a flexible cell and for a finite number of particles, there exist simulation cells such that parallel
+faces of the cell are separated by only a few layers of atoms, and those does not approximate the infinite fluid
+in three dimensions. This problem can be solved by the introduction of a “minimum cell height” parameter.</p>
+<p>The effect of the chosen minimum cell height is demonstrated in the case of the periodic system of
+64 Lennard-Jonesium particles in the figure below. The legend on the right shows the value of
+<code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio</span></code> used in each simulation. The peak at lower temperature corresponds to melting,
+and the peak at higher temperature to evaporation. The location of
+the evaporation transition is converged for <code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio</span></code> ≥ 0.35, but melting requires
+a higher <code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio</span></code> ≥ 0.65.  At low values of <code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio</span></code> the
+system’s behaviour is dominated by the fictitious periodicity imposed by the boundary
+conditions.
+(source: R. J. N. Baldock, <em>Classical Statistical Mechanics with Nested Sampling</em>, Ph.D. thesis, University of Cambridge (2014).)</p>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/doc_figure_mlh.jpg"><img alt="_images/doc_figure_mlh.jpg" src="_images/doc_figure_mlh.jpg" style="width: 500px;" /></a>
 </div>
 </div>
 </div>
