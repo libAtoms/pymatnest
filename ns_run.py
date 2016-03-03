@@ -263,6 +263,11 @@ def usage():
     ``LAMMPS_header_extra=str``
        |  '', extra lammpslib.py header commands for energy_calculator=lammps
 
+    ``LAMMPS_atom_types=str``
+       |  MANDATORY if energy_calculator=lammps
+       |  atomic_symbol1 lammps_type1 [, atomic_symbol2 lammps_type2, ...]
+       |  mapping between atom species and lammps potential types
+
     ``config_file_format=str``
        | File format in which configurations are printed, e.g. for trajectory and snapshot files.
        | default: extxyz
