@@ -5,7 +5,7 @@ import numpy as np
 from numpy.linalg import norm
 from lammps import lammps
 from ase.calculators.calculator import Calculator
-from ase.units import GPa
+from ase.data import chemical_symbols
 import ase.units
 import ctypes
 
@@ -24,7 +24,7 @@ import ctypes
 class LAMMPSlib(Calculator):
     r"""
     LAMMPSlib Interface Documentation
-    
+
 **Introduction**
 
 LAMMPSlib is an interface and calculator for LAMMPS_. LAMMPSlib uses
@@ -34,7 +34,7 @@ for energy, atom forces and cell stress. This calculator creates a
 can be sent to this object executed until it is explicitly closed. Any
 additional variables calculated by lammps can also be extracted. This
 is still experimental code.
-    
+
 **Arguments**
 
 =================  ==========================================================
@@ -49,7 +49,7 @@ Keyword                               Description
 ``atom_types``     dictionary of "atomic_symbol":lammps_atom_type pairs,
                    e.g. {'Cu':1} to bind copper to lammps atom type 1.
                    Default method assigns lammps atom types in order that they
-                   appear in the atoms model
+                   appear in the atoms model. Mandatory.
 
 ``log_file``       string
                    path to the desired LAMMPS log file
@@ -101,7 +101,7 @@ extracted and returned to python.
 
     cmds = ["pair_style eam/alloy",
             "pair_coeff * * NiAlH_jea.eam.alloy Al H"]
-    
+
     a = 4.05
     al = Atoms([Atom('Al')], cell=(a, a, a), pbc=True)
     h = Atom([Atom('H')])
@@ -112,7 +112,7 @@ extracted and returned to python.
     alh.set_calculator(lammps)
     print "Energy ", alh.get_potential_energy()
 
-    
+
 **Implementation**
 
 LAMMPS provides a set of python functions to allow execution of the
@@ -120,7 +120,7 @@ underlying C++ LAMMPS code. The functions used by the LAMMPSlib
 interface are::
 
     from lammps import lammps
-    
+
     lmp = lammps(cmd_args) # initiate LAMMPS object with command line args
 
     lmp.scatter_atoms('x',1,3,positions) # atom coords to LAMMPS C array
@@ -128,14 +128,14 @@ interface are::
     lmp.extract_variable(...) # extracts a per atom variable
     lmp.extract_global(...) # extracts a global variable
     lmp.close() # close the lammps object
-    
+
 For a single atom model the following lammps file commands would be run
 by invoking the get_potential_energy() method::
 
     units metal
     atom_style atomic
     atom_modify map array sort 0 0
-    
+
     region cell prism 0 xhi 0 yhi 0 zhi xy xz yz units box
     create_box 1 cell
     create_atoms 1 single 0 0 0 units box
@@ -186,7 +186,38 @@ End LAMMPSlib Interface Documentation
         lammps_header=['units metal',
                        'atom_style atomic',
                        'atom_modify map array sort 0 0'],
+        boundary=True,
+        create_box=True,
+        create_atoms=True,
         comm=None)
+
+    lammps_real = {
+          "mass" : 0.001 * ase.units.kg / ase.units.mol,
+          "distance" : ase.units.Angstrom,
+          "time" : ase.units.fs,
+          "energy" : ase.units.kcal/ase.units.mol,
+          "velocity": ase.units.Angstrom / ase.units.fs,
+          "force": ase.units.kcal/ase.units.mol/ase.units.Angstrom,
+          "pressure" : 101325 * ase.units.Pascal
+          }
+
+    lammps_metal = {
+          "mass" : 0.001 * ase.units.kg / ase.units.mol,
+          "distance" : ase.units.Angstrom,
+          "time" : 1e-12 * ase.units.second,
+          "energy" : ase.units.eV,
+          "velocity": ase.units.Angstrom / (1e-12*ase.units.second),
+          "force": ase.units.eV/ase.units.Angstrom,
+          "pressure" : 1e5 * ase.units.Pascal
+          }
+
+    lammps_units={"real":lammps_real,"metal":lammps_metal}
+
+    def unit_convert(self,quantity):
+       try:
+          return self.lammps_units[self.units][quantity]
+       except:
+          raise NotImplementedError("Unit {} in unit system {} is not implemented.".format(quantity,self.units))
 
     def set_cell(self, atoms, change=False):
         cell = self.convert_cell(atoms.get_cell())
@@ -227,19 +258,37 @@ End LAMMPSlib Interface Documentation
         if len(system_changes) == 0:
             return
 
-        self.atom_types = None
         self.coord_transform = None
 
-	if not self.started:
+        if not self.started:
             self.start_lammps()
 
-	#NB
-	if not self.initialized:
-	   self.initialise_lammps(atoms)
+        #NB
+        if not self.initialized:
+            self.initialise_lammps(atoms)
         else: # still need to reset cell
            self.set_cell(atoms, change=True)
 
-        pos = atoms.get_positions()
+        if self.parameters.atom_types is None:
+           raise NameError("atom_types are mandatory.")
+
+        do_rebuild = False
+        do_redo_atom_types = False
+        try:
+            do_rebuild = ( len(atoms.numbers) != len(self.previous_atoms_numbers) ) or ( "numbers" in system_changes )
+            if not do_rebuild:
+                do_redo_atom_types = ( atoms.numbers != self.previous_atoms_numbers ).any()
+        except Exception:
+           pass
+
+        self.lmp.command('echo none') # don't echo the atom positions
+        if do_rebuild:
+           self.rebuild(atoms)
+        elif do_redo_atom_types:
+           self.redo_atom_types(atoms)
+           self.set_cell(atoms, change=True)
+
+        pos = atoms.get_positions() / self.unit_convert("distance")
 
         # If necessary, transform the positions to new coordinate system
         if self.coord_transform is not None:
@@ -257,7 +306,7 @@ End LAMMPSlib Interface Documentation
 
 
         if n_steps > 0:
-            vel = atoms.get_velocities()/(ase.units.Ang/(1.0e-12*ase.units.s))
+            vel = atoms.get_velocities() / self.unit_convert("velocity")
 
             # If necessary, transform the velocities to new coordinate system
             if self.coord_transform is not None:
@@ -272,10 +321,10 @@ End LAMMPSlib Interface Documentation
                 (ctypes.c_double * len(lmp_velocities))(*lmp_velocities)
 #            self.lmp.put_coosrds(lmp_c_velocities)
             self.lmp.scatter_atoms('v', 1, 3, lmp_c_velocities)
- 
+
         # Run for 0 time to calculate
         if dt is not None:
-            self.lmp.command('timestep %.30f' % (dt/(1.0e-12*ase.units.s)))
+            self.lmp.command('timestep %f' % ( dt/self.unit_convert("time")) )
         self.lmp.command('run %d' % n_steps)
 
         if n_steps > 0:
@@ -283,17 +332,17 @@ End LAMMPSlib Interface Documentation
             pos = np.array([x for x in self.lmp.gather_atoms("x",1,3)]).reshape(-1,3)
             if self.coord_transform is not None:
                 pos = np.dot(pos, self.coord_transform)
-            atoms.set_positions(pos)
+            atoms.set_positions(pos * self.unit_convert("distance"))
             vel = np.array([v for v in self.lmp.gather_atoms("v",1,3)]).reshape(-1,3)
             if self.coord_transform is not None:
                 vel = np.dot(vel, self.coord_transform)
-            atoms.set_velocities(vel*(ase.units.Ang/(1.0e-12*ase.units.s)))
+            atoms.set_velocities(vel * self.unit_convert("velocity"))
 
         # Extract the forces and energy
 #        if 'energy' in properties:
-        self.results['energy'] = self.lmp.extract_variable('pe', None, 0)
+        self.results['energy'] = self.lmp.extract_variable('pe', None, 0) * self.unit_convert("energy")
 #            self.results['energy'] = self.lmp.extract_global('pe', 0)
-            
+
 #        if 'stress' in properties:
         stress = np.empty(6)
         # stress_vars = ['pxx', 'pyy', 'pzz', 'pxy', 'pxz', 'pyz']
@@ -302,34 +351,33 @@ End LAMMPSlib Interface Documentation
         for i, var in enumerate(stress_vars):
             stress[i] = self.lmp.extract_variable(var, None, 0)
 
-	stress_mat = np.zeros( (3,3) )
-	stress_mat[0,0] = stress[0]
-	stress_mat[1,1] = stress[1]
-	stress_mat[2,2] = stress[2]
-	stress_mat[1,2] = stress[3]
-	stress_mat[2,1] = stress[3]
-	stress_mat[0,2] = stress[4]
-	stress_mat[2,0] = stress[4]
-	stress_mat[0,1] = stress[5]
-	stress_mat[1,0] = stress[5]
+        stress_mat = np.zeros( (3,3) )
+        stress_mat[0,0] = stress[0]
+        stress_mat[1,1] = stress[1]
+        stress_mat[2,2] = stress[2]
+        stress_mat[1,2] = stress[3]
+        stress_mat[2,1] = stress[3]
+        stress_mat[0,2] = stress[4]
+        stress_mat[2,0] = stress[4]
+        stress_mat[0,1] = stress[5]
+        stress_mat[1,0] = stress[5]
         if self.coord_transform is not None:
             stress_mat = np.dot(self.coord_transform.T, np.dot(stress_mat, self.coord_transform))
-	stress[0] = stress_mat[0,0]
-	stress[1] = stress_mat[1,1]
-	stress[2] = stress_mat[2,2]
-	stress[3] = stress_mat[1,2]
-	stress[4] = stress_mat[0,2]
-	stress[5] = stress_mat[0,1]
+        stress[0] = stress_mat[0,0]
+        stress[1] = stress_mat[1,1]
+        stress[2] = stress_mat[2,2]
+        stress[3] = stress_mat[1,2]
+        stress[4] = stress_mat[0,2]
+        stress[5] = stress_mat[0,1]
 
-        # 1 bar (used by lammps for metal units) = 1e-4 GPa
-        self.results['stress'] = stress * -1e-4 * GPa
+        self.results['stress'] = stress * (-self.unit_convert("pressure"))
 
 #        if 'forces' in properties:
         f = np.zeros((len(atoms), 3))
         force_vars = ['fx', 'fy', 'fz']
         for i, var in enumerate(force_vars):
             f[:, i] = np.asarray(self.lmp.extract_variable(
-                    var, 'all', 1)[:len(atoms)])
+                    var, 'all', 1)[:len(atoms)]) * self.unit_convert("force")
             
         if self.coord_transform is not None:
             self.results['forces'] = np.dot(f, self.coord_transform)
@@ -341,11 +389,11 @@ End LAMMPSlib Interface Documentation
 
     def is_upper_triangular(self, mat):
         """test if 3x3 matrix is upper triangular"""
-        
+
         def near0(x):
             """Test if a float is within .00001 of 0"""
             return abs(x) < 0.00001
-        
+
         return near0(mat[1, 0]) and near0(mat[2, 0]) and near0(mat[2, 1])
 
     def convert_cell(self, ase_cell):
@@ -387,13 +435,54 @@ End LAMMPSlib Interface Documentation
         else:
             return 's'
 
+    def rebuild(self,atoms):
+
+       try:
+          n_diff = len(atoms.numbers) - len(self.previous_atoms_numbers)
+       except:
+          n_diff = len(atoms.numbers)
+
+       if n_diff > 0:
+          if any([("reax/c" in cmd) for cmd in self.parameters.lmpcmds]):
+             self.lmp.command("pair_style lj/cut 2.5")
+             self.lmp.command("pair_coeff * * 1 1")
+
+             for cmd in self.parameters.lmpcmds:
+                if ("pair_style" in cmd) or ("pair_coeff" in cmd):
+                   self.lmp.command(cmd)
+
+          cmd = "create_atoms 1 random {} 1 NULL".format(n_diff)
+          self.lmp.command(cmd)
+       elif n_diff < 0:
+          cmd = "group delatoms id {}:{}".format(len(atoms.numbers)+1,len(self.previous_atoms_numbers))
+          self.lmp.command(cmd)
+          cmd = "delete_atoms group delatoms"
+          self.lmp.command(cmd)
+
+       self.redo_atom_types(atoms)
+
+    def redo_atom_types(self,atoms):
+
+       current_types = { (i+1,self.parameters.atom_types[sym]) for i,sym in enumerate( atoms.get_chemical_symbols() ) }
+
+       try:
+          previous_types = { (i+1,self.parameters.atom_types[ chemical_symbols[Z] ]) for i,Z in enumerate( self.previous_atoms_numbers ) }
+       except:
+          previous_types = set()
+
+       for (i,i_type) in current_types - previous_types:
+          cmd = "set atom {} type {}".format(i,i_type)
+          self.lmp.command(cmd)
+
+       self.previous_atoms_numbers = atoms.numbers.copy()
+
     def start_lammps(self):
         # start lammps process
         if self.parameters.log_file is None:
-            cmd_args = ['-echo', 'log', '-log', 'none', '-screen', 'none']
+            cmd_args = ['-echo', 'log', '-log', 'none', '-screen', 'none', '-nocite']
         else:
             cmd_args = ['-echo', 'log', '-log', self.parameters.log_file,
-                        '-screen', 'none']
+                        '-screen', 'none','-nocite','']
 
         self.cmd_args = cmd_args
 
@@ -404,6 +493,10 @@ End LAMMPSlib Interface Documentation
         for cmd in self.parameters.lammps_header:
             self.lmp.command(cmd)
 
+        for cmd in self.parameters.lammps_header:
+           if "units" in cmd:
+              self.units = cmd.split()[1]
+
         if hasattr(self.parameters, "lammps_header_extra") and self.parameters.lammps_header_extra is not None:
             for cmd in self.parameters.lammps_header_extra:
                 self.lmp.command(cmd)
@@ -413,53 +506,44 @@ End LAMMPSlib Interface Documentation
     def initialise_lammps(self, atoms):
 
         # Initialising commands
-
-        # if the boundary command is in the supplied commands use that
-        # otherwise use atoms pbc
-        pbc = atoms.get_pbc()
-        for cmd in self.parameters.lmpcmds:
-            if 'boundary' in cmd:
-                break
-        else:
-            self.lmp.command(
-                'boundary ' + ' '.join([self.lammpsbc(bc) for bc in pbc]))
+        if self.parameters.boundary:
+            # if the boundary command is in the supplied commands use that
+            # otherwise use atoms pbc
+            pbc = atoms.get_pbc()
+            for cmd in self.parameters.lmpcmds:
+                if 'boundary' in cmd:
+                    break
+            else:
+                self.lmp.command(
+                    'boundary ' + ' '.join([self.lammpsbc(bc) for bc in pbc]))
 
         # Initialize cell
         self.set_cell(atoms)
 
-        # The default atom_types has atom type in alphabetic order
-        # by atomic symbol
+        if self.parameters.atom_types  is None:
+           raise NameError("atom_types are mandatory.")
+
+        # Collect chemical symbols
         symbols = np.asarray(atoms.get_chemical_symbols())
 
-        # if the dictionary of types has not already been specified
-        if self.atom_types is None:
-            self.atom_types = {}
-            atom_types = np.sort(np.unique(symbols))
-
-            for i, sym in enumerate(atom_types):
-                self.atom_types[sym] = i + 1
-
         # Initialize box
-        n_types = len(self.atom_types)
-        types_command = 'create_box {} cell'.format(n_types)
-        self.lmp.command(types_command)
+        if self.parameters.create_box:
+           n_types = len(self.parameters.atom_types)
+           types_command = 'create_box {} cell'.format(n_types)
+           self.lmp.command(types_command)
 
         # Initialize the atoms with their types
         # positions do not matter here
         self.lmp.command('echo none') # don't echo the atom positions
-        for sym in symbols:
-            cmd = 'create_atoms {} single 0.0 0.0 0.0  units box'.\
-                format(self.atom_types[sym])
-            self.lmp.command(cmd)
-
+        self.rebuild(atoms)
         self.lmp.command('echo log') # turn back on
 
         # Set masses
         masses = atoms.get_masses()
-        for sym in self.atom_types:
+        for sym in self.parameters.atom_types:
             for i in range(len(atoms)):
                 if symbols[i] == sym:
-                    self.lmp.command('mass %d %.30f' % (self.atom_types[sym], masses[i]/(1.0e-3 * ase.units.kg /ase.units.mol))) # convert from amu (ASE) to g/mole (metal))
+                    self.lmp.command('mass %d %f' % (self.parameters.atom_types[sym], masses[i] / self.unit_convert("mass") )) # convert from amu (ASE) to lammps mass unit)
                     break
 
         # execute the user commands
@@ -478,7 +562,7 @@ End LAMMPSlib Interface Documentation
         # raise an error if it is not there. Perhaps it is needed to
         # ensure the cell stresses are calculated
         self.lmp.command('thermo_style custom pe pxx')
-        
+
         self.lmp.command('variable fx atom fx')
         self.lmp.command('variable fy atom fy')
         self.lmp.command('variable fz atom fz')
@@ -486,6 +570,6 @@ End LAMMPSlib Interface Documentation
         # do we need this if we extract from a global ?
         self.lmp.command('variable pe equal pe')
 
-	self.initialized = True
+        self.initialized = True
 
 #print('done loading lammpslib')

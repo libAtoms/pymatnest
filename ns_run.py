@@ -288,6 +288,11 @@ def usage():
     ``LAMMPS_header_extra=str``
        |  '', extra lammpslib.py header commands for energy_calculator=lammps
 
+    ``LAMMPS_atom_types=str``
+       |  MANDATORY if energy_calculator=lammps
+       |  atomic_symbol1 lammps_type1 [, atomic_symbol2 lammps_type2, ...]
+       |  mapping between atom species and lammps potential types
+
     ``config_file_format=str``
        | File format in which configurations are printed, e.g. for trajectory and snapshot files.
        | default: extxyz
@@ -2392,7 +2397,9 @@ def main():
                 ns_args['LAMMPS_atom_types'] = {}
                 for type_pair in [s.strip() for s in LAMMPS_atom_types.split(',')]:
                     f = type_pair.split()
-                    ns_args['LAMMPS_atom_types'][f[0]] = f[1]
+                    ns_args['LAMMPS_atom_types'][f[0]] = int(f[1])
+            else:
+               exit_error("LAMMPS_atom_types is mandatory if calculator type is LAMMPS\n",1)
 	elif ns_args['energy_calculator'] == 'internal':
 	    do_calc_internal=True
 	elif ns_args['energy_calculator'] == 'fortran':
@@ -2663,8 +2670,6 @@ def main():
 	if  rank == 0:
 	    print "Using n_model_calls = ", movement_args['n_model_calls']
 
-        species_strs = ns_args['start_species'].split(',')
-
 	walkers=[]
 	if ns_args['restart_file'] == '': # start from scratch
             start_first_iter = 0
@@ -2673,12 +2678,15 @@ def main():
 		# create atoms structs from a list of atomic numbers and numbers of atoms
 		lc = ns_args['max_volume_per_atom']**(1.0/3.0)
 		init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
-
-		for species in species_strs:
-		    species_fields = species.split()
-		    type_Z = int(species_fields[0])
-		    type_n = int(species_fields[1])
-		    if len(species_fields) == 2:
+		species = ns_args['start_species'].split(',')
+                if do_calc_lammps:
+                   if not {ase.data.chemical_symbols[int(specie.split()[0])] for specie in species} == set(ns_args['LAMMPS_atom_types'].keys()):
+                      exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
+		for specie in species:
+		    specie_fields = specie.split()
+		    type_Z = int(specie_fields[0])
+		    type_n = int(specie_fields[1])
+		    if len(specie_fields) == 2:
 			init_atoms += ase.Atoms([type_Z] * type_n)
 		    elif len(species_fields) == 3:
 			type_mass = float(species_fields[2])
