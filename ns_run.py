@@ -2233,7 +2233,9 @@ def main():
                 ns_args['LAMMPS_atom_types'] = {}
                 for type_pair in [s.strip() for s in LAMMPS_atom_types.split(',')]:
                     f = type_pair.split()
-                    ns_args['LAMMPS_atom_types'][f[0]] = f[1]
+                    ns_args['LAMMPS_atom_types'][f[0]] = int(f[1])
+            else:
+               exit_error("LAMMPS_atom_types is mandatory if calculator type is LAMMPS\n",1)
 	elif ns_args['energy_calculator'] == 'internal':
 	    do_calc_internal=True
 	elif ns_args['energy_calculator'] == 'fortran':
@@ -2467,6 +2469,9 @@ def main():
 		lc = ns_args['max_volume_per_atom']**(1.0/3.0)
 		init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
 		species = ns_args['start_species'].split(',')
+                if do_calc_lammps:
+                   if not {ase.data.chemical_symbols[int(specie.split()[0])] for specie in species} == set(ns_args['LAMMPS_atom_types'].keys()):
+                      exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
 		for specie in species:
 		    specie_fields = specie.split()
 		    type_Z = int(specie_fields[0])
