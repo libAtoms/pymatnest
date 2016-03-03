@@ -45,6 +45,7 @@ energy_calculator=lammps
 LAMMPS_name=mpi
 # potential parameters
 LAMMPS_init_cmds=pair_style lj/cut 9.00; pair_coeff * * 0.1 3.0; pair_modify shift yes
+LAMMPS_atom_types=H 1
 
 rng=numpy
 
