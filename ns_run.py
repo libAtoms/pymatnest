@@ -2683,10 +2683,10 @@ def main():
                    if not {ase.data.chemical_symbols[int(specie.split()[0])] for specie in species} == set(ns_args['LAMMPS_atom_types'].keys()):
                       exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
 		for specie in species:
-		    specie_fields = specie.split()
-		    type_Z = int(specie_fields[0])
-		    type_n = int(specie_fields[1])
-		    if len(specie_fields) == 2:
+		    species_fields = specie.split()
+		    type_Z = int(species_fields[0])
+		    type_n = int(species_fields[1])
+		    if len(species_fields) == 2:
 			init_atoms += ase.Atoms([type_Z] * type_n)
 		    elif len(species_fields) == 3:
 			type_mass = float(species_fields[2])
