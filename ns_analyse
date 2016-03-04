@@ -84,7 +84,7 @@ def analyse(Es, T):
     U_pot = sum(Z_term*Es)/Z
     U = n_Extra_DOF/(2.0*beta) + U_pot
 
-    Cv = n_Extra_DOF*k_Boltzmann/2.0 + beta*beta * (sum(Z_term * Es**2)/Z - U_pot**2)
+    Cv = n_Extra_DOF*k_Boltzmann/2.0 + k_Boltzmann *beta*beta * (sum(Z_term * Es**2)/Z - U_pot**2)
 
     log_Z = math.log(Z)+shift
 
