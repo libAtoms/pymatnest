@@ -1,13 +1,16 @@
 """ASE LAMMPS Calculator Library Version"""
 
 import os
+import ctypes
+import operator
+
 import numpy as np
 from numpy.linalg import norm
+
 from lammps import lammps
 from ase.calculators.calculator import Calculator
-from ase.data import chemical_symbols
+from ase.data import chemical_symbols, atomic_masses
 import ase.units
-import ctypes
 
 # TODO
 # 1. should we make a new lammps object each time ?
@@ -20,6 +23,77 @@ import ctypes
 # 6. do we need a subroutine generator that converts a lammps string
 #   into a python function that can be called
 
+def is_upper_triangular(mat):
+    """test if 3x3 matrix is upper triangular"""
+
+    def near0(x):
+        """Test if a float is within .00001 of 0"""
+        return abs(x) < 0.00001
+
+    return near0(mat[1, 0]) and near0(mat[2, 0]) and near0(mat[2, 1])
+
+def convert_cell(ase_cell):
+    """
+    Convert a parallel piped (forming right hand basis)
+    to lower triangular matrix LAMMPS can accept. This
+    function transposes cell matrix so the bases are column vectors
+    """
+    cell = np.matrix.transpose(ase_cell)
+
+    if not is_upper_triangular(cell):
+        # rotate bases into triangular matrix
+        tri_mat = np.zeros((3, 3))
+        A = cell[:, 0]
+        B = cell[:, 1]
+        C = cell[:, 2]
+        tri_mat[0, 0] = norm(A)
+        Ahat = A / norm(A)
+        AxBhat = np.cross(A, B) / norm(np.cross(A, B))
+        tri_mat[0, 1] = np.dot(B, Ahat)
+        tri_mat[1, 1] = norm(np.cross(Ahat, B))
+        tri_mat[0, 2] = np.dot(C, Ahat)
+        tri_mat[1, 2] = np.dot(C, np.cross(AxBhat, Ahat))
+        tri_mat[2, 2] = norm(np.dot(C, AxBhat))
+
+        # create and save the transformation for coordinates
+        volume = np.linalg.det(ase_cell)
+        trans = np.array([np.cross(B, C), np.cross(C, A), np.cross(A, B)])
+        trans = trans / volume
+        coord_transform = np.dot(tri_mat , trans)
+
+        return tri_mat, coord_transform
+    else:
+        return cell, None
+
+
+lammps_real = {
+      "mass" : 0.001 * ase.units.kg / ase.units.mol,
+      "distance" : ase.units.Angstrom,
+      "time" : ase.units.fs,
+      "energy" : ase.units.kcal/ase.units.mol,
+      "velocity": ase.units.Angstrom / ase.units.fs,
+      "force": ase.units.kcal/ase.units.mol/ase.units.Angstrom,
+      "pressure" : 101325 * ase.units.Pascal
+      }
+
+lammps_metal = {
+      "mass" : 0.001 * ase.units.kg / ase.units.mol,
+      "distance" : ase.units.Angstrom,
+      "time" : 1e-12 * ase.units.second,
+      "energy" : ase.units.eV,
+      "velocity": ase.units.Angstrom / (1e-12*ase.units.second),
+      "force": ase.units.eV/ase.units.Angstrom,
+      "pressure" : 1e5 * ase.units.Pascal
+      }
+
+lammps_units={"real":lammps_real,
+              "metal":lammps_metal}
+
+def unit_convert(quantity, units='metal'):
+   try:
+      return lammps_units[units][quantity]
+   except:
+      raise NotImplementedError("Unit {} in unit system {} is not implemented.".format(quantity,units))
 
 class LAMMPSlib(Calculator):
     r"""
@@ -164,7 +238,7 @@ by invoking the get_potential_energy() method::
 * If an error occurs while lammps is in control it will crash
   Python. Check the output of the log file to find the lammps error.
 
-* If the are commands directly sent to the LAMMPS object this may
+* If the are commands direfctly sent to the LAMMPS object this may
   change the energy value of the model. However the calculator will not
   know of it and still return the original energy value.
 
@@ -191,36 +265,8 @@ End LAMMPSlib Interface Documentation
         create_atoms=True,
         comm=None)
 
-    lammps_real = {
-          "mass" : 0.001 * ase.units.kg / ase.units.mol,
-          "distance" : ase.units.Angstrom,
-          "time" : ase.units.fs,
-          "energy" : ase.units.kcal/ase.units.mol,
-          "velocity": ase.units.Angstrom / ase.units.fs,
-          "force": ase.units.kcal/ase.units.mol/ase.units.Angstrom,
-          "pressure" : 101325 * ase.units.Pascal
-          }
-
-    lammps_metal = {
-          "mass" : 0.001 * ase.units.kg / ase.units.mol,
-          "distance" : ase.units.Angstrom,
-          "time" : 1e-12 * ase.units.second,
-          "energy" : ase.units.eV,
-          "velocity": ase.units.Angstrom / (1e-12*ase.units.second),
-          "force": ase.units.eV/ase.units.Angstrom,
-          "pressure" : 1e5 * ase.units.Pascal
-          }
-
-    lammps_units={"real":lammps_real,"metal":lammps_metal}
-
-    def unit_convert(self,quantity):
-       try:
-          return self.lammps_units[self.units][quantity]
-       except:
-          raise NotImplementedError("Unit {} in unit system {} is not implemented.".format(quantity,self.units))
-
     def set_cell(self, atoms, change=False):
-        cell = self.convert_cell(atoms.get_cell())
+        cell, self.coord_transform = convert_cell(atoms.get_cell())
         xhi = cell[0, 0]
         yhi = cell[1, 1]
         zhi = cell[2, 2]
@@ -233,7 +279,8 @@ End LAMMPSlib Interface Documentation
                 .format(xhi, yhi, zhi, xy, xz, yz)
         else:
             # just in case we'll want to run with a funny shape box, and here command will only happen once, and before any calculation
-            self.lmp.command('box tilt large')
+            if self.parameters.create_box:
+                self.lmp.command('box tilt large')
             cell_cmd = 'region cell prism    0 {} 0 {} 0 {}     {} {} {}     units box'\
                 .format(xhi, yhi, zhi, xy, xz, yz)
 
@@ -288,7 +335,7 @@ End LAMMPSlib Interface Documentation
            self.redo_atom_types(atoms)
            self.set_cell(atoms, change=True)
 
-        pos = atoms.get_positions() / self.unit_convert("distance")
+        pos = atoms.get_positions() / unit_convert("distance", self.units)
 
         # If necessary, transform the positions to new coordinate system
         if self.coord_transform is not None:
@@ -306,7 +353,7 @@ End LAMMPSlib Interface Documentation
 
 
         if n_steps > 0:
-            vel = atoms.get_velocities() / self.unit_convert("velocity")
+            vel = atoms.get_velocities() / unit_convert("velocity", self.units)
 
             # If necessary, transform the velocities to new coordinate system
             if self.coord_transform is not None:
@@ -324,7 +371,7 @@ End LAMMPSlib Interface Documentation
 
         # Run for 0 time to calculate
         if dt is not None:
-            self.lmp.command('timestep %f' % ( dt/self.unit_convert("time")) )
+            self.lmp.command('timestep %f' % ( dt/unit_convert("time", self.units)) )
         self.lmp.command('run %d' % n_steps)
 
         if n_steps > 0:
@@ -332,15 +379,15 @@ End LAMMPSlib Interface Documentation
             pos = np.array([x for x in self.lmp.gather_atoms("x",1,3)]).reshape(-1,3)
             if self.coord_transform is not None:
                 pos = np.dot(pos, self.coord_transform)
-            atoms.set_positions(pos * self.unit_convert("distance"))
+            atoms.set_positions(pos * unit_convert("distance", self.units))
             vel = np.array([v for v in self.lmp.gather_atoms("v",1,3)]).reshape(-1,3)
             if self.coord_transform is not None:
                 vel = np.dot(vel, self.coord_transform)
-            atoms.set_velocities(vel * self.unit_convert("velocity"))
+            atoms.set_velocities(vel * unit_convert("velocity", self.units))
 
         # Extract the forces and energy
 #        if 'energy' in properties:
-        self.results['energy'] = self.lmp.extract_variable('pe', None, 0) * self.unit_convert("energy")
+        self.results['energy'] = self.lmp.extract_variable('pe', None, 0) * unit_convert("energy", self.units)
 #            self.results['energy'] = self.lmp.extract_global('pe', 0)
 
 #        if 'stress' in properties:
@@ -370,15 +417,15 @@ End LAMMPSlib Interface Documentation
         stress[4] = stress_mat[0,2]
         stress[5] = stress_mat[0,1]
 
-        self.results['stress'] = stress * (-self.unit_convert("pressure"))
+        self.results['stress'] = stress * (-unit_convert("pressure", self.units))
 
 #        if 'forces' in properties:
         f = np.zeros((len(atoms), 3))
         force_vars = ['fx', 'fy', 'fz']
         for i, var in enumerate(force_vars):
             f[:, i] = np.asarray(self.lmp.extract_variable(
-                    var, 'all', 1)[:len(atoms)]) * self.unit_convert("force")
-            
+                    var, 'all', 1)[:len(atoms)]) * unit_convert("force", self.units)
+
         if self.coord_transform is not None:
             self.results['forces'] = np.dot(f, self.coord_transform)
         else:
@@ -386,48 +433,6 @@ End LAMMPSlib Interface Documentation
 
         if not self.parameters.keep_alive:
             self.lmp.close()
-
-    def is_upper_triangular(self, mat):
-        """test if 3x3 matrix is upper triangular"""
-
-        def near0(x):
-            """Test if a float is within .00001 of 0"""
-            return abs(x) < 0.00001
-
-        return near0(mat[1, 0]) and near0(mat[2, 0]) and near0(mat[2, 1])
-
-    def convert_cell(self, ase_cell):
-        """
-        Convert a parallel piped (forming right hand basis)
-        to lower triangular matrix LAMMPS can accept. This
-        function transposes cell matrix so the bases are column vectors
-        """
-        cell = np.matrix.transpose(ase_cell)
-
-        if not self.is_upper_triangular(cell):
-            # rotate bases into triangular matrix
-            tri_mat = np.zeros((3, 3))
-            A = cell[:, 0]
-            B = cell[:, 1]
-            C = cell[:, 2]
-            tri_mat[0, 0] = norm(A)
-            Ahat = A / norm(A)
-            AxBhat = np.cross(A, B) / norm(np.cross(A, B))
-            tri_mat[0, 1] = np.dot(B, Ahat)
-            tri_mat[1, 1] = norm(np.cross(Ahat, B))
-            tri_mat[0, 2] = np.dot(C, Ahat)
-            tri_mat[1, 2] = np.dot(C, np.cross(AxBhat, Ahat))
-            tri_mat[2, 2] = norm(np.dot(C, AxBhat))
-
-            # create and save the transformation for coordinates
-            volume = np.linalg.det(ase_cell)
-            trans = np.array([np.cross(B, C), np.cross(C, A), np.cross(A, B)])
-            trans = trans / volume
-            self.coord_transform = np.dot(tri_mat , trans)
-
-            return tri_mat
-        else:
-            return cell
 
     def lammpsbc(self, pbc):
         if pbc:
@@ -466,7 +471,8 @@ End LAMMPSlib Interface Documentation
        current_types = { (i+1,self.parameters.atom_types[sym]) for i,sym in enumerate( atoms.get_chemical_symbols() ) }
 
        try:
-          previous_types = { (i+1,self.parameters.atom_types[ chemical_symbols[Z] ]) for i,Z in enumerate( self.previous_atoms_numbers ) }
+          previous_types = { (i+1,self.parameters.atom_types[ chemical_symbols[Z] ])
+                              for i,Z in enumerate( self.previous_atoms_numbers ) }
        except:
           previous_types = set()
 
@@ -482,7 +488,7 @@ End LAMMPSlib Interface Documentation
             cmd_args = ['-echo', 'log', '-log', 'none', '-screen', 'none', '-nocite']
         else:
             cmd_args = ['-echo', 'log', '-log', self.parameters.log_file,
-                        '-screen', 'none','-nocite','']
+                        '-screen', 'none','-nocite']
 
         self.cmd_args = cmd_args
 
@@ -543,7 +549,9 @@ End LAMMPSlib Interface Documentation
         for sym in self.parameters.atom_types:
             for i in range(len(atoms)):
                 if symbols[i] == sym:
-                    self.lmp.command('mass %d %f' % (self.parameters.atom_types[sym], masses[i] / self.unit_convert("mass") )) # convert from amu (ASE) to lammps mass unit)
+                    # convert from amu (ASE) to lammps mass unit)
+                    self.lmp.command('mass %d %f' % (self.parameters.atom_types[sym], masses[i] /
+                                                     unit_convert("mass", self.units) ))
                     break
 
         # execute the user commands
@@ -573,3 +581,132 @@ End LAMMPSlib Interface Documentation
         self.initialized = True
 
 #print('done loading lammpslib')
+
+def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
+                      molecule_ids=None, charges=None, units='metal',
+                      bond_types=None, angle_types=None, dihedral_types=None):
+
+    if isinstance(filename, basestring):
+        fh = open(filename, 'w')
+    else:
+        fh = filename
+
+    if comment is None:
+        comment = 'lammpslib autogenerated data file'
+    fh.write(comment.strip() + '\n\n')
+
+    fh.write('{0} atoms\n'.format(len(atoms)))
+    fh.write('{0} atom types\n'.format(len(atom_types)))
+
+    if bond_types:
+        from matscipy.neighbours import neighbour_list
+        i_list, j_list = neighbour_list('ij', atoms, cutoff)
+        print 'Bonds:'
+        bonds = []
+        for bond_type, (Z1, Z2) in enumerate(bond_types):
+            bond_mask = (atoms.numbers[i_list] == Z1) & (atoms.numbers[j_list] == Z2)
+            print (Z1, Z2), bond_mask.sum()
+            for (I, J) in zip(i_list[bond_mask], j_list[bond_mask]):
+                #NB: LAMMPS uses 1-based indices for bond types and particle indices
+                bond = (bond_type+1, I+1, J+1)
+                bonds.append(bond)
+        print
+        if len(bonds) > 0:
+            fh.write('{0} bonds\n'.format(len(bonds)))
+            fh.write('{0} bond types\n'.format(len(bond_types)))
+
+    if angle_types:
+        print 'Angles:'
+        angle_count = { angle : 0 for angle in angle_types }
+        angles = []
+        for I in range(len(atoms)):
+            for J in j_list[i_list == I]:
+                for K in j_list[i_list == J]:
+                    if J < K:
+                        continue
+                    Zi, Zj, Zk = atoms.numbers[[I, J, K]]
+                    if (Zj, Zi, Zk) in angle_types:
+                        angle = (angle_types.index((Zj, Zi, Zk))+1, J+1, I+1, K+1)
+                        angle_count[(Zj, Zi, Zk)] += 1
+                        angles.append(angle)
+        for angle in angle_types:
+            print angle, angle_count[angle]
+        print
+        if len(angles) > 0:
+            fh.write('{0} angles\n'.format(len(angles)))
+            fh.write('{0} angle types\n'.format(len(angle_types)))
+
+    if dihedral_types:
+        print 'Dihedrals:'
+        dihedral_count = { dihedral : 0 for dihedral in dihedral_types }
+        dihedrals = []
+        for I in range(len(atoms)):
+            for J in j_list[i_list == I]:
+                for K in j_list[i_list == J]:
+                    for L in j_list[i_list == K]:
+                        Zi, Zj, Zk, Zl = atoms.numbers[[I, J, K, L]]
+                        if (Zi, Zj, Zk, Zl) in dihedral_types:
+                            dihedral = (dihedral_types.index((Zi, Zj, Zk, Zl))+1,
+                                        I+1, J+1, K+1, L+1)
+                            dihedral_count[(Zi, Zj, Zk, Zl)] += 1
+                            dihedrals.append(dihedral)
+        for dihedral in dihedral_types:
+            print dihedral, dihedral_count[dihedral]
+        print
+        if len(dihedrals) > 0:
+            fh.write('{0} dihedrals\n'.format(len(dihedrals)))
+            fh.write('{0} dihedral types\n'.format(len(dihedral_types)))
+
+    fh.write('\n')
+    cell, coord_transform = convert_cell(atoms.get_cell())
+    fh.write('{0:16.8e} {1:16.8e} xlo xhi\n'.format(0.0, cell[0, 0]))
+    fh.write('{0:16.8e} {1:16.8e} ylo yhi\n'.format(0.0, cell[1, 1]))
+    fh.write('{0:16.8e} {1:16.8e} zlo zhi\n'.format(0.0, cell[2, 2]))
+    fh.write('{0:16.8e} {1:16.8e} {2:16.8e} xy xz yz\n'.format(cell[0, 1], cell[0, 2], cell[1, 2]))
+
+    fh.write('\nMasses\n\n')
+    sym_mass = {}
+    masses = atoms.get_masses()
+    symbols = atoms.get_chemical_symbols()
+    for sym in atom_types:
+        for i in range(len(atoms)):
+            if symbols[i] == sym:
+                sym_mass[sym] = masses[i] / unit_convert("mass", units)
+                break
+            else:
+                sym_mass[sym] = atomic_masses[chemical_symbols.index(sym)] / unit_convert("mass", units)
+
+    for (sym, typ) in sorted(atom_types.items(), key=operator.itemgetter(1)):
+        fh.write('{0} {1}\n'.format(typ, sym_mass[sym]))
+
+    fh.write('\nAtoms # full\n\n')
+    if molecule_ids is None:
+        molecule_ids = np.zeros(len(atoms), dtype=int)
+    if charges is None:
+        charges = atoms.get_initial_charges()
+    for i, (sym, mol, q, pos) in enumerate(zip(symbols, molecule_ids,
+                                               charges, atoms.get_positions())):
+        typ = atom_types[sym]
+        fh.write('{0} {1} {2} {3:16.8e} {4:16.8e} {5:16.8e} {6:16.8e}\n'
+                 .format(i+1, mol, typ, q, pos[0], pos[1], pos[2]))
+
+    if bond_types and len(bonds) > 0:
+        fh.write('\nBonds\n\n')
+        for idx, bond in enumerate(bonds):
+            fh.write('{0} {1} {2} {3}\n'
+                     .format(*[idx+1] + list(bond)))
+
+    if angle_types and len(angles) > 0:
+        fh.write('\nAngles\n\n')
+        for idx, angle in enumerate(angles):
+            fh.write('{0} {1} {2} {3} {4}\n'
+                     .format(*[idx+1] + list(angle)))
+
+    if dihedral_types and len(dihedrals) > 0:
+        fh.write('\nDihedrals\n\n')
+        for idx, dihedral in enumerate(dihedrals):
+            fh.write('{0} {1} {2} {3} {4} {5}\n'
+                     .format(*[idx+1] + list(dihedral)))
+
+    if isinstance(filename, basestring):
+        fh.close()
