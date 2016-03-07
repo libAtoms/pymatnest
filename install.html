@@ -129,7 +129,7 @@ far back older versions would also work.</p>
 <p><code class="docutils literal"><span class="pre">patch</span> <span class="pre">&lt;</span> <span class="pre">ns_run_dir/lammps.patch</span></code></p>
 </div></blockquote>
 <p>where <code class="docutils literal"><span class="pre">ns_run_dir</span></code> is the directory where <code class="docutils literal"><span class="pre">ns_run</span></code> is, and <code class="docutils literal"><span class="pre">lammps_top_dir</span></code> is the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory.
-Create a Makefile for <strong>parallel</strong> lammps in <code class="docutils literal"><span class="pre">lammps_top_dir/MAKE</span></code>, and define <code class="docutils literal"><span class="pre">-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF</span></code>
+Create a Makefile for <strong>parallel</strong> lammps in <code class="docutils literal"><span class="pre">lammps_top_dir/src/MAKE</span></code>, and define <code class="docutils literal"><span class="pre">-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF</span></code>
 in the <code class="docutils literal"><span class="pre">LMP_INC</span></code> makefile variable. Then</p>
 <blockquote>
 <div><code class="docutils literal"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></div></blockquote>
