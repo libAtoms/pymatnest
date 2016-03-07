@@ -334,6 +334,7 @@ End LAMMPSlib Interface Documentation
         elif do_redo_atom_types:
            self.redo_atom_types(atoms)
            self.set_cell(atoms, change=True)
+        self.lmp.command('echo log') # switch back log
 
         pos = atoms.get_positions() / unit_convert("distance", self.units)
 
@@ -524,7 +525,7 @@ End LAMMPSlib Interface Documentation
                     'boundary ' + ' '.join([self.lammpsbc(bc) for bc in pbc]))
 
         # Initialize cell
-        self.set_cell(atoms)
+        self.set_cell(atoms, change=not self.parameters.create_box)
 
         if self.parameters.atom_types  is None:
            raise NameError("atom_types are mandatory.")
@@ -540,9 +541,10 @@ End LAMMPSlib Interface Documentation
 
         # Initialize the atoms with their types
         # positions do not matter here
-        self.lmp.command('echo none') # don't echo the atom positions
-        self.rebuild(atoms)
-        self.lmp.command('echo log') # turn back on
+        if self.parameters.create_atoms:
+           self.lmp.command('echo none') # don't echo the atom positions
+           self.rebuild(atoms)
+           self.lmp.command('echo log') # turn back on
 
         # Set masses
         masses = atoms.get_masses()
