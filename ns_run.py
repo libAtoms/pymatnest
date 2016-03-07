@@ -21,7 +21,7 @@ def usage():
 
     ``start_species=int int [ float ] [, int int [ float ] ... ]``
        | MANDATORY
-       | Atomic number; multiplicity; mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required
+       | Atomic number; multiplicity; [ not recommended: mass (amu) ]. Info repeated for each species, separated by commas, mass is optional and not recommended.
 
     ``restart_file=path_to_file``
        | File for restart configs. Mutually exclusive with start_*, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. 
@@ -122,7 +122,10 @@ def usage():
        | (factor between prob. of picking increasing larger clusters)
        | default: 0.75
     ``swap_velo=[T | F]`` 
-       | (if true, swap velocities when swapping atoms)
+       | (if true, swap velocities when swapping atoms, breaking coherence a bit)
+       | default: F
+    ``no_swap_velo_fix_mag_alt=[T | F]`` 
+       | (if true, use alternate method for correcting velocity magnitudes when not swapping velocities)
        | default: F
 
     ``velo_traj_len=int`` 
@@ -335,7 +338,7 @@ def usage():
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
     sys.stderr.write("input:\n")
     sys.stderr.write("max_volume_per_atom=float (1e3)\n")
-    sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, atomic_number multiplicity mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required\n")
+    sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, atomic_number multiplicity [not recomended: mass (amu)]. Info repeated for each species, separated by commas, mass is optional and not recommended.\n")
     sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
@@ -366,7 +369,8 @@ def usage():
     sys.stderr.write("swap_max_cluster=int (1, maximum size of interconnected cluster to try to swap)\n")
     sys.stderr.write("swap_r_cut=float (2.5, cutoff radius for defining connected atoms for cluster)\n")
     sys.stderr.write("swap_cluster_probability_increment=float (0.75, factor between prob. of picking increasing larger clusters)\n")
-    sys.stderr.write("swap_velo=[T | F] (F, if true, swap velocities when swapping atoms\n")
+    sys.stderr.write("swap_velo=[T | F] (F, if true, swap velocities when swapping atoms, breaking coherence a bit\n")
+    sys.stderr.write("swap_velo_fix_mag_alt=[T | F] (F, if true, use alternate correction for velocity magnitudes when not swapping velocities\n")
     sys.stderr.write("\n")
     sys.stderr.write("velo_traj_len=int (0, number of MC sweeps in each velocity MC segement)\n")
     sys.stderr.write("\n")
@@ -969,8 +973,15 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         velocities = at.get_velocities()
         v_1_orig = velocities[c1,:].copy()
         v_2_orig = velocities[c2,:].copy()
-        velocities[c1,:] = v_2_orig
-        velocities[c2,:] = v_1_orig
+        if movement_args['no_swap_velo_fix_mag_alt']:
+            n1 = np.linalg.norm(v_1_orig)
+            n2 = np.linalg.norm(v_2_orig)
+            velocities[c1,:] = (v_2_orig.T * n1/n2).T
+            velocities[c2,:] = (v_1_orig.T * n2/n1).T
+        else: # this will be executed (unnecessarily) even if all masses are the same
+            masses = at.get_masses()
+            velocities[c1,:] = (v_2_orig.T * np.sqrt(masses[c2]/masses[c1])).T
+            velocities[c2,:] = (v_1_orig.T * np.sqrt(masses[c1]/masses[c2])).T
         at.set_velocities(velocities)
     if ns_args['n_extra_data'] > 0:
         extra_data_1_orig = at.arrays['ns_extra_data'][c1,...].copy()
@@ -2493,6 +2504,7 @@ def main():
 	movement_args['swap_r_cut'] = float(args.pop('swap_r_cut', 2.5))
 	movement_args['swap_cluster_probability_increment'] = float(args.pop('cluster_probability_increment', 0.75))
 	movement_args['swap_velo'] = str_to_logical(args.pop('swap_velo', "F"))
+	movement_args['no_swap_velo_fix_mag_alt'] = str_to_logical(args.pop('no_swap_velo_fix_mag_alt', "F"))
 
         # initialize swap cluster size probabilities
         movement_args['swap_probs'] = np.zeros( (movement_args['swap_max_cluster']) )
@@ -2680,14 +2692,14 @@ def main():
 		init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
 		species = ns_args['start_species'].split(',')
                 if do_calc_lammps:
-                   if not {ase.data.chemical_symbols[int(specie.split()[0])] for specie in species} == set(ns_args['LAMMPS_atom_types'].keys()):
+                   if not {ase.data.chemical_symbols[int(species.split()[0])] for species in species} == set(ns_args['LAMMPS_atom_types'].keys()):
                       exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
-		for specie in species:
-		    species_fields = specie.split()
+		for species in species:
+		    species_fields = species.split()
 		    type_Z = int(species_fields[0])
 		    type_n = int(species_fields[1])
 		    if len(species_fields) == 2:
-			init_atoms += ase.Atoms([type_Z] * type_n)
+			init_atoms += ase.Atoms([type_Z] * type_n, masses=[1.0] * type_n)
 		    elif len(species_fields) == 3:
 			type_mass = float(species_fields[2])
 			init_atoms += ase.Atoms([type_Z] * type_n, masses=[type_mass] * type_n)
@@ -2713,14 +2725,15 @@ def main():
 			init_atoms.add_property('mass', 0.0)
 			init_atoms.mass[:] = init_atoms.get_masses()*quippy.MASSCONVERT
                 else: # no 'masses'
-                    if have_quippy: # use quippy.Atoms.mass[:] or quippy.ElementMass[Z[:]]
-                        if not init_atoms.has('mass'): # set Atoms.mass from quippy.ElementMass
-                            init_atoms.add_property('mass', 0.0)
-                            init_atoms.mass[:] = quippy.ElementMass[init_atoms.Z]
-                        # convert masses from mass
-                        init_atoms.set_masses(init_atoms.mass/quippy.MASSCONVERT)
-                    else:
-                        exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
+                    exit_error("got do_velocities, but masses property isn't set.  This should never happen\n", 3)
+                    ## if have_quippy: # use quippy.Atoms.mass[:] or quippy.ElementMass[Z[:]]
+                        ## if not init_atoms.has('mass'): # set Atoms.mass from quippy.ElementMass
+                            ## init_atoms.add_property('mass', 0.0)
+                            ## init_atoms.mass[:] = quippy.ElementMass[init_atoms.Z]
+                        ## # convert masses from mass
+                        ## init_atoms.set_masses(init_atoms.mass/quippy.MASSCONVERT)
+                    ## else:
+                        ## exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
 
 	    # create extra data arrays if needed
 	    if ns_args['n_extra_data'] > 0:
@@ -2869,7 +2882,6 @@ def main():
 	            
 	    if do_calc_quip:
                 walkers = [quippy.Atoms(at) for at in walkers]
-
 
 	# scale MC_atom_step_size by max_vol^(1/3)
 	max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
