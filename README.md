@@ -52,7 +52,7 @@ Apply the ``MPI`` patch to the ``LAMMPS`` source by doing
     ``patch < ns_run_dir/lammps.patch``
 
 where ``ns_run_dir`` is the directory where ``ns_run`` is, and ``lammps_top_dir`` is the ``LAMMPS`` directory.
-Create a Makefile for **parallel** lammps in ``lammps_top_dir/MAKE``, and define ``-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF`` 
+Create a Makefile for **parallel** lammps in ``lammps_top_dir/src/MAKE``, and define ``-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF`` 
 in the ``LMP_INC`` makefile variable. Then
 
     ``make [machine] mode=shlib``
