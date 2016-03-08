@@ -2478,6 +2478,10 @@ def main():
                    if not {ase.data.chemical_symbols[int(specie.split()[0])] for specie in species} == set(ns_args['LAMMPS_atom_types'].keys()):
                       exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
 		for specie in species:
+		    if len(species) > 1 and movement_args['atom_algorithm'] == 'MD':
+			print "*************************************************************"
+			print "W A R N I N G: Currently MD is not safe to be used with swap moves. Either use MC or monocomponent system."
+			print "*************************************************************"
 		    specie_fields = specie.split()
 		    type_Z = int(specie_fields[0])
 		    type_n = int(specie_fields[1])
@@ -2487,7 +2491,7 @@ def main():
 			type_mass = float(specie_fields[2])
 			init_atoms += ase.Atoms([type_Z] * type_n, masses=[type_mass] * type_n)
 		    else:
-			exit_error("Each entry is start_species must include atomic number, multiplicity, and optionally mass", 5)
+			exit_error("Each entry in start_species must include atomic number, multiplicity, and optionally mass", 5)
 		init_atoms.set_cell(init_atoms.get_cell()*float(len(init_atoms))**(1.0/3.0), scale_atoms=True)
 		if do_calc_quip:
 		    init_atoms = quippy.Atoms(init_atoms)
