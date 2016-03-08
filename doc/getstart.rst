@@ -48,6 +48,10 @@ and using MD trajectory for generating a new sample configuration.
 Periodic binary Lennard-Jones system with ``LAMMPS``, using MD
 --------------------------------------------------------
 
+.. warning::
+   Using MD with swap moves can produce unphysical results, so please *do not* use this until this problem is solved!
+   Multicomponent systems can be safely used with MC though. 
+
 This input file will start a calculation of a binary Lennard-Jones system, with 48 A-type atoms and 16 B-type atoms.
 Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are changed.
 The cell is of variable shape and size at the set pressure value, using the potential implemented in ``LAMMPS``
