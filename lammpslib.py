@@ -333,7 +333,6 @@ End LAMMPSlib Interface Documentation
            self.rebuild(atoms)
         elif do_redo_atom_types:
            self.redo_atom_types(atoms)
-           self.set_cell(atoms, change=True)
         self.lmp.command('echo log') # switch back log
 
         pos = atoms.get_positions() / unit_convert("distance", self.units)
