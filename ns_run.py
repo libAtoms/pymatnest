@@ -487,7 +487,7 @@ def eval_energy(at, do_PE=True, do_KE=True, do_PV=True):
     if do_PE:
 	if do_calc_quip or do_calc_lammps:
 	    if do_calc_lammps:
-		#NB maybe not do this every time?
+		#NB only MD can make crazy positions, so maybe just do this after MD propagation?
 		at.wrap()
 	    energy = at.get_potential_energy()
 	elif do_calc_internal:
@@ -529,7 +529,7 @@ def propagate_NVE_lammps(at, dt, n_steps):
 	pot.lmp.command('fix 1 all nve')
 	pot.first_MD=False
 
-    # NB maybe not do this every time?
+    # NB maybe not do this every time? Just _after_ MD, since that's the only way position can become crazy?
     at.wrap()
 
     # dt being passed in ASE units

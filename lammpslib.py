@@ -313,8 +313,9 @@ End LAMMPSlib Interface Documentation
         #NB
         if not self.initialized:
             self.initialise_lammps(atoms)
-        else: # still need to reset cell
-           self.set_cell(atoms, change=True)
+        # else: # still need to reset cell
+           # now done below, so possibly crazy positions that hang change_box will have been set back to correct values
+           # self.set_cell(atoms, change=True)
 
         if self.parameters.atom_types is None:
            raise NameError("atom_types are mandatory.")
@@ -333,7 +334,8 @@ End LAMMPSlib Interface Documentation
            self.rebuild(atoms)
         elif do_redo_atom_types:
            self.redo_atom_types(atoms)
-           self.set_cell(atoms, change=True)
+           # now done below, so possibly crazy positions that hang change_box will have been set back to correct values
+           # self.set_cell(atoms, change=True) 
         self.lmp.command('echo log') # switch back log
 
         pos = atoms.get_positions() / unit_convert("distance", self.units)
@@ -352,6 +354,9 @@ End LAMMPSlib Interface Documentation
 #        self.lmp.put_coosrds(lmp_c_positions)
         self.lmp.scatter_atoms('x', 1, 3, lmp_c_positions)
 
+        # only do this after set atomic positions so that change_box won't hang with crazy positions that could have been left over from previous propagate() call
+        if not self.initialized or do_redo_atom_types:
+           self.set_cell(atoms, change=True)
 
         if n_steps > 0:
             vel = atoms.get_velocities() / unit_convert("velocity", self.units)
