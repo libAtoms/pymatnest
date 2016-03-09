@@ -334,8 +334,6 @@ End LAMMPSlib Interface Documentation
            self.rebuild(atoms)
         elif do_redo_atom_types:
            self.redo_atom_types(atoms)
-           # now done below, so possibly crazy positions that hang change_box will have been set back to correct values
-           # self.set_cell(atoms, change=True) 
         self.lmp.command('echo log') # switch back log
 
         pos = atoms.get_positions() / unit_convert("distance", self.units)
@@ -355,7 +353,7 @@ End LAMMPSlib Interface Documentation
         self.lmp.scatter_atoms('x', 1, 3, lmp_c_positions)
 
         # only do this after set atomic positions so that change_box won't hang with crazy positions that could have been left over from previous propagate() call
-        if not self.initialized or do_redo_atom_types:
+        if not self.initialized:
            self.set_cell(atoms, change=True)
 
         if n_steps > 0:
