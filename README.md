@@ -130,7 +130,8 @@ to the directory where the jobs are submitted from.
 Running on ARCHER (UK National Supercomputing Service)
 ------------------------------------------------------------------------------
 
-Install the latest ``ASE`` version and add that directory to your ``PYTHONPATH``.
+Install the latest ``ASE`` (3.9 or later) version and add that directory to your ``PYTHONPATH``, as the 
+default version on ARCHER is just 3.8.
 
 Copy the whole ``pymatnest`` library to your ``/work`` directory, otherwise the compute nodes will not be
 able to read all the relevant python files.
