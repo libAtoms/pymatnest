@@ -187,7 +187,8 @@ to the directory where the jobs are submitted from.</p>
 </div>
 <div class="section" id="running-on-archer-uk-national-supercomputing-service">
 <h2>Running on ARCHER (UK National Supercomputing Service)<a class="headerlink" href="#running-on-archer-uk-national-supercomputing-service" title="Permalink to this headline">¶</a></h2>
-<p>Install the latest <code class="docutils literal"><span class="pre">ASE</span></code> version and add that directory to your <code class="docutils literal"><span class="pre">PYTHONPATH</span></code>.</p>
+<p>Install the latest <code class="docutils literal"><span class="pre">ASE</span></code> (3.9 or later) version and add that directory to your <code class="docutils literal"><span class="pre">PYTHONPATH</span></code>, as the
+default version on ARCHER is just 3.8.</p>
 <p>Copy the whole <code class="docutils literal"><span class="pre">pymatnest</span></code> library to your <code class="docutils literal"><span class="pre">/work</span></code> directory, otherwise the compute nodes will not be
 able to read all the relevant python files.</p>
 <p>In the job script you have to swap and load appropriate modules.</p>
