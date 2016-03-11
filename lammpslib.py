@@ -266,13 +266,13 @@ End LAMMPSlib Interface Documentation
         comm=None)
 
     def set_cell(self, atoms, change=False):
-        cell, self.coord_transform = convert_cell(atoms.get_cell())
-        xhi = cell[0, 0]
-        yhi = cell[1, 1]
-        zhi = cell[2, 2]
-        xy = cell[0, 1]
-        xz = cell[0, 2]
-        yz = cell[1, 2]
+        lammps_cell, self.coord_transform = convert_cell(atoms.get_cell())
+        xhi = lammps_cell[0, 0]
+        yhi = lammps_cell[1, 1]
+        zhi = lammps_cell[2, 2]
+        xy = lammps_cell[0, 1]
+        xz = lammps_cell[0, 2]
+        yz = lammps_cell[1, 2]
 
         if change:
             cell_cmd = 'change_box all     x final 0 {} y final 0 {} z final 0 {}      xy final {} xz final {} yz final {}'\
@@ -310,12 +310,17 @@ End LAMMPSlib Interface Documentation
         if not self.started:
             self.start_lammps()
 
+        ####################################################################################################
         #NB
         if not self.initialized:
             self.initialise_lammps(atoms)
-        # else: # still need to reset cell
-           # now done below, so possibly crazy positions that hang change_box will have been set back to correct values
-           # self.set_cell(atoms, change=True)
+        else: # still need to reset cell
+            # reset positions so that if they are cray from last propagation, change_box (in set_cell()) won't hang
+            # could do this only after testing for crazy positions?
+            # could also use scatter_atoms() to set values (requires MPI comm), or extra_atoms() to get pointers to local 
+            #     data structures to zero, but then will have to be careful with parallelism
+            self.lmp.command("set atom * x 0.0 y 0.0 z 0.0")
+            self.set_cell(atoms, change=True)
 
         if self.parameters.atom_types is None:
            raise NameError("atom_types are mandatory.")
@@ -351,10 +356,6 @@ End LAMMPSlib Interface Documentation
             (ctypes.c_double * len(lmp_positions))(*lmp_positions)
 #        self.lmp.put_coosrds(lmp_c_positions)
         self.lmp.scatter_atoms('x', 1, 3, lmp_c_positions)
-
-        # only do this after set atomic positions so that change_box won't hang with crazy positions that could have been left over from previous propagate() call
-        if not self.initialized:
-           self.set_cell(atoms, change=True)
 
         if n_steps > 0:
             vel = atoms.get_velocities() / unit_convert("velocity", self.units)
