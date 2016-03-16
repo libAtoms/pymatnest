@@ -376,7 +376,7 @@ End LAMMPSlib Interface Documentation
 
         # Run for 0 time to calculate
         if dt is not None:
-            self.lmp.command('timestep %f' % ( dt/unit_convert("time", self.units)) )
+            self.lmp.command('timestep %.30f' % ( dt/unit_convert("time", self.units)) )
         self.lmp.command('run %d' % n_steps)
 
         if n_steps > 0:
@@ -550,19 +550,19 @@ End LAMMPSlib Interface Documentation
            self.rebuild(atoms)
            self.lmp.command('echo log') # turn back on
 
-        # Set masses
+        # execute the user commands
+        for cmd in self.parameters.lmpcmds:
+            self.lmp.command(cmd)
+
+        # Set masses after user commands, to override EAM provided masses, e.g.
         masses = atoms.get_masses()
         for sym in self.parameters.atom_types:
             for i in range(len(atoms)):
                 if symbols[i] == sym:
                     # convert from amu (ASE) to lammps mass unit)
-                    self.lmp.command('mass %d %f' % (self.parameters.atom_types[sym], masses[i] /
+                    self.lmp.command('mass %d %.30f' % (self.parameters.atom_types[sym], masses[i] /
                                                      unit_convert("mass", self.units) ))
                     break
-
-        # execute the user commands
-        for cmd in self.parameters.lmpcmds:
-            self.lmp.command(cmd)
 
         # Define force & energy variables for extraction
         self.lmp.command('variable pxx equal pxx')
