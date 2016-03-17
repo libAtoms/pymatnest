@@ -2953,7 +2953,9 @@ def main():
 
 	if ns_args['profile'] == rank:
 	    import cProfile
-	    cProfile.run('do_ns_loop()',ns_args['out_file_prefix']+'profile.stats')
+            pr = cProfile.Profile()
+	    pr.runcall(do_ns_loop)
+            pr.dump_stats(ns_args['out_file_prefix']+'profile.stats')
 	else:
 	    do_ns_loop()
 
