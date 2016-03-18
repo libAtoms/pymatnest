@@ -1614,11 +1614,11 @@ def save_snapshot(id):
 
     snapshot_io.close()
 
-def clean_prev_snapshot(prev_snapshot_iter):
-    if prev_snapshot_iter is not None:
-	snapshot_file=ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (prev_snapshot_iter, rank, ns_args['config_file_format'])
+def clean_prev_snapshot(iter):
+    if iter is not None:
+	snapshot_file=ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (iter, rank, ns_args['config_file_format'])
 	try:
-	    os.remove(snapshot_file)
+            os.remove(snapshot_file)
 	except:
 	    print print_prefix, ": WARNING: Failed to delete '%s'" % snapshot_file
 
@@ -1689,6 +1689,9 @@ def do_ns_loop():
     if ns_args['converge_down_to_T'] > 0:
         beta = 1.0/(kB*ns_args['converge_down_to_T'])
         Z_term_max = None
+
+    prev_snapshot_iter = None
+    pprev_snapshot_iter = None
 
     # actual iteration cycle starts here
     i_ns_step = start_first_iter
@@ -1913,9 +1916,6 @@ def do_ns_loop():
 
 	# save new common state, and restore to local state
 	rng.switch_to_local()
-
-        prev_snapshot_iter = None
-        pprev_snapshot_iter = None
 
 	if n_cull == 1:
 	    if send_rank[0] == recv_rank[0] and send_rank[0] == rank: # local copy
