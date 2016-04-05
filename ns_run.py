@@ -974,11 +974,13 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         v_1_orig = velocities[c1,:].copy()
         v_2_orig = velocities[c2,:].copy()
         if movement_args['no_swap_velo_fix_mag_alt']:
+            # make velocity have the same direction, but magnitude from the previous velocity of the other particle so local KE and momentum are preserved
             n1 = np.linalg.norm(v_1_orig)
             n2 = np.linalg.norm(v_2_orig)
             velocities[c1,:] = (v_2_orig.T * n1/n2).T
             velocities[c2,:] = (v_1_orig.T * n2/n1).T
         else: # this will be executed (unnecessarily) even if all masses are the same
+            # make velocity have same direction, and magnitude rescaled to keep local kinetic energy the same
             masses = at.get_masses()
             velocities[c1,:] = (v_2_orig.T * np.sqrt(masses[c2]/masses[c1])).T
             velocities[c2,:] = (v_1_orig.T * np.sqrt(masses[c1]/masses[c2])).T
@@ -2682,6 +2684,23 @@ def main():
 	if  rank == 0:
 	    print "Using n_model_calls = ", movement_args['n_model_calls']
 
+        # create list of species, and check for possible problems
+        species_list = ns_args['start_species'].split(',')
+        if do_calc_lammps:
+           if not {ase.data.chemical_symbols[int(species.split()[0])] for species in species_list} == set(ns_args['LAMMPS_atom_types'].keys()):
+              exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
+        mass_list=[]
+        for species in species_list:
+            species_fields = species.split()
+            if len(species_fields) == 3:
+                sys.stderr.write("WARNING: setting masses explicitly.  Not recommended, do only if you're sure it's necessary\n")
+            type_mass = float(species_fields[2])
+            mass_list.append(type_mass)
+        mass_list = np.array(mass_list)
+        if np.any(mass_list != mass_list[0]) and not movement_args['atom_velo_rej_free_fully_randomize']:
+            exit_error("ERROR: Masses are not all equal, and atom_velo_rej_free_fully_randomize is false. Refusing to produce incorrect results\n", 1)
+
+
 	walkers=[]
 	if ns_args['restart_file'] == '': # start from scratch
             start_first_iter = 0
@@ -2690,10 +2709,6 @@ def main():
 		# create atoms structs from a list of atomic numbers and numbers of atoms
 		lc = ns_args['max_volume_per_atom']**(1.0/3.0)
 		init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
-		species_list = ns_args['start_species'].split(',')
-                if do_calc_lammps:
-                   if not {ase.data.chemical_symbols[int(species.split()[0])] for species in species_list} == set(ns_args['LAMMPS_atom_types'].keys()):
-                      exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
 		for species in species_list:
 		    species_fields = species.split()
 		    type_Z = int(species_fields[0])
@@ -2703,7 +2718,6 @@ def main():
 		    elif len(species_fields) == 3:
 			type_mass = float(species_fields[2])
 			init_atoms += ase.Atoms([type_Z] * type_n, masses=[type_mass] * type_n)
-                        sys.stderr.write("WARNING: setting masses explicitly.  Not recommended, do only if you're sure it's necessary\n")
 		    else:
 			exit_error("Each entry in start_species must include atomic number, multiplicity, and optionally mass", 5)
 
@@ -2727,14 +2741,6 @@ def main():
 			init_atoms.mass[:] = init_atoms.get_masses()*quippy.MASSCONVERT
                 else: # no 'masses'
                     exit_error("got do_velocities, but masses property isn't set.  This should never happen\n", 3)
-                    ## if have_quippy: # use quippy.Atoms.mass[:] or quippy.ElementMass[Z[:]]
-                        ## if not init_atoms.has('mass'): # set Atoms.mass from quippy.ElementMass
-                            ## init_atoms.add_property('mass', 0.0)
-                            ## init_atoms.mass[:] = quippy.ElementMass[init_atoms.Z]
-                        ## # convert masses from mass
-                        ## init_atoms.set_masses(init_atoms.mass/quippy.MASSCONVERT)
-                    ## else:
-                        ## exit_error("MD set, but masses weren't specified in start_species, and quippy is not available for automatically setting masses\n", 3)
 
 	    # create extra data arrays if needed
 	    if ns_args['n_extra_data'] > 0:
