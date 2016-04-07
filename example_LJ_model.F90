@@ -289,7 +289,7 @@ implicit none
       v_norm_hat = v_norm_hat / sqrt(sum(v_norm_hat**2))
       cell_height(i) = abs(sum(v_norm_hat*cell(:,i)))
    end do
-   n_images = ceiling(cutoff(Z_i,Z_j)/minval(cell_height))
+   n_images = ceiling(maxval(cutoff)/minval(cell_height))
 
    call matrix3x3_inverse(cell, cell_inv)
    do i=1, N
