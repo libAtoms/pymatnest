@@ -2690,15 +2690,19 @@ def main():
            if not {ase.data.chemical_symbols[int(species.split()[0])] for species in species_list} == set(ns_args['LAMMPS_atom_types'].keys()):
               exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
         mass_list=[]
+        warned=False
         for species in species_list:
             species_fields = species.split()
             if len(species_fields) == 3:
-                sys.stderr.write("WARNING: setting masses explicitly.  Not recommended, do only if you're sure it's necessary\n")
-            type_mass = float(species_fields[2])
-            mass_list.append(type_mass)
-        mass_list = np.array(mass_list)
-        if np.any(mass_list != mass_list[0]) and not movement_args['atom_velo_rej_free_fully_randomize']:
-            exit_error("ERROR: Masses are not all equal, and atom_velo_rej_free_fully_randomize is false. Refusing to produce incorrect results\n", 1)
+                if not warned:
+                    sys.stderr.write("WARNING: setting masses explicitly.  Not recommended, do only if you're sure it's necessary\n")
+                    warned=True
+                type_mass = float(species_fields[2])
+                mass_list.append(type_mass)
+        if len(mass_list) > 0:
+            mass_list = np.array(mass_list)
+            if np.any(mass_list != mass_list[0]) and not movement_args['atom_velo_rej_free_fully_randomize']:
+                exit_error("ERROR: Masses are not all equal, and atom_velo_rej_free_fully_randomize is false. Refusing to produce incorrect results\n", 1)
 
 
 	walkers=[]
