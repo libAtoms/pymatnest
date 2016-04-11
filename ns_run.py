@@ -2792,26 +2792,26 @@ def main():
 		# random initial positions
 		energy = float('nan')
 		n_try = 0
-		while n_try < 10 and math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+		while n_try < 10 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 		    at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
 		    energy = eval_energy(at)
 		    n_try += 1
 		if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-		    sys.stderr.write("WARNING: rank %d failed to generate initial config by random positions under max energy %f in 10 tries\n" % (rank, ns_args['start_energy_ceiling']), 4)
+		    sys.stderr.write("WARNING: rank %d failed to generate initial config by random positions under max energy %f in 10 tries\n" % (rank, ns_args['start_energy_ceiling']))
 
 		# try FORTRAN config initializer
 		n_try = 0
 		if do_calc_fortran:
-		    while n_try < 10 and math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+		    while n_try < 10 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 			f_MC_MD.init_config(at, ns_args['start_energy_ceiling']-movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms))
 			energy = eval_energy(at)
 			n_try += 1
 		    if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-			sys.stderr.write("WARNING: rank %d failed to generate initial config by fortran config initializer under max energy %f in 10 tries\n" % (rank, ns_args['start_energy_ceiling']), 4)
+			sys.stderr.write("WARNING: rank %d failed to generate initial config by fortran config initializer under max energy %f in 10 tries\n" % (rank, ns_args['start_energy_ceiling']))
 
 		# try python config initializer
 		n_try = 0
-		while n_try < 10 and math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
+		while n_try < 10 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 		    energy = additive_init_config(at, ns_args['start_energy_ceiling'])
 		    n_try += 1
 
