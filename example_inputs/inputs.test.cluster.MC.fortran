@@ -1,0 +1,40 @@
+# starting volume (in this example it is Angstrom^3)
+max_volume_per_atom=108.0
+# 8 atoms with atomic number 1 and mass 1.0
+start_species=1 8 1.0
+start_energy_ceiling=1.0e9
+
+# size of live set
+n_walkers=256
+# at each iteration 1 walker is killed
+n_cull=1
+# total number of iterations will be n_iter_per_walker*n_walkers
+n_iter_per_walker=100
+# prefix of all the output files
+out_file_prefix=test.cluster.MC.fortran
+
+# use MC generating a new walker
+atom_algorithm=MC
+n_model_calls_expected=3      
+n_atom_steps=5                
+# length of atomic trajectory in each step
+atom_traj_len=5               
+# number of cell volume steps
+n_cell_volume_steps=0         
+# number of cell shear steps
+n_cell_shear_steps=0          
+# number of cell strectch steps
+n_cell_stretch_steps=0        
+
+
+MC_atom_step_size=5.0
+MC_atom_step_size_max=5.0
+
+FORTRAN_model=example_LJ_min_image_model.so
+# use the supplied fortran code
+energy_calculator=fortran
+
+rng=numpy
+
+# verbosity level
+debug=0
