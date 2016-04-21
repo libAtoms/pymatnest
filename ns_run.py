@@ -1517,6 +1517,7 @@ def save_snapshot(id):
 	    #QUIP_IO at.write(snapshot_io)
 	#QUIP_IO else:
 	    #QUIP_IO ase.io.write(snapshot_file % i_at, ase.Atoms(at))
+	at.info['volume'] = at.get_volume()
         at.info['iter']=id
 	ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
 
