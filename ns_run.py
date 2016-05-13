@@ -319,6 +319,10 @@ def usage():
        |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
        |  default: 1000
 
+      ``snapshot_clean=[ T | F ]``
+       | If true, delete previous iteration snapshot files
+       | default: T
+
     ``traj_interval=int``
      |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
      |  default: 1 
@@ -436,6 +440,7 @@ def usage():
     sys.stderr.write("2D=[ T | F ] (F, unsupported)\n")
     sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
     sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
+    sys.stderr.write("snapshot_clean=[T | F] (T, if true clean previous iter snapshots\n")
     sys.stderr.write("traj_interval=int (1, <=0 for no trajectory)\n")
     sys.stderr.write("delta_random_seed=int (-1, < 0 for seed from /dev/urandom)\n")
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
@@ -1617,7 +1622,7 @@ def save_snapshot(id):
     snapshot_io.close()
 
 def clean_prev_snapshot(iter):
-    if iter is not None:
+    if iter is not None and ns_args['snapshot_clean']:
 	snapshot_file=ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (iter, rank, ns_args['config_file_format'])
 	try:
             os.remove(snapshot_file)
@@ -2363,6 +2368,7 @@ def main():
 	ns_args['profile'] = int(args.pop('profile', -1))
 	ns_args['debug'] = int(args.pop('debug', -1))
 	ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
+	ns_args['snapshot_clean'] = str_to_logical(args.pop('snapshot_clean', "T"))
 	ns_args['traj_interval'] = int(args.pop('traj_interval', 1))
 	ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 	ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
@@ -2371,7 +2377,7 @@ def main():
 
 	ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling', 1.0e9))
 	ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
-	kB = 8.6173324e-5
+	kB = 8.6173324e-5 # eV/K
 
 	# parse energy_calculator
 	ns_args['energy_calculator'] = args.pop('energy_calculator', 'fortran')
