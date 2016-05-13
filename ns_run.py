@@ -699,7 +699,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 	final_E = eval_energy(at)
     elif do_calc_lammps:
 	propagate_NVE_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
-	final_E = eval_energy(at)
+	final_E = pot.results['energy'] + eval_energy(at, do_PE=False)
     elif do_calc_fortran:
 	final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_traj_len'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
 	final_E += eval_energy(at,do_PE=False, do_KE=False)
