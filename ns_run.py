@@ -1690,13 +1690,13 @@ def do_ns_loop():
     last_log_X_n = 0.0
     i_range_mod_n_cull = np.array(range(ns_args['n_cull']))
     i_range_plus_1_mod_n_cull = np.mod(np.array(range(ns_args['n_cull']))+1, ns_args['n_cull'])
-    log_X_n_term = np.log(n_walkers-i_range_mod_n_cull) - np.log(n_walkers+1-i_range_mod_n_cull)
+    log_X_n_term = np.log(ns_args['n_walkers']-i_range_mod_n_cull) - np.log(ns_args['n_walkers']+1-i_range_mod_n_cull)
     log_X_n_term_cumsum = np.cumsum(log_X_n_term)
-    log_X_n_term_cumsum_modified = log_X_n_term_cumsum - np.log(n_walkers+1-i_range_plus_1_mod_n_cull)
+    log_X_n_term_cumsum_modified = log_X_n_term_cumsum - np.log(ns_args['n_walkers']+1-i_range_plus_1_mod_n_cull)
     log_X_n_term_sum = log_X_n_term_cumsum[-1]
     if ns_args['converge_down_to_T'] > 0:
         beta = 1.0/(kB*ns_args['converge_down_to_T'])
-        Z_term_max = None
+        log_Z_term_max = None
 
     prev_snapshot_iter = None
     pprev_snapshot_iter = None
@@ -1740,12 +1740,14 @@ def do_ns_loop():
         if ns_args['converge_down_to_T'] > 0:
             # see ns_analyse.py calc_log_a() for math
             log_a = log_X_n_term_sum*i_ns_step + log_X_n_term_cumsum_modified
-            #DEBUG for ii in range(len(log_a)):
-                #DEBUG print i_ns_step, "log_a beta*Es ", log_a[ii], beta*Emax[ii]
-            Z_term_max = max(Z_term_max, np.amax(log_a-beta*Emax))
-            Z_term_last = log_a[-1]-beta*Emax[-1]
-            print "Z_term max ", Z_term_max, "last ", Z_term_last, "diff ", Z_term_max-Z_term_last
-            if Z_term_last <  Z_term_max - 10.0:
+            #DEBUG if rank == 0:
+                #DEBUG for ii in range(len(log_a)):
+                    #DEBUG print i_ns_step, "log_a, beta, Es, beta*Es ", log_a[ii], beta, Emax[ii], beta*Emax[ii]
+            log_Z_term_max = max(log_Z_term_max, np.amax(log_a-beta*Emax))
+            log_Z_term_last = log_a[-1]-beta*Emax[-1]
+            if rank == 0:
+                print "log_Z_term max ", log_Z_term_max, "last ", log_Z_term_last, "diff ", log_Z_term_max-log_Z_term_last
+            if log_Z_term_last <  log_Z_term_max - 10.0:
                 if rank == 0:
                     print "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
                 break
