@@ -1641,7 +1641,7 @@ def do_ns_loop():
 	nD = 3
 	if movement_args['2D']:
 	    nD = 2
-	if ns_args['restart_file'] == '':
+	if energy_io.tell() == 0:
 	    if movement_args['do_velocities']:
 		nExtraDOF = 0
 	    else:
@@ -1737,6 +1737,13 @@ def do_ns_loop():
                 # if the termination was set by a minimum energy, and it is reached, stop.
 		print "Leaving loop because Emax=",Emax_of_step," < min_Emax =",ns_args['min_Emax']
 	    break
+
+        if rank == 0:
+            cur_time=time.time()
+            output_this_iter = (cur_time > prev_time+60 or i_ns_step == 0 or i_ns_step == ns_args['n_iter'] or (ns_args['n_iter'] > 0 and i_ns_step % max(int(ns_args['n_iter']/1000),1) == 0))
+        else:
+            output_this_iter = False
+
         if ns_args['converge_down_to_T'] > 0:
             # see ns_analyse.py calc_log_a() for math
             log_a = log_X_n_term_sum*i_ns_step + log_X_n_term_cumsum_modified
@@ -1745,16 +1752,14 @@ def do_ns_loop():
                     #DEBUG print i_ns_step, "log_a, beta, Es, beta*Es ", log_a[ii], beta, Emax[ii], beta*Emax[ii]
             log_Z_term_max = max(log_Z_term_max, np.amax(log_a-beta*Emax))
             log_Z_term_last = log_a[-1]-beta*Emax[-1]
-            if rank == 0:
+            if output_this_iter:
                 print "log_Z_term max ", log_Z_term_max, "last ", log_Z_term_last, "diff ", log_Z_term_max-log_Z_term_last
             if log_Z_term_last <  log_Z_term_max - 10.0:
                 if rank == 0:
                     print "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
                 break
 
-	if rank == 0:
-	    cur_time=time.time()
-	    if (cur_time > prev_time+60 or i_ns_step == 0 or i_ns_step == ns_args['n_iter'] or (ns_args['n_iter'] > 0 and i_ns_step % max(int(ns_args['n_iter']/1000),1) == 0)):
+	if output_this_iter:
 		print i_ns_step, "Emax_of_step ", Emax_of_step, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration
 		prev_time = cur_time
 		step_size_setting_duration = 0.0
@@ -2950,25 +2955,29 @@ def main():
 	    if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
 	        energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
             else: # restart, so the existing file should be appended
-	        energy_io = open(ns_args['out_file_prefix']+'energies', 'r+')
-		tmp_iter = 0
-                line = energy_io.readline() # read the first line of nwalker,ncull..etc information
-		i = 0
-		while True: # we do create an infinite loop here :(
-		    line=energy_io.readline()              # read lines one by one
-	  	    if not line:                           # something went wrong, exit the infinit loop
-                        print "WARNING: end of .energies file reached without finding the iteration number", start_first_iter
-			break
-		    i = i+1
-                    if (i%10000 == 0):
-                        print rank, "reading .energies file line %d" % i
-		    if i%n_cull==0:                        # if this is n_cull-th line, examine the stored iteration
-                        tmp_split = line.split()
-                        tmp_iter = int(tmp_split[0])       # tmp_iter contains the iteration number of the line as an integer number
-                    if tmp_iter == start_first_iter-1:     # if this is the iteration same as in the snapshot, 
-                        print rank, "truncating energy file at line ", i
-                        energy_io.truncate()                #delete the rest of the file, as we are restarting from here
-                        break
+                try:
+                    energy_io = open(ns_args['out_file_prefix']+'energies', 'r+')
+                    tmp_iter = 0
+                    line = energy_io.readline() # read the first line of nwalker,ncull..etc information
+                    i = 0
+                    while True: # we do create an infinite loop here :(
+                        line=energy_io.readline()              # read lines one by one
+                        if not line:                           # something went wrong, exit the infinit loop
+                            print "WARNING: end of .energies file reached without finding the iteration number", start_first_iter
+                            break
+                        i = i+1
+                        if (i%10000 == 0):
+                            print rank, "reading .energies file line %d" % i
+                        if i%n_cull==0:                        # if this is n_cull-th line, examine the stored iteration
+                            tmp_split = line.split()
+                            tmp_iter = int(tmp_split[0])       # tmp_iter contains the iteration number of the line as an integer number
+                        if tmp_iter == start_first_iter-1:     # if this is the iteration same as in the snapshot, 
+                            print rank, "truncating energy file at line ", i
+                            energy_io.truncate()                #delete the rest of the file, as we are restarting from here
+                            break
+                except:
+                    print "WARNING: got restart file, but no corresponding energies file, so creating new one from scratch"
+                    energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
 
 	if ns_args['profile'] == rank:
 	    import cProfile
