@@ -584,6 +584,8 @@ End LAMMPSlib Interface Documentation
         # do we need this if we extract from a global ?
         self.lmp.command('variable pe equal pe')
 
+        self.lmp.command("neigh_modify delay 0 every 1 check yes")
+
         self.initialized = True
 
 #print('done loading lammpslib')
