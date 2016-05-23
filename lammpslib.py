@@ -711,3 +711,5 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
 
     if isinstance(filename, basestring):
         fh.close()
+
+
