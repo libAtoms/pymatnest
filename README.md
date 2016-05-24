@@ -10,7 +10,10 @@ L.B. Partay, A.P. Bartok, G. Csanyi, *Efficient Sampling of Atomic Configuration
 J. Phys. Chem. B (2010), 114, 10502–10512, http://pubs.acs.org/doi/abs/10.1021/jp1012973
 
 L.B. Partay, A.P. Bartok, G. Csanyi, *Nested sampling for materials: The case of hard spheres*, 
-Phys. Rev. E (2014), 89, 022302 http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302
+Phys. Rev. E (2014), 89, 022302, http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302
+
+R.J.N. Baldock, L.B. Partay, A.P. Bartok, M.C. Payne, G. Csanyi, *Determining pressure-temperature phase diagrams of materials*,
+Phys. Rev. B (2016), 93, 174108, http://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108 
 
 ******
 
