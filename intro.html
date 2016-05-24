@@ -155,7 +155,9 @@ configuration spaces.</p>
 <p>L.B. Partay, A.P. Bartok, G. Csanyi, <em>Efficient Sampling of Atomic Configurational Spaces</em>,
 J. Phys. Chem. B (2010), 114, 10502–10512, <a class="reference external" href="http://pubs.acs.org/doi/abs/10.1021/jp1012973">http://pubs.acs.org/doi/abs/10.1021/jp1012973</a></p>
 <p>L.B. Partay, A.P. Bartok, G. Csanyi, <em>Nested sampling for materials: The case of hard spheres</em>,
-Phys. Rev. E (2014), 89, 022302 <a class="reference external" href="http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302">http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302</a></p>
+Phys. Rev. E (2014), 89, 022302, <a class="reference external" href="http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302">http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302</a></p>
+<p>R.J.N. Baldock, L.B. Partay, A.P. Bartok, M.C. Payne, G. Csanyi, <em>Determining pressure-temperature phase diagrams of materials</em>,
+Phys. Rev. B (2016), 93, 174108, <a class="reference external" href="http://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108">http://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108</a></p>
 </div>
 <div class="section" id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
@@ -233,7 +235,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <li><p class="first">if MC_atom_velocities and MC_atom_velocities_pre_perturb, call do_MC_atom_velo_walk() to perturb velocities, magnitude and and rotation</p>
 </li>
 <li><dl class="first docutils">
-<dt>if using fortran calculator</dt>
+<dt>if using fortran calculator and not reproducible</dt>
 <dd><ul class="first last simple">
 <li>call fortran MC code f_MC_MD.MC_atom_walk</li>
 </ul>
@@ -270,7 +272,8 @@ It can be used with the supplied fortran potential models and it also has interf
 <dt><code class="docutils literal"><span class="pre">do_MC_swap_step</span></code></dt>
 <dd><ul class="first last simple">
 <li>return if all atomic numbers are identical</li>
-<li>pick two atoms with distinct atomic numbers</li>
+<li>randomly pick a desired cluster size</li>
+<li>pick two clusters with distinct atomic numbers, backing off to smaller clusters on failure to find appropriate larger clusters, but always pick at least a pair of atoms to swap</li>
 <li>accept swap if energy &lt; Emax</li>
 </ul>
 </dd>

@@ -93,13 +93,13 @@
 
 <dl class="function">
 <dt id="ns_run.adjust_step_sizes">
-<code class="descclassname">ns_run.</code><code class="descname">adjust_step_sizes</code><span class="sig-paren">(</span><em>walk_stats</em>, <em>movement_args</em>, <em>comm</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#adjust_step_sizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.adjust_step_sizes" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ns_run.</code><code class="descname">adjust_step_sizes</code><span class="sig-paren">(</span><em>walk_stats</em>, <em>movement_args</em>, <em>comm</em>, <em>do_print_rate=True</em>, <em>monitor_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#adjust_step_sizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.adjust_step_sizes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adjust step size to keep the acceptance ratio at the desired level.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ns_run.clean_prev_snapshot">
-<code class="descclassname">ns_run.</code><code class="descname">clean_prev_snapshot</code><span class="sig-paren">(</span><em>prev_snapshot_iter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#clean_prev_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.clean_prev_snapshot" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ns_run.</code><code class="descname">clean_prev_snapshot</code><span class="sig-paren">(</span><em>iter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#clean_prev_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.clean_prev_snapshot" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -288,7 +288,7 @@
 <dt id="term-start-species-int-int-float-int-int-float"><code class="docutils literal"><span class="pre">start_species=int</span> <span class="pre">int</span> <span class="pre">[</span> <span class="pre">float</span> <span class="pre">]</span> <span class="pre">[,</span> <span class="pre">int</span> <span class="pre">int</span> <span class="pre">[</span> <span class="pre">float</span> <span class="pre">]</span> <span class="pre">...</span> <span class="pre">]</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">MANDATORY</div>
-<div class="line">Atomic number; multiplicity; mass (amu). Info repeated for each species, separated by commas, mass is optional. Mutually exclusive with restart_*, one is required</div>
+<div class="line">Atomic number; multiplicity; [ not recommended: mass (amu) ]. Info repeated for each species, separated by commas, mass is optional and not recommended.</div>
 </div>
 </dd>
 <dt id="term-restart-file-path-to-file"><code class="docutils literal"><span class="pre">restart_file=path_to_file</span></code></dt>
@@ -313,10 +313,16 @@
 <div class="line">default: 0</div>
 </div>
 </dd>
-<dt id="term-n-iter-per-walker-int"><code class="docutils literal"><span class="pre">n_iter_per_walker=int</span></code></dt>
+<dt id="term-n-iter-times-fraction-killed-int"><code class="docutils literal"><span class="pre">n_iter_times_fraction_killed=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">MANDATORY</div>
-<div class="line">Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be <code class="docutils literal"><span class="pre">n_walkers</span></code> * <code class="docutils literal"><span class="pre">n_iter_per_walker</span></code></div>
+<div class="line">Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be <code class="docutils literal"><span class="pre">n_iter_times_fraction_killed</span></code> / <code class="docutils literal"><span class="pre">(n_cull/n_walkers)</span></code>. Either this or converge_down_to_T is required.</div>
+</div>
+</dd>
+<dt id="term-converge-down-to-t-flot"><code class="docutils literal"><span class="pre">converge_down_to_T=flot</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">temperature down to which Z(T) should be converged.  Either this or n_iter_times_fraction_killed is required.</div>
 </div>
 </dd>
 <dt id="term-min-emax-float"><code class="docutils literal"><span class="pre">min_Emax=float</span></code></dt>
@@ -419,6 +425,36 @@
 <dd><div class="first last line-block">
 <div class="line">Number of species swap steps in each block. Has to be set other than zero for a multicomponent system.</div>
 <div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-swap-max-cluster-int"><code class="docutils literal"><span class="pre">swap_max_cluster=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(maximum size of interconnected cluster to try to swap)</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-swap-r-cut-float"><code class="docutils literal"><span class="pre">swap_r_cut=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(cutoff radius for defining connected atoms for cluster)</div>
+<div class="line">default: 2.5</div>
+</div>
+</dd>
+<dt id="term-swap-cluster-probability-increment-float"><code class="docutils literal"><span class="pre">swap_cluster_probability_increment=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(factor between prob. of picking increasing larger clusters)</div>
+<div class="line">default: 0.75</div>
+</div>
+</dd>
+<dt id="term-swap-velo-t-f"><code class="docutils literal"><span class="pre">swap_velo=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(if true, swap velocities when swapping atoms, breaking coherence a bit)</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-no-swap-velo-fix-mag-alt-t-f"><code class="docutils literal"><span class="pre">no_swap_velo_fix_mag_alt=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(if true, use alternate method for correcting velocity magnitudes when not swapping velocities)</div>
+<div class="line">default: F</div>
 </div>
 </dd>
 <dt id="term-velo-traj-len-int"><code class="docutils literal"><span class="pre">velo_traj_len=int</span></code> </dt>
@@ -600,10 +636,16 @@
 | If true (T), automatically calibrate all sizes by performing additional short explorations, including at the start of run. If false (F), use initial input step sizes and make small adjustments to these during the run.
 | default: T</p>
 </dd>
-<dt id="term-adjust-step-interval-per-walker-float"><code class="docutils literal"><span class="pre">adjust_step_interval_per_walker=float</span></code> </dt>
+<dt id="term-monitor-step-interval-times-fraction-killed-float"><code class="docutils literal"><span class="pre">monitor_step_interval_times_fraction_killed=float</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Multipled by number of walkers to get actual interval in iterations, negative for only using last iteration, 0 for no adjust.</div>
-<div class="line">default: 0.5</div>
+<div class="line">Divided by <code class="docutils literal"><span class="pre">n_cull/n_walkers</span></code> to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-adjust-step-interval-times-fraction-killed-float"><code class="docutils literal"><span class="pre">adjust_step_interval_times_fraction_killed=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Divided by <code class="docutils literal"><span class="pre">n_cull/n_walkers</span></code> to get actual step adjustment interval in iterations, negative for only using last iteration, 0 for no adjust.</div>
+<div class="line">default: 1</div>
 </div>
 </dd>
 <dt id="term-mc-adjust-step-factor-float"><code class="docutils literal"><span class="pre">MC_adjust_step_factor=float</span></code></dt>
@@ -708,10 +750,13 @@
 </div>
 </dd>
 <dt id="term-snapshot-interval-int"><code class="docutils literal"><span class="pre">snapshot_interval=int</span></code></dt>
-<dd><div class="first last line-block">
+<dd><div class="first line-block">
 <div class="line">Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set &lt;=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.</div>
 <div class="line">default: 1000</div>
 </div>
+<p class="last"><cite>snapshot_clean=[ T | F ]`</cite>
+| If true, delete previous iteration snapshot files
+| default: T</p>
 </dd>
 <dt id="term-traj-interval-int"><code class="docutils literal"><span class="pre">traj_interval=int</span></code></dt>
 <dd><div class="first last line-block">

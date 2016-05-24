@@ -113,7 +113,7 @@
   </dt>
 
       
-  <dt><a href="getstart.html#term-adjust-step-interval-per-walker-float"><strong>adjust_step_interval_per_walker=float</strong></a>, <a href="ns_run.html#term-adjust-step-interval-per-walker-float"><strong>[1]</strong></a>
+  <dt><a href="getstart.html#term-adjust-step-interval-times-fraction-killed-float"><strong>adjust_step_interval_times_fraction_killed=float</strong></a>, <a href="ns_run.html#term-adjust-step-interval-times-fraction-killed-float"><strong>[1]</strong></a>
   </dt>
 
       
@@ -180,6 +180,10 @@
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-config-file-format-str"><strong>config_file_format=str</strong></a>, <a href="ns_run.html#term-config-file-format-str"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-converge-down-to-t-flot"><strong>converge_down_to_T=flot</strong></a>, <a href="ns_run.html#term-converge-down-to-t-flot"><strong>[1]</strong></a>
   </dt>
 
       
@@ -506,12 +510,12 @@
   <dt><a href="getstart.html#term-mc-cell-shear-step-size-max-float"><strong>MC_cell_shear_step_size_max=float</strong></a>, <a href="ns_run.html#term-mc-cell-shear-step-size-max-float"><strong>[1]</strong></a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-mc-cell-stretch-prob-float"><strong>MC_cell_stretch_prob=float</strong></a>, <a href="ns_run.html#term-mc-cell-stretch-prob-float"><strong>[1]</strong></a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-mc-cell-stretch-step-size-float"><strong>MC_cell_stretch_step_size=float</strong></a>, <a href="ns_run.html#term-mc-cell-stretch-step-size-float"><strong>[1]</strong></a>
   </dt>
@@ -584,6 +588,10 @@
   <dt><a href="getstart.html#term-min-emax-float"><strong>min_Emax=float</strong></a>, <a href="ns_run.html#term-min-emax-float"><strong>[1]</strong></a>
   </dt>
 
+      
+  <dt><a href="getstart.html#term-monitor-step-interval-times-fraction-killed-float"><strong>monitor_step_interval_times_fraction_killed=float</strong></a>, <a href="ns_run.html#term-monitor-step-interval-times-fraction-killed-float"><strong>[1]</strong></a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -619,7 +627,7 @@
   </dt>
 
       
-  <dt><a href="getstart.html#term-n-iter-per-walker-int"><strong>n_iter_per_walker=int</strong></a>, <a href="ns_run.html#term-n-iter-per-walker-int"><strong>[1]</strong></a>
+  <dt><a href="getstart.html#term-n-iter-times-fraction-killed-int"><strong>n_iter_times_fraction_killed=int</strong></a>, <a href="ns_run.html#term-n-iter-times-fraction-killed-int"><strong>[1]</strong></a>
   </dt>
 
       
@@ -634,18 +642,22 @@
   <dt><a href="getstart.html#term-n-swap-steps-int"><strong>n_swap_steps=int</strong></a>, <a href="ns_run.html#term-n-swap-steps-int"><strong>[1]</strong></a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-n-walkers-int"><strong>n_walkers=int</strong></a>, <a href="ns_run.html#term-n-walkers-int"><strong>[1]</strong></a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="rngstream.html#rngstream.RngStream_InfoState.name">name (rngstream.RngStream_InfoState attribute)</a>
   </dt>
 
       
   <dt><a href="getstart.html#term-no-extra-walks-at-all-t-f"><strong>no_extra_walks_at_all=[ T | F ]</strong></a>, <a href="ns_run.html#term-no-extra-walks-at-all-t-f"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-no-swap-velo-fix-mag-alt-t-f"><strong>no_swap_velo_fix_mag_alt=[T | F]</strong></a>, <a href="ns_run.html#term-no-swap-velo-fix-mag-alt-t-f"><strong>[1]</strong></a>
   </dt>
 
       
@@ -856,8 +868,6 @@
   </dt>
 
       </dl></dd>
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-snapshot-interval-int"><strong>snapshot_interval=int</strong></a>, <a href="ns_run.html#term-snapshot-interval-int"><strong>[1]</strong></a>
   </dt>
@@ -866,6 +876,8 @@
   <dt><a href="stacktrace.html#module-stacktrace">stacktrace (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-start-energy-ceiling-float"><strong>start_energy_ceiling=float</strong></a>, <a href="ns_run.html#term-start-energy-ceiling-float"><strong>[1]</strong></a>
   </dt>
@@ -876,6 +888,22 @@
 
       
   <dt><a href="ns_run.html#ns_run.str_to_logical">str_to_logical() (in module ns_run)</a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-swap-cluster-probability-increment-float"><strong>swap_cluster_probability_increment=float</strong></a>, <a href="ns_run.html#term-swap-cluster-probability-increment-float"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-swap-max-cluster-int"><strong>swap_max_cluster=int</strong></a>, <a href="ns_run.html#term-swap-max-cluster-int"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-swap-r-cut-float"><strong>swap_r_cut=float</strong></a>, <a href="ns_run.html#term-swap-r-cut-float"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-swap-velo-t-f"><strong>swap_velo=[T | F]</strong></a>, <a href="ns_run.html#term-swap-velo-t-f"><strong>[1]</strong></a>
   </dt>
 
       
