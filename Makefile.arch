@@ -1,4 +1,4 @@
-FC=ifort
+FC=gfortran
 FFLAGS=-g -O3 -xHost -fPIC
 
 CC=gcc
