@@ -10,7 +10,7 @@ Example input files
 +++++++++++++++++++++++++++++++
 
 Cluster with the supplied fortran code Lennard-Jones potential, using MC
---------------------------------------------------------
+-------------------------------------------------------------------------
 
 This input file will start a calculation of 8 Lennard-Jones atoms 
 in a cubic cell with volume 648 Angstrom^3, using the potential implemented in the supplied fortran routine,
@@ -21,7 +21,7 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
     :language: python
 
 Cluster with ``QUIP`` implemented Lennard-Jones potential, using MD
---------------------------------------------------------
+--------------------------------------------------------------------
 
 This input file will start a calculation of 6 Lennard-Jones atoms 
 in a cubic cell with volume 648 Angstrom^3, using the potential implemented in ``QUIP``
@@ -46,14 +46,10 @@ and using MD trajectory for generating a new sample configuration.
     :language: python
 
 Periodic binary Lennard-Jones system with ``LAMMPS``, using MD
---------------------------------------------------------
-
-.. warning::
-   Using MD with swap moves can produce unphysical results, so please *do not* use this until this problem is solved!
-   Multicomponent systems can be safely used with MC though. 
+---------------------------------------------------------------
 
 This input file will start a calculation of a binary Lennard-Jones system, with 48 A-type atoms and 16 B-type atoms.
-Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are changed.
+Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.
 The cell is of variable shape and size at the set pressure value, using the potential implemented in ``LAMMPS``
 and using MD trajectory for generating a new sample configuration. 
 
@@ -61,7 +57,7 @@ and using MD trajectory for generating a new sample configuration.
     :language: python
 
 Some tips on setting the input parameters
-++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++
 
 Minimum lattice height: ``MC_cell_min_aspect_ratio``
 ----------------------------------------------------

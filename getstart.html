@@ -630,10 +630,10 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
 
 <span class="c1"># size of live set</span>
 <span class="n">n_walkers</span><span class="o">=</span><span class="mi">256</span>
-<span class="c1"># at each iteration 1 walker is killed</span>
+<span class="c1"># at each iteration 1 walker is killed (n_cull=1 is strongly recommended)</span>
 <span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>
-<span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers</span>
-<span class="n">n_iter_per_walker</span><span class="o">=</span><span class="mi">100</span>
+<span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers/n_cull</span>
+<span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">100</span>
 <span class="c1"># prefix of all the output files</span>
 <span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">MC</span><span class="o">.</span><span class="n">fortran</span>
 
@@ -643,11 +643,11 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
 <span class="n">n_atom_steps</span><span class="o">=</span><span class="mi">5</span>                
 <span class="c1"># length of atomic trajectory in each step</span>
 <span class="n">atom_traj_len</span><span class="o">=</span><span class="mi">5</span>               
-<span class="c1"># number of cell volume steps</span>
+<span class="c1"># number of cell volume steps (zero as the cell should not change for the cluster)</span>
 <span class="n">n_cell_volume_steps</span><span class="o">=</span><span class="mi">0</span>         
-<span class="c1"># number of cell shear steps</span>
+<span class="c1"># number of cell shear steps (zero as the cell should not change for the cluster)</span>
 <span class="n">n_cell_shear_steps</span><span class="o">=</span><span class="mi">0</span>          
-<span class="c1"># number of cell strectch steps</span>
+<span class="c1"># number of cell strectch steps (zero as the cell should not change for the cluster)</span>
 <span class="n">n_cell_stretch_steps</span><span class="o">=</span><span class="mi">0</span>        
 
 
@@ -681,8 +681,8 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
 <span class="n">n_walkers</span><span class="o">=</span><span class="mi">256</span>                 
 <span class="c1"># at each iteration 1 walker is killed</span>
 <span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>                      
-<span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers</span>
-<span class="n">n_iter_per_walker</span><span class="o">=</span><span class="mi">150</span>         
+<span class="c1"># total number of iterations will be n_iter_per_walker*n_walker/n_cull</span>
+<span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">150</span>         
 <span class="c1"># prefix of all the output files</span>
 <span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">quip</span>   
 
@@ -744,7 +744,7 @@ and using MD trajectory for generating a new sample configuration.</p>
 <span class="c1"># at each iteration 1 walker is killed</span>
 <span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>
 <span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers</span>
-<span class="n">n_iter_per_walker</span><span class="o">=</span><span class="mi">5000</span>
+<span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">5000</span>
 <span class="c1"># prefix of all the output files</span>
 <span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">periodic</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">lammps</span>
 
@@ -790,13 +790,8 @@ and using MD trajectory for generating a new sample configuration.</p>
 </div>
 <div class="section" id="periodic-binary-lennard-jones-system-with-lammps-using-md">
 <h3>Periodic binary Lennard-Jones system with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-binary-lennard-jones-system-with-lammps-using-md" title="Permalink to this headline">¶</a></h3>
-<div class="admonition warning">
-<p class="first admonition-title">Warning</p>
-<p class="last">Using MD with swap moves can produce unphysical results, so please <em>do not</em> use this until this problem is solved!
-Multicomponent systems can be safely used with MC though.</p>
-</div>
 <p>This input file will start a calculation of a binary Lennard-Jones system, with 48 A-type atoms and 16 B-type atoms.
-Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are changed.
+Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.
 The cell is of variable shape and size at the set pressure value, using the potential implemented in <code class="docutils literal"><span class="pre">LAMMPS</span></code>
 and using MD trajectory for generating a new sample configuration.</p>
 <div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># starting volume (in this example it is Angstrom^3)</span>
@@ -811,13 +806,13 @@ and using MD trajectory for generating a new sample configuration.</p>
 <span class="c1"># at each iteration 1 walker is killed</span>
 <span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>
 <span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers</span>
-<span class="n">n_iter_per_walker</span><span class="o">=</span><span class="mi">5000</span>
+<span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">5000</span>
 <span class="c1"># prefix of all the output files</span>
 <span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">periodic_binary</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">lammps</span>
 
 <span class="c1"># use MD generating a new walker</span>
 <span class="n">atom_algorithm</span><span class="o">=</span><span class="n">MD</span>
-<span class="n">n_model_calls_expected</span><span class="o">=</span><span class="mi">96</span>
+<span class="n">n_model_calls_expected</span><span class="o">=</span><span class="mi">960</span>
 <span class="n">n_atom_steps</span><span class="o">=</span><span class="mi">1</span>
 <span class="c1"># length of atomic trajectory in each step</span>
 <span class="n">atom_traj_len</span><span class="o">=</span><span class="mi">8</span>
