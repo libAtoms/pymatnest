@@ -6,10 +6,10 @@ start_energy_ceiling=1.0e9
 
 # size of live set
 n_walkers=256
-# at each iteration 1 walker is killed
+# at each iteration 1 walker is killed (n_cull=1 is strongly recommended)
 n_cull=1
-# total number of iterations will be n_iter_per_walker*n_walkers
-n_iter_per_walker=100
+# total number of iterations will be n_iter_per_walker*n_walkers/n_cull
+n_iter_times_fraction_killed=100
 # prefix of all the output files
 out_file_prefix=test.cluster.MC.fortran
 
@@ -19,11 +19,11 @@ n_model_calls_expected=3
 n_atom_steps=5                
 # length of atomic trajectory in each step
 atom_traj_len=5               
-# number of cell volume steps
+# number of cell volume steps (zero as the cell should not change for the cluster)
 n_cell_volume_steps=0         
-# number of cell shear steps
+# number of cell shear steps (zero as the cell should not change for the cluster)
 n_cell_shear_steps=0          
-# number of cell strectch steps
+# number of cell strectch steps (zero as the cell should not change for the cluster)
 n_cell_stretch_steps=0        
 
 
