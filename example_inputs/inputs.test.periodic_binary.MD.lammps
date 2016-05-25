@@ -10,13 +10,13 @@ n_walkers=512
 # at each iteration 1 walker is killed
 n_cull=1
 # total number of iterations will be n_iter_per_walker*n_walkers
-n_iter_per_walker=5000
+n_iter_times_fraction_killed=5000
 # prefix of all the output files
 out_file_prefix=test.periodic_binary.MD.lammps
 
 # use MD generating a new walker
 atom_algorithm=MD
-n_model_calls_expected=96
+n_model_calls_expected=960
 n_atom_steps=1
 # length of atomic trajectory in each step
 atom_traj_len=8
