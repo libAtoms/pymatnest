@@ -20,14 +20,14 @@ parameter space - i.e. in the context of materials, the low-energy region of con
 Since its original inception, nested sampling has also been applied to atomistic systems,
 and its several advantages mean it became a powerful method to sample atomic 
 configuration spaces.
- * calculate the partition function, hence all thermodynamic properties become accessible
+  * calculate the partition function, hence all thermodynamic properties become accessible
      - calculate the heat capacity and locate the phase transitions
      - with an order parameter calculate the free energy
- * the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step
- * no prior knowledge is needed of the phases or phase transitions
- * can be used with both constant volume and constant pressure calculations
- * calculate the entire phase diagram in an automated way
- * considerable computational gain over parallel tempering
+  * the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step
+  * no prior knowledge is needed of the phases or phase transitions
+  * can be used with both constant volume and constant pressure calculations
+  * calculate the entire phase diagram in an automated way
+  * considerable computational gain over parallel tempering
 
 .. [#f1] J. Skilling, in Nested Sampling, edited by Rainer Fischer, Roland Preuss, and Udo von Toussaint, AIP Conf. Proc. No. 735 (AIP, New York, 2004), p. 395
 
