@@ -26,3 +26,6 @@ addons:
     packages:
     - gfortran
     - python-numpy
+notifications:
+  email:
+    - lb415@cam.ac.uk
