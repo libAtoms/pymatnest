@@ -1701,7 +1701,7 @@ def do_ns_loop():
     log_X_n_term_cumsum_modified = log_X_n_term_cumsum - np.log(ns_args['n_walkers']+1-i_range_plus_1_mod_n_cull)
     log_X_n_term_sum = log_X_n_term_cumsum[-1]
     if ns_args['converge_down_to_T'] > 0:
-        beta = 1.0/(kB*ns_args['converge_down_to_T'])
+        converge_down_to_beta = 1.0/(kB*ns_args['converge_down_to_T'])
         log_Z_term_max = None
 
     prev_snapshot_iter = None
@@ -1761,21 +1761,22 @@ def do_ns_loop():
             #DEBUG if rank == 0:
                 #DEBUG for ii in range(len(log_a)):
                     #DEBUG print i_ns_step, "log_a, beta, Es, beta*Es ", log_a[ii], beta, Emax[ii], beta*Emax[ii]
-            log_Z_term_max = max(log_Z_term_max, np.amax(log_a-beta*Emax))
-            log_Z_term_last = log_a[-1]-beta*Emax[-1]
+            log_Z_term_max = max(log_Z_term_max, np.amax(log_a-converge_down_to_beta*Emax))
+            log_Z_term_last = log_a[-1]-converge_down_to_beta*Emax[-1]
             if output_this_iter:
                 print "log_Z_term max ", log_Z_term_max, "last ", log_Z_term_last, "diff ", log_Z_term_max-log_Z_term_last
             if log_Z_term_last <  log_Z_term_max - 10.0:
-                if rank == 0:
-                    print "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
+                print print_prefix, "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
+                # if rank == 0:
+                    # print "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
                 break
 
         if ns_args['T_estimate_finite_diff_lag'] > 0:
             Emax_history.append(Emax_of_step)
 	if output_this_iter:
                 if ns_args['T_estimate_finite_diff_lag'] > 0 and len(Emax_history) > 1:
-                    beta = (len(Emax_history)-1)*log_alpha/(Emax_history[-1]-Emax_history[0])
-                    T_estimate = 1.0/(kB*beta)
+                    beta_estimate = (len(Emax_history)-1)*log_alpha/(Emax_history[-1]-Emax_history[0])
+                    T_estimate = 1.0/(kB*beta_estimate)
                 else:
                     T_estimate = -1
 		print i_ns_step, "Emax_of_step ", Emax_of_step, "T_estimate ", T_estimate, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration
@@ -2826,32 +2827,32 @@ def main():
 		# random initial positions
 		energy = float('nan')
 		n_try = 0
-		while n_try < 10 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
+		while n_try < 20 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 		    at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
 		    energy = eval_energy(at)
 		    n_try += 1
 		if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-		    sys.stderr.write("WARNING: rank %d failed to generate initial config by random positions under max energy %f in 10 tries\n" % (rank, ns_args['start_energy_ceiling']))
+		    sys.stderr.write("WARNING: rank %d failed to generate initial config by random positions under max energy %f in 20 tries\n" % (rank, ns_args['start_energy_ceiling']))
 
 		# try FORTRAN config initializer
 		n_try = 0
 		if do_calc_fortran:
-		    while n_try < 10 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
+		    while n_try < 20 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 			f_MC_MD.init_config(at, ns_args['start_energy_ceiling']-movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms))
 			energy = eval_energy(at)
 			n_try += 1
 		    if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-			sys.stderr.write("WARNING: rank %d failed to generate initial config by fortran config initializer under max energy %f in 10 tries\n" % (rank, ns_args['start_energy_ceiling']))
+			sys.stderr.write("WARNING: rank %d failed to generate initial config by fortran config initializer under max energy %f in 20 tries\n" % (rank, ns_args['start_energy_ceiling']))
 
 		# try python config initializer
 		n_try = 0
-		while n_try < 10 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
+		while n_try < 20 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 		    energy = additive_init_config(at, ns_args['start_energy_ceiling'])
 		    n_try += 1
 
 		# quit if failed to generate acceptable config
 		if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-		    exit_error("Rank %d failed to generate initial config by random, fortran, or (atom by atom addition) python initializer under max energy %f in 10 tries each\n" % (rank, ns_args['start_energy_ceiling']), 4)
+		    exit_error("Rank %d failed to generate initial config by random, fortran, or (atom by atom addition) python initializer under max energy %f in 20 tries each\n" % (rank, ns_args['start_energy_ceiling']), 4)
 
 		at.info['ns_energy'] = rand_perturb_energy(energy, ns_args['random_energy_perturbation'])
 		at.info['volume'] = at.get_volume()
