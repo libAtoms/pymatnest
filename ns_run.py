@@ -9,6 +9,7 @@ try:
     import matscipy.neighbours
 except:
     pass
+import collections
 
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
@@ -44,6 +45,10 @@ def usage():
     ``converge_down_to_T=flot``
        | MANDATORY
        | temperature down to which Z(T) should be converged.  Either this or n_iter_times_fraction_killed is required.
+
+    ``T_estimate_finite_diff_lag=int``
+       | default: 1000
+       | Lag (in iterations) for doing d log Omega / d E finite difference derivative
 
     ``min_Emax=float``
        | Termination condition based on Emax: if this value is reached, the iteration will stop.
@@ -349,6 +354,7 @@ def usage():
     sys.stderr.write("n_extra_walk_per_task=int (0)\n")
     sys.stderr.write("n_iter_times_fraction_killed=int (MANDATORY, this or converge_down_to_T required)\n")
     sys.stderr.write("converge_down_to_T=float (MANDATORY, this or n_iter_times_fraction_killed required)\n")
+    sys.stderr.write("T_estimate_finite_diff_lag=int (1000, lag for doing finite difference in current T estimate\n")
     sys.stderr.write("min_Emax=float (None.  Termination condition based on Emax)\n")
     sys.stderr.write("out_file_prefix=str (None)\n")
     sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
@@ -1701,6 +1707,11 @@ def do_ns_loop():
     prev_snapshot_iter = None
     pprev_snapshot_iter = None
 
+    # for estimating current temperature from d log Omega / d E
+    if ns_args['T_estimate_finite_diff_lag'] > 0:
+        log_alpha = np.log(float(ns_args['n_walkers']+1-ns_args['n_cull'])/float(ns_args['n_walkers']+1))
+        Emax_history=collections.deque(maxlen=ns_args['T_estimate_finite_diff_lag'])
+
     # actual iteration cycle starts here
     i_ns_step = start_first_iter
     while ns_args['n_iter'] < 0 or i_ns_step < ns_args['n_iter']:
@@ -1759,8 +1770,15 @@ def do_ns_loop():
                     print "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
                 break
 
+        if ns_args['T_estimate_finite_diff_lag'] > 0:
+            Emax_history.append(Emax_of_step)
 	if output_this_iter:
-		print i_ns_step, "Emax_of_step ", Emax_of_step, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration
+                if ns_args['T_estimate_finite_diff_lag'] > 0 and len(Emax_history) > 1:
+                    beta = (len(Emax_history)-1)*log_alpha/(Emax_history[-1]-Emax_history[0])
+                    T_estimate = 1.0/(kB*beta)
+                else:
+                    T_estimate = -1
+		print i_ns_step, "Emax_of_step ", Emax_of_step, "T_estimate ", T_estimate, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration
 		prev_time = cur_time
 		step_size_setting_duration = 0.0
 
@@ -2356,6 +2374,8 @@ def main():
         ns_args['converge_down_to_T'] = float(args.pop('converge_down_to_T', -1))
         if ns_args['n_iter'] <= 0 and ns_args['converge_down_to_T'] <= 0:
             exit_error("need either n_iter_times_fraction_killed or converge_down_to_T")
+
+        ns_args['T_estimate_finite_diff_lag'] = int(args.pop('T_estimate_finite_diff_lag', 1000))+1
 
 	try:
 	    ns_args['min_Emax'] = float(args.pop('min_Emax'))
