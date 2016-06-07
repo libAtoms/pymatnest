@@ -1,11 +1,11 @@
 # starting volume (in this example it is Angstrom^3)
 max_volume_per_atom=108.0
-# 8 atoms with atomic number 1 and mass 1.0
-start_species=1 8 1.0
+# 6 atoms with atomic number 1 and mass 1.0
+start_species=1 6 1.0
 start_energy_ceiling=1.0e9
 
 # size of live set
-n_walkers=256
+n_walkers=128
 # at each iteration 1 walker is killed (n_cull=1 is strongly recommended)
 n_cull=1
 # total number of iterations will be n_iter_per_walker*n_walkers/n_cull
