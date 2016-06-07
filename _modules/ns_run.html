@@ -45,8 +45,8 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
@@ -379,10 +379,10 @@
 <span class="sd">       | default: 0</span>
 
 <span class="sd">    ``snapshot_interval=int``</span>
-<span class="sd">       |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set &lt;=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.</span>
-<span class="sd">       |  default: 1000</span>
+<span class="sd">       | Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set &lt;=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.</span>
+<span class="sd">       | default: 1000</span>
 
-<span class="sd">      ``snapshot_clean=[ T | F ]``</span>
+<span class="sd">    ``snapshot_clean=[ T | F ]``</span>
 <span class="sd">       | If true, delete previous iteration snapshot files</span>
 <span class="sd">       | default: T</span>
 
@@ -3088,7 +3088,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &copy; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.3.
     </div>
   </body>
 </html>
