@@ -316,10 +316,10 @@ def usage():
        | default: 0
 
     ``snapshot_interval=int``
-       |  Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
-       |  default: 1000
+       | Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
+       | default: 1000
 
-      ``snapshot_clean=[ T | F ]``
+    ``snapshot_clean=[ T | F ]``
        | If true, delete previous iteration snapshot files
        | default: T
 
