@@ -10,7 +10,7 @@ n_walkers=256
 # at each iteration 1 walker is killed
 n_cull=1
 # total number of iterations will be n_iter_per_walker*n_walkers
-n_iter_per_walker=5000
+n_iter_times_fraction_killed=5000
 # prefix of all the output files
 out_file_prefix=test.periodic.MD.lammps
 
