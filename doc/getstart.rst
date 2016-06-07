@@ -12,10 +12,14 @@ Example input files
 Cluster with the supplied fortran code Lennard-Jones potential, using MC
 -------------------------------------------------------------------------
 
-This input file will start a calculation of 8 Lennard-Jones atoms 
+This input file will start a calculation of 6 Lennard-Jones atoms 
 in a cubic cell with volume 648 Angstrom^3, using the potential implemented in the supplied fortran routine,
 and using MC trajectory for generating a new sample configuration. As the shape 
 and volume of the cell will not be changed, a cluster will be formed by the atoms.
+Note that the input parameters given below, such as the number of walkers and length of trajectory, 
+are for a short test run. For six atoms this calcualtion should take only a couple of minutes on one processor, and although
+the calculation should end up in the global minimum octahedral cluster structure, 
+thermodynamic variables will not be necessarily well converged.
 
 .. literalinclude:: ../example_inputs/inputs.test.cluster.MC.fortran
     :language: python
@@ -48,10 +52,11 @@ and using MD trajectory for generating a new sample configuration.
 Periodic binary Lennard-Jones system with ``LAMMPS``, using MD
 ---------------------------------------------------------------
 
-This input file will start a calculation of a binary Lennard-Jones system, with 48 A-type atoms and 16 B-type atoms.
+This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
 Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.
 The cell is of variable shape and size at the set pressure value, using the potential implemented in ``LAMMPS``
 and using MD trajectory for generating a new sample configuration. 
+The input parameters in this example, such as the number of walkers and the length of the trajectory, will lead to a longer run producing converged results.  
 
 .. literalinclude:: ../example_inputs/inputs.test.periodic_binary.MD.lammps
     :language: python
