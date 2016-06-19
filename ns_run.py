@@ -1190,6 +1190,8 @@ def median_PV(walkers):
     else:
 	PVs = PVs_loc
 
+    np.sort(PVs)
+
     if len(PVs) % 2 == 0:
 	PV_median = (PVs[int(len(PVs)/2)-1] + PVs[int(len(PVs)/2)])/2.0
     else:
