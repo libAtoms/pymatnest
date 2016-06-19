@@ -2568,7 +2568,7 @@ def main():
 	movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "T"))
 
 	movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
-	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 5.0))
+	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.5))
 	movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
 	movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
