@@ -2610,7 +2610,7 @@ def main():
 #	    print "WARNING: step size adjustment would be done too often, at every ", movement_args['adjust_step_interval'], " iteration"
 #	    print "WARNING: adjust_step_interval is increased to 20"
 #	    movement_args['adjust_step_interval'] = 20
-	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "F"))
+	movement_args['full_auto_step_sizes'] = str_to_logical(args.pop('full_auto_step_sizes', "T"))
 
 	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
 	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
