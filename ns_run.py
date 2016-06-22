@@ -1146,7 +1146,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
         #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
         while n_model_calls_used < movement_args['n_model_calls']:
             #DOC \item pick random item from list
-            move = possible_moves[rng.int_uniform(0,len(possible_moves)]
+            move = possible_moves[rng.int_uniform(0,len(possible_moves))]
             #DOC \item do move
             (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
             n_model_calls_used += t_n_model_calls
