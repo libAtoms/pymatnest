@@ -79,8 +79,735 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="pymatnest-module">
-<h1><cite>pymatnest</cite> module<a class="headerlink" href="#pymatnest-module" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-ns_run">
+<span id="pymatnest-module"></span><h1><cite>pymatnest</cite> module<a class="headerlink" href="#module-ns_run" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="ns_run.accumulate_stats">
+<code class="descclassname">ns_run.</code><code class="descname">accumulate_stats</code><span class="sig-paren">(</span><em>d_cumul</em>, <em>d</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#accumulate_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.accumulate_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.additive_init_config">
+<code class="descclassname">ns_run.</code><code class="descname">additive_init_config</code><span class="sig-paren">(</span><em>at</em>, <em>Emax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#additive_init_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.additive_init_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.adjust_step_sizes">
+<code class="descclassname">ns_run.</code><code class="descname">adjust_step_sizes</code><span class="sig-paren">(</span><em>walk_stats</em>, <em>movement_args</em>, <em>comm</em>, <em>do_print_rate=True</em>, <em>monitor_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#adjust_step_sizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.adjust_step_sizes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adjust step size to keep the acceptance ratio at the desired level.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.clean_prev_snapshot">
+<code class="descclassname">ns_run.</code><code class="descname">clean_prev_snapshot</code><span class="sig-paren">(</span><em>iter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#clean_prev_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.clean_prev_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_MC_atom_velo_walk">
+<code class="descclassname">ns_run.</code><code class="descname">do_MC_atom_velo_walk</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_MC_atom_velo_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_MC_atom_velo_walk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_MC_atom_walk">
+<code class="descclassname">ns_run.</code><code class="descname">do_MC_atom_walk</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_MC_atom_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_MC_atom_walk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_MC_cell_shear_step">
+<code class="descclassname">ns_run.</code><code class="descname">do_MC_cell_shear_step</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_MC_cell_shear_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_MC_cell_shear_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_MC_cell_stretch_step">
+<code class="descclassname">ns_run.</code><code class="descname">do_MC_cell_stretch_step</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_MC_cell_stretch_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_MC_cell_stretch_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_MC_cell_volume_step">
+<code class="descclassname">ns_run.</code><code class="descname">do_MC_cell_volume_step</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_MC_cell_volume_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_MC_cell_volume_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_MC_swap_step">
+<code class="descclassname">ns_run.</code><code class="descname">do_MC_swap_step</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_MC_swap_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_MC_swap_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_MD_atom_walk">
+<code class="descclassname">ns_run.</code><code class="descname">do_MD_atom_walk</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_MD_atom_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_MD_atom_walk" title="Permalink to this definition">¶</a></dt>
+<dd><p>perform MD walk on the configuration</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_atom_walk">
+<code class="descclassname">ns_run.</code><code class="descname">do_atom_walk</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_atom_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_atom_walk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_cell_shape_walk">
+<code class="descclassname">ns_run.</code><code class="descname">do_cell_shape_walk</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_cell_shape_walk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_cell_shape_walk" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_cell_step">
+<code class="descclassname">ns_run.</code><code class="descname">do_cell_step</code><span class="sig-paren">(</span><em>at</em>, <em>Emax</em>, <em>p_accept</em>, <em>transform</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_cell_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_cell_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.do_ns_loop">
+<code class="descclassname">ns_run.</code><code class="descname">do_ns_loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#do_ns_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.do_ns_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the main nested sampling loop, doing the iterations.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.energy_internal">
+<code class="descclassname">ns_run.</code><code class="descname">energy_internal</code><span class="sig-paren">(</span><em>at</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#energy_internal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.energy_internal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.energy_internal_pos">
+<code class="descclassname">ns_run.</code><code class="descname">energy_internal_pos</code><span class="sig-paren">(</span><em>pos</em>, <em>l</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#energy_internal_pos"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.energy_internal_pos" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.eval_energy">
+<code class="descclassname">ns_run.</code><code class="descname">eval_energy</code><span class="sig-paren">(</span><em>at</em>, <em>do_PE=True</em>, <em>do_KE=True</em>, <em>do_PV=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#eval_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.eval_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls appropriate functions to calcaulet the potential energy, kinetic energy and the p*V term.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.exit_error">
+<code class="descclassname">ns_run.</code><code class="descname">exit_error</code><span class="sig-paren">(</span><em>message</em>, <em>stat</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#exit_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.exit_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.full_auto_set_stepsizes">
+<code class="descclassname">ns_run.</code><code class="descname">full_auto_set_stepsizes</code><span class="sig-paren">(</span><em>walkers</em>, <em>walk_stats</em>, <em>movement_args</em>, <em>comm</em>, <em>Emax</em>, <em>KEmax</em>, <em>size_n_proc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#full_auto_set_stepsizes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.full_auto_set_stepsizes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically set all step sizes. Returns the time (in seconds) taken for the routine to run.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.gen_random_velo">
+<code class="descclassname">ns_run.</code><code class="descname">gen_random_velo</code><span class="sig-paren">(</span><em>at</em>, <em>KEmax</em>, <em>unit_rv=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#gen_random_velo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.gen_random_velo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.internal_Vlj">
+<code class="descclassname">ns_run.</code><code class="descname">internal_Vlj</code><span class="sig-paren">(</span><em>dr_vec</em>, <em>Eshift=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#internal_Vlj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.internal_Vlj" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.main">
+<code class="descclassname">ns_run.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main function</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.max_energy">
+<code class="descclassname">ns_run.</code><code class="descname">max_energy</code><span class="sig-paren">(</span><em>walkers</em>, <em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#max_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.max_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect the current energies of the walkers from all the processes and chooses the right number of highest energies to be culled</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.median_PV">
+<code class="descclassname">ns_run.</code><code class="descname">median_PV</code><span class="sig-paren">(</span><em>walkers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#median_PV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.median_PV" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.min_aspect_ratio">
+<code class="descclassname">ns_run.</code><code class="descname">min_aspect_ratio</code><span class="sig-paren">(</span><em>vol</em>, <em>cell</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#min_aspect_ratio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.min_aspect_ratio" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.pairwise">
+<code class="descclassname">ns_run.</code><code class="descname">pairwise</code><span class="sig-paren">(</span><em>iterable</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#pairwise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.pairwise" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.propagate_NVE_lammps">
+<code class="descclassname">ns_run.</code><code class="descname">propagate_NVE_lammps</code><span class="sig-paren">(</span><em>at</em>, <em>dt</em>, <em>n_steps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#propagate_NVE_lammps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.propagate_NVE_lammps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.propagate_NVE_quippy">
+<code class="descclassname">ns_run.</code><code class="descname">propagate_NVE_quippy</code><span class="sig-paren">(</span><em>at</em>, <em>dt</em>, <em>n_steps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#propagate_NVE_quippy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.propagate_NVE_quippy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.propose_shear_step">
+<code class="descclassname">ns_run.</code><code class="descname">propose_shear_step</code><span class="sig-paren">(</span><em>at</em>, <em>step_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#propose_shear_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.propose_shear_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.propose_stretch_step">
+<code class="descclassname">ns_run.</code><code class="descname">propose_stretch_step</code><span class="sig-paren">(</span><em>at</em>, <em>step_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#propose_stretch_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.propose_stretch_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.propose_volume_step">
+<code class="descclassname">ns_run.</code><code class="descname">propose_volume_step</code><span class="sig-paren">(</span><em>at</em>, <em>step_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#propose_volume_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.propose_volume_step" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.rand_perturb_energy">
+<code class="descclassname">ns_run.</code><code class="descname">rand_perturb_energy</code><span class="sig-paren">(</span><em>energy</em>, <em>perturbation</em>, <em>Emax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#rand_perturb_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.rand_perturb_energy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.rej_free_perturb_velo">
+<code class="descclassname">ns_run.</code><code class="descname">rej_free_perturb_velo</code><span class="sig-paren">(</span><em>at</em>, <em>Emax</em>, <em>KEmax</em>, <em>rotate=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#rej_free_perturb_velo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.rej_free_perturb_velo" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.save_snapshot">
+<code class="descclassname">ns_run.</code><code class="descname">save_snapshot</code><span class="sig-paren">(</span><em>id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#save_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.save_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current walker configurations&#8217; as a snapshot in the file <code class="docutils literal"><span class="pre">out_file_prefix.iter.rank.config_file_format</span></code></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.set_n_from_expected">
+<code class="descclassname">ns_run.</code><code class="descname">set_n_from_expected</code><span class="sig-paren">(</span><em>prop</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#set_n_from_expected"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.set_n_from_expected" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.str_to_logical">
+<code class="descclassname">ns_run.</code><code class="descname">str_to_logical</code><span class="sig-paren">(</span><em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#str_to_logical"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.str_to_logical" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.usage">
+<code class="descclassname">ns_run.</code><code class="descname">usage</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#usage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.usage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:</p>
+<dl class="glossary docutils">
+<dt id="term-max-volume-per-atom-float"><code class="docutils literal"><span class="pre">max_volume_per_atom=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum volume per atom allowed during the run.</div>
+<div class="line">default: 1.0e3</div>
+</div>
+</dd>
+<dt id="term-start-species-int-int-float-int-int-float"><code class="docutils literal"><span class="pre">start_species=int</span> <span class="pre">int</span> <span class="pre">[</span> <span class="pre">float</span> <span class="pre">]</span> <span class="pre">[,</span> <span class="pre">int</span> <span class="pre">int</span> <span class="pre">[</span> <span class="pre">float</span> <span class="pre">]</span> <span class="pre">...</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">Atomic number; multiplicity; [ not recommended: mass (amu) ]. Info repeated for each species, separated by commas, mass is optional and not recommended.</div>
+</div>
+</dd>
+<dt id="term-restart-file-path-to-file"><code class="docutils literal"><span class="pre">restart_file=path_to_file</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">File for restart configs. Mutually exclusive with start_*, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. </div>
+</div>
+</dd>
+<dt id="term-n-walkers-int"><code class="docutils literal"><span class="pre">n_walkers=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">Total number of walkers, i.e. the size of the live set used. It has to be the multiple of the number of processors used and it also has to be larger than the number of processors.</div>
+</div>
+</dd>
+<dt id="term-n-cull-int"><code class="docutils literal"><span class="pre">n_cull=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Number of walkers to kill at each NS iteration. Use of default 1 is strongly recommended.</div>
+<div class="line">deafult: 1</div>
+</div>
+</dd>
+<dt id="term-n-extra-walk-per-task-int"><code class="docutils literal"><span class="pre">n_extra_walk_per_task=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-n-iter-times-fraction-killed-int"><code class="docutils literal"><span class="pre">n_iter_times_fraction_killed=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be <code class="docutils literal"><span class="pre">n_iter_times_fraction_killed</span></code> / <code class="docutils literal"><span class="pre">(n_cull/n_walkers)</span></code>. Either this or converge_down_to_T is required.</div>
+</div>
+</dd>
+<dt id="term-converge-down-to-t-flot"><code class="docutils literal"><span class="pre">converge_down_to_T=flot</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">temperature down to which Z(T) should be converged.  Either this or n_iter_times_fraction_killed is required.</div>
+</div>
+</dd>
+<dt id="term-min-emax-float"><code class="docutils literal"><span class="pre">min_Emax=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Termination condition based on Emax: if this value is reached, the iteration will stop.</div>
+<div class="line">No default.</div>
+</div>
+</dd>
+<dt id="term-out-file-prefix-str"><code class="docutils literal"><span class="pre">out_file_prefix=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">String used as prefix for the different output files. </div>
+<div class="line">No default.</div>
+</div>
+</dd>
+<dt id="term-energy-calculator-quip-lammps-internal-fortran"><code class="docutils literal"><span class="pre">energy_calculator=</span> <span class="pre">(</span> <span class="pre">quip</span> <span class="pre">|</span> <span class="pre">lammps</span> <span class="pre">|</span> <span class="pre">internal</span> <span class="pre">|</span> <span class="pre">fortran)</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Energy calculator.</div>
+<div class="line">default: fortran</div>
+</div>
+</dd>
+<dt id="term-n-extra-data-int"><code class="docutils literal"><span class="pre">n_extra_data=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Amount of extra data per atom to pass around.</div>
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-kemax-max-t-float"><code class="docutils literal"><span class="pre">KEmax_max_T=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum temperature for estimating KEmax if <em>P</em> = 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K)</div>
+<div class="line">default: 1.0e5</div>
+</div>
+</dd>
+<dt id="term-start-energy-ceiling-float"><code class="docutils literal"><span class="pre">start_energy_ceiling=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.</div>
+<div class="line">default: 1.0e9</div>
+</div>
+</dd>
+<dt id="term-n-model-calls-expected-int"><code class="docutils literal"><span class="pre">n_model_calls_expected=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Number of model calls. Either this or the keyword n_model_calls is mandatory.</div>
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-n-model-calls-int"><code class="docutils literal"><span class="pre">n_model_calls=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Number of model calls. Either this or the keyword n_model_calls_expected is mandatory.</div>
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-do-blocks-t-f"><code class="docutils literal"><span class="pre">do_blocks=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Whether to do steps in blocks or not.</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-do-partial-blocks-t-f"><code class="docutils literal"><span class="pre">do_partial_blocks=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Whether to do partial blocks if n_model_calls(_expected) is met.</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-n-atom-steps-int"><code class="docutils literal"><span class="pre">n_atom_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Number of atomic trajectoris in each block.</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-atom-traj-len-int"><code class="docutils literal"><span class="pre">atom_traj_len=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Length of atomic trajectory (MD steps or MC sweeps) in each step.</div>
+<div class="line">default: 8</div>
+</div>
+</dd>
+<dt id="term-break-up-atom-traj-t-f"><code class="docutils literal"><span class="pre">break_up_atom_traj=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps.</div>
+<div class="line">default: F </div>
+</div>
+</dd>
+<dt id="term-n-cell-volume-steps-int"><code class="docutils literal"><span class="pre">n_cell_volume_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Number of cell volume steps in each block.</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-n-cell-shear-steps-int"><code class="docutils literal"><span class="pre">n_cell_shear_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Number of cell shear steps in each block.</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-n-cell-stretch-steps-int"><code class="docutils literal"><span class="pre">n_cell_stretch_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Number of cell stretch steps in each block.</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-n-swap-steps-int"><code class="docutils literal"><span class="pre">n_swap_steps=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Number of species swap steps in each block. Has to be set other than zero for a multicomponent system.</div>
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-swap-max-cluster-int"><code class="docutils literal"><span class="pre">swap_max_cluster=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(maximum size of interconnected cluster to try to swap)</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-swap-r-cut-float"><code class="docutils literal"><span class="pre">swap_r_cut=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(cutoff radius for defining connected atoms for cluster)</div>
+<div class="line">default: 2.5</div>
+</div>
+</dd>
+<dt id="term-swap-cluster-probability-increment-float"><code class="docutils literal"><span class="pre">swap_cluster_probability_increment=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(factor between prob. of picking increasing larger clusters)</div>
+<div class="line">default: 0.75</div>
+</div>
+</dd>
+<dt id="term-swap-velo-t-f"><code class="docutils literal"><span class="pre">swap_velo=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(if true, swap velocities when swapping atoms, breaking coherence a bit)</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-no-swap-velo-fix-mag-alt-t-f"><code class="docutils literal"><span class="pre">no_swap_velo_fix_mag_alt=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">(if true, use alternate method for correcting velocity magnitudes when not swapping velocities)</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-velo-traj-len-int"><code class="docutils literal"><span class="pre">velo_traj_len=int</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Number of MC steps in (optional) explicit velocity MC trajectory.</div>
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-random-energy-perturbation-float"><code class="docutils literal"><span class="pre">random_energy_perturbation=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.0e-12</div>
+</div>
+</dd>
+<dt id="term-atom-algorithm-mc-md"><code class="docutils literal"><span class="pre">atom_algorithm=[MC</span> <span class="pre">|</span> <span class="pre">MD]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY</div>
+<div class="line">Use either Monte Carlo or Molecular dynamics to explore.</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velocities-t-f"><code class="docutils literal"><span class="pre">MC_atom_velocities=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">This keyword is supported only for energy_calculator=fortran.</div>
+<div class="line">default: F </div>
+</div>
+</dd>
+<dt id="term-mc-atom-velocities-pre-perturb-t-f"><code class="docutils literal"><span class="pre">MC_atom_velocities_pre_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Perturb velocities (rejection free) before MC + velocities walk.</div>
+<div class="line">default: F </div>
+</div>
+</dd>
+<dt id="term-mc-atom-step-size-float"><code class="docutils literal"><span class="pre">MC_atom_step_size=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Initial atom move step size in units of (max_volume_per_atom * N_atoms)^(1/3)</div>
+<div class="line">default: 1.0</div>
+</div>
+</dd>
+<dt id="term-mc-atom-step-size-max-float"><code class="docutils literal"><span class="pre">MC_atom_step_size_max=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum atom step size in units of (max_volume_per_atom * N_atoms)^(1/3).</div>
+<div class="line">default: 1.0</div>
+</div>
+</dd>
+<dt id="term-mc-atom-uniform-rv-t-f"><code class="docutils literal"><span class="pre">MC_atom_uniform_rv=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-md-atom-velo-pre-perturb-t-f"><code class="docutils literal"><span class="pre">MD_atom_velo_pre_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Perturb velocities before MD trajectory</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-md-atom-velo-post-perturb-t-f"><code class="docutils literal"><span class="pre">MD_atom_velo_post_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Perturb velocities after MD trajectory</div>
+<div class="line">default: T</div>
+</div>
+</dd>
+<dt id="term-md-atom-velo-flip-accept-t-f"><code class="docutils literal"><span class="pre">MD_atom_velo_flip_accept=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-md-atom-timestep-float"><code class="docutils literal"><span class="pre">MD_atom_timestep=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.1 (ASE time units)</div>
+</div>
+</dd>
+<dt id="term-md-atom-timestep-max-float"><code class="docutils literal"><span class="pre">MD_atom_timestep_max=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.5 (ASE time units)</div>
+</div>
+</dd>
+<dt id="term-md-atom-energy-fuzz-float"><code class="docutils literal"><span class="pre">MD_atom_energy_fuzz=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Tolerance for rejecting non-energy conserving trajectories, as fraction of Kinetic Energy</div>
+<div class="line">default: 1.0e-2</div>
+</div>
+</dd>
+<dt id="term-md-atom-reject-energy-violation-t-f"><code class="docutils literal"><span class="pre">MD_atom_reject_energy_violation=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories.</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-atom-velo-rej-free-fully-randomize-t-f"><code class="docutils literal"><span class="pre">atom_velo_rej_free_fully_randomize=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">If true, randomize velocities completely rather than just perturbing.</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-atom-velo-rej-free-perturb-angle-float"><code class="docutils literal"><span class="pre">atom_velo_rej_free_perturb_angle=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Max angle in radians for random rotations.</div>
+<div class="line">default: 0.3</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velo-step-size-float"><code class="docutils literal"><span class="pre">MC_atom_velo_step_size=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 50.0</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velo-step-size-max-float"><code class="docutils literal"><span class="pre">MC_atom_velo_step_size_max=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 10000.0</div>
+</div>
+</dd>
+<dt id="term-mc-atom-velo-walk-rej-free-t-f"><code class="docutils literal"><span class="pre">MC_atom_velo_walk_rej_free=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: T. If true, use rejection free algorithm for MC_atom_walk</div>
+</div>
+</dd>
+<dt id="term-mc-cell-p-float"><code class="docutils literal"><span class="pre">MC_cell_P=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Pressure value to be used. (Note: the unit of pressure depends on both the energy calculator and on the potential model used)</div>
+<div class="line">default: 0.0 </div>
+</div>
+</dd>
+<dt id="term-mc-cell-volume-per-atom-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_step_size=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Initial volume stepsize for volume change.</div>
+<div class="line">default: 5% of the maximum allowed volume</div>
+</div>
+</dd>
+<dt id="term-mc-cell-volume-per-atom-step-size-max-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_step_size_max=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum allowed volume step size.</div>
+<div class="line">default: 50% of the maximum allowed volume</div>
+</div>
+</dd>
+<dt id="term-mc-cell-volume-per-atom-prob-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_prob=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.0</div>
+</div>
+</dd>
+<dt id="term-mc-cell-stretch-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_stretch_step_size=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.35</div>
+</div>
+</dd>
+<dt id="term-mc-cell-stretch-step-size-max-float"><code class="docutils literal"><span class="pre">MC_cell_stretch_step_size_max=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.0</div>
+</div>
+</dd>
+<dt id="term-mc-cell-stretch-prob-float"><code class="docutils literal"><span class="pre">MC_cell_stretch_prob=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.0</div>
+</div>
+</dd>
+<dt id="term-mc-cell-shear-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_shear_step_size=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-shear-step-size-max-float"><code class="docutils literal"><span class="pre">MC_cell_shear_step_size_max=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)</div>
+</div>
+</dd>
+<dt id="term-mc-cell-shear-prob-float"><code class="docutils literal"><span class="pre">MC_cell_shear_prob=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.0</div>
+</div>
+</dd>
+<dt id="term-mc-cell-min-aspect-ratio-float"><code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Ratio of smallest cell height relative to the longest one. A higher value of MC_cell_min_aspect_ratio restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of MC_cell_min_aspect_ratio &lt; 0.65 <em>does</em> effect the melting transition.</div>
+<div class="line">default: 0.9</div>
+</div>
+</dd>
+<dt id="term-cell-shape-equil-steps-int"><code class="docutils literal"><span class="pre">cell_shape_equil_steps=int</span></code></dt>
+<dd><div class="first line-block">
+<div class="line">default: 1000</div>
+</div>
+<p class="last">full_auto_step_sizes=[T | F]``
+| If true (T), automatically calibrate all sizes by performing additional short explorations, including at the start of run. If false (F), use initial input step sizes and make small adjustments to these during the run.
+| default: T</p>
+</dd>
+<dt id="term-monitor-step-interval-times-fraction-killed-float"><code class="docutils literal"><span class="pre">monitor_step_interval_times_fraction_killed=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Divided by <code class="docutils literal"><span class="pre">n_cull/n_walkers</span></code> to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-adjust-step-interval-times-fraction-killed-float"><code class="docutils literal"><span class="pre">adjust_step_interval_times_fraction_killed=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Divided by <code class="docutils literal"><span class="pre">n_cull/n_walkers</span></code> to get actual step adjustment interval in iterations, negative for only using last iteration, 0 for no adjust.</div>
+<div class="line">default: 1</div>
+</div>
+</dd>
+<dt id="term-mc-adjust-step-factor-float"><code class="docutils literal"><span class="pre">MC_adjust_step_factor=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.1</div>
+</div>
+</dd>
+<dt id="term-mc-adjust-min-rate-float"><code class="docutils literal"><span class="pre">MC_adjust_min_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.2</div>
+</div>
+</dd>
+<dt id="term-mc-adjust-max-rate-float"><code class="docutils literal"><span class="pre">MC_adjust_max_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.3</div>
+</div>
+</dd>
+<dt id="term-md-adjust-step-factor-float"><code class="docutils literal"><span class="pre">MD_adjust_step_factor=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.5</div>
+</div>
+</dd>
+<dt id="term-md-adjust-min-rate-float"><code class="docutils literal"><span class="pre">MD_adjust_min_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.95</div>
+</div>
+</dd>
+<dt id="term-md-adjust-max-rate-float"><code class="docutils literal"><span class="pre">MD_adjust_max_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1.00</div>
+</div>
+</dd>
+<dt id="term-quip-pot-args-str"><code class="docutils literal"><span class="pre">QUIP_pot_args=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY if energy_calculator=quip</div>
+</div>
+</dd>
+<dt id="term-quip-pot-params-file-str"><code class="docutils literal"><span class="pre">QUIP_pot_params_file=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY if energy_calculator=quip</div>
+</div>
+</dd>
+<dt id="term-fortran-model-str"><code class="docutils literal"><span class="pre">FORTRAN_model=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY if energy_calculator=fortran</div>
+</div>
+</dd>
+<dt id="term-lammps-init-cmds-str"><code class="docutils literal"><span class="pre">LAMMPS_init_cmds=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY if energy_calculator=lammps</div>
+</div>
+</dd>
+<dt id="term-lammps-name-str"><code class="docutils literal"><span class="pre">LAMMPS_name=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">&#8216;&#8217;, arch name for lammps shared object file</div>
+</div>
+</dd>
+<dt id="term-lammps-header-str"><code class="docutils literal"><span class="pre">LAMMPS_header=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps</div>
+</div>
+</dd>
+<dt id="term-lammps-header-extra-str"><code class="docutils literal"><span class="pre">LAMMPS_header_extra=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">&#8216;&#8217;, extra lammpslib.py header commands for energy_calculator=lammps</div>
+</div>
+</dd>
+<dt id="term-lammps-atom-types-str"><code class="docutils literal"><span class="pre">LAMMPS_atom_types=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY if energy_calculator=lammps</div>
+<div class="line">atomic_symbol1 lammps_type1 [, atomic_symbol2 lammps_type2, ...]</div>
+<div class="line">mapping between atom species and lammps potential types</div>
+</div>
+</dd>
+<dt id="term-config-file-format-str"><code class="docutils literal"><span class="pre">config_file_format=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">File format in which configurations are printed, e.g. for trajectory and snapshot files.</div>
+<div class="line">default: extxyz</div>
+</div>
+</dd>
+<dt id="term-rng-numpy-internal-rngstream"><code class="docutils literal"><span class="pre">rng=(</span> <span class="pre">numpy</span> <span class="pre">|</span> <span class="pre">internal</span> <span class="pre">|</span> <span class="pre">rngstream</span> <span class="pre">)</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Random number generator.</div>
+<div class="line">default: numpy</div>
+</div>
+</dd>
+<dt id="term-profile-rank-to-profile"><code class="docutils literal"><span class="pre">profile=rank_to_profile</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: -1</div>
+</div>
+</dd>
+<dt id="term-2d-t-f"><code class="docutils literal"><span class="pre">2D=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Perform 2D simulation. This option is unsupported.</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-debug-int"><code class="docutils literal"><span class="pre">debug=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Verbosity level used in the output file. The larger its value the more info is printed.</div>
+<div class="line">default: 0</div>
+</div>
+</dd>
+<dt id="term-snapshot-interval-int"><code class="docutils literal"><span class="pre">snapshot_interval=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set &lt;=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.</div>
+<div class="line">default: 1000</div>
+</div>
+</dd>
+<dt id="term-snapshot-clean-t-f"><code class="docutils literal"><span class="pre">snapshot_clean=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">If true, delete previous iteration snapshot files</div>
+<div class="line">default: T</div>
+</div>
+</dd>
+<dt id="term-traj-interval-int"><code class="docutils literal"><span class="pre">traj_interval=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set &lt;=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. </div>
+<div class="line">default: 1 </div>
+</div>
+</dd>
+<dt id="term-delta-random-seed-int"><code class="docutils literal"><span class="pre">delta_random_seed=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Random number seed to be used in the run. If smaller than 0, a seed from /dev/urandom is used.</div>
+<div class="line">default: -1</div>
+</div>
+</dd>
+<dt id="term-no-extra-walks-at-all-t-f"><code class="docutils literal"><span class="pre">no_extra_walks_at_all=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-track-configs-t-f"><code class="docutils literal"><span class="pre">track_configs=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Track configrations across all walks/clones.</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.velo_rv_mag">
+<code class="descclassname">ns_run.</code><code class="descname">velo_rv_mag</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#velo_rv_mag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.velo_rv_mag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.velo_unit_rv">
+<code class="descclassname">ns_run.</code><code class="descname">velo_unit_rv</code><span class="sig-paren">(</span><em>n</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#velo_unit_rv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.velo_unit_rv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.walk_single_walker">
+<code class="descclassname">ns_run.</code><code class="descname">walk_single_walker</code><span class="sig-paren">(</span><em>at</em>, <em>movement_args</em>, <em>Emax</em>, <em>KEmax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#walk_single_walker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.walk_single_walker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do random walk on a single atoms object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ns_run.zero_stats">
+<code class="descclassname">ns_run.</code><code class="descname">zero_stats</code><span class="sig-paren">(</span><em>d</em>, <em>movement_args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#zero_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.zero_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </div>
 
 
