@@ -802,64 +802,6 @@ Note that in case of multicomponent systems swap moves have to be introduced, wh
 The cell is of variable shape and size at the set pressure value, using the potential implemented in <code class="docutils literal"><span class="pre">LAMMPS</span></code>
 and using MD trajectory for generating a new sample configuration.
 The input parameters in this example, such as the number of walkers and the length of the trajectory, will lead to a longer run producing converged results.</p>
-<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># starting volume (in this example it is Angstrom^3)</span>
-<span class="n">max_volume_per_atom</span><span class="o">=</span><span class="mf">2000.0</span>
-
-<span class="c1"># 48 atoms of atomic number 1 and 16 atoms of atomic number 2. All masses are 1.0</span>
-<span class="n">start_species</span><span class="o">=</span><span class="mi">1</span> <span class="mi">32</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">2</span> <span class="mi">32</span> <span class="mf">1.0</span>
-<span class="n">start_energy_ceiling</span><span class="o">=</span><span class="mf">500.0</span>
-
-<span class="c1"># size of live set</span>
-<span class="n">n_walkers</span><span class="o">=</span><span class="mi">2304</span>
-<span class="c1"># at each iteration 1 walker is killed</span>
-<span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>
-<span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers</span>
-<span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">5000</span>
-<span class="c1"># prefix of all the output files</span>
-<span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">periodic_binary</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">lammps</span>
-
-<span class="c1"># use MD generating a new walker</span>
-<span class="n">atom_algorithm</span><span class="o">=</span><span class="n">MD</span>
-<span class="n">n_model_calls_expected</span><span class="o">=</span><span class="mi">8192</span>
-<span class="c1"># perform the steps *not* in blocks</span>
-<span class="n">do_blocks</span><span class="o">=</span><span class="n">F</span>
-<span class="n">n_atom_steps</span><span class="o">=</span><span class="mi">1</span>
-<span class="c1"># length of atomic trajectory in each step</span>
-<span class="n">atom_traj_len</span><span class="o">=</span><span class="mi">8</span>
-<span class="c1"># number of cell volume steps</span>
-<span class="n">n_cell_volume_steps</span><span class="o">=</span><span class="mi">32</span>
-<span class="c1"># number of cell shear steps</span>
-<span class="n">n_cell_shear_steps</span><span class="o">=</span><span class="mi">8</span>
-<span class="c1"># number of cell strectch steps</span>
-<span class="n">n_cell_stretch_steps</span><span class="o">=</span><span class="mi">8</span>
-<span class="c1"># number of swaps beween different species</span>
-<span class="n">n_swap_steps</span><span class="o">=</span><span class="mi">8</span>
-
-<span class="n">MD_atom_timestep</span><span class="o">=</span><span class="mf">0.01</span>
-<span class="n">MD_atom_timestep_max</span><span class="o">=</span><span class="mf">0.025</span>
-<span class="n">MD_adjust_max_rate</span><span class="o">=</span><span class="mf">0.95</span>
-<span class="n">MD_adjust_min_rate</span><span class="o">=</span><span class="mf">0.5</span>
-
-<span class="c1"># Pressure (in the units of the potential) </span>
-<span class="n">MC_cell_P</span><span class="o">=</span><span class="mf">6.25e-4</span>
-
-<span class="c1"># allowed torsion for the cell, ratio of the min lattice height</span>
-<span class="n">MC_cell_min_aspect_ratio</span><span class="o">=</span><span class="mf">0.85</span>
-
-<span class="c1"># use LAMMPS</span>
-<span class="n">energy_calculator</span><span class="o">=</span><span class="n">lammps</span>
-<span class="c1"># name of the LAMMPS machine (the one that *YOUR* LAMMPS was built with)</span>
-<span class="n">LAMMPS_name</span><span class="o">=</span><span class="n">mpi</span>
-<span class="c1"># potential parameters</span>
-<span class="n">LAMMPS_init_cmds</span><span class="o">=</span><span class="n">pair_style</span> <span class="n">lj</span><span class="o">/</span><span class="n">cut</span> <span class="mf">9.00</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="mi">1</span> <span class="mi">1</span> <span class="mf">0.1</span> <span class="mf">3.0</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mf">0.2</span> <span class="mf">3.0</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="mi">2</span> <span class="mi">2</span> <span class="mf">0.1</span> <span class="mf">3.0</span><span class="p">;</span> <span class="n">pair_modify</span> <span class="n">shift</span> <span class="n">yes</span>
-<span class="n">LAMMPS_atom_types</span><span class="o">=</span><span class="n">H</span> <span class="mi">1</span><span class="p">,</span><span class="n">He</span> <span class="mi">2</span>
-
-
-<span class="n">rng</span><span class="o">=</span><span class="n">numpy</span>
-
-<span class="n">debug</span><span class="o">=</span><span class="mi">0</span>
-</pre></div>
-</div>
 </div>
 </div>
 <div class="section" id="some-tips-on-setting-the-input-parameters">
