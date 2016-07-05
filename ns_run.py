@@ -79,7 +79,7 @@ def usage():
 
     ``do_blocks=[T | F]``
        | Whether to do steps in blocks or not.
-       | default: T
+       | default: F
 
     ``do_partial_blocks=[T | F]``
        | Whether to do partial blocks if n_model_calls(_expected) is met.
@@ -359,7 +359,7 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("n_model_calls_expected=int (0, one of these is required)\n")
     sys.stderr.write("n_model_calls=int (0, one of these is required)\n")
-    sys.stderr.write("do_blocks=[T | F] (T, whether to do steps in blocks\n")
+    sys.stderr.write("do_blocks=[T | F] (F, whether to do steps in blocks\n")
     sys.stderr.write("do_partial_blocks=[T | F] (F, whether to allow partial blocks if n_model_calls(_expected) is met\n")
     sys.stderr.write("\n")
     sys.stderr.write("n_atom_steps=int (1, number of atomic trajectories per block\n")
@@ -406,11 +406,11 @@ def usage():
     sys.stderr.write("MC_cell_volume_per_atom_step_size=float (5% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (50% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_prob=float (1.0)\n")
-    sys.stderr.write("MC_cell_stretch_step_size=float (0.35)\n")
-    sys.stderr.write("MC_cell_stretch_step_size_max=float (1.0)\n")
+    sys.stderr.write("MC_cell_stretch_step_size=float (0.1)\n")
+    sys.stderr.write("MC_cell_stretch_step_size_max=float (0.5)\n")
     sys.stderr.write("MC_cell_stretch_prob=float (1.0)\n")
-    sys.stderr.write("MC_cell_shear_step_size=float (0.5 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
-    sys.stderr.write("MC_cell_shear_step_size_max=float (1.0 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
+    sys.stderr.write("MC_cell_shear_step_size=float (0.1 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
+    sys.stderr.write("MC_cell_shear_step_size_max=float (0.5 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
     sys.stderr.write("MC_cell_shear_prob=float (1.0)\n")
     sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
     sys.stderr.write("cell_shape_equil_steps=int (1000)\n")
@@ -1140,7 +1140,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
         #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
         while n_model_calls_used < movement_args['n_model_calls']:
             #DOC \item pick random item from list
-            move = possible_moves[rng.int_uniform(0,len(possible_moves)-1)]
+            move = possible_moves[rng.int_uniform(0,len(possible_moves))]
             #DOC \item do move
             (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
             n_model_calls_used += t_n_model_calls
@@ -2488,7 +2488,7 @@ def main():
 
 	movement_args['n_model_calls_expected'] = int(args.pop('n_model_calls_expected', 0))
 	movement_args['n_model_calls'] = int(args.pop('n_model_calls', 0))
-	movement_args['do_blocks'] = str_to_logical(args.pop('do_blocks', "T"))
+	movement_args['do_blocks'] = str_to_logical(args.pop('do_blocks', "F"))
 	movement_args['do_partial_blocks'] = str_to_logical(args.pop('do_partial_blocks', "F"))
 
         #DOC \item process n\_atom\_steps
@@ -2586,11 +2586,11 @@ def main():
 	movement_args['MC_cell_volume_per_atom_step_size'] = float(args.pop('MC_cell_volume_per_atom_step_size', default_value))
 	movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 10.0*default_value)) # 50% of maximum allowed volume per atom
 	movement_args['MC_cell_volume_per_atom_prob'] = float(args.pop('MC_cell_volume_per_atom_prob', 1.0))
-	movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.35))
-	movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 1.0))
+	movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.1))
+	movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 0.5))
 	movement_args['MC_cell_stretch_prob'] = float(args.pop('MC_cell_stretch_prob', 1.0))
-	movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.5))
-	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 1.0))
+	movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.1))
+	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 0.5))
 	movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
