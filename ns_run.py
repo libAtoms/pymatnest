@@ -1199,7 +1199,6 @@ def median_PV(walkers):
 
     return PV_median
 
-
 def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEmax, size_n_proc):
     """Automatically set all step sizes. Returns the time (in seconds) taken for the routine to run."""
 #DOC
@@ -1217,12 +1216,54 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
     #DOC \item The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes 
 
     key_list=[]
-    if (comm is None or comm.rank == 0):
-    # make sure all processes go through dictoray walk_stats in the same order
-        for key, value in walk_stats.iteritems():
-            key_list.append(key)
+    for key, value in walk_stats.iteritems():
+        key_list.append(key)
+
     if (comm is not None):
-        key_list = comm.bcast(key_list,root=0)
+        # Identify move types that are being used
+        # Not all processes may have used the same move types, if blocks are turned off
+        key_ints=[]
+        for key in key_list:
+            if (key == "MD_atom"):
+                i = 0
+            elif (key == "MC_atom"):
+                i = 1
+            elif (key == "MC_atom_velo"):
+                i = 2
+            elif (key == "MC_cell_shear"):
+                i = 3
+            elif (key == "MC_cell_stretch"):
+                i = 4
+            elif (key == "MC_cell_volume_per_atom"):
+                i = 5
+            elif (key[:7] == "MC_swap"):
+                i = 6
+            else:
+                i = -1
+            key_ints.append(i)
+        
+        key_flags =  1*np.asarray([ i in key_ints for i in xrange(7)])
+
+        totalkeys = np.zeros( (len(key_flags)), dtype=np.int)
+        comm.Allreduce([key_flags, MPI.INT], [totalkeys, MPI.INT], MPI.SUM)
+
+        key_list = []
+        for i in xrange(7):
+            if (totalkeys[i]>0):
+                if (i==0):
+                    key_list.append("MD_atom")
+                if (i==1):
+                    key_list.append("MC_atom")
+                if (i==2):
+                    key_list.append("MC_atom_velo")
+                if (i==3):
+                    key_list.append("MC_cell_shear")
+                if (i==4):
+                    key_list.append("MC_cell_stretch")
+                if (i==5):
+                    key_list.append("MC_cell_volume_per_atom")
+                if (i==6):
+                    key_list.append("MC_swap_")
 
     #DOC \item For each (H)MC move type the following is performed
     for key in key_list:
@@ -1247,7 +1288,10 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
         exploration_movement_args['MC_atom_velocities']=False
 
         # check that the total number of attempts for this key is not zero
-        (n_try, n_accept) = walk_stats[key]
+        if key in walk_stats:
+            (n_try, n_accept) = walk_stats[key]
+        else:
+            n_try=0
         n_try_g = np.zeros( (1), dtype=np.int)
         if (comm is not None):
             n_try_s = np.array( [n_try], dtype = np.int)
@@ -1296,7 +1340,10 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
             exploration_movement_args['n_cell_volume_steps'] = 1
             exploration_movement_args['n_model_calls'] = 1
             # one call to do_MC_cell_volume_step per walk_single_walker call
-        
+        elif (key[:7] == "MC_swap"): 
+            # skip swap moves, since they have no step size
+            break
+
         else:
             exit_error("full_auto_set_stepsizes got key '%s', unkown to this routine\n" % key, 5)
 
@@ -1441,7 +1488,6 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
     full_auto_end_time = time.time()
     duration = full_auto_end_time - full_auto_start_time
     return duration
-
 
 def adjust_step_sizes(walk_stats, movement_args, comm, do_print_rate=True, monitor_only=False):
     """
