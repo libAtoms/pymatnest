@@ -173,7 +173,7 @@ def usage():
        | default: 0.1 (ASE time units)
 
     ``MD_atom_timestep_max=float`` 
-       | default: 0.5 (ASE time units)
+       | default: 2.0 (ASE time units)
 
     ``MD_atom_energy_fuzz=float``
        | Tolerance for rejecting non-energy conserving trajectories, as fraction of Kinetic Energy
@@ -391,7 +391,7 @@ def usage():
     sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory\n")
     sys.stderr.write("MD_atom_velo_flip_accept=[T | F] (F)\n")
     sys.stderr.write("MD_atom_timestep=float (0.1, in ASE time units)\n")
-    sys.stderr.write("MD_atom_timestep_max=float (0.5, in ASE time units)\n")
+    sys.stderr.write("MD_atom_timestep_max=float (2.0, in ASE time units)\n")
     sys.stderr.write("MD_atom_energy_fuzz=float (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)\n")
     sys.stderr.write("MD_atom_reject_energy_violation=[ T | F ] (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)\n")
     sys.stderr.write("\n")
@@ -2616,7 +2616,7 @@ def main():
 	movement_args['MC_atom_velo_walk_rej_free'] = str_to_logical(args.pop('MC_atom_velo_walk_rej_free', "T"))
 
 	movement_args['MD_atom_timestep'] = float(args.pop('MD_atom_timestep', 0.1))
-	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 0.5))
+	movement_args['MD_atom_timestep_max'] = float(args.pop('MD_atom_timestep_max', 2.0))
 	movement_args['MD_atom_energy_fuzz'] = float(args.pop('MD_atom_energy_fuzz', 1.0e-2))
 	movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
