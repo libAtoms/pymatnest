@@ -26,11 +26,6 @@ n_cell_shear_steps=0
 # number of cell strectch steps
 n_cell_stretch_steps=0        
 
-MD_atom_timestep=0.01
-MD_atom_timestep_max=1.0  
-MD_adjust_max_rate=0.95
-MD_adjust_min_rate=0.5
-
 # param file to store potential parameters
 QUIP_pot_params_file=quip_params.cluster.xml 
 # Lennard-Jones potential

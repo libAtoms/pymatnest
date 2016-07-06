@@ -23,7 +23,6 @@ out_file_prefix=test.periodic_binary.MD.FORTRAN_LJ
 ################################################################################
 
 atom_algorithm=MD
-MD_atom_timestep=0.01
 
 n_model_calls_expected=512
 do_blocks=F

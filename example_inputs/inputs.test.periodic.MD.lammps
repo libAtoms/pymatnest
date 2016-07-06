@@ -28,11 +28,6 @@ n_cell_shear_steps=2
 # number of cell strectch steps
 n_cell_stretch_steps=2        
 
-MD_atom_timestep=0.01
-MD_atom_timestep_max=0.025
-MD_adjust_max_rate=0.95
-MD_adjust_min_rate=0.5
-
 # Pressure (in the units of the potential)                                      
 MC_cell_P=2.37e-2
 

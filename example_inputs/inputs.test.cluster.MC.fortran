@@ -27,9 +27,6 @@ n_cell_shear_steps=0
 n_cell_stretch_steps=0        
 
 
-MC_atom_step_size=5.0
-MC_atom_step_size_max=5.0
-
 FORTRAN_model=example_LJ_min_image_model.so
 # use the supplied fortran code
 energy_calculator=fortran
