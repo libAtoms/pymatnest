@@ -216,7 +216,7 @@ def usage():
        | default: 1.0
 
     ``MC_cell_stretch_step_size=float``
-       | default: 0.35
+       | default: 0.1
 
     ``MC_cell_stretch_step_size_max=float``
        | default: 1.0
@@ -225,7 +225,7 @@ def usage():
        | default: 1.0
 
     ``MC_cell_shear_step_size=float``
-       | default: 0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)
+       | default: 0.1, in units of (max_volume_per_atom * N_atoms)^(1/3)
 
     ``MC_cell_shear_step_size_max=float``
        | default: 1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)
@@ -262,13 +262,13 @@ def usage():
        |  default: 0.3
 
     ``MD_adjust_step_factor=float``
-       |  default: 1.5
+       |  default: 1.1
 
     ``MD_adjust_min_rate=float``
-       |  default: 0.95
+       |  default: 0.5
 
     ``MD_adjust_max_rate=float``
-       |  default: 1.00
+       |  default: 0.95
 
     ``QUIP_pot_args=str``
        |  MANDATORY if energy_calculator=quip
@@ -407,10 +407,10 @@ def usage():
     sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (50% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_prob=float (1.0)\n")
     sys.stderr.write("MC_cell_stretch_step_size=float (0.1)\n")
-    sys.stderr.write("MC_cell_stretch_step_size_max=float (0.5)\n")
+    sys.stderr.write("MC_cell_stretch_step_size_max=float (1.0)\n")
     sys.stderr.write("MC_cell_stretch_prob=float (1.0)\n")
     sys.stderr.write("MC_cell_shear_step_size=float (0.1 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
-    sys.stderr.write("MC_cell_shear_step_size_max=float (0.5 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
+    sys.stderr.write("MC_cell_shear_step_size_max=float (1.0 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
     sys.stderr.write("MC_cell_shear_prob=float (1.0)\n")
     sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
     sys.stderr.write("cell_shape_equil_steps=int (1000)\n")
@@ -421,9 +421,9 @@ def usage():
     sys.stderr.write("MC_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MC_adjust_min_rate=float (0.2)\n")
     sys.stderr.write("MC_adjust_max_rate=float (0.3)\n")
-    sys.stderr.write("MD_adjust_step_factor=float (1.5)\n")
-    sys.stderr.write("MD_adjust_min_rate=float (0.95)\n")
-    sys.stderr.write("MD_adjust_max_rate=float (1.00)\n")
+    sys.stderr.write("MD_adjust_step_factor=float (1.1)\n")
+    sys.stderr.write("MD_adjust_min_rate=float (0.5)\n")
+    sys.stderr.write("MD_adjust_max_rate=float (0.95)\n")
     sys.stderr.write("\n")
     sys.stderr.write("QUIP_pot_args=str (MANDATORY if energy_calculator=quip)\n")
     sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=quip)\n")
@@ -2633,10 +2633,10 @@ def main():
 	movement_args['MC_cell_volume_per_atom_step_size_max'] = float(args.pop('MC_cell_volume_per_atom_step_size_max', 10.0*default_value)) # 50% of maximum allowed volume per atom
 	movement_args['MC_cell_volume_per_atom_prob'] = float(args.pop('MC_cell_volume_per_atom_prob', 1.0))
 	movement_args['MC_cell_stretch_step_size'] = float(args.pop('MC_cell_stretch_step_size', 0.1))
-	movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 0.5))
+	movement_args['MC_cell_stretch_step_size_max'] = float(args.pop('MC_cell_stretch_step_size_max', 1.0))
 	movement_args['MC_cell_stretch_prob'] = float(args.pop('MC_cell_stretch_prob', 1.0))
 	movement_args['MC_cell_shear_step_size'] = float(args.pop('MC_cell_shear_step_size', 0.1))
-	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 0.5))
+	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 1.0))
 	movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
 	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
@@ -2661,7 +2661,7 @@ def main():
 	movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
 	movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
 	movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
-	movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.5))
+	movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.1))
 	movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.50))
 	movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 0.95))
 
