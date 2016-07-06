@@ -236,7 +236,7 @@
 <span class="sd">       | default: 0.1 (ASE time units)</span>
 
 <span class="sd">    ``MD_atom_timestep_max=float`` </span>
-<span class="sd">       | default: 0.5 (ASE time units)</span>
+<span class="sd">       | default: 2.0 (ASE time units)</span>
 
 <span class="sd">    ``MD_atom_energy_fuzz=float``</span>
 <span class="sd">       | Tolerance for rejecting non-energy conserving trajectories, as fraction of Kinetic Energy</span>
@@ -253,6 +253,10 @@
 <span class="sd">    ``atom_velo_rej_free_perturb_angle=float``</span>
 <span class="sd">       | Max angle in radians for random rotations.</span>
 <span class="sd">       | default: 0.3</span>
+
+<span class="sd">    ``atom_momentum_retain_fraction=float``</span>
+<span class="sd">       | Fraction of momentum to retain during randomisation [separable_MDNS only].</span>
+<span class="sd">       | default: 0.0</span>
 
 <span class="sd">    ``MC_atom_velo_step_size=float``</span>
 <span class="sd">       | default: 50.0</span>
@@ -279,7 +283,7 @@
 <span class="sd">       | default: 1.0</span>
 
 <span class="sd">    ``MC_cell_stretch_step_size=float``</span>
-<span class="sd">       | default: 0.35</span>
+<span class="sd">       | default: 0.1</span>
 
 <span class="sd">    ``MC_cell_stretch_step_size_max=float``</span>
 <span class="sd">       | default: 1.0</span>
@@ -288,7 +292,7 @@
 <span class="sd">       | default: 1.0</span>
 
 <span class="sd">    ``MC_cell_shear_step_size=float``</span>
-<span class="sd">       | default: 0.5, in units of (max_volume_per_atom * N_atoms)^(1/3)</span>
+<span class="sd">       | default: 0.1, in units of (max_volume_per_atom * N_atoms)^(1/3)</span>
 
 <span class="sd">    ``MC_cell_shear_step_size_max=float``</span>
 <span class="sd">       | default: 1.0, in units of (max_volume_per_atom * N_atoms)^(1/3)</span>
@@ -297,8 +301,8 @@
 <span class="sd">       | default: 1.0</span>
 
 <span class="sd">    ``MC_cell_min_aspect_ratio=float``</span>
-<span class="sd">       | Ratio of smallest cell height relative to the longest one. A higher value of MC_cell_min_aspect_ratio restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of MC_cell_min_aspect_ratio &lt; 0.65 *does* effect the melting transition.</span>
-<span class="sd">       | default: 0.9</span>
+<span class="sd">       | Smallest allowed distance between parallel faces for cell normalised to unit volume. A higher value of MC_cell_min_aspect_ratio restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of MC_cell_min_aspect_ratio &lt; 0.65 *does* effect the melting transition.</span>
+<span class="sd">       | default: 0.8</span>
 
 <span class="sd">    ``cell_shape_equil_steps=int``</span>
 <span class="sd">       | default: 1000</span>
@@ -325,13 +329,13 @@
 <span class="sd">       |  default: 0.3</span>
 
 <span class="sd">    ``MD_adjust_step_factor=float``</span>
-<span class="sd">       |  default: 1.5</span>
+<span class="sd">       |  default: 1.1</span>
 
 <span class="sd">    ``MD_adjust_min_rate=float``</span>
-<span class="sd">       |  default: 0.95</span>
+<span class="sd">       |  default: 0.5</span>
 
 <span class="sd">    ``MD_adjust_max_rate=float``</span>
-<span class="sd">       |  default: 1.00</span>
+<span class="sd">       |  default: 0.95</span>
 
 <span class="sd">    ``QUIP_pot_args=str``</span>
 <span class="sd">       |  MANDATORY if energy_calculator=quip</span>
@@ -401,6 +405,10 @@
 <span class="sd">     | Track configrations across all walks/clones.</span>
 <span class="sd">     | default: F</span>
 
+<span class="sd">    ``separable_MDNS=[ T | F ]``</span>
+<span class="sd">     | Use separable mdns (rather than MDNS in the total energy).</span>
+<span class="sd">     | default: F</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Usage: </span><span class="si">%s</span><span class="s2"> [ -no_mpi ] &lt; input</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;input:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -454,12 +462,13 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_atom_velo_flip_accept=[T | F] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_atom_timestep=float (0.1, in ASE time units)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_atom_timestep_max=float (0.5, in ASE time units)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_atom_timestep_max=float (2.0, in ASE time units)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_atom_energy_fuzz=float (1.0e-2. Tolerance for rejecting non-energy conserving trajectories, as fraction of KE)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_atom_reject_energy_violation=[ T | F ] (F, use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;atom_velo_rej_free_fully_randomize=[T | F] (F. If true, randomize velocities completely rather than just perturbing.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;atom_velo_rej_free_perturb_angle=float (0.3. Max angle in radians for random rotations.)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;atom_momentum_retain_fraction=float (0.0. Fraction of momentum to retain during randomisation [separable_MDNS only].)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_atom_velo_step_size=float (50.0)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_atom_velo_step_size_max=float (10000.0)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_atom_velo_walk_rej_free=[T | F] (T. If true, use rejection free algorithm for MC_atom_walk</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -470,12 +479,12 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_volume_per_atom_step_size_max=float (50</span><span class="si">% o</span><span class="s2">f the maximum allowed volume)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_volume_per_atom_prob=float (1.0)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_stretch_step_size=float (0.1)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_stretch_step_size_max=float (0.5)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_stretch_step_size_max=float (1.0)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_stretch_prob=float (1.0)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_shear_step_size=float (0.1 in units of (max_volume_per_atom * N_atoms)^(1/3))</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_shear_step_size_max=float (0.5 in units of (max_volume_per_atom * N_atoms)^(1/3))</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_shear_step_size_max=float (1.0 in units of (max_volume_per_atom * N_atoms)^(1/3))</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_shear_prob=float (1.0)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_min_aspect_ratio=float (0.9)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_cell_min_aspect_ratio=float (0.8)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;cell_shape_equil_steps=int (1000)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;monitor_step_interval_times_fraction_killed=float (1, divided by n_cull/n_walkers to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -484,9 +493,9 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_adjust_step_factor=float (1.1)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_adjust_min_rate=float (0.2)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MC_adjust_max_rate=float (0.3)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_adjust_step_factor=float (1.5)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_adjust_min_rate=float (0.95)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_adjust_max_rate=float (1.00)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_adjust_step_factor=float (1.1)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_adjust_min_rate=float (0.5)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;MD_adjust_max_rate=float (0.95)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;QUIP_pot_args=str (MANDATORY if energy_calculator=quip)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;QUIP_pot_params_file=str (MANDATORY if energy_calculator=quip)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -507,7 +516,8 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;traj_interval=int (1, &lt;=0 for no trajectory)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;delta_random_seed=int (-1, &lt; 0 for seed from /dev/urandom)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;no_extra_walks_at_all=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;track_configs=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;track_configs=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;separable_MDNS=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="exit_error"><a class="viewcode-back" href="../ns_run.html#ns_run.exit_error">[docs]</a><span class="k">def</span> <span class="nf">exit_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">stat</span><span class="p">):</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
@@ -645,6 +655,9 @@
 <div class="viewcode-block" id="rej_free_perturb_velo"><a class="viewcode-back" href="../ns_run.html#ns_run.rej_free_perturb_velo">[docs]</a><span class="k">def</span> <span class="nf">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``rej_free_perturb_velo``</span>
+<span class="c1"># RJNB : Assumption: This routine will not be used with separable_MDNS.</span>
+<span class="c1">#        Otherwise, need to modify returned value of ns_energy so that it</span>
+<span class="c1">#        does not include KE, and values of quantities derived from ns_energy.</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">at</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;momenta&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">at</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
 	<span class="k">return</span>
@@ -701,20 +714,128 @@
     <span class="c1"># rej_free_perturb_velo expects at.info[&#39;ns_energy&#39;] to be set correctly initially</span>
     <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_KE</span><span class="o">-</span><span class="n">orig_KE</span></div>
 
-<div class="viewcode-block" id="do_MC_atom_velo_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_velo_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="beta_from_ns_pe_values"><a class="viewcode-back" href="../ns_run.html#ns_run.beta_from_ns_pe_values">[docs]</a><span class="k">def</span> <span class="nf">beta_from_ns_pe_values</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span><span class="n">high_ener</span><span class="p">,</span><span class="n">nlivepts</span><span class="p">,</span><span class="n">frac_liveset_since_high_ener</span><span class="p">,</span><span class="n">dorescale_velos</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span> <span class="c1">#,vmx,current_logX):</span>
 <span class="c1">#DOC</span>
-<span class="c1">#DOC ``do_MC_atom_velo_walk``</span>
-    <span class="c1">#DOC \item If MC\_atom\_velo\_walk\_rej\_free is set, call rej\_free\_perturb\_velo()</span>
+<span class="c1">#DOC ``beta\_from\_current\_ns\_pe\_values``</span>
+<span class="c1">#DOC ``This routine computes beta from the NS estimate of $`frac{\Delta X}{\Delta E}$. ($E=$potential energy.)``</span>
+<span class="c1"># It is intended that frac_liveset_since_high_ener should be set equal to movement_args[&#39;adjust_step_interval_times_fraction_killed&#39;] and high_ener set equal to the value of Emax the last time step lengths/beta was set</span>
+<span class="c1"># However, at the start of the run, high_ener=Emax and frac_liveset_since_high_ener=0 .</span>
+
+    <span class="n">natms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="c1"># number of atoms</span>
+
+    <span class="n">energies_loc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">])</span> <span class="c1"># expecting potential nergy</span>
+    <span class="n">neners</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">energies_loc</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="n">comm</span><span class="o">.</span><span class="n">size</span><span class="o">*</span><span class="n">neners</span><span class="p">)</span> <span class="p">)</span>
+        <span class="n">comm</span><span class="o">.</span><span class="n">Allgather</span><span class="p">(</span> <span class="p">[</span> <span class="n">energies_loc</span><span class="p">,</span> <span class="n">MPI</span><span class="o">.</span><span class="n">DOUBLE</span> <span class="p">],</span> <span class="p">[</span> <span class="n">energies</span><span class="p">,</span> <span class="n">MPI</span><span class="o">.</span><span class="n">DOUBLE</span> <span class="p">]</span> <span class="p">)</span>
+        <span class="n">energies</span> <span class="o">=</span> <span class="n">energies</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">energies</span> <span class="o">=</span> <span class="n">energies_loc</span>
+
+    <span class="k">if</span> <span class="p">((</span><span class="n">comm</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">rank</span> <span class="o">==</span><span class="mi">0</span><span class="p">))</span> <span class="p">:</span>
+        <span class="n">Emedian</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">energies</span><span class="p">)</span>
+        <span class="n">dlogX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span> <span class="nb">float</span><span class="p">(</span><span class="n">nlivepts</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">nlivepts</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="p">)</span><span class="o">*</span><span class="p">(</span> <span class="p">(</span><span class="n">nlivepts</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="mf">0.5</span> <span class="o">+</span> <span class="n">frac_liveset_since_high_ener</span><span class="o">*</span><span class="n">nlivepts</span><span class="p">)</span>
+        <span class="n">dE</span><span class="o">=</span><span class="n">high_ener</span><span class="o">-</span><span class="n">Emedian</span>
+
+        <span class="c1"># frac_liveset_since_high_ener = movement_args[&#39;adjust_step_interval_times_fraction_killed&#39;]</span>
+<span class="c1">#        if (frac_liveset_since_high_ener&gt;0):</span>
+<span class="c1">#            dlogX = float(frac_liveset_since_high_ener*nlivepts) * np.log(float(nlivepts)/float( nlivepts + 1 ))</span>
+<span class="c1">#            E_current_maxval = max(energies)</span>
+<span class="c1">#            dE=high_ener-E_current_maxval</span>
+<span class="c1">#            print &quot;frac_liveset_since_high_ener*nlivepts, nlivepts/2, dlogX , dE, high_ener, E_current_maxval : &quot;</span>
+<span class="c1">#            print frac_liveset_since_high_ener*nlivepts, nlivepts/2.0, dlogX , dE, high_ener, E_current_maxval </span>
+<span class="c1">#        else:</span>
+<span class="c1">#            dlogX = float((nlivepts+1)*0.5)*np.log( float(nlivepts)/float( nlivepts + 1.0 ) )</span>
+<span class="c1">#            Emedian = np.median(energies)</span>
+<span class="c1">#            dE=high_ener-Emedian</span>
+<span class="c1">#            print &quot; nlivepts, dlogX , dE, high_ener, Emedian : &quot;</span>
+<span class="c1">#            print nlivepts, dlogX , dE, high_ener, Emedian </span>
+
+        <span class="n">ns_beta</span> <span class="o">=</span> <span class="o">-</span><span class="n">dlogX</span><span class="o">/</span><span class="n">dE</span>
+
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">rank</span><span class="o">!=</span><span class="mi">0</span><span class="p">):</span>
+            <span class="n">ns_beta</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span> <span class="c1"># assign variable</span>
+        <span class="n">ns_beta</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">ns_beta</span><span class="p">,</span><span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># rescale momenta of all walkers to values appropriate to new beta</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">dorescale_velos</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+            <span class="n">rej_free_canonical_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">ns_beta</span><span class="p">,</span> <span class="n">rescale_only</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;ns_beta updated to &quot;</span><span class="p">,</span> <span class="n">ns_beta</span>  
+    <span class="k">elif</span> <span class="p">(</span><span class="n">rank</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;ns_beta updated to &quot;</span><span class="p">,</span> <span class="n">ns_beta</span>  
+
+    <span class="k">return</span> <span class="n">ns_beta</span></div>
+
+
+<div class="viewcode-block" id="rej_free_canonical_velo"><a class="viewcode-back" href="../ns_run.html#ns_run.rej_free_canonical_velo">[docs]</a><span class="k">def</span> <span class="nf">rej_free_canonical_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">currentbeta</span><span class="p">,</span> <span class="n">include_ke_in_output_ns_energy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">total_refresh</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">rescale_only</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+<span class="c1">#DOC</span>
+<span class="c1">#DOC ``rej\_free\_canonical\_velo``</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">at</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;momenta&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">at</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">total_refresh</span> <span class="ow">and</span> <span class="n">rescale_only</span><span class="p">):</span>
+        <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;ERROR: rej_free_canonical_velo got total_refresh and rescale_only. Not supported.&quot;</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">include_ke_in_output_ns_energy</span><span class="p">):</span>
+        <span class="n">initial_KE</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+    <span class="c1">#DOC \item pick random velocities from cannonical distribution with inverse T currentbeta</span>
+    <span class="n">stdspd</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">get_masses</span><span class="p">())</span><span class="o">*</span><span class="n">currentbeta</span><span class="p">))</span>
+    <span class="n">velocities</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span> <span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">stdspd</span><span class="p">,]</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+
+    <span class="c1">#DOC \item If movement_args[&#39;atom_momentum_retain_fraction&#39;]&gt;0.0</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_momentum_retain_fraction&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="mf">0.0</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">total_refresh</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">rescale_only</span><span class="p">)):</span>
+        <span class="c1"># Handbook of Markov Chain Monte Carlo: Brooks et al. Chapman &amp; Hall/CRC </span>
+        <span class="c1"># http://www.mcmchandbook.net/HandbookTableofContents.html</span>
+        <span class="c1"># Chapter 5 (R. Neal)</span>
+        <span class="c1"># Equation (5.34)</span>
+        <span class="c1"># p&#39; = alpha*p + sqrt( 1 + alpha**2 )*p_new</span>
+        <span class="n">velsout</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span><span class="o">*</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_momentum_retain_fraction&#39;</span><span class="p">]</span>
+        <span class="n">velsout</span> <span class="o">+=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_momentum_retain_fraction&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span><span class="o">*</span><span class="n">velocities</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">velsout</span><span class="p">)</span>
+        <span class="c1">#DOC \item Partial momentum update</span>
+        <span class="c1">#DOC \item $p&#39; = \alpha p + \( 1- \alpha^2  \)^{\frac{1}{2}}n$ www.mcmchandbook.net eq. (5.34)</span>
+    <span class="k">elif</span> <span class="n">rescale_only</span><span class="p">:</span>
+        <span class="c1">#DOC \item Else if &quot;rescale_only&quot; rescale velocities to current temperature</span>
+        <span class="n">velsout</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span>
+        <span class="n">velsout</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">velsout</span><span class="p">)</span>
+        <span class="n">velsout</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">velocities</span><span class="p">)</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">velsout</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#DOC \item Else completely refresh velocities</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">velocities</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">include_ke_in_output_ns_energy</span><span class="p">):</span>
+        <span class="n">new_KE</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+        <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_KE</span><span class="o">-</span><span class="n">orig_KE</span></div>
+
+<div class="viewcode-block" id="do_MC_atom_velo_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_velo_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">currentbeta</span><span class="p">):</span>
+<span class="c1">#DOC</span>
+<span class="c1">#DOC ``do\_MC\_atom\_velo\_walk``</span>
+
+    <span class="c1">#DOC \item If separable\_MDNS = T , call rej\_free\_canonical\_velo()</span>
+    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]:</span>
+        <span class="n">rej_free_canonical_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">currentbeta</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{}</span>
+    <span class="c1">#DOC \item Else if MC\_atom\_velo\_walk\_rej\_free</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velo_walk_rej_free&#39;</span><span class="p">]:</span>
-	<span class="n">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
-	<span class="k">return</span> <span class="p">{}</span>
-    <span class="c1">#DOC \item else do some unsupported velo MC stuff</span>
+        <span class="c1">#DOC \item call rej\_free\_perturb\_velo()</span>
+            <span class="n">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{}</span>
+    <span class="c1">#DOC \item else do MC pertubation to velocities</span>
 
     <span class="n">n_steps</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;velo_traj_len&#39;</span><span class="p">]</span>
     <span class="n">step_size</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velo_step_size&#39;</span><span class="p">]</span>
 
     <span class="n">initial_KE</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
-    <span class="n">KEmax_use</span> <span class="o">=</span> <span class="n">Emax</span> <span class="o">-</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">initial_KE</span><span class="p">)</span>
+    <span class="n">KEmax_use</span> <span class="o">=</span> <span class="n">Emax</span> <span class="o">-</span> <span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">initial_KE</span><span class="p">)</span> <span class="c1"># expecting ns_energy = KE + PE (+PV)</span>
     <span class="k">if</span> <span class="n">KEmax</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">KEmax</span> <span class="o">&lt;</span> <span class="n">KEmax_use</span><span class="p">:</span>
 	<span class="n">KEmax_use</span> <span class="o">=</span> <span class="n">KEmax</span>
 
@@ -741,7 +862,7 @@
 
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;MC_atom_velo&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="n">n_steps</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">n_accept</span><span class="p">)}</span></div>
 
-<div class="viewcode-block" id="do_MD_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MD_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MD_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="do_MD_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MD_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MD_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MD_atom_walk``</span>
 
@@ -752,25 +873,37 @@
 
     <span class="c1">#DOC \item if MD\_atom\_velo\_pre\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_velo_pre_perturb&#39;</span><span class="p">]:</span>
-	<span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+	<span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
 
     <span class="n">pre_MD_pos</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
     <span class="n">pre_MD_velo</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_extra_data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
 	<span class="n">pre_MD_extra_data</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]:</span>
+	<span class="n">orig_KE</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
     <span class="n">pre_MD_E</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span>
 
     <span class="c1">#DOC \item propagate in time atom\_traj\_len time steps of length MD\_atom\_timestep</span>
     <span class="k">if</span> <span class="n">do_calc_quip</span><span class="p">:</span>
 	<span class="n">propagate_NVE_quippy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_timestep&#39;</span><span class="p">],</span> <span class="n">n_steps</span><span class="o">=</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_traj_len&#39;</span><span class="p">])</span>
-	<span class="n">final_E</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+	<span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+	    <span class="n">final_E</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+	    <span class="n">final_E</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">do_calc_lammps</span><span class="p">:</span>
 	<span class="n">propagate_NVE_lammps</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_timestep&#39;</span><span class="p">],</span> <span class="n">n_steps</span><span class="o">=</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_traj_len&#39;</span><span class="p">])</span>
-	<span class="n">final_E</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+	<span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+	    <span class="n">final_E</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+	    <span class="n">final_E</span> <span class="o">=</span> <span class="n">pot</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="k">elif</span> <span class="n">do_calc_fortran</span><span class="p">:</span>
 	<span class="n">final_E</span> <span class="o">=</span> <span class="n">f_MC_MD</span><span class="o">.</span><span class="n">MD_atom_NVE_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">n_steps</span><span class="o">=</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_traj_len&#39;</span><span class="p">],</span> <span class="n">timestep</span><span class="o">=</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_timestep&#39;</span><span class="p">],</span> <span class="n">debug</span><span class="o">=</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">])</span>
-	<span class="n">final_E</span> <span class="o">+=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+	<span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+	    <span class="n">final_E</span> <span class="o">+=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+	    <span class="c1"># recompute final energy, rather than subtracting KE from PE+PV+KE, for consistency</span>
+	    <span class="n">final_E</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> 
     <span class="k">else</span><span class="p">:</span>
 	<span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;Need some non-quippy, non-fortran, non-lammps way of doing MD</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
 
@@ -787,8 +920,18 @@
     <span class="n">reject_Emax</span> <span class="o">=</span> <span class="p">(</span><span class="n">final_E</span> <span class="o">&gt;=</span> <span class="n">Emax</span><span class="p">)</span>
     <span class="n">reject_KEmax</span> <span class="o">=</span> <span class="p">(</span><span class="n">KEmax</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">final_KE</span> <span class="o">&gt;=</span> <span class="n">KEmax</span><span class="p">)</span>
 
+    <span class="c1"># Rejection for separable_MDNS: Boltmann dist in KE</span>
+    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]:</span>
+        <span class="n">log_prob_accept_dKE</span> <span class="o">=</span> <span class="o">-</span><span class="n">itbeta</span><span class="o">*</span><span class="p">(</span><span class="n">final_KE</span><span class="o">-</span><span class="n">orig_KE</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">))</span> <span class="o">&lt;</span> <span class="n">log_prob_accept_dKE</span><span class="p">):</span> <span class="c1"># accept</span>
+            <span class="n">reject_dKE</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reject_dKE</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">reject_dKE</span> <span class="o">=</span> <span class="bp">False</span>
+
     <span class="c1">#DOC \item if reject</span>
-    <span class="k">if</span> <span class="n">reject_fuzz</span> <span class="ow">or</span> <span class="n">reject_Emax</span> <span class="ow">or</span> <span class="n">reject_KEmax</span><span class="p">:</span> <span class="c1"># reject</span>
+    <span class="k">if</span> <span class="n">reject_fuzz</span> <span class="ow">or</span> <span class="n">reject_Emax</span> <span class="ow">or</span> <span class="n">reject_KEmax</span> <span class="ow">or</span> <span class="n">reject_dKE</span><span class="p">:</span> <span class="c1"># reject</span>
 	<span class="c1">#DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)</span>
 	<span class="c1"># print print_prefix, &quot;: WARNING: reject MD traj Emax &quot;, Emax, &quot; initial E &quot;, orig_E, &quot; velo perturbed E &quot;, pre_MD_E, &quot; final E &quot;,final_E, &quot; KEmax &quot;, KEmax, &quot; KE &quot;, final_KE</span>
 	<span class="n">at</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">pre_MD_pos</span><span class="p">)</span>
@@ -811,11 +954,11 @@
 
     <span class="c1">#DOC \item if MD\_atom\_velo\_post\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_velo_post_perturb&#39;</span><span class="p">]:</span>
-	<span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+	<span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;MD_atom&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_accept</span><span class="p">)</span> <span class="p">}</span></div>
 
-<div class="viewcode-block" id="do_MC_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="do_MC_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_atom_walk``</span>
 
@@ -827,7 +970,7 @@
 
     <span class="c1">#DOC \item if MC\_atom\_velocities and MC\_atom\_velocities\_pre\_perturb, call do\_MC\_atom\_velo\_walk() to perturb velocities, magnitude and and rotation</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velocities&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velocities_pre_perturb&#39;</span><span class="p">]:</span>
-	<span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+	<span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
 
     <span class="c1">#DOC \item if using fortran calculator and not reproducible</span>
     <span class="k">if</span> <span class="n">do_calc_fortran</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;reproducible&#39;</span><span class="p">]:</span>
@@ -887,7 +1030,6 @@
     <span class="n">out</span><span class="p">[</span><span class="s1">&#39;MC_atom&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_steps</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">n_accept</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">out</span></div>
-
 
 <div class="viewcode-block" id="propose_volume_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_volume_step">[docs]</a><span class="k">def</span> <span class="nf">propose_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
     <span class="n">dV</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">step_size</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
@@ -969,7 +1111,10 @@
 	<span class="k">return</span>
 
     <span class="c1"># calculate new energy</span>
-    <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+        <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="c1"># accept or reject</span>
     <span class="k">if</span> <span class="n">new_energy</span> <span class="o">&lt;</span> <span class="n">Emax</span><span class="p">:</span> <span class="c1"># accept</span>
 	<span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_energy</span>
@@ -993,7 +1138,7 @@
 	    <span class="p">(</span><span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span> <span class="o">=</span> <span class="n">propose_step_func</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_step_size&quot;</span><span class="p">])</span>
 	    <span class="n">do_cell_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="do_MC_swap_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_swap_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_swap_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="do_MC_swap_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_swap_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_swap_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_swap_step``</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
@@ -1060,7 +1205,10 @@
         <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="n">c2</span><span class="p">,</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra_data_1_orig</span>
 
     <span class="c1">#DOC \item accept swap if energy &lt; Emax</span>
-    <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+        <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span><span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="n">new_KE</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">new_energy</span> <span class="o">&lt;</span> <span class="n">Emax</span> <span class="ow">and</span> <span class="p">(</span><span class="n">KEmax</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">new_KE</span> <span class="o">&lt;</span> <span class="n">KEmax</span><span class="p">):</span> <span class="c1"># accept</span>
@@ -1081,7 +1229,7 @@
 
     <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{(</span><span class="s1">&#39;MC_swap_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">c1</span><span class="p">))</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">accept_n</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_volume_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_volume_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="do_MC_cell_volume_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_volume_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_volume_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -1093,7 +1241,7 @@
     <span class="k">else</span><span class="p">:</span>
 	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_volume_per_atom&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_shear_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_shear_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="do_MC_cell_shear_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_shear_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_shear_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -1105,7 +1253,7 @@
     <span class="k">else</span><span class="p">:</span>
 	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_shear&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_stretch_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_stretch_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="do_MC_cell_stretch_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_stretch_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_stretch_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -1118,7 +1266,7 @@
 	<span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_stretch&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
 
-<div class="viewcode-block" id="do_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="do_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_atom_walk``</span>
     <span class="n">n_reps</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_atom_steps_per_call&#39;</span><span class="p">]</span>
@@ -1126,9 +1274,9 @@
     <span class="c1">#DOC \item loop n\_atom\_steps\_per\_call times, calling do\_MC\_atom\_walk() or do\_MD\_atom\_walk()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_reps</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MC&#39;</span><span class="p">:</span>
-            <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">))</span>
+            <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">))</span>
         <span class="k">elif</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MD&#39;</span><span class="p">:</span>
-            <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">do_MD_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">))</span>
+            <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">do_MD_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;do_atom_walk got unknown &#39;atom_algorithm&#39; = &#39;</span><span class="si">%s</span><span class="s2">&#39;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">],</span> <span class="mi">5</span><span class="p">)</span>
 
@@ -1162,7 +1310,7 @@
 
     <span class="k">return</span> <span class="n">energy</span></div>
 
-<div class="viewcode-block" id="walk_single_walker"><a class="viewcode-back" href="../ns_run.html#ns_run.walk_single_walker">[docs]</a><span class="k">def</span> <span class="nf">walk_single_walker</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="walk_single_walker"><a class="viewcode-back" href="../ns_run.html#ns_run.walk_single_walker">[docs]</a><span class="k">def</span> <span class="nf">walk_single_walker</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Do random walk on a single atoms object.&quot;&quot;&quot;</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``walk_single_walker``</span>
@@ -1191,7 +1339,7 @@
             <span class="c1">#DOC \item loop over items in list</span>
             <span class="k">for</span> <span class="n">move</span> <span class="ow">in</span> <span class="n">possible_moves</span><span class="p">:</span>
                 <span class="c1">#DOC \item do move</span>
-                <span class="p">(</span><span class="n">t_n_model_calls</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+                <span class="p">(</span><span class="n">t_n_model_calls</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
                 <span class="n">n_model_calls_used</span> <span class="o">+=</span> <span class="n">t_n_model_calls</span>
                 <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span>
 
@@ -1217,8 +1365,6 @@
     <span class="c1">#DEBUG print &quot;walk_single_walker end &quot;, eval_energy(at, do_PE=False), eval_energy(at) #DEBUG</span>
 
     <span class="k">return</span> <span class="n">out</span></div>
-
-
 
 <div class="viewcode-block" id="max_energy"><a class="viewcode-back" href="../ns_run.html#ns_run.max_energy">[docs]</a><span class="k">def</span> <span class="nf">max_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Collect the current energies of the walkers from all the processes and chooses the right number of highest energies to be culled&quot;&quot;&quot;</span>
@@ -1253,15 +1399,11 @@
     <span class="k">else</span><span class="p">:</span>
 	<span class="n">PVs</span> <span class="o">=</span> <span class="n">PVs_loc</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">PVs</span><span class="p">)</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-	<span class="n">PV_median</span> <span class="o">=</span> <span class="p">(</span><span class="n">PVs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">PVs</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">PVs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">PVs</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)])</span><span class="o">/</span><span class="mf">2.0</span>
-    <span class="k">else</span><span class="p">:</span>
-	<span class="n">PV_median</span> <span class="o">=</span> <span class="n">PVs</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">PVs</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">)]</span>
+    <span class="n">PV_median</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">PVs</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">PV_median</span></div>
 
-
-<div class="viewcode-block" id="full_auto_set_stepsizes"><a class="viewcode-back" href="../ns_run.html#ns_run.full_auto_set_stepsizes">[docs]</a><span class="k">def</span> <span class="nf">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size_n_proc</span><span class="p">):</span>
+<div class="viewcode-block" id="full_auto_set_stepsizes"><a class="viewcode-back" href="../ns_run.html#ns_run.full_auto_set_stepsizes">[docs]</a><span class="k">def</span> <span class="nf">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size_n_proc</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Automatically set all step sizes. Returns the time (in seconds) taken for the routine to run.&quot;&quot;&quot;</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``full_auto_set_stepsizes``</span>
@@ -1278,12 +1420,54 @@
     <span class="c1">#DOC \item The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes </span>
 
     <span class="n">key_list</span><span class="o">=</span><span class="p">[]</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="ow">is</span> <span class="bp">None</span> <span class="ow">or</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-    <span class="c1"># make sure all processes go through dictoray walk_stats in the same order</span>
-        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">walk_stats</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
-            <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">walk_stats</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+        <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
     <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
-        <span class="n">key_list</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">key_list</span><span class="p">,</span><span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># Identify move types that are being used</span>
+        <span class="c1"># Not all processes may have used the same move types, if blocks are turned off</span>
+        <span class="n">key_ints</span><span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">key_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;MD_atom&quot;</span><span class="p">):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;MC_atom&quot;</span><span class="p">):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;MC_atom_velo&quot;</span><span class="p">):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">2</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;MC_cell_shear&quot;</span><span class="p">):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">3</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;MC_cell_stretch&quot;</span><span class="p">):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">4</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;MC_cell_volume_per_atom&quot;</span><span class="p">):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">5</span>
+            <span class="k">elif</span> <span class="p">(</span><span class="n">key</span><span class="p">[:</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;MC_swap&quot;</span><span class="p">):</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="mi">6</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">key_ints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        
+        <span class="n">key_flags</span> <span class="o">=</span>  <span class="mi">1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">key_ints</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">7</span><span class="p">)])</span>
+
+        <span class="n">totalkeys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">key_flags</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="n">comm</span><span class="o">.</span><span class="n">Allreduce</span><span class="p">([</span><span class="n">key_flags</span><span class="p">,</span> <span class="n">MPI</span><span class="o">.</span><span class="n">INT</span><span class="p">],</span> <span class="p">[</span><span class="n">totalkeys</span><span class="p">,</span> <span class="n">MPI</span><span class="o">.</span><span class="n">INT</span><span class="p">],</span> <span class="n">MPI</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+
+        <span class="n">key_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">xrange</span><span class="p">(</span><span class="mi">7</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">totalkeys</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span>
+                    <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MD_atom&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">1</span><span class="p">):</span>
+                    <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MC_atom&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">2</span><span class="p">):</span>
+                    <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MC_atom_velo&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">3</span><span class="p">):</span>
+                    <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MC_cell_shear&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">4</span><span class="p">):</span>
+                    <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MC_cell_stretch&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">5</span><span class="p">):</span>
+                    <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MC_cell_volume_per_atom&quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">6</span><span class="p">):</span>
+                    <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MC_swap_&quot;</span><span class="p">)</span>
 
     <span class="c1">#DOC \item For each (H)MC move type the following is performed</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">key_list</span><span class="p">:</span>
@@ -1308,7 +1492,10 @@
         <span class="n">exploration_movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velocities&#39;</span><span class="p">]</span><span class="o">=</span><span class="bp">False</span>
 
         <span class="c1"># check that the total number of attempts for this key is not zero</span>
-        <span class="p">(</span><span class="n">n_try</span><span class="p">,</span> <span class="n">n_accept</span><span class="p">)</span> <span class="o">=</span> <span class="n">walk_stats</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">walk_stats</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">n_try</span><span class="p">,</span> <span class="n">n_accept</span><span class="p">)</span> <span class="o">=</span> <span class="n">walk_stats</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">n_try</span><span class="o">=</span><span class="mi">0</span>
         <span class="n">n_try_g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
             <span class="n">n_try_s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span> <span class="p">[</span><span class="n">n_try</span><span class="p">],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
@@ -1357,7 +1544,10 @@
             <span class="n">exploration_movement_args</span><span class="p">[</span><span class="s1">&#39;n_cell_volume_steps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">exploration_movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="c1"># one call to do_MC_cell_volume_step per walk_single_walker call</span>
-        
+        <span class="k">elif</span> <span class="p">(</span><span class="n">key</span><span class="p">[:</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;MC_swap&quot;</span><span class="p">):</span> 
+            <span class="c1"># skip swap moves, since they have no step size</span>
+            <span class="k">break</span>
+
         <span class="k">else</span><span class="p">:</span>
             <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;full_auto_set_stepsizes got key &#39;</span><span class="si">%s</span><span class="s2">&#39;, unkown to this routine</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
@@ -1397,9 +1587,9 @@
                 <span class="c1">#DOC \item Each MPI processes performs one (H)MC move on its cloned configuration</span>
                 <span class="c1"># build up stats from walkers</span>
                 <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">key</span><span class="o">==</span><span class="s2">&quot;MC_atom_velo&quot;</span><span class="p">):</span>
-                    <span class="n">stats</span> <span class="o">=</span> <span class="n">walk_single_walker</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">exploration_movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+                    <span class="n">stats</span> <span class="o">=</span> <span class="n">walk_single_walker</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">exploration_movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">stats</span> <span class="o">=</span> <span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">exploration_movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+                    <span class="n">stats</span> <span class="o">=</span> <span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">exploration_movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
 
                   <span class="c1">#DOC     running statistics for the number of accepted/rejected moves on each process are recorded </span>
                 <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">stats_cumul</span><span class="p">,</span> <span class="n">stats</span><span class="p">)</span>
@@ -1502,7 +1692,6 @@
     <span class="n">full_auto_end_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="n">duration</span> <span class="o">=</span> <span class="n">full_auto_end_time</span> <span class="o">-</span> <span class="n">full_auto_start_time</span>
     <span class="k">return</span> <span class="n">duration</span></div>
-
 
 <div class="viewcode-block" id="adjust_step_sizes"><a class="viewcode-back" href="../ns_run.html#ns_run.adjust_step_sizes">[docs]</a><span class="k">def</span> <span class="nf">adjust_step_sizes</span><span class="p">(</span><span class="n">walk_stats</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">do_print_rate</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">monitor_only</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1647,7 +1836,10 @@
 	<span class="k">for</span> <span class="n">i_try</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
 	    <span class="n">pos</span><span class="p">[</span><span class="n">i_at</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">at_new</span><span class="o">.</span><span class="n">get_cell</span><span class="p">(),</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">))</span>
 	    <span class="n">at_new</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">i_at</span><span class="o">+</span><span class="mi">1</span><span class="p">,:])</span>
-	    <span class="n">energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at_new</span><span class="p">)</span>
+	    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">separable_MDNS</span><span class="p">]):</span>
+	        <span class="n">energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at_new</span><span class="p">)</span>
+	    <span class="k">else</span><span class="p">:</span>
+	        <span class="n">energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at_new</span><span class="p">,</span><span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 	    <span class="k">if</span> <span class="n">energy</span> <span class="o">&lt;</span> <span class="n">Emax</span><span class="p">:</span>
 		<span class="n">success</span> <span class="o">=</span> <span class="bp">True</span>
 		<span class="k">break</span>
@@ -1655,6 +1847,34 @@
 	    <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;Failed 10 times to insert atom </span><span class="si">%d</span><span class="s2"> with Emax </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i_at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">),</span> <span class="mi">7</span><span class="p">)</span>
     <span class="n">at</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">energy</span></div>
+
+<div class="viewcode-block" id="check_eners_consistency"><a class="viewcode-back" href="../ns_run.html#ns_run.check_eners_consistency">[docs]</a><span class="k">def</span> <span class="nf">check_eners_consistency</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span><span class="n">elim</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">loc</span><span class="p">,</span> <span class="n">it</span><span class="p">):</span>
+    <span class="c1"># check that at.info[&#39;ns_energy&#39;] is correct</span>
+    <span class="c1"># check that KE either is or is not incorporated into at.info[&#39;ns_energy&#39;]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+        <span class="n">include_ke</span><span class="o">=</span><span class="bp">False</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">include_ke</span><span class="o">=</span><span class="bp">True</span>
+
+    <span class="k">print</span> <span class="s2">&quot;Point &quot;</span><span class="p">,</span><span class="n">loc</span><span class="p">,</span><span class="s2">&quot; iteration &quot;</span><span class="p">,</span><span class="n">it</span><span class="p">,</span><span class="s2">&quot; check energies&quot;</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">warned</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="n">include_ke</span><span class="p">)</span>
+<span class="c1">#        if (abs((e - at.info[&#39;ns_energy&#39;])/e)&gt;1.0e-5 and e!=0.0):</span>
+<span class="c1">#            print &quot;rank &quot;,rank,&quot; config &quot;,i, &quot; e!=at.info[&#39;ns_energy&#39;] &quot;</span>
+<span class="c1">#            print &quot;e, at.info[&#39;ns_energy&#39;], abs((e - at.info[&#39;ns_energy&#39;])/e): &quot;, e, at.info[&#39;ns_energy&#39;], abs((e - at.info[&#39;ns_energy&#39;])/e)</span>
+<span class="c1">#            warned=True</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="o">&gt;</span><span class="n">elim</span><span class="p">):</span> <span class="c1">#and (abs((e-elim)/e)&gt;1.0e-10)):</span>
+            <span class="k">print</span> <span class="s2">&quot;rank &quot;</span><span class="p">,</span><span class="n">rank</span><span class="p">,</span><span class="s2">&quot; config &quot;</span><span class="p">,</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot; e &gt; elim &quot;</span>
+            <span class="k">print</span> <span class="s2">&quot;e, elim, abs((e-elim)/e): &quot;</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">elim</span><span class="p">,</span> <span class="nb">abs</span><span class="p">((</span><span class="n">e</span><span class="o">-</span><span class="n">elim</span><span class="p">)</span><span class="o">/</span><span class="n">e</span><span class="p">)</span>
+            <span class="n">warned</span><span class="o">=</span><span class="bp">True</span>
+        <span class="n">i</span><span class="o">+=</span><span class="mi">1</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">warned</span><span class="p">):</span>
+        <span class="k">print</span> <span class="s2">&quot;All energies OK&quot;</span></div>
+
 
 <div class="viewcode-block" id="save_snapshot"><a class="viewcode-back" href="../ns_run.html#ns_run.save_snapshot">[docs]</a><span class="k">def</span> <span class="nf">save_snapshot</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -1699,13 +1919,14 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">print_prefix</span>
     <span class="k">global</span> <span class="n">cur_config_ind</span>
+    <span class="k">global</span> <span class="n">ns_beta</span>
 
     <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
 	<span class="n">nD</span> <span class="o">=</span> <span class="mi">3</span>
 	<span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
 	    <span class="n">nD</span> <span class="o">=</span> <span class="mi">2</span>
 	<span class="k">if</span> <span class="n">energy_io</span><span class="o">.</span><span class="n">tell</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-	    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]:</span>
+	    <span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">])):</span>
 		<span class="n">nExtraDOF</span> <span class="o">=</span> <span class="mi">0</span>
 	    <span class="k">else</span><span class="p">:</span>
 		<span class="n">nExtraDOF</span> <span class="o">=</span> <span class="n">n_atoms</span><span class="o">*</span><span class="n">nD</span>
@@ -1721,6 +1942,7 @@
 
     <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
         <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;KEmax&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">KEmax</span> 
+        <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_beta&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">ns_beta</span>
 	<span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
 	    <span class="k">print</span> <span class="n">rank</span><span class="p">,</span> <span class="s2">&quot;: initial enthalpy &quot;</span><span class="p">,</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">],</span> <span class="s2">&quot; PE &quot;</span><span class="p">,</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span> <span class="s2">&quot; KE &quot;</span><span class="p">,</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 	<span class="k">else</span><span class="p">:</span>
@@ -1794,6 +2016,7 @@
 	<span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">i_ns_step</span> <span class="o">&gt;</span> <span class="n">start_first_iter</span> <span class="ow">and</span> <span class="n">Emax_next</span> <span class="o">&gt;=</span> <span class="n">Emax_of_step</span><span class="p">):</span>
 	    <span class="k">print</span> <span class="s2">&quot;WARNING: Emax not decreasing &quot;</span><span class="p">,</span><span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">Emax_next</span>
 	<span class="n">Emax_of_step</span><span class="o">=</span><span class="n">Emax_next</span>
+	<span class="c1">#check_eners_consistency(walkers,Emax_of_step, movement_args, 1, i_ns_step)</span>
 
 	<span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;min_Emax&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="ow">and</span> <span class="n">Emax_of_step</span> <span class="o">&lt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;min_Emax&#39;</span><span class="p">]:</span>
 	    <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -2011,7 +2234,10 @@
                     <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;config_ind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">walkers</span><span class="p">[</span><span class="n">send_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;config_ind&#39;</span><span class="p">]</span>
                     <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;from_config_ind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">walkers</span><span class="p">[</span><span class="n">send_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;from_config_ind&#39;</span><span class="p">]</span>
                     <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;config_ind_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">walkers</span><span class="p">[</span><span class="n">send_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;config_ind_time&#39;</span><span class="p">]</span>
-		<span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+		<span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+		    <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+		<span class="k">else</span><span class="p">:</span>
+		    <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 		<span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">10</span> <span class="ow">and</span> <span class="n">size</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
 		    <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;n_walks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 	    <span class="k">else</span><span class="p">:</span> <span class="c1"># need send/recv</span>
@@ -2061,7 +2287,10 @@
                         <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;config_ind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">buf</span><span class="p">[</span><span class="n">buf_o</span><span class="p">]);</span> <span class="n">buf_o</span> <span class="o">+=</span> <span class="mi">1</span>
                         <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;from_config_ind&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">buf</span><span class="p">[</span><span class="n">buf_o</span><span class="p">]);</span> <span class="n">buf_o</span> <span class="o">+=</span> <span class="mi">1</span>
                         <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;config_ind_time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">buf</span><span class="p">[</span><span class="n">buf_o</span><span class="p">]);</span> <span class="n">buf_o</span> <span class="o">+=</span> <span class="mi">1</span>
-		    <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+		    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+		        <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+		    <span class="k">else</span><span class="p">:</span>
+		        <span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">recv_ind</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span><span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 
 	<span class="k">else</span><span class="p">:</span> <span class="c1"># complicated construction of sending/receiving buffers</span>
 	    <span class="c1"># figure out how much is sent per config</span>
@@ -2184,11 +2413,15 @@
 
  	<span class="k">if</span> <span class="p">(</span><span class="n">i_ns_step</span> <span class="o">==</span> <span class="n">start_first_iter</span> <span class="ow">and</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;full_auto_step_sizes&#39;</span><span class="p">]):</span>
    	    <span class="c1"># set initial step sizes. Performed here since this is the first time all the arrays are in place</span>
+   	    <span class="n">ns_beta</span> <span class="o">=</span> <span class="n">beta_from_ns_pe_values</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_walkers&#39;</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="n">dorescale_velos</span><span class="o">=</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">])</span> <span class="c1">#, ns_args[&#39;max_volume_per_atom&#39;]*len(walkers[0]), log_X_n_term_sum*i_ns_step)</span>
+   	    <span class="n">save_Emax_of_step_betans</span> <span class="o">=</span> <span class="n">Emax_of_step</span> <span class="c1"># save Emax_of_step for future Emax of step calls</span>
+   	    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+   	        <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_beta&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">ns_beta</span>
    	    <span class="n">conf_pre</span><span class="o">=</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
    	    <span class="n">conf_pre</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_calculator</span><span class="p">())</span>
    	    <span class="n">move_args_pre</span><span class="o">=</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">movement_args</span><span class="p">)</span>
-   	    <span class="n">walk_stats_pre</span><span class="o">=</span><span class="n">walk_single_walker</span><span class="p">(</span><span class="n">conf_pre</span><span class="p">,</span> <span class="n">move_args_pre</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
-   	    <span class="n">delta_step_size_setting_duration</span> <span class="o">=</span> <span class="n">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats_pre</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+   	    <span class="n">walk_stats_pre</span><span class="o">=</span><span class="n">walk_single_walker</span><span class="p">(</span><span class="n">conf_pre</span><span class="p">,</span> <span class="n">move_args_pre</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">ns_beta</span><span class="p">)</span>
+   	    <span class="n">delta_step_size_setting_duration</span> <span class="o">=</span> <span class="n">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats_pre</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">ns_beta</span><span class="p">)</span>
    	    <span class="n">total_step_size_setting_duration</span> <span class="o">+=</span> <span class="n">delta_step_size_setting_duration</span>
    	    <span class="n">step_size_setting_duration</span> <span class="o">+=</span> <span class="n">delta_step_size_setting_duration</span>
    	    <span class="k">del</span><span class="p">(</span><span class="n">walk_stats_pre</span><span class="p">)</span>
@@ -2203,12 +2436,12 @@
 	<span class="k">for</span> <span class="n">i_at</span> <span class="ow">in</span> <span class="n">clone_walk_ind</span><span class="p">:</span>
 	    <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
 		<span class="k">print</span> <span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;INFO: 40 WALK clone_target &quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">i_at</span>
-	    <span class="n">walk_stats</span> <span class="o">=</span> <span class="n">walk_single_walker</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">],</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+	    <span class="n">walk_stats</span> <span class="o">=</span> <span class="n">walk_single_walker</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">],</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">ns_beta</span><span class="p">)</span>
             <span class="c1"># if tracking all configs, save this one that has been walked</span>
             <span class="k">if</span> <span class="n">track_traj_io</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                 <span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;iter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_ns_step</span>
                 <span class="n">ase</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">track_traj_io</span><span class="p">,</span> <span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">],</span> <span class="n">format</span><span class="o">=</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;config_file_format&#39;</span><span class="p">])</span>
-	    <span class="c1">#print &quot;WALK on rank &quot;, rank, &quot;at iteration &quot;, i_ns_step, &quot; walker &quot;, i_at</span>
+	    <span class="c1">#print &quot;WALK on rank &quot;, rank, &quot;at iteration &quot;, i_ns_step, &quot; walker &quot;, i_at </span>
 	    <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">10</span> <span class="ow">and</span> <span class="n">size</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
 		<span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;n_walks&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]</span>
 	    <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">walk_stats_adjust</span><span class="p">,</span> <span class="n">walk_stats</span><span class="p">)</span>
@@ -2258,7 +2491,7 @@
 		    <span class="n">r_i</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_walkers</span><span class="p">)</span>
 		<span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
 		    <span class="k">print</span> <span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;INFO: 50 WALK extra &quot;</span><span class="p">,</span><span class="n">rank</span><span class="p">,</span> <span class="n">r_i</span>
-		<span class="n">walk_stats</span> <span class="o">=</span> <span class="n">walk_single_walker</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">r_i</span><span class="p">],</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+		<span class="n">walk_stats</span> <span class="o">=</span> <span class="n">walk_single_walker</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="n">r_i</span><span class="p">],</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">ns_beta</span><span class="p">)</span>
                 <span class="c1"># if tracking all configs, save this one that has been walked</span>
                 <span class="k">if</span> <span class="n">track_traj_io</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
                     <span class="n">walkers</span><span class="p">[</span><span class="n">i_at</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;iter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_ns_step</span>
@@ -2276,12 +2509,27 @@
             <span class="n">monitored_this_step</span><span class="o">=</span><span class="bp">True</span>
 
 	<span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;adjust_step_interval&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i_ns_step</span> <span class="o">%</span> <span class="nb">abs</span><span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;adjust_step_interval&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">abs</span><span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;adjust_step_interval&#39;</span><span class="p">])</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+
+	<span class="c1">#    ns_beta = beta_from_ns_pe_values(walkers, Emax_of_step,ns_args[&#39;n_walkers&#39;],dorescale_velos=False) #, ns_args[&#39;max_volume_per_atom&#39;]*len(walkers[0]), log_X_n_term_sum*i_ns_step) # do for comparison</span>
+	    <span class="k">if</span><span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+	        <span class="k">if</span> <span class="p">(</span><span class="n">i_ns_step</span><span class="o">!=</span><span class="n">start_first_iter</span><span class="p">):</span>
+	            <span class="n">nlevels_since_call</span><span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;adjust_step_interval_times_fraction_killed&#39;</span><span class="p">]</span>
+	            <span class="n">use_emax</span> <span class="o">=</span> <span class="n">save_Emax_of_step_betans</span>
+	            <span class="n">save_Emax_of_step_betans</span> <span class="o">=</span> <span class="n">Emax_of_step</span>
+	        <span class="k">else</span><span class="p">:</span> 
+	            <span class="n">nlevels_since_call</span><span class="o">=</span><span class="mi">0</span> 
+	            <span class="n">use_emax</span> <span class="o">=</span> <span class="n">Emax_of_step</span>
+	            <span class="c1"># save_Emax_of_step_betans already set</span>
+	        <span class="n">ns_beta</span> <span class="o">=</span> <span class="n">beta_from_ns_pe_values</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">use_emax</span><span class="p">,</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_walkers&#39;</span><span class="p">],</span><span class="n">nlevels_since_call</span><span class="p">)</span> <span class="c1">#, ns_args[&#39;max_volume_per_atom&#39;]*len(walkers[0]), log_X_n_term_sum*i_ns_step)</span>
+	        <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+	            <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_beta&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">ns_beta</span>
+
 	    <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;full_auto_step_sizes&#39;</span><span class="p">]):</span>
 	        <span class="n">adjust_step_sizes</span><span class="p">(</span><span class="n">walk_stats_adjust</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">do_print_rate</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">monitored_this_step</span><span class="p">))</span>
 	    <span class="k">else</span><span class="p">:</span>
-	        <span class="n">delta_step_size_setting_duration</span> <span class="o">=</span> <span class="n">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats_adjust</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
- 	        <span class="n">total_step_size_setting_duration</span> <span class="o">+=</span> <span class="n">delta_step_size_setting_duration</span>
- 	        <span class="n">step_size_setting_duration</span> <span class="o">+=</span> <span class="n">delta_step_size_setting_duration</span>
+	        <span class="n">delta_step_size_setting_duration</span> <span class="o">=</span> <span class="n">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats_adjust</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax_of_step</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">ns_beta</span><span class="p">)</span>
+	        <span class="n">total_step_size_setting_duration</span> <span class="o">+=</span> <span class="n">delta_step_size_setting_duration</span>
+	        <span class="n">step_size_setting_duration</span> <span class="o">+=</span> <span class="n">delta_step_size_setting_duration</span>
 	    <span class="n">zero_stats</span><span class="p">(</span><span class="n">walk_stats_adjust</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">)</span>
 
 	<span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">20</span><span class="p">:</span>
@@ -2323,7 +2571,7 @@
         <span class="k">global</span> <span class="n">n_extra_walk_per_task</span>
         <span class="k">global</span> <span class="n">do_calc_quip</span><span class="p">,</span> <span class="n">do_calc_lammps</span><span class="p">,</span> <span class="n">do_calc_internal</span><span class="p">,</span> <span class="n">do_calc_fortran</span>
         <span class="k">global</span> <span class="n">energy_io</span><span class="p">,</span> <span class="n">traj_io</span><span class="p">,</span> <span class="n">walkers</span>
-        <span class="k">global</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">pot</span>
+        <span class="k">global</span> <span class="n">n_atoms</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">pot</span><span class="p">,</span> <span class="n">ns_beta</span>
         <span class="k">global</span> <span class="n">MPI</span><span class="p">,</span> <span class="n">quippy</span><span class="p">,</span> <span class="n">f_MC_MD</span>
         <span class="k">global</span> <span class="n">track_traj_io</span><span class="p">,</span> <span class="n">cur_config_ind</span>
 
@@ -2628,10 +2876,12 @@
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_velo_flip_accept&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_atom_velo_flip_accept&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_velo_rej_free_fully_randomize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;atom_velo_rej_free_fully_randomize&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_velo_rej_free_perturb_angle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;atom_velo_rej_free_perturb_angle&#39;</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">))</span>
+	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_momentum_retain_fraction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;atom_momentum_retain_fraction&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velo_walk_rej_free&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_atom_velo_walk_rej_free&#39;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">))</span>
+	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
 
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_timestep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_atom_timestep&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
-	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_timestep_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_atom_timestep_max&#39;</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">))</span>
+	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_timestep_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_atom_timestep_max&#39;</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_energy_fuzz&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_atom_energy_fuzz&#39;</span><span class="p">,</span> <span class="mf">1.0e-2</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_reject_energy_violation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_atom_reject_energy_violation&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
 
@@ -2648,13 +2898,13 @@
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_volume_per_atom_step_size_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_volume_per_atom_step_size_max&#39;</span><span class="p">,</span> <span class="mf">10.0</span><span class="o">*</span><span class="n">default_value</span><span class="p">))</span> <span class="c1"># 50% of maximum allowed volume per atom</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_volume_per_atom_prob&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_volume_per_atom_prob&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_stretch_step_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_stretch_step_size&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
-	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_stretch_step_size_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_stretch_step_size_max&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_stretch_step_size_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_stretch_step_size_max&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_stretch_prob&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_stretch_prob&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_shear_step_size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_shear_step_size&#39;</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">))</span>
-	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_shear_step_size_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_shear_step_size_max&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">))</span>
+	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_shear_step_size_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_shear_step_size_max&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_shear_prob&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_shear_prob&#39;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
 
-	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_min_aspect_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_min_aspect_ratio&#39;</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">))</span>
+	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_min_aspect_ratio&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_cell_min_aspect_ratio&#39;</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;cell_shape_equil_steps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;cell_shape_equil_steps&#39;</span><span class="p">,</span> <span class="mi">1000</span><span class="p">))</span>
 
         <span class="k">try</span><span class="p">:</span>
@@ -2671,16 +2921,21 @@
 <span class="c1">#	    print &quot;WARNING: step size adjustment would be done too often, at every &quot;, movement_args[&#39;adjust_step_interval&#39;], &quot; iteration&quot;</span>
 <span class="c1">#	    print &quot;WARNING: adjust_step_interval is increased to 20&quot;</span>
 <span class="c1">#	    movement_args[&#39;adjust_step_interval&#39;] = 20</span>
-	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;full_auto_step_sizes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;full_auto_step_sizes&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
+	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;full_auto_step_sizes&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;full_auto_step_sizes&#39;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">))</span>
 
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_adjust_step_factor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_adjust_step_factor&#39;</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_adjust_min_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_adjust_min_rate&#39;</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_adjust_max_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MC_adjust_max_rate&#39;</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">))</span>
-	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_adjust_step_factor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_adjust_step_factor&#39;</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">))</span>
+	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_adjust_step_factor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_adjust_step_factor&#39;</span><span class="p">,</span> <span class="mf">1.1</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_adjust_min_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_adjust_min_rate&#39;</span><span class="p">,</span> <span class="mf">0.50</span><span class="p">))</span>
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_adjust_max_rate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;MD_adjust_max_rate&#39;</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">))</span>
 
 	<span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;2D&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
+
+	<span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">((</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;MC&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velocities&#39;</span><span class="p">])):</span>
+	    <span class="c1"># Forbidden : if the user wants to do MC in either atomic coordinates or velocities,</span>
+	    <span class="c1"># then they do not want to do separable_MDNS.</span>
+	    <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;ERROR: got separable_MDNS=T and either atom_algorithm=&#39;MC&#39; or MC_atom_velocities=T. Not supported.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
 	<span class="k">if</span> <span class="s1">&#39;QUIP_pot_params_file&#39;</span> <span class="ow">in</span> <span class="n">ns_args</span><span class="p">:</span>
 	    <span class="k">if</span> <span class="ow">not</span> <span class="n">have_quippy</span><span class="p">:</span>
@@ -2899,20 +3154,42 @@
 		<span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand_perturb_energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">])</span>
 		<span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
 
+	    <span class="c1"># Done initialise atomic positions. Now initialise all momenta</span>
+
+	    <span class="n">ns_beta</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="c1"># default value, if not doing separable_MDNS</span>
+	    <span class="p">(</span><span class="n">emx_temp</span><span class="p">,</span> <span class="n">rnktemp</span><span class="p">,</span> <span class="n">ind_temp</span><span class="p">)</span> <span class="o">=</span> <span class="n">max_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c1">#	    ns_beta = beta_from_ns_pe_values(walkers, emx_temp[0],ns_args[&#39;n_walkers&#39;],dorescale_velos=False) #, ns_args[&#39;max_volume_per_atom&#39;]*len(walkers[0]), 0.0) # do for comparison</span>
+	    <span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span> <span class="c1"># find ns_beta from initial coordinates</span>
+	        <span class="p">(</span><span class="n">emx_temp</span><span class="p">,</span> <span class="n">rnktemp</span><span class="p">,</span> <span class="n">ind_temp</span><span class="p">)</span> <span class="o">=</span> <span class="n">max_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+	        <span class="n">ns_beta</span> <span class="o">=</span> <span class="n">beta_from_ns_pe_values</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">emx_temp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_walkers&#39;</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="n">dorescale_velos</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="c1">#, ns_args[&#39;max_volume_per_atom&#39;]*len(walkers[0]), 0.0)</span>
+	        <span class="k">del</span> <span class="n">emx_temp</span>
+	        <span class="k">del</span> <span class="n">rnktemp</span>
+	        <span class="k">del</span> <span class="n">ind_temp</span>
+	    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+	        <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_beta&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">ns_beta</span>
+
 		<span class="c1"># set KEmax from P and Vmax</span>
-		<span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]:</span>
-		    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
-			<span class="n">KEmax</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;max_volume_per_atom&#39;</span><span class="p">]</span>
-		    <span class="k">else</span><span class="p">:</span>
-			<span class="n">KEmax</span> <span class="o">=</span> <span class="n">kB</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;KEmax_max_T&#39;</span><span class="p">]</span>
-                    <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;KEmax&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">KEmax</span>
-                 
-		<span class="k">else</span><span class="p">:</span>
-		    <span class="n">KEmax</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+	    <span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]):</span>
+	        <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
+	            <span class="n">KEmax</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;max_volume_per_atom&#39;</span><span class="p">]</span>
+	        <span class="k">else</span><span class="p">:</span>
+	            <span class="n">KEmax</span> <span class="o">=</span> <span class="n">kB</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;KEmax_max_T&#39;</span><span class="p">]</span>
+	        <span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span> <span class="c1"># Set KEmax=-1.0, so that it does not affect dynamics</span>
+	            <span class="n">KEmax</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+	        <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+	            <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;KEmax&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">KEmax</span>
+	            <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_beta&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">ns_beta</span>
+	    <span class="k">else</span><span class="p">:</span>
+	        <span class="n">KEmax</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
 
 		<span class="c1"># set initial velocities, rejection free</span>
-		<span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]:</span>
-		    <span class="n">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+	    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]:</span>
+	       <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+	            <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+	                <span class="n">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span> <span class="c1"># adds KE to at.info[&#39;ns_energy&#39;]</span>
+	       <span class="k">else</span><span class="p">:</span>
+	            <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+	                <span class="n">rej_free_canonical_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">ns_beta</span><span class="p">,</span> <span class="n">total_refresh</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>  <span class="c1"># does NOT add KE to at.info[&#39;ns_energy&#39;] </span>
 
             <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;swap_atomic_numbers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
 
@@ -2940,16 +3217,22 @@
                 <span class="k">print</span> <span class="n">rank</span><span class="p">,</span> <span class="s2">&quot;waiting for walkers&quot;</span>
 		<span class="n">walkers</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="n">source</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
+		<span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]:</span>
+		    <span class="n">KEmax</span> <span class="o">=</span> <span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;KEmax&#39;</span><span class="p">]</span>
+		    <span class="n">ns_beta</span> <span class="o">=</span> <span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_beta&#39;</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+		    <span class="n">KEmax</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+		    <span class="n">ns_beta</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+
 	    <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
 		<span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_extra_data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="ow">not</span> <span class="s1">&#39;ns_extra_data&#39;</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">arrays</span> <span class="ow">or</span> <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">size</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="o">!=</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_extra_data&#39;</span><span class="p">]):</span>
 		    <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_extra_data&#39;</span><span class="p">])</span> <span class="p">)</span>
 		<span class="k">if</span> <span class="n">do_calc_quip</span> <span class="ow">or</span> <span class="n">do_calc_lammps</span><span class="p">:</span>
 		    <span class="n">at</span><span class="o">.</span><span class="n">set_calculator</span><span class="p">(</span><span class="n">pot</span><span class="p">)</span>
-		<span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand_perturb_energy</span><span class="p">(</span><span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]:</span>
-                    <span class="n">KEmax</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;KEmax&#39;</span><span class="p">]</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="n">KEmax</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+		<span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span>
+		    <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand_perturb_energy</span><span class="p">(</span><span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">])</span>
+		<span class="k">else</span><span class="p">:</span>
+		    <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand_perturb_energy</span><span class="p">(</span><span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">])</span>
 
 		<span class="n">key_found</span> <span class="o">=</span> <span class="bp">False</span>
 		<span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">:</span> <span class="c1"># check if &#39;iter=&#39; info is present in the file used for restart</span>
@@ -2970,6 +3253,19 @@
 	            
 	    <span class="k">if</span> <span class="n">do_calc_quip</span><span class="p">:</span>
                 <span class="n">walkers</span> <span class="o">=</span> <span class="p">[</span><span class="n">quippy</span><span class="o">.</span><span class="n">Atoms</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">]</span>
+
+		<span class="n">ns_beta</span><span class="o">=-</span><span class="mf">1.0</span> <span class="c1"># default value, if not doing separable_MDNS</span>
+		<span class="p">(</span><span class="n">emx_temp</span><span class="p">,</span> <span class="n">rnktemp</span><span class="p">,</span> <span class="n">ind_temp</span><span class="p">)</span> <span class="o">=</span> <span class="n">max_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c1">#		ns_beta = beta_from_ns_pe_values(walkers, emx_temp[0],ns_args[&#39;n_walkers&#39;],dorescale_velos=False) #, ns_args[&#39;max_volume_per_atom&#39;]*len(walkers[0]), 0.0) # do for comparison</span>
+		<span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span> <span class="c1"># find ns_beta from initial coordinates</span>
+		    <span class="p">(</span><span class="n">emx_temp</span><span class="p">,</span> <span class="n">rnktemp</span><span class="p">,</span> <span class="n">ind_temp</span><span class="p">)</span> <span class="o">=</span> <span class="n">max_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		    <span class="c1"># set beta using energies of current liveset</span>
+		    <span class="n">ns_beta</span> <span class="o">=</span> <span class="n">beta_from_ns_pe_values</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">emx_temp</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_walkers&#39;</span><span class="p">])</span> <span class="c1">#, ns_args[&#39;max_volume_per_atom&#39;]*len(walkers[0]), 0.0)</span>
+		    <span class="k">del</span> <span class="n">emx_temp</span>
+		    <span class="k">del</span> <span class="n">rnktemp</span>
+		    <span class="k">del</span> <span class="n">ind_temp</span>
+		<span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
+		    <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_beta&#39;</span><span class="p">]</span><span class="o">=</span><span class="n">ns_beta</span>
 
 	<span class="c1"># scale MC_atom_step_size by max_vol^(1/3)</span>
 	<span class="n">max_lc</span> <span class="o">=</span> <span class="p">(</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;max_volume_per_atom&#39;</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span><span class="o">**</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">3.0</span><span class="p">)</span>
@@ -3041,6 +3337,7 @@
                 <span class="k">except</span><span class="p">:</span>
                     <span class="k">print</span> <span class="s2">&quot;WARNING: got restart file, but no corresponding energies file, so creating new one from scratch&quot;</span>
                     <span class="n">energy_io</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;out_file_prefix&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;energies&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
 
 	<span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;profile&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">rank</span><span class="p">:</span>
 	    <span class="kn">import</span> <span class="nn">cProfile</span>

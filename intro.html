@@ -194,10 +194,41 @@ It can be used with the supplied fortran potential models and it also has interf
 </li>
 </ul>
 </dd>
-<dt><code class="docutils literal"><span class="pre">do_MC_atom_velo_walk</span></code></dt>
+</dl>
+<p><code class="docutils literal"><span class="pre">beta\_from\_current\_ns\_pe\_values</span></code>
+<code class="docutils literal"><span class="pre">This</span> <span class="pre">routine</span> <span class="pre">computes</span> <span class="pre">beta</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">NS</span> <span class="pre">estimate</span> <span class="pre">of</span> <span class="pre">$`frac{\Delta</span> <span class="pre">X}{\Delta</span> <span class="pre">E}$.</span> <span class="pre">($E=$potential</span> <span class="pre">energy.)</span></code></p>
+<dl class="docutils">
+<dt><code class="docutils literal"><span class="pre">rej\_free\_canonical\_velo</span></code></dt>
+<dd><ul class="first last">
+<li><p class="first">pick random velocities from cannonical distribution with inverse T currentbeta</p>
+</li>
+<li><dl class="first docutils">
+<dt>If movement_args[&#8216;atom_momentum_retain_fraction&#8217;]&gt;0.0</dt>
 <dd><ul class="first last simple">
-<li>If MC_atom_velo_walk_rej_free is set, call rej_free_perturb_velo()</li>
-<li>else do some unsupported velo MC stuff</li>
+<li>Partial momentum update</li>
+<li>$p&#8217; = alpha p + ( 1- alpha^2  )^{frac{1}{2}}n$ www.mcmchandbook.net eq. (5.34)</li>
+<li>Else if &#8220;rescale_only&#8221; rescale velocities to current temperature</li>
+<li>Else completely refresh velocities</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt><code class="docutils literal"><span class="pre">do\_MC\_atom\_velo\_walk</span></code></dt>
+<dd><ul class="first last">
+<li><p class="first">If separable_MDNS = T , call rej_free_canonical_velo()</p>
+</li>
+<li><dl class="first docutils">
+<dt>Else if MC_atom_velo_walk_rej_free</dt>
+<dd><ul class="first last simple">
+<li>call rej_free_perturb_velo()</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><p class="first">else do MC pertubation to velocities</p>
+</li>
 </ul>
 </dd>
 <dt><code class="docutils literal"><span class="pre">do_MD_atom_walk</span></code></dt>
