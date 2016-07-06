@@ -234,8 +234,8 @@ def usage():
        | default: 1.0
 
     ``MC_cell_min_aspect_ratio=float``
-       | Ratio of smallest cell height relative to the longest one. A higher value of MC_cell_min_aspect_ratio restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of MC_cell_min_aspect_ratio < 0.65 *does* effect the melting transition.
-       | default: 0.9
+       | Smallest allowed distance between parallel faces for cell normalised to unit volume. A higher value of MC_cell_min_aspect_ratio restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of MC_cell_min_aspect_ratio < 0.65 *does* effect the melting transition.
+       | default: 0.8
 
     ``cell_shape_equil_steps=int``
        | default: 1000
@@ -412,7 +412,7 @@ def usage():
     sys.stderr.write("MC_cell_shear_step_size=float (0.1 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
     sys.stderr.write("MC_cell_shear_step_size_max=float (1.0 in units of (max_volume_per_atom * N_atoms)^(1/3))\n")
     sys.stderr.write("MC_cell_shear_prob=float (1.0)\n")
-    sys.stderr.write("MC_cell_min_aspect_ratio=float (0.9)\n")
+    sys.stderr.write("MC_cell_min_aspect_ratio=float (0.8)\n")
     sys.stderr.write("cell_shape_equil_steps=int (1000)\n")
     sys.stderr.write("\n")
     sys.stderr.write("monitor_step_interval_times_fraction_killed=float (1, divided by n_cull/n_walkers to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring)\n")
@@ -2639,7 +2639,7 @@ def main():
 	movement_args['MC_cell_shear_step_size_max'] = float(args.pop('MC_cell_shear_step_size_max', 1.0))
 	movement_args['MC_cell_shear_prob'] = float(args.pop('MC_cell_shear_prob', 1.0))
 
-	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.9))
+	movement_args['MC_cell_min_aspect_ratio'] = float(args.pop('MC_cell_min_aspect_ratio', 0.8))
 	movement_args['cell_shape_equil_steps'] = int(args.pop('cell_shape_equil_steps', 1000))
 
         try:
