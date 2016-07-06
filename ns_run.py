@@ -674,8 +674,6 @@ def beta_from_ns_pe_values(walkers,high_ener,nlivepts,frac_liveset_since_high_en
         Emedian = np.median(energies)
         dlogX = np.log( float(nlivepts)/float(nlivepts + 1.0) )*( (nlivepts+1)*0.5 + frac_liveset_since_high_ener*nlivepts)
         dE=high_ener-Emedian
-#        print "frac_liveset_since_high_ener*nlivepts + 0.5, nlivepts/2, dlogX, dE, high_ener, Emedian : "
-#        print frac_liveset_since_high_ener*nlivepts+0.5, nlivepts/2.0, dlogX, dE, high_ener, Emedian 
 
         # frac_liveset_since_high_ener = movement_args['adjust_step_interval_times_fraction_killed']
 #        if (frac_liveset_since_high_ener>0):
@@ -726,7 +724,6 @@ def rej_free_canonical_velo(at, currentbeta, include_ke_in_output_ns_energy=Fals
 
     #DOC \item pick random velocities from cannonical distribution with inverse T currentbeta
     stdspd = (1.0/np.sqrt(np.array(at.get_masses())*currentbeta))
-#    print "np.array(at.get_masses()), currentbeta: ",np.array(at.get_masses()), currentbeta
     velocities = rng.normal( 1.0, (len(at), 3) ) * np.array([stdspd,]*3).transpose()
 
     #DOC \item If movement_args['atom_momentum_retain_fraction']>0.0
@@ -811,9 +808,6 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
     if orig_E >= Emax:
 	print print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax
 
-#debug
-#    print "orig_E = ", at.info['ns_energy']
-
     #DOC \item if MD\_atom\_velo\_pre\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation
     if movement_args['MD_atom_velo_pre_perturb']:
 	do_MC_atom_velo_walk(at, movement_args, Emax, KEmax, itbeta)
@@ -824,8 +818,6 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
 	pre_MD_extra_data = at.arrays['ns_extra_data'].copy()
     if movement_args['separable_MDNS']:
 	orig_KE = eval_energy(at, do_PE=False, do_PV=False, do_KE=True)
-#debug
-#    print "orig_KE = ", orig_KE
 
     pre_MD_E = at.info['ns_energy']
 
@@ -852,9 +844,6 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
     else:
 	exit_error("Need some non-quippy, non-fortran, non-lammps way of doing MD\n",3)
 
-#debug
-#    print "final_E = ", final_E
-
     reject_fuzz = False
     final_KE = eval_energy(at, do_PE=False, do_PV=False)
     #DOC \item If MD\_atom\_reject\_energy\_violation is set, accept/reject entire move on E deviating by less than MD\_atom\_energy\_fuzz times kinetic energy
@@ -877,11 +866,6 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             reject_dKE = True
     else:
         reject_dKE = False
-
-#debug
-#    print "final KE = ", final_KE, " dKE =",final_KE-orig_KE, "log_prob_accept_dKE = ",log_prob_accept_dKE
-#    print "final E = ", final_E, " Emax = ",Emax, " reject_Emax = ",reject_Emax
-#    print "reject_fuzz = ", reject_fuzz, " reject_Emax = ", reject_Emax, " reject_KEmax = ", reject_KEmax, " reject_dKE = ",reject_dKE, " accept: ",(not(reject_fuzz or reject_Emax or reject_KEmax or reject_dKE))
 
     #DOC \item if reject
     if reject_fuzz or reject_Emax or reject_KEmax or reject_dKE: # reject
