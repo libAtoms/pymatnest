@@ -1296,7 +1296,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax, itbeta):
             #DOC \item pick random item from list
             move = possible_moves[rng.int_uniform(0,len(possible_moves))]
             #DOC \item do move
-            (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax)
+            (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax, itbeta)
             n_model_calls_used += t_n_model_calls
             accumulate_stats(out, t_out)
 
