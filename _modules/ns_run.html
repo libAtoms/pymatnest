@@ -1353,7 +1353,7 @@
             <span class="c1">#DOC \item pick random item from list</span>
             <span class="n">move</span> <span class="o">=</span> <span class="n">possible_moves</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_moves</span><span class="p">))]</span>
             <span class="c1">#DOC \item do move</span>
-            <span class="p">(</span><span class="n">t_n_model_calls</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">t_n_model_calls</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
             <span class="n">n_model_calls_used</span> <span class="o">+=</span> <span class="n">t_n_model_calls</span>
             <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span>
 
