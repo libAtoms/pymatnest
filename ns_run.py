@@ -1831,7 +1831,8 @@ def save_snapshot(id):
 	#QUIP_IO except:
 	    #QUIP_IO snapshot_file=ns_args['out_file_prefix']+'snapshot.'+id+'.%05d.'+('%04d' % rank)+'.extxyz'
 
-    comm.barrier() # to ensure that we are always in sync, so snapshots are always a consistent set
+    if comm is not None:
+        comm.barrier() # if parallel, ensure that we are always in sync, so snapshots are always a consistent set
     try:
 	snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%s.%d.%s' % (id,rank, ns_args['config_file_format']), "w")
     except:
@@ -2562,6 +2563,7 @@ def main():
 	rank = 0
 	size = 1
 	if use_mpi:
+            print "INFO: use_mpi true, importing mpi4py module"
 	    try:
 		from mpi4py import MPI
 	    except:
