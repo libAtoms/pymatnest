@@ -1779,7 +1779,7 @@ def additive_init_config(at, Emax):
 	for i_try in range(10):
 	    pos[i_at,:] = np.dot(at_new.get_cell(), rng.float_uniform(0.0, 1.0, (3) ))
 	    at_new.set_positions(pos[0:i_at+1,:])
-	    if (not movement_args[separable_MDNS]):
+	    if (not movement_args['separable_MDNS']):
 	        energy = eval_energy(at_new)
 	    else:
 	        energy = eval_energy(at_new,do_KE=False)
