@@ -3154,12 +3154,12 @@ def main():
                 print rank, "waiting for walkers"
 		walkers = comm.recv(source=0, tag=1)
 
-		if movement_args['do_velocities']:
-		    KEmax = walkers[0].info['KEmax']
-		    ns_beta = walkers[0].info['ns_beta']
-		else:
-		    KEmax = -1.0
-		    ns_beta = -1.0
+            if movement_args['do_velocities']:
+                KEmax = walkers[0].info['KEmax']
+                ns_beta = walkers[0].info['ns_beta']
+            else:
+                KEmax = -1.0
+                ns_beta = -1.0
 
 	    for at in walkers:
 		if ns_args['n_extra_data'] > 0 and (not 'ns_extra_data' in at.arrays or at.arrays['ns_extra_data'].size/len(at) != ns_args['n_extra_data']):
