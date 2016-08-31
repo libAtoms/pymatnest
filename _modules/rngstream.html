@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>rngstream &mdash; ns_doc 1 documentation</title>
+    <title>rngstream &#8212; ns_doc 1 documentation</title>
     
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -36,8 +36,8 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">ns_doc 1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">ns_doc 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -62,7 +62,7 @@
             
   <h1>Source code for rngstream</h1><div class="highlight"><pre>
 <span></span><span class="c1">#load RngStream dll library</span>
-<span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="k">import</span> <span class="o">*</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
 <span class="c1">#def corresponding structure</span>
@@ -99,7 +99,7 @@
 <div class="viewcode-block" id="RngStream.set_package_seed"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.set_package_seed">[docs]</a>    <span class="k">def</span> <span class="nf">set_package_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_SetPackageSeed</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
 <div class="viewcode-block" id="RngStream.create_stream"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.create_stream">[docs]</a>    <span class="k">def</span> <span class="nf">create_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_CreateStream</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_CreateStream</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
 <div class="viewcode-block" id="RngStream.float_uniform_01"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.float_uniform_01">[docs]</a>    <span class="k">def</span> <span class="nf">float_uniform_01</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">g</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_RandU01</span><span class="p">(</span><span class="n">g</span><span class="p">)</span></div>
 <div class="viewcode-block" id="RngStream.int_uniform"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.int_uniform">[docs]</a>    <span class="k">def</span> <span class="nf">int_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">h</span><span class="p">):</span>
@@ -122,13 +122,13 @@
         <li class="right" >
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../index.html">ns_doc 1 documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../index.html">ns_doc 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
+        &#169; Copyright 2015, livia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
     </div>
   </body>
 </html>
