@@ -163,6 +163,9 @@ def usage():
     ``MC_atom_uniform_rv=[T | F]`` 
        | default: F
 
+    ``MC_atom_Galilean=[T | F]`` 
+       | default: F
+
     ``MD_atom_velo_pre_perturb=[T | F]`` 
        | Perturb velocities before MD trajectory
        | default: F
@@ -400,6 +403,7 @@ def usage():
     sys.stderr.write("MC_atom_step_size=float (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
     sys.stderr.write("MC_atom_step_size_max=float (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
     sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
+    sys.stderr.write("MC_atom_Galilean=[T | F] (F)\n")
     sys.stderr.write("\n")
     sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
     sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory\n")
@@ -923,8 +927,11 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
 	    (n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), KEmax, step_size_velo)
 	    at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
 	else:
-	    (n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
-	    at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
+            if movement_args['MC_atom_Galilean']:
+                (n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
+            else:
+                (n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
+            at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
     #DOC \item else
     else:
         #DOC \item do python MC
@@ -1456,7 +1463,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
             exploration_movement_args['n_atom_steps_per_call'] = 1 
             # do_atom_walk makes one do_MC_walk/do_MD_walk per call
 
-            if (key=="MC_atom"):
+            if key == "MC_atom" and not movement_args['MC_atom_Galilean']:
                 exploration_movement_args['atom_traj_len'] = 1 
                 # 1 atom sweep per do_MC_walk call
                 exploration_movement_args['n_model_calls'] = 1
@@ -2829,6 +2836,7 @@ def main():
 	movement_args['MC_atom_velo_step_size'] = float(args.pop('MC_atom_velo_step_size', 50.0))
 	movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 10000.0))
 	movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
+	movement_args['MC_atom_Galilean'] = str_to_logical(args.pop('MC_atom_Galilean', "F"))
 	movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
 	movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))

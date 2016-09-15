@@ -95,6 +95,20 @@ class fortran_MC_MD:
            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # n_accept
            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")] # n_accept_velo
 
+        # fortran_GMC_atom
+        self.lib.fortran_gmc_atom_.argtypes = [ctypes.c_void_p, # N
+           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
+           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
+           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # masses
+           ctypes.c_void_p, # n_extra_data
+           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # extra_data
+           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
+           ctypes.c_void_p, # n_steps
+           ctypes.c_void_p, # step_size_pos
+           ctypes.c_void_p, # Emax
+           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # final_E
+           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS")] # n_accept
+
         # fortran_MD_atom_NVE
         self.lib.fortran_md_atom_nve_.argtypes = [ctypes.c_void_p, # N
            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
@@ -218,6 +232,27 @@ class fortran_MC_MD:
         else:
             at.set_velocities(velo)
             return (n_accept_pos[0], n_accept_velo[0], final_E[0])
+
+    def GMC_atom_walk(self, at, n_steps, step_size_pos, Emax):
+        n = ctypes.c_int(len(at))
+        n_steps = ctypes.c_int(n_steps)
+        step_size_pos = ctypes.c_double(step_size_pos)
+        Emax = ctypes.c_double(Emax)
+        pos = at.get_positions()
+        n_accept_pos = np.zeros( (1), dtype=np.int32)
+        final_E = np.zeros( (1), dtype=np.float64)
+        if 'ns_extra_data' in at.arrays:
+            n_extra_data_c = ctypes.c_int(at.arrays['ns_extra_data'].size/len(at))
+            extra_data = at.arrays['ns_extra_data']
+        else:
+            n_extra_data_c = ctypes.c_int(0)
+            extra_data=np.zeros( (1) )
+        self.lib.fortran_gmc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, at.get_masses(), ctypes.byref(n_extra_data_c),
+           extra_data, at.get_cell(), ctypes.byref(n_steps), ctypes.byref(step_size_pos), ctypes.byref(Emax), final_E, n_accept_pos)
+        at.set_positions(pos)
+        if n_extra_data_c.value > 0:
+            at.arrays['ns_extra_data'][...] = extra_data
+        return (n_accept_pos[0], final_E[0])
 
     def MD_atom_NVE_walk(self, at, n_steps, timestep, debug):
         n = ctypes.c_int(len(at))

@@ -150,6 +150,60 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
 
 end subroutine fortran_MC_atom
 
+subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_steps, &
+			   step_size_pos, Emax, final_E, n_accept_pos)
+   implicit none
+   integer :: N
+   integer :: Z(N)
+   double precision :: pos(3,N), mass(N), cell(3,3)
+   integer :: n_extra_data
+   double precision :: extra_data(n_extra_data,N)
+   integer :: n_steps
+   double precision :: step_size_pos, Emax, final_E
+   integer :: n_accept_pos
+
+   double precision :: E, d_pos(3,N), cur_pos(3,N), Fhat(3,N)
+
+   double precision, external :: ll_eval_energy, ll_eval_forces
+
+   logical :: reflected, accept
+   integer :: i_step
+
+   E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
+   final_E = E ! in case we reject
+   call random_number(d_pos)
+   d_pos = 2.0*(d_pos-0.5) * step_size_pos
+
+   ! move a copy of pos, in case we reject
+   cur_pos = pos
+   accept = .true.
+   reflected = .false.
+   do i_step=1, n_steps
+      cur_pos = cur_pos + d_pos
+      E = ll_eval_energy(N, Z, cur_pos, n_extra_data, extra_data, cell)
+      if (E >= Emax) then
+          if (reflected) then
+              accept = .false.
+              exit
+          else
+              E = ll_eval_forces(N, Z, cur_pos, n_extra_data, extra_data, cell, Fhat)
+              Fhat = Fhat / sqrt(sum(Fhat*Fhat))
+              d_pos = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
+              reflected = .true.
+          end if
+      end if
+   end do
+
+   if (accept .and. E < Emax) then
+     final_E = E
+     pos = cur_pos
+     n_accept_pos = n_steps*N
+   else
+     n_accept_pos = 0
+   endif
+
+end subroutine fortran_GMC_atom
+
 subroutine fortran_MD_atom_NVE(N, Z, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, timestep, final_E, debug)
    implicit none
    integer :: N
