@@ -487,6 +487,15 @@ End LAMMPSlib Interface Documentation
 
        self.previous_atoms_numbers = atoms.numbers.copy()
 
+    def restart_lammps(self):
+        if self.started:
+            self.lmp.command("clear")
+        # hope there's no other state to be reset
+        self.started=False
+        self.initialized=False
+        self.previous_atoms_numbers = []
+        self.start_lammps()
+
     def start_lammps(self):
         # start lammps process
         if self.parameters.log_file is None:

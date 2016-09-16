@@ -10,6 +10,7 @@ try:
 except:
     pass
 import collections
+# from traceback import print_tb
 
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
@@ -466,10 +467,19 @@ def usage():
     sys.stderr.write("track_configs=[ T | F ] (F)\n")
     sys.stderr.write("separable_MDNS=[ T | F ] (F)\n")
 
+def excepthook_mpi_abort(exctype, value, tb):
+    print print_prefix,'Uncaught Exception Type:', exctype
+    print print_prefix,'Value:', value
+    print print_prefix,'Traceback:', tb
+    # print_tb(tb)
+    print print_prefix, "Aborting"
+    MPI.COMM_WORLD.Abort(1)
+    sys.exit(1)
+
 def exit_error(message, stat):
     sys.stderr.write(message)
     try:
-	comm.Abort(stat)
+	MPI.COMM_WORLD.Abort(stat)
     except:
 	pass
     sys.exit(stat)
@@ -558,7 +568,16 @@ def propagate_NVE_lammps(at, dt, n_steps):
     at.wrap()
 
     # dt being passed in ASE units
-    pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
+
+    try:
+        pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
+    except:
+        # clean up and return failure
+        pot.restart_lammps()
+        pot.first_MD=True
+        return False
+
+    return True
 
 def velo_rv_mag(n):
     if movement_args['2D']:
@@ -839,11 +858,14 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
 	else:
 	    final_E = eval_energy(at, do_KE=False)
     elif do_calc_lammps:
-	propagate_NVE_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
-	if (not movement_args['separable_MDNS']):
-	    final_E = pot.results['energy'] + eval_energy(at, do_PE=False)
-	else:
-	    final_E = pot.results['energy'] + eval_energy(at, do_PE=False, do_KE=False)
+        if propagate_NVE_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len']):
+            if (not movement_args['separable_MDNS']):
+                final_E = pot.results['energy'] + eval_energy(at, do_PE=False)
+            else:
+                final_E = pot.results['energy'] + eval_energy(at, do_PE=False, do_KE=False)
+        else: # propagate returned success == False
+            final_E = 2.0*abs(Emax)
+            print "ERROR in propagate_NVE_lammps, setting final_E, Emax" , final_E, Emax
     elif do_calc_fortran:
 	final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_traj_len'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
 	if (not movement_args['separable_MDNS']):
@@ -2540,6 +2562,8 @@ def main():
         global track_traj_io, cur_config_ind
 
 	import sys
+
+        sys.excepthook = excepthook_mpi_abort
 
 	stacktrace.listen()
 
