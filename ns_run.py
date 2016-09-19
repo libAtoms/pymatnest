@@ -573,7 +573,7 @@ def propagate_NVE_lammps(at, dt, n_steps):
         pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
     except:
         # clean up and return failure
-        pot.restart_lammps()
+        pot.restart_lammps(at)
         pot.first_MD=True
         return False
 
