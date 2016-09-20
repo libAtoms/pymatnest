@@ -1936,7 +1936,9 @@ def do_ns_loop():
     Emax_of_step = None
     Emax_save = []
     i_ns_step_save = []
-    walker_list = []
+    traj_walker_list = []
+    E_dump_list = []
+    E_dump_list_times = []
 
     verbose=False
 
@@ -2078,7 +2080,7 @@ def do_ns_loop():
                     #QUIP_IO else:
                         #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
 
-		    walker_list.append(walkers[i].copy())
+		    traj_walker_list.append(walkers[i].copy())
 
                 # if tracking all configs, save this one that has been culled
                 if track_traj_io is not None:
@@ -2086,12 +2088,36 @@ def do_ns_loop():
                     at.info['culled'] = True
                     ase.io.write(track_traj_io, at, format=ns_args['config_file_format'])
 
+        if ns_args['E_dump_interval'] > 0 and i_ns_step % ns_args['E_dump_interval'] == 0: # ns_args['E_dump_interval']-1:
+            if walkers[0].has('masses') and walkers[0].has('momenta'):
+                E_dump_list.append([ w.info['ns_energy'] - w.get_kinetic_energy()  for w in walkers])
+            else:
+                E_dump_list.append([ w.info['ns_energy'] for w in walkers])
+            E_dump_list_times.append(i_ns_step)
+
 	# print the recorded Emax walkers configurations to output file
         if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
-	    for at in walker_list:
-	        ase.io.write(traj_io, at, format=ns_args['config_file_format'])
-	    traj_io.flush()
-	    walker_list=[]
+            if ns_args['traj_interval'] > 0:
+                for at in traj_walker_list:
+                    ase.io.write(traj_io, at, format=ns_args['config_file_format'])
+                traj_io.flush()
+                traj_walker_list=[]
+            if ns_args['E_dump_interval'] > 0:
+                if comm is not None:
+                    E_dump_list_all = np.array(comm.allgather(E_dump_list))
+                else:
+                    E_dump_list_all = np.array(E_dump_list)
+                if rank == 0:
+                    for i in range(E_dump_list_all.shape[1]):
+                        E_dump_io.write("step %d\n" % E_dump_list_times[i])
+                        if len(E_dump_list_all.shape) == 3:
+                            np.savetxt(E_dump_io, E_dump_list_all[:,i,:])
+                        else:
+                            np.savetxt(E_dump_io, E_dump_list_all[i,:])
+                    E_dump_io.flush()
+                E_dump_list = []
+                E_dump_list_all = None
+                E_dump_list_times = []
 
 	# calculate how many will be culled on each rank
 	n_cull_of_rank = np.array([ sum(cull_rank == r) for r in range(size) ])
@@ -2537,10 +2563,24 @@ def do_ns_loop():
         ### END OF MAIN LOOP
 
     # flush remaining traj configs
-    for at in walker_list:
+    for at in traj_walker_list:
         ase.io.write(traj_io, at, format=ns_args['config_file_format'])
     traj_io.flush()
-    walker_list=[]
+    traj_walker_list=[]
+
+    if ns_args['E_dump_interval'] > 0:
+        if comm is not None:
+            E_dump_list_all = np.array(comm.allgather(E_dump_list))
+        else:
+            E_dump_list_all = np.array(E_dump_list)
+        if rank == 0:
+            for i in range(E_dump_list_all.shape[1]):
+                E_dump_io.write("step %d\n" % E_dump_list_times[i])
+                if len(E_dump_list_all.shape) == 3:
+                    np.savetxt(E_dump_io, E_dump_list_all[:,i,:])
+                else:
+                    np.savetxt(E_dump_io, E_dump_list_all[i,:])
+            E_dump_io.flush()
 
     cur_time = time.time()
     if rank == 0:
@@ -2560,6 +2600,7 @@ def main():
         global n_atoms, KEmax, pot, ns_beta
         global MPI, quippy, f_MC_MD
         global track_traj_io, cur_config_ind
+        global E_dump_io
 
 	import sys
 
@@ -2680,6 +2721,7 @@ def main():
 	ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
 	ns_args['snapshot_clean'] = str_to_logical(args.pop('snapshot_clean', "T"))
 	ns_args['traj_interval'] = int(args.pop('traj_interval', 1))
+	ns_args['E_dump_interval'] = int(args.pop('E_dump_interval', -1))
 	ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
 	ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
 	ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
@@ -3301,6 +3343,12 @@ def main():
             #         break
 	    #    i += 1
 
+        if ns_args['E_dump_interval'] > 0 and rank == 0:
+            E_dump_io = open(ns_args['out_file_prefix']+'E_dump', "w")
+            E_dump_io.write("n_walkers %d\n" % ns_args['n_walkers'])
+        else:
+            E_dump_io = None
+
         # open the file where the energies will be printed
 	if rank == 0:
 	    if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
@@ -3351,6 +3399,8 @@ def main():
 	traj_io.close()
         if track_traj_io is not None:
             track_traj_io.close()
+        if E_dump_io is not None:
+            E_dump_io.close()
 
 	if comm is not None:
 	    MPI.Finalize()
