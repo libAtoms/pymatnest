@@ -12,6 +12,8 @@ except:
 import collections
 # from traceback import print_tb
 
+print_prefix=""
+
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
 
@@ -2649,7 +2651,6 @@ def main():
 
 	stacktrace.listen()
 
-	print_prefix=""
 	if len(sys.argv) != 1 and len(sys.argv) != 2:
 	    usage()
 	    sys.exit(1)
