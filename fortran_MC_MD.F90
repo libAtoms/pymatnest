@@ -151,7 +151,7 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
 end subroutine fortran_MC_atom
 
 subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_steps, &
-			   step_size_pos, Emax, final_E, n_accept_pos)
+			   step_size_pos, Emax, final_E, n_accept_pos, debug)
    implicit none
    integer :: N
    integer :: Z(N)
@@ -161,6 +161,7 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    integer :: n_steps
    double precision :: step_size_pos, Emax, final_E
    integer :: n_accept_pos
+   integer :: debug
 
    double precision :: E, d_pos(3,N), cur_pos(3,N), Fhat(3,N)
 
@@ -178,6 +179,9 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    do i_step=1, n_steps
       cur_pos = cur_pos + d_pos
       E = ll_eval_energy(N, Z, cur_pos, n_extra_data, extra_data, cell)
+      if (isnan(E)) then ! can't reflect from NaN, forces aren't well defined
+          exit
+      endif
       if (E >= Emax) then ! reflect
           E = ll_eval_forces(N, Z, cur_pos, n_extra_data, extra_data, cell, Fhat)
           Fhat = Fhat / sqrt(sum(Fhat*Fhat))
@@ -185,7 +189,7 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
       end if
    end do
 
-   if (E < Emax) then
+   if (E < Emax) then ! NaN should be false also
      final_E = E
      pos = cur_pos
      n_accept_pos = n_steps*N
