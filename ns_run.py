@@ -543,6 +543,22 @@ def eval_energy(at, do_PE=True, do_KE=True, do_PV=True):
 
     return energy
 
+def eval_forces(at):
+    if do_calc_quip or do_calc_lammps:
+        if do_calc_lammps:
+            #NB only MD can make crazy positions, so maybe just do this after MD propagation?
+            at.wrap()
+        forces = at.get_forces()
+    elif do_calc_internal:
+        exit_error('no forces for do_calc_internal', 10)
+    elif do_calc_fortran:
+        forces = np.zeros( at.get_positions().shape )
+        f_MC_MD.eval_forces(at, forces)
+    else:
+        sys.stderr.write("No way to eval_energy()\n", 5)
+
+    return forces
+
 def propagate_NVE_quippy(at, dt, n_steps):
     old_velo = at.get_velocities()
     if old_velo is not None:
@@ -960,41 +976,67 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
 	if movement_args['MC_atom_velocities']:
 	    exit_error("MC_atom_velocities only supported for FORTRAN calculator\n", 8)
 	dz=0.0
-        #DOC \item loop atom\_traj\_len times
-	for i_MC_step in range(n_steps):
-	    #DOC \item loop over atoms in random order
-	    at_list=list(range(len(at)))
-	    rng.shuffle_in_place(at_list)
-	    for i_at in at_list:
-		#DOC \item propose single atom move
-		if movement_args['MC_atom_uniform_rv']:
-		    dx = rng.float_uniform(-step_size,step_size)
-		    dy = rng.float_uniform(-step_size,step_size)
-		    if not movement_args['2D']:
-			dz = rng.float_uniform(-step_size,step_size)
-		else:
-		    dx = rng.normal(step_size)
-		    dy = rng.normal(step_size)
-		    if not movement_args['2D']:
-			dz = rng.normal(step_size)
-		orig_energy = at.info['ns_energy']
-		orig_pos = at.get_positions()
-		if ns_args['n_extra_data'] > 0:
-		    orig_extra_data = at.arrays['ns_extra_data'].copy()
-		new_pos = orig_pos.copy()
-		new_pos[i_at,:] += (dx, dy,dz)
-		at.set_positions(new_pos)
-		#DOC \item accept/reject on E < Emax
-		energy = eval_energy(at)
-		if energy >= Emax:
-		    # reject move
-		    at.set_positions(orig_pos)
-		    if ns_args['n_extra_data'] > 0:
-			at.arrays['ns_extra_data'][...] = orig_extra_data
-		    energy = orig_energy
-		else:
-		    n_accept += 1
-		at.info['ns_energy'] = energy
+        #DOC \item is MC_atom_Galilean
+        if movement_args['MC_atom_Galilean']:
+            #DOC \item go Galilean MC in python
+            orig_energy = at.info['ns_energy']
+            orig_pos = at.get_positions()
+
+            d_pos = step_size*rng.float_uniform(-1.0, 1.0, orig_pos.shape)
+            new_pos = orig_pos.copy()
+            Fhat = np.zeros(d_pos.shape)
+            for i_MC_step in range(n_steps):
+                new_pos += d_pos
+                at.set_positions(new_pos)
+                new_E = eval_energy(at)
+                if new_E >= Emax:
+                    Fhat = eval_forces(at)
+                    Fhat /= np.linalg.norm(Fhat)
+                    d_pos -= 2.0*Fhat*np.sum(Fhat*d_pos)
+            if new_E < Emax:
+                at.info['ns_energy'] = new_E
+                n_accept = n_steps*len(at)
+            else:
+                at.info['ns_energy'] = orig_energy
+                at.set_positions(orig_pos)
+                n_accept = 0
+        #DOC \item else
+        else:
+            #DOC \item loop atom\_traj\_len times
+            for i_MC_step in range(n_steps):
+                #DOC \item loop over atoms in random order
+                at_list=list(range(len(at)))
+                rng.shuffle_in_place(at_list)
+                for i_at in at_list:
+                    #DOC \item propose single atom move
+                    if movement_args['MC_atom_uniform_rv']:
+                        dx = rng.float_uniform(-step_size,step_size)
+                        dy = rng.float_uniform(-step_size,step_size)
+                        if not movement_args['2D']:
+                            dz = rng.float_uniform(-step_size,step_size)
+                    else:
+                        dx = rng.normal(step_size)
+                        dy = rng.normal(step_size)
+                        if not movement_args['2D']:
+                            dz = rng.normal(step_size)
+                    orig_energy = at.info['ns_energy']
+                    orig_pos = at.get_positions()
+                    if ns_args['n_extra_data'] > 0:
+                        orig_extra_data = at.arrays['ns_extra_data'].copy()
+                    new_pos = orig_pos.copy()
+                    new_pos[i_at,:] += (dx, dy,dz)
+                    at.set_positions(new_pos)
+                    #DOC \item accept/reject on E < Emax
+                    energy = eval_energy(at)
+                    if energy >= Emax:
+                        # reject move
+                        at.set_positions(orig_pos)
+                        if ns_args['n_extra_data'] > 0:
+                            at.arrays['ns_extra_data'][...] = orig_extra_data
+                        energy = orig_energy
+                    else:
+                        n_accept += 1
+                    at.info['ns_energy'] = energy
 
     out = {}
     if n_accept_velo is not None:
@@ -2021,9 +2063,8 @@ def do_ns_loop():
             if output_this_iter:
                 print "log_Z_term max ", log_Z_term_max, "last ", log_Z_term_last, "diff ", log_Z_term_max-log_Z_term_last
             if log_Z_term_last <  log_Z_term_max - 10.0:
-                print print_prefix, "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
-                # if rank == 0:
-                    # print "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
+                if rank == 0:
+                    print print_prefix, "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
                 break
 
         if ns_args['T_estimate_finite_diff_lag'] > 0:
@@ -2816,7 +2857,7 @@ def main():
 
 	ns_args['reproducible'] = str_to_logical(args.pop('reproducible', "F"))
         if ns_args['reproducible']:
-            # reset seed after using some random numbers to generate fortran seed, so that fortran adnd non-fortran have the same seed
+            # reset seed after using some random numbers to generate fortran seed, so that fortran and non-fortran have the same seed
             if ns_args['rng'] == 'numpy':
                 rng = ns_rng.NsRngNumpy(ns_args['delta_random_seed'],comm)
             elif ns_args['rng'] == 'rngstream':
