@@ -166,7 +166,6 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
 
    double precision, external :: ll_eval_energy, ll_eval_forces
 
-   logical :: reflected, accept
    integer :: i_step
 
    E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
@@ -176,25 +175,17 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
 
    ! move a copy of pos, in case we reject
    cur_pos = pos
-   accept = .true.
-   reflected = .false.
    do i_step=1, n_steps
       cur_pos = cur_pos + d_pos
       E = ll_eval_energy(N, Z, cur_pos, n_extra_data, extra_data, cell)
-      if (E >= Emax) then
-          if (reflected) then
-              accept = .false.
-              exit
-          else
-              E = ll_eval_forces(N, Z, cur_pos, n_extra_data, extra_data, cell, Fhat)
-              Fhat = Fhat / sqrt(sum(Fhat*Fhat))
-              d_pos = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
-              reflected = .true.
-          end if
+      if (E >= Emax) then ! reflect
+          E = ll_eval_forces(N, Z, cur_pos, n_extra_data, extra_data, cell, Fhat)
+          Fhat = Fhat / sqrt(sum(Fhat*Fhat))
+          d_pos = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
       end if
    end do
 
-   if (accept .and. E < Emax) then
+   if (E < Emax) then
      final_E = E
      pos = cur_pos
      n_accept_pos = n_steps*N
