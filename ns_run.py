@@ -10,7 +10,7 @@ try:
 except:
     pass
 import collections
-# from traceback import print_tb
+from traceback import print_exception
 
 print_prefix=""
 
@@ -479,6 +479,7 @@ def excepthook_mpi_abort(exctype, value, tb):
     print print_prefix,'Value:', value
     print print_prefix,'Traceback:', tb
     # print_tb(tb)
+    print_exception(exctype, value, tb)
     print print_prefix, "Aborting"
     MPI.COMM_WORLD.Abort(1)
     sys.exit(1)
@@ -2774,11 +2775,23 @@ def main():
 	ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
 	ns_args['n_extra_data'] = int(args.pop('n_extra_data', 0))
 
-	ns_args['start_energy_ceiling_per_atom'] = float(args.pop('start_energy_ceiling_per_atom', None))
-	ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling', None))
-        if ns_args['start_energy_ceiling_per_atom'] is not None and ns_args['start_energy_ceiling'] is not None:
+        # surely there's a cleaner way of doing this?
+        try:
+            ns_args['start_energy_ceiling_per_atom'] = float(args.pop('start_energy_ceiling_per_atom'))
+        except:
+            ns_args['start_energy_ceiling_per_atom'] = None
+        try:
+            ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling'))
+        except:
+            ns_args['start_energy_ceiling'] = None
+        if ns_args['start_energy_ceiling_per_atom'] is not None and ns_args['start_energy_ceiling'] is not None: 
+            # conflict
             exit_error("got both start_energy_ceiling and start_energy_ceiling_per_atom\n", 1)
-        if ns_args['start_energy_ceiling'] is not None and rank == 0:
+        elif ns_args['start_energy_ceiling_per_atom'] is None and ns_args['start_energy_ceiling'] is None: 
+            # neither specified, use default
+            ns_args['start_energy_ceiling_per_atom'] = 1.0e9
+        elif ns_args['start_energy_ceiling'] is not None and rank == 0:
+            # warn on deprecated feature
             sys.stderr.write("WARNING: got DEPRECATED start_energy_ceiling\n")
 
 	ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
