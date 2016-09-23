@@ -73,8 +73,12 @@ def usage():
        | Maximum temperature for estimating KEmax if *P* = 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K)
        | default: 1.0e5
 
+    ``start_energy_ceiling_per_atom=float``
+       | Maximum potential energy per atom for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. 
+       | default: 1.0e9
+
     ``start_energy_ceiling=float``
-       | Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.
+       | DEPRECATED: use start_energy_ceiling_per_atom. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. 
        | default: 1.0e9
 
     ``n_model_calls_expected=int``
@@ -375,7 +379,8 @@ def usage():
     sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
     sys.stderr.write("\n")
     sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K))\n")
-    sys.stderr.write("start_energy_ceiling=float (1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
+    sys.stderr.write("start_energy_ceiling_per_atom=float (1.0e9, max potential energy per atom for initial configs.  P*Vmax is added to this automatically)\n")
+    sys.stderr.write("start_energy_ceiling=float (DEPRECATED: use start_energy_ceiling_per_atom. 1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
     sys.stderr.write("\n")
     sys.stderr.write("n_model_calls_expected=int (0, one of these is required)\n")
     sys.stderr.write("n_model_calls=int (0, one of these is required)\n")
@@ -2769,7 +2774,13 @@ def main():
 	ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
 	ns_args['n_extra_data'] = int(args.pop('n_extra_data', 0))
 
-	ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling', 1.0e9))
+	ns_args['start_energy_ceiling_per_atom'] = float(args.pop('start_energy_ceiling_per_atom', None))
+	ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling', None))
+        if ns_args['start_energy_ceiling_per_atom'] is not None and ns_args['start_energy_ceiling'] is not None:
+            exit_error("got both start_energy_ceiling and start_energy_ceiling_per_atom\n", 1)
+        if ns_args['start_energy_ceiling'] is not None and rank == 0:
+            sys.stderr.write("WARNING: got DEPRECATED start_energy_ceiling\n")
+
 	ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
 	kB = 8.6173324e-5 # eV/K
 
@@ -3188,6 +3199,8 @@ def main():
 	    #       one gets dx/dy = y^N
 	    #                x = y^{N+1}
 	    #                y = x^{1/(N+1)}
+            if ['start_energy_ceiling_per_atom'] is not None:
+                ns_args['start_energy_ceiling'] = ns_args['start_energy_ceiling_per_atom'] * len(init_atoms)
 	    ns_args['start_energy_ceiling'] += movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms)
 	    # initial positions are just random, up to an energy ceiling
 	    for at in walkers:
