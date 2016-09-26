@@ -81,6 +81,10 @@ def usage():
        | DEPRECATED: use start_energy_ceiling_per_atom. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. 
        | default: 1.0e9
 
+    ``random_init_max_n_tries=int``
+       | Maximum number of tries to create initial random atomic configuration
+       | default 100
+
     ``n_model_calls_expected=int``
        | Number of model calls. Either this or the keyword n_model_calls is mandatory.
        | default: 0
@@ -381,6 +385,7 @@ def usage():
     sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K))\n")
     sys.stderr.write("start_energy_ceiling_per_atom=float (1.0e9, max potential energy per atom for initial configs.  P*Vmax is added to this automatically)\n")
     sys.stderr.write("start_energy_ceiling=float (DEPRECATED: use start_energy_ceiling_per_atom. 1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
+    sys.stderr.write("random_init_max_n_tries=int (100, maximum number of tries for random initial positions under energy ceiling\n")
     sys.stderr.write("\n")
     sys.stderr.write("n_model_calls_expected=int (0, one of these is required)\n")
     sys.stderr.write("n_model_calls=int (0, one of these is required)\n")
@@ -1847,7 +1852,7 @@ def set_n_from_expected(prop):
 
 def additive_init_config(at, Emax):
     if do_calc_lammps:
-	exit_error("got energy %f ceiling %f, but python additive_init_config doesn't work with LAMMPS, since it varies list of atoms\n" % (energy, ns_args['start_energy_ceiling']), 10)
+	exit_error("python additive_init_config doesn't work with LAMMPS, since it varies list of atoms\n", 10)
     pos = at.get_positions()
     for i_at in range(1,len(at)):
 	at_new = at[0:i_at+1]
@@ -2793,6 +2798,9 @@ def main():
         elif ns_args['start_energy_ceiling'] is not None and rank == 0:
             # warn on deprecated feature
             sys.stderr.write("WARNING: got DEPRECATED start_energy_ceiling\n")
+	ns_args['random_init_max_n_tries'] = int(args.pop('random_init_max_n_tries', 100))
+
+
 
 	ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
 	kB = 8.6173324e-5 # eV/K
@@ -3226,32 +3234,32 @@ def main():
 		# random initial positions
 		energy = float('nan')
 		n_try = 0
-		while n_try < 20 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
+		while n_try < ns_args['random_init_max_n_tries'] and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 		    at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
 		    energy = eval_energy(at)
 		    n_try += 1
 		if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-		    sys.stderr.write("WARNING: rank %d failed to generate initial config by random positions under max energy %f in 20 tries\n" % (rank, ns_args['start_energy_ceiling']))
+		    sys.stderr.write("WARNING: rank %d failed to generate initial config by random positions under max energy %f in %d tries\n" % (rank, ns_args['start_energy_ceiling'], ns_args['random_init_max_n_tries']))
 
 		# try FORTRAN config initializer
 		n_try = 0
 		if do_calc_fortran:
-		    while n_try < 20 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
+		    while n_try < ns_args['random_init_max_n_tries'] and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 			f_MC_MD.init_config(at, ns_args['start_energy_ceiling']-movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms))
 			energy = eval_energy(at)
 			n_try += 1
 		    if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-			sys.stderr.write("WARNING: rank %d failed to generate initial config by fortran config initializer under max energy %f in 20 tries\n" % (rank, ns_args['start_energy_ceiling']))
+			sys.stderr.write("WARNING: rank %d failed to generate initial config by fortran config initializer under max energy %f in %d tries\n" % (rank, ns_args['start_energy_ceiling'], ns_args['random_init_max_n_tries']))
 
 		# try python config initializer
 		n_try = 0
-		while n_try < 20 and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
+		while n_try < ns_args['random_init_max_n_tries'] and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
 		    energy = additive_init_config(at, ns_args['start_energy_ceiling'])
 		    n_try += 1
 
 		# quit if failed to generate acceptable config
 		if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:
-		    exit_error("Rank %d failed to generate initial config by random, fortran, or (atom by atom addition) python initializer under max energy %f in 20 tries each\n" % (rank, ns_args['start_energy_ceiling']), 4)
+		    exit_error("Rank %d failed to generate initial config by random, fortran, or (atom by atom addition) python initializer under max energy %f in %d tries each\n" % (rank, ns_args['start_energy_ceiling'], ns_args['random_init_max_n_tries']), 4)
 
 		at.info['ns_energy'] = rand_perturb_energy(energy, ns_args['random_energy_perturbation'])
 		at.info['volume'] = at.get_volume()
