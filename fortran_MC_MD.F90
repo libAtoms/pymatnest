@@ -151,7 +151,7 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
 end subroutine fortran_MC_atom
 
 subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_steps, &
-			   step_size_pos, Emax, final_E, n_accept_pos, debug)
+			   step_size_pos, Emax, final_E, n_accept_pos, d_pos_hat, debug)
    implicit none
    integer :: N
    integer :: Z(N)
@@ -161,6 +161,7 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    integer :: n_steps
    double precision :: step_size_pos, Emax, final_E
    integer :: n_accept_pos
+   double precision :: d_pos_hat(3,N)
    integer :: debug
 
    double precision :: E, d_pos(3,N), cur_pos(3,N), Fhat(3,N)
@@ -171,8 +172,7 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
 
    E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
    final_E = E ! in case we reject
-   call random_number(d_pos)
-   d_pos = 2.0*(d_pos-0.5) * step_size_pos
+   d_pos = d_pos_hat * step_size_pos
 
    ! move a copy of pos, in case we reject
    cur_pos = pos

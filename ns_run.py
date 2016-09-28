@@ -979,7 +979,9 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
 	    at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
 	else:
             if movement_args['MC_atom_Galilean']:
-                (n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
+                d_pos_hat = rng.normal(1.0, (len(at), 3))
+                d_pos_hat /= np.linalg.norm(d_pos_hat)
+                (n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), d_pos_hat)
             else:
                 (n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
@@ -995,7 +997,8 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             orig_energy = at.info['ns_energy']
             orig_pos = at.get_positions()
 
-            d_pos = step_size*rng.float_uniform(-1.0, 1.0, orig_pos.shape)
+            d_pos = rng.normal(1.0, orig_pos.shape)
+            d_pos *= step_size/np.linalg.norm(d_pos)
             new_pos = orig_pos.copy()
             Fhat = np.zeros(d_pos.shape)
             for i_MC_step in range(n_steps):
@@ -3220,7 +3223,7 @@ def main():
 	    #       one gets dx/dy = y^N
 	    #                x = y^{N+1}
 	    #                y = x^{1/(N+1)}
-            if ['start_energy_ceiling_per_atom'] is not None:
+            if ns_args['start_energy_ceiling_per_atom'] is not None:
                 ns_args['start_energy_ceiling'] = ns_args['start_energy_ceiling_per_atom'] * len(init_atoms)
 	    ns_args['start_energy_ceiling'] += movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms)
 	    # initial positions are just random, up to an energy ceiling
