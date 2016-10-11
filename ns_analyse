@@ -13,7 +13,8 @@ p.add_option('-a','--accurate_sum', action='store_true', help="""use more accura
 p.add_option('-v','--verbose', action='store_true', help="""Verbose output (for debugging)""")
 p.add_option('-p','--profile', action='store_true', help="""do profiling""")
 p.add_option('-s','--skip', action='store', help="""number of lines to skip""", type='int', default=0)
-p.add_option('-l','--last_line', action='store', help="""last line to use""", type='int', default=-1)
+p.add_option('-l','--line_end', action='store', help="""line to ened analysis (python std. zero based last line + 1)""", type='int', default=None)
+p.add_option('-i','--interval', action='store', help="""interval between lines to use""", type='int', default=1)
 
 opt, args = p.parse_args()
 
@@ -29,7 +30,7 @@ if opt.accurate_sum:
 else:
     sum=np.sum
 
-(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs(args, skip=opt.skip, last_line=opt.last_line)
+(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs(args, line_skip=opt.skip, line_end=opt.line_end, interval=opt.interval)
 
 # check this: a = N_w/(N_w+N_c)
 print "# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
@@ -37,7 +38,7 @@ print "# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(
 E_min = np.amin(Es)
 Es -= E_min
 
-def analyse(log_a, Es, T):
+def analyse(log_a, Es, T, interval=1):
     beta = 1.0/(k_Boltzmann*T)
 
     (Z_term, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es)
@@ -59,9 +60,9 @@ def analyse(log_a, Es, T):
     log_Z = math.log(Z)+shift
 
     Z_max = np.amax(Z_term)
-    low_percentile_config = np.where(Z_term > Z_max/10.0)[0][0]
-    high_percentile_config = np.where(Z_term > Z_max/10.0)[0][-1]
-    mode_config = np.argmax(Z_term)
+    low_percentile_config = np.where(Z_term > Z_max/10.0)[0][0]*interval
+    high_percentile_config = np.where(Z_term > Z_max/10.0)[0][-1]*interval
+    mode_config = np.argmax(Z_term)*interval
 
     Z_fract = np.sum(Z_term[low_percentile_config:high_percentile_config+1])/Z
 
@@ -70,12 +71,12 @@ def analyse(log_a, Es, T):
 print "# T      log_Z(T)               U(T)          Cv(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
 #      0.05 1.88949677673e-75 8.88841272769 56975.5011109
 
-log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull)
+log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=opt.interval)
 for i_T in range(n_T):
     T = T_min + i_T * dT
     if opt.profile and i_T == 0:
         import cProfile
         cProfile.run('(log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T)','ns_analyse.stats')
     else:
-        (log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T)
+        (log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T, opt.interval)
     print T, log_Z, U, Cv, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract
