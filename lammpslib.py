@@ -282,9 +282,11 @@ End LAMMPSlib Interface Documentation
                     distance = norm(pos[i,:]-pos[int(m.group(1)),:])
                     self.lmp.command('group g1 id {} '.format(i+1))
                     self.lmp.command('group g2 id {} '.format(int(m.group(1))+1))
-                    self.lmp.command('create_bonds g1 g2 {} 0.0 {} '.format(int(m.group(2)),distance+1))
+                    self.lmp.command('create_bonds g1 g2 {} 0.0 {} '.format(int(m.group(2)),max_bond_length))
                     self.lmp.command('group g1 delete')
                     self.lmp.command('group g2 delete')
+
+        self.lmp.command('neighbor 2.0 bin') # skin back to default for metal units, according to web page
 
     def set_cell(self, atoms, change=False):
         lammps_cell, self.coord_transform = convert_cell(atoms.get_cell())
