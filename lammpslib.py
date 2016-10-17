@@ -272,6 +272,9 @@ End LAMMPSlib Interface Documentation
 
         lbox = np.amin([atoms.get_cell()[0,0], atoms.get_cell()[1,1], atoms.get_cell()[2,2]])
         max_bond_length = lbox/2
+        # for creation of bonds, pairs must be in neighbor list, but this may not happen with
+        # cutoff that comes from regular potential + default skin, so we artificially increase
+        # skin width
         self.lmp.command('neighbor {} bin'.format(max_bond_length));
 
         pos = atoms.get_positions() / unit_convert("distance", self.units)
@@ -286,7 +289,8 @@ End LAMMPSlib Interface Documentation
                     self.lmp.command('group g1 delete')
                     self.lmp.command('group g2 delete')
 
-        self.lmp.command('neighbor 2.0 bin') # skin back to default for metal units, according to web page
+        # set skin back to default for metal units, according to web page
+        self.lmp.command('neighbor 2.0 bin') 
 
     def set_cell(self, atoms, change=False):
         lammps_cell, self.coord_transform = convert_cell(atoms.get_cell())
