@@ -362,9 +362,9 @@ def usage():
        | If true, randomize the initial cell (currently by random walk)
        | default: T
 
-    ``LAMMPS_create_bonds=[ T | F ]``
-       | If true, create lammps bonds from initial atoms config (e.g. can be read from a file)
-       | default: F
+    ``LAMMPS_molecular_info=[ T | F ]``
+       | If true, create lammps bonds and other molecular MM features from initial atoms config (e.g. can be read from a file)
+       | default: T
 
     ``initial_walk_N_walks=int
        | number of initial random walks to apply to all walkers
@@ -509,7 +509,7 @@ def usage():
     sys.stderr.write("snapshot_clean=[T | F] (T, if true clean previous iter snapshots\n")
     sys.stderr.write("random_initialise_pos=[T | F] (T, if true randomize the initial positions\n")
     sys.stderr.write("random_initialise_cell=[T | F] (T, if true randomize the initial cell\n")
-    sys.stderr.write("LAMMPS_create_bonds=[T | F] (T, if true create lammps bonds\n")
+    sys.stderr.write("LAMMPS_molecular_info=[T | F] (T, if true create lammps molecular info\n")
     sys.stderr.write("initial_walk_N_walks=int (0 number of rounds for initial walk) \n")
     sys.stderr.write("initial_walk_adjust_interval=int (10 interval (in walks) between adjustments of steps during initial walk) \n")
     sys.stderr.write("initial_walk_Emax_offset_per_atom=float (1.0, offset (per atom) to add to Emax for initial walks) \n")
@@ -2852,7 +2852,7 @@ def main():
         ns_args['snapshot_clean'] = str_to_logical(args.pop('snapshot_clean', "T"))
         ns_args['random_initialise_pos'] = str_to_logical(args.pop('random_initialise_pos', "T"))
         ns_args['random_initialise_cell'] = str_to_logical(args.pop('random_initialise_cell', "T"))
-        ns_args['LAMMPS_create_bonds'] = str_to_logical(args.pop('LAMMPS_create_bonds', "F"))
+        ns_args['LAMMPS_molecular_info'] = str_to_logical(args.pop('LAMMPS_molecular_info', "T"))
         ns_args['initial_walk_N_walks'] = int(args.pop('initial_walk_N_walks', 0))
         ns_args['initial_walk_adjust_interval'] = int(args.pop('initial_walk_adjust_interval', 10))
         ns_args['initial_walk_Emax_offset_per_atom'] = float(args.pop('initial_walk_Emax_offset_per_atom', 1))
@@ -3162,10 +3162,10 @@ def main():
             header_extra_cmds = [s.strip() for s in ns_args['LAMMPS_header_extra'].split(';')]
             if ns_args['debug'] >= 5:
                 pot = LAMMPSlib(lmpcmds=init_cmds, atom_types=ns_args['LAMMPS_atom_types'], log_file='lammps.%d.log' % rank, keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
-                                lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=calculator_comm, read_bonds=ns_args['LAMMPS_create_bonds'])
+                                lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=calculator_comm, read_molecular_info=ns_args['LAMMPS_molecular_info'])
             else:
                 pot = LAMMPSlib(lmpcmds=init_cmds, atom_types=ns_args['LAMMPS_atom_types'], keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
-                                lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=calculator_comm, read_bonds=ns_args['LAMMPS_create_bonds'])
+                                lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=calculator_comm, read_molecular_info=ns_args['LAMMPS_molecular_info'])
             print "PRE START_LAMMPS"
             pot.start_lammps() # so that top level things like units will be set
             print "POST START_LAMMPS"

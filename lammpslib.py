@@ -265,7 +265,7 @@ End LAMMPSlib Interface Documentation
         boundary=True,
         create_box=True,
         create_atoms=True,
-        read_bonds=False,
+        read_molecular_info=False,
         comm=None)
 
     def set_bonds(self, atoms):
@@ -580,8 +580,10 @@ End LAMMPSlib Interface Documentation
            n_types = len(self.parameters.atom_types)
            types_command = 'create_box {} cell'.format(n_types)
            # Hard-coded some extra memory for different bond and angle types, and bonds and angles for each particle
-           if self.parameters.read_bonds:
-               types_command += ' angle/types 1 extra/angle/per/atom 2 bond/types 1 extra/bond/per/atom 4'
+           if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
+               types_command += ' angle/types 1 extra/angle/per/atom 2'
+           if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
+               types_command += ' bond/types 1 extra/bond/per/atom 4'
            self.lmp.command(types_command)
 
         # Initialize the atoms with their types
@@ -629,7 +631,7 @@ End LAMMPSlib Interface Documentation
         self.lmp.command("neigh_modify delay 0 every 1 check yes")
 
         # read in bonds if there are bonds from the ase-atoms object if the atoms flag is set
-        if self.parameters.read_bonds:
+        if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
             # Found we needed to have atom positions set for LAMMPS to properly bond atoms
             self.set_lammps_pos(atoms)
             self.set_bonds(atoms)
