@@ -402,7 +402,7 @@ End LAMMPSlib Interface Documentation
         # Run for 0 time to calculate
         if dt is not None:
             if dt_not_real_time:
-                self.lmp.command('timestep %.30f' % d)
+                self.lmp.command('timestep %.30f' % dt)
             else:
                 self.lmp.command('timestep %.30f' % ( dt/unit_convert("time", self.units)) )
         self.lmp.command('run %d' % n_steps)

@@ -628,7 +628,7 @@ def propagate_NVE_quippy(at, dt, n_steps):
 
     at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
 
-def propagate_lammps(at, dt, n_steps, algo):
+def propagate_lammps(at, dt, n_steps, algo, Emax=None):
     if pot.first_propagate:
         pot.first_propagate=False
     else:
@@ -651,12 +651,16 @@ def propagate_lammps(at, dt, n_steps, algo):
         if algo == 'NVE':
             pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
         else:
-            pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=step_size, dt_not_real_time=True)
+            pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt, dt_not_real_time=True)
+    # except Exception as err:
     except:
         # clean up and return failure
+        # print "propagate_lammps got exception ", err
         pot.restart_lammps(at)
         pot.first_propagate=True
         return False
+
+    return True
 
 def velo_rv_mag(n):
     if movement_args['2D']:
@@ -1040,7 +1044,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
         orig_pos = at.get_positions()
         orig_energy = at.info['ns_energy']
         pvterm = eval_energy(at, do_PE=False, do_KE=False)
-        if propagate_lammps(at, step_size, n_steps, Emax-pvterm, algo='GMC'):
+        if propagate_lammps(at, step_size, n_steps, algo='GMC', Emax=Emax-pvterm ):
             energy1 = pot.results['energy'] + pvterm
             if energy1 < Emax:
                 at.info['ns_energy'] = energy1
