@@ -944,7 +944,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
                 final_E = pot.results['energy'] + eval_energy(at, do_PE=False, do_KE=False)
         else: # propagate returned success == False
             final_E = 2.0*abs(Emax)
-            print "ERROR in propagate_lammps NVE, setting final_E, Emax" , final_E, Emax
+            print "error in propagate_lammps NVE, setting final_E = 2*Emax =" , final_E
     elif do_calc_fortran:
         final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_traj_len'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
         if (not movement_args['separable_MDNS']):
@@ -3224,7 +3224,6 @@ def main():
                         species_list.append("%d %d %f" % (Z, n_of_Z, mass_of_Z))
                     else:
                         species_list.append("%d %d" % (Z, n_of_Z))
-            print "made fake species list ", species_list
             if comm is not None:
                 comm.bcast(species_list, root=0)
 
