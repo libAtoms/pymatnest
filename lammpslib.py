@@ -11,6 +11,7 @@ from lammps import lammps
 from ase.calculators.calculator import Calculator
 from ase.data import chemical_symbols, atomic_masses
 import ase.units
+import re
 
 # TODO
 # 1. should we make a new lammps object each time ?
@@ -96,6 +97,7 @@ def unit_convert(quantity, units='metal'):
       raise NotImplementedError("Unit {} in unit system {} is not implemented.".format(quantity,units))
 
 class LAMMPSlib(Calculator):
+
     r"""
     LAMMPSlib Interface Documentation
 
@@ -263,7 +265,26 @@ End LAMMPSlib Interface Documentation
         boundary=True,
         create_box=True,
         create_atoms=True,
+        read_bonds=False,
         comm=None)
+
+    def set_bonds(self, atoms):
+
+        lbox = np.amin([atoms.get_cell()[0,0], atoms.get_cell()[1,1], atoms.get_cell()[2,2]])
+        max_bond_length = lbox/2
+        self.lmp.command('neighbor {} bin'.format(max_bond_length));
+
+        pos = atoms.get_positions() / unit_convert("distance", self.units)
+        for i in range(len(atoms)):
+            if atoms.arrays['bonds'][i] != '_':
+                for j in atoms.arrays['bonds'][i].split(','):
+                    m = re.match('(\d+)\((\d+)\)',j)
+                    distance = norm(pos[i,:]-pos[int(m.group(1)),:])
+                    self.lmp.command('group g1 id {} '.format(i+1))
+                    self.lmp.command('group g2 id {} '.format(int(m.group(1))+1))
+                    self.lmp.command('create_bonds g1 g2 {} 0.0 {} '.format(int(m.group(2)),distance+1))
+                    self.lmp.command('group g1 delete')
+                    self.lmp.command('group g2 delete')
 
     def set_cell(self, atoms, change=False):
         lammps_cell, self.coord_transform = convert_cell(atoms.get_cell())
@@ -286,10 +307,28 @@ End LAMMPSlib Interface Documentation
 
         self.lmp.command(cell_cmd)
 
+    def set_lammps_pos(self, atoms):
+        pos = atoms.get_positions() / unit_convert("distance", self.units)
+
+        # If necessary, transform the positions to new coordinate system
+        if self.coord_transform is not None:
+            pos = np.dot(self.coord_transform , np.matrix.transpose(pos))
+            pos = np.matrix.transpose(pos)
+
+        # Convert ase position matrix to lammps-style position array
+        lmp_positions = list(pos.ravel())
+
+        # Convert that lammps-style array into a C object
+        lmp_c_positions =\
+            (ctypes.c_double * len(lmp_positions))(*lmp_positions)
+#        self.lmp.put_coosrds(lmp_c_positions)
+        self.lmp.scatter_atoms('x', 1, 3, lmp_c_positions)
+
+
     def calculate(self, atoms, properties, system_changes):
         self.propagate(atoms, properties, system_changes, 0)
 
-    def propagate(self, atoms, properties, system_changes, n_steps, dt=None):
+    def propagate(self, atoms, properties, system_changes, n_steps, dt=None, dt_not_real_time=False):
 
         """"atoms: Atoms object
             Contains positions, unit-cell, ...
@@ -341,21 +380,7 @@ End LAMMPSlib Interface Documentation
            self.redo_atom_types(atoms)
         self.lmp.command('echo log') # switch back log
 
-        pos = atoms.get_positions() / unit_convert("distance", self.units)
-
-        # If necessary, transform the positions to new coordinate system
-        if self.coord_transform is not None:
-            pos = np.dot(self.coord_transform , np.matrix.transpose(pos))
-            pos = np.matrix.transpose(pos)
-
-        # Convert ase position matrix to lammps-style position array
-        lmp_positions = list(pos.ravel())
-
-        # Convert that lammps-style array into a C object
-        lmp_c_positions =\
-            (ctypes.c_double * len(lmp_positions))(*lmp_positions)
-#        self.lmp.put_coosrds(lmp_c_positions)
-        self.lmp.scatter_atoms('x', 1, 3, lmp_c_positions)
+        self.set_lammps_pos(atoms)
 
         if n_steps > 0:
             vel = atoms.get_velocities() / unit_convert("velocity", self.units)
@@ -376,7 +401,10 @@ End LAMMPSlib Interface Documentation
 
         # Run for 0 time to calculate
         if dt is not None:
-            self.lmp.command('timestep %.30f' % ( dt/unit_convert("time", self.units)) )
+            if dt_not_real_time:
+                self.lmp.command('timestep %.30f' % d)
+            else:
+                self.lmp.command('timestep %.30f' % ( dt/unit_convert("time", self.units)) )
         self.lmp.command('run %d' % n_steps)
 
         if n_steps > 0:
@@ -551,6 +579,9 @@ End LAMMPSlib Interface Documentation
         if self.parameters.create_box:
            n_types = len(self.parameters.atom_types)
            types_command = 'create_box {} cell'.format(n_types)
+           # Hard-coded some extra memory for different bond and angle types, and bonds and angles for each particle
+           if self.parameters.read_bonds:
+               types_command += ' angle/types 1 extra/angle/per/atom 2 bond/types 1 extra/bond/per/atom 4'
            self.lmp.command(types_command)
 
         # Initialize the atoms with their types
@@ -585,7 +616,8 @@ End LAMMPSlib Interface Documentation
         # I am not sure why we need this next line but LAMMPS will
         # raise an error if it is not there. Perhaps it is needed to
         # ensure the cell stresses are calculated
-        self.lmp.command('thermo_style custom pe pxx')
+        self.lmp.command('thermo_style custom pe pxx emol')
+        self.lmp.command('thermo 1 ')
 
         self.lmp.command('variable fx atom fx')
         self.lmp.command('variable fy atom fy')
@@ -595,6 +627,12 @@ End LAMMPSlib Interface Documentation
         self.lmp.command('variable pe equal pe')
 
         self.lmp.command("neigh_modify delay 0 every 1 check yes")
+
+        # read in bonds if there are bonds from the ase-atoms object if the atoms flag is set
+        if self.parameters.read_bonds:
+            # Found we needed to have atom positions set for LAMMPS to properly bond atoms
+            self.set_lammps_pos(atoms)
+            self.set_bonds(atoms)
 
         self.initialized = True
 
