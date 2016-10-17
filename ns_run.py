@@ -24,8 +24,13 @@ def usage():
        | default: 1.0e3
 
     ``start_species=int int [ float ] [, int int [ float ] ... ]``
-       | MANDATORY
+       | MANDATORY (or start_config_filename)
        | Atomic number; multiplicity; [ not recommended: mass (amu) ]. Info repeated for each species, separated by commas, mass is optional and not recommended.
+
+    ``start_config_filename=str
+       | MANDATORY (or start_species)
+       | Name of file to read in for atom information
+       | default: ''
 
     ``restart_file=path_to_file``
        | File for restart configs. Mutually exclusive with start_*, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. 
@@ -361,14 +366,6 @@ def usage():
        | If true, create lammps bonds from initial atoms config (e.g. can be read from a file)
        | default: F
 
-    ``initial_config_filename=str
-       | Name of file to read in for atom information
-       | default: ''
-
-    ``initial_walk_N_factor=int
-       | number of initial random walks to apply to all walkers
-       | default: ''
-
     ``initial_walk_N_walks=int
        | number of initial random walks to apply to all walkers
        | default: ''
@@ -404,7 +401,8 @@ def usage():
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
     sys.stderr.write("input:\n")
     sys.stderr.write("max_volume_per_atom=float (1e3)\n")
-    sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, atomic_number multiplicity [not recomended: mass (amu)]. Info repeated for each species, separated by commas, mass is optional and not recommended.\n")
+    sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, this or start_config_filename required. atomic_number multiplicity [not recomended: mass (amu)]. Info repeated for each species, separated by commas, mass is optional and not recommended.\n")
+    sys.stderr.write("start_config_filename=str (MANDATORY, this or start_species required. if set filename to read initial atom information from (instead of creating them)\n")
     sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
@@ -512,7 +510,6 @@ def usage():
     sys.stderr.write("random_initialise_pos=[T | F] (T, if true randomize the initial positions\n")
     sys.stderr.write("random_initialise_cell=[T | F] (T, if true randomize the initial cell\n")
     sys.stderr.write("LAMMPS_create_bonds=[T | F] (T, if true create lammps bonds\n")
-    sys.stderr.write("initial_config_filename=str (None, if set filename to read initial atom information from (instead of creating them)\n")
     sys.stderr.write("initial_walk_N_walks=int (0 number of rounds for initial walk) \n")
     sys.stderr.write("initial_walk_adjust_interval=int (10 interval (in walks) between adjustments of steps during initial walk) \n")
     sys.stderr.write("initial_walk_Emax_offset_per_atom=float (1.0, offset (per atom) to add to Emax for initial walks) \n")
@@ -940,7 +937,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
         else:
             final_E = eval_energy(at, do_KE=False)
     elif do_calc_lammps:
-        if propagate_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'], 'NVE'):
+        if propagate_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'], algo='NVE'):
             if (not movement_args['separable_MDNS']):
                 final_E = pot.results['energy'] + eval_energy(at, do_PE=False)
             else:
@@ -1043,8 +1040,8 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
         orig_pos = at.get_positions()
         orig_energy = at.info['ns_energy']
         pvterm = eval_energy(at, do_PE=False, do_KE=False)
-        if propagate_lammps(at, step_size, n_steps, Emax-pvterm, 'GMC'):
-            energy1 = pot.results['energy'] + pvterm;
+        if propagate_lammps(at, step_size, n_steps, Emax-pvterm, algo='GMC'):
+            energy1 = pot.results['energy'] + pvterm
             if energy1 < Emax:
                 at.info['ns_energy'] = energy1
                 n_accept = n_steps*len(at)
@@ -2836,10 +2833,12 @@ def main():
         except:
             ns_args['min_Emax'] = None
 
-        try:
-            ns_args['start_species'] = args.pop('start_species')
-        except:
-            exit_error("always need species, even if restart_file is specified\n",1)
+        ns_args['start_species'] = args.pop('start_species', None)
+        ns_args['start_config_filename'] = args.pop('start_config_filename', None)
+        if ns_args['start_species'] is None and ns_args['start_config_filename'] is None:
+            exit_error("always need start_species or start_config_filename, even if restart_file is specified\n",1)
+        if ns_args['start_species'] is not None and ns_args['start_config_filename'] is not None:
+            exit_error("can't specify both start_species and start_config_filename\n",1)
         ns_args['restart_file'] = args.pop('restart_file', '')
 
         ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
@@ -2854,10 +2853,9 @@ def main():
         ns_args['random_initialise_pos'] = str_to_logical(args.pop('random_initialise_pos', "T"))
         ns_args['random_initialise_cell'] = str_to_logical(args.pop('random_initialise_cell', "T"))
         ns_args['LAMMPS_create_bonds'] = str_to_logical(args.pop('LAMMPS_create_bonds', "F"))
-        ns_args['initial_config_filename'] = args.pop('initial_config_filename', None)
         ns_args['initial_walk_N_walks'] = int(args.pop('initial_walk_N_walks', 0))
         ns_args['initial_walk_adjust_interval'] = int(args.pop('initial_walk_adjust_interval', 10))
-        ns_args['initial_walk_Emax_factor'] = float(args.pop('initial_walk_Emax_factor', 1))
+        ns_args['initial_walk_Emax_offset_per_atom'] = float(args.pop('initial_walk_Emax_offset_per_atom', 1))
         ns_args['traj_interval'] = int(args.pop('traj_interval', 1))
         ns_args['E_dump_interval'] = int(args.pop('E_dump_interval', -1))
         ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
@@ -3212,7 +3210,24 @@ def main():
             print "Using n_model_calls = ", movement_args['n_model_calls']
 
         # create list of species, and check for possible problems
-        species_list = ns_args['start_species'].split(',')
+        try:
+            species_list = ns_args['start_species'].split(',')
+        except:
+            species_list = []
+            if rank == 0:
+                init_atoms = ase.io.read(ns_args['start_config_filename'])
+                atomic_numbers = init_atoms.get_atomic_numbers()
+                for Z in set(atomic_numbers):
+                    n_of_Z = sum(atomic_numbers == Z)
+                    if 'masses' in init_atoms.arrays:
+                        mass_of_Z = init_atoms.get_masses()[np.where(atomic_numbers == Z)[0][0]]
+                        species_list.append("%d %d %f" % (Z, n_of_Z, mass_of_Z))
+                    else:
+                        species_list.append("%d %d" % (Z, n_of_Z))
+            print "made fake species list ", species_list
+            if comm is not None:
+                comm.bcast(species_list, root=0)
+
         if do_calc_lammps:
            if not {ase.data.chemical_symbols[int(species.split()[0])] for species in species_list} == set(ns_args['LAMMPS_atom_types'].keys()):
               exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
@@ -3237,8 +3252,8 @@ def main():
             start_first_iter = 0
             # create initial config
             if rank == 0:
-                if ns_args['initial_config_filename'] is not None:
-                    init_atoms = ase.io.read(ns_args['initial_config_filename']);
+                if ns_args['start_config_filename'] is not None:
+                    init_atoms = ase.io.read(ns_args['start_config_filename'])
                     if not 'masses' in init_atoms.arrays:
                         init_atoms.set_masses([1.0] * len(init_atoms))
                 else:
@@ -3404,9 +3419,10 @@ def main():
         
             # the initialization loop applied to all walkers:
             if(ns_args['initial_walk_N_walks'] > 0):
+                print "doing initial_walk"
                 (Emax, cull_rank, cull_ind) = max_energy(walkers, 1)
                 # WARNING: this assumes that all walkers have same numbers of atoms
-                Emax = Emax[0] + ns_args['initial_walk_Emax_shift_per_atom']*len(walkers[0])
+                Emax = Emax[0] + ns_args['initial_walk_Emax_offset_per_atom']*len(walkers[0])
 
                 # do full walks, not shortened walks that account for NS algorithm parallelization
                 save_n_model_calls = movement_args['n_model_calls']
@@ -3415,6 +3431,7 @@ def main():
                 walk_stats_adjust={}
                 zero_stats(walk_stats_adjust, movement_args)
                 for Nloop in range(ns_args['initial_walk_N_walks']):
+                    print "initial walk iter ", Nloop
 
                     if Nloop % ns_args['initial_walk_adjust_interval'] == 1: # first adjust is after first walk
                         # could be done before first walk if full_auto_set_stepsize didn't need walk_stats
