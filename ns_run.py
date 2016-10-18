@@ -24,10 +24,10 @@ def usage():
        | default: 1.0e3
 
     ``start_species=int int [ float ] [, int int [ float ] ... ]``
-       | MANDATORY (or start_config_filename)
+       | MANDATORY (or start_config_file)
        | Atomic number; multiplicity; [ not recommended: mass (amu) ]. Info repeated for each species, separated by commas, mass is optional and not recommended.
 
-    ``start_config_filename=str
+    ``start_config_file=str
        | MANDATORY (or start_species)
        | Name of file to read in for atom information
        | default: ''
@@ -354,11 +354,11 @@ def usage():
        | If true, delete previous iteration snapshot files
        | default: T
 
-    ``random_initialize_pos=[ T | F ]``
+    ``random_initialise_pos=[ T | F ]``
        | If true, randomize the initial positions
        | default: T
 
-    ``random_initialize_cell=[ T | F ]``
+    ``random_initialise_cell=[ T | F ]``
        | If true, randomize the initial cell (currently by random walk)
        | default: T
 
@@ -401,8 +401,8 @@ def usage():
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
     sys.stderr.write("input:\n")
     sys.stderr.write("max_volume_per_atom=float (1e3)\n")
-    sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, this or start_config_filename required. atomic_number multiplicity [not recomended: mass (amu)]. Info repeated for each species, separated by commas, mass is optional and not recommended.\n")
-    sys.stderr.write("start_config_filename=str (MANDATORY, this or start_species required. if set filename to read initial atom information from (instead of creating them)\n")
+    sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, this or start_config_file required. atomic_number multiplicity [not recomended: mass (amu)]. Info repeated for each species, separated by commas, mass is optional and not recommended.\n")
+    sys.stderr.write("start_config_file=str (MANDATORY, this or start_species required. if set filename to read initial atom information from (instead of creating them)\n")
     sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
@@ -2838,11 +2838,11 @@ def main():
             ns_args['min_Emax'] = None
 
         ns_args['start_species'] = args.pop('start_species', None)
-        ns_args['start_config_filename'] = args.pop('start_config_filename', None)
-        if ns_args['start_species'] is None and ns_args['start_config_filename'] is None:
-            exit_error("always need start_species or start_config_filename, even if restart_file is specified\n",1)
-        if ns_args['start_species'] is not None and ns_args['start_config_filename'] is not None:
-            exit_error("can't specify both start_species and start_config_filename\n",1)
+        ns_args['start_config_file'] = args.pop('start_config_file', None)
+        if ns_args['start_species'] is None and ns_args['start_config_file'] is None:
+            exit_error("always need start_species or start_config_file, even if restart_file is specified\n",1)
+        if ns_args['start_species'] is not None and ns_args['start_config_file'] is not None:
+            exit_error("can't specify both start_species and start_config_file\n",1)
         ns_args['restart_file'] = args.pop('restart_file', '')
 
         ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
@@ -3219,7 +3219,7 @@ def main():
         except:
             species_list = []
             if rank == 0:
-                init_atoms = ase.io.read(ns_args['start_config_filename'])
+                init_atoms = ase.io.read(ns_args['start_config_file'])
                 atomic_numbers = init_atoms.get_atomic_numbers()
                 for Z in set(atomic_numbers):
                     n_of_Z = sum(atomic_numbers == Z)
@@ -3229,7 +3229,7 @@ def main():
                     else:
                         species_list.append("%d %d" % (Z, n_of_Z))
             if comm is not None:
-                comm.bcast(species_list, root=0)
+                species_list = comm.bcast(species_list, root=0)
 
         if do_calc_lammps:
            if not {ase.data.chemical_symbols[int(species.split()[0])] for species in species_list} == set(ns_args['LAMMPS_atom_types'].keys()):
@@ -3255,8 +3255,8 @@ def main():
             start_first_iter = 0
             # create initial config
             if rank == 0:
-                if ns_args['start_config_filename'] is not None:
-                    init_atoms = ase.io.read(ns_args['start_config_filename'])
+                if ns_args['start_config_file'] is not None:
+                    init_atoms = ase.io.read(ns_args['start_config_file'])
                     if not 'masses' in init_atoms.arrays:
                         init_atoms.set_masses([1.0] * len(init_atoms))
                 else:
