@@ -270,27 +270,19 @@ End LAMMPSlib Interface Documentation
 
     def set_bonds(self, atoms):
 
-        lbox = np.amin([atoms.get_cell()[0,0], atoms.get_cell()[1,1], atoms.get_cell()[2,2]])
-        max_bond_length = lbox/2
-        # for creation of bonds, pairs must be in neighbor list, but this may not happen with
-        # cutoff that comes from regular potential + default skin, so we artificially increase
-        # skin width
-        self.lmp.command('neighbor {} bin'.format(max_bond_length));
-
-        pos = atoms.get_positions() / unit_convert("distance", self.units)
         for i in range(len(atoms)):
             if atoms.arrays['bonds'][i] != '_':
                 for j in atoms.arrays['bonds'][i].split(','):
                     m = re.match('(\d+)\((\d+)\)',j)
-                    distance = norm(pos[i,:]-pos[int(m.group(1)),:])
-                    self.lmp.command('group g1 id {} '.format(i+1))
-                    self.lmp.command('group g2 id {} '.format(int(m.group(1))+1))
-                    self.lmp.command('create_bonds g1 g2 {} 0.0 {} '.format(int(m.group(2)),max_bond_length))
-                    self.lmp.command('group g1 delete')
-                    self.lmp.command('group g2 delete')
+                    self.lmp.command('create_bond {} {} {} '.format(int(m.group(2)),i+1,int(m.group(1))+1))
 
-        # set skin back to default for metal units, according to web page
-        self.lmp.command('neighbor 2.0 bin') 
+    def set_angles(self, atoms):
+
+        for i in range(len(atoms)):
+            if atoms.arrays['angles'][i] != '_':
+                for j in atoms.arrays['angles'][i].split(','):
+                    m = re.match('(\d+)\-(\d+)\((\d+)\)',j)
+                    self.lmp.command('create_angle {} {} {} {}'.format(int(m.group(3)),int(m.group(1))+1,i+1,int(m.group(2))+1))
 
     def set_cell(self, atoms, change=False):
         lammps_cell, self.coord_transform = convert_cell(atoms.get_cell())
@@ -625,7 +617,6 @@ End LAMMPSlib Interface Documentation
         # raise an error if it is not there. Perhaps it is needed to
         # ensure the cell stresses are calculated
         self.lmp.command('thermo_style custom pe pxx emol')
-        self.lmp.command('thermo 1 ')
 
         self.lmp.command('variable fx atom fx')
         self.lmp.command('variable fy atom fy')
@@ -636,11 +627,14 @@ End LAMMPSlib Interface Documentation
 
         self.lmp.command("neigh_modify delay 0 every 1 check yes")
 
-        # read in bonds if there are bonds from the ase-atoms object if the atoms flag is set
+        # read in bonds if there are bonds from the ase-atoms object if the molecular flag is set
         if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
-            # Found we needed to have atom positions set for LAMMPS to properly bond atoms
-            self.set_lammps_pos(atoms)
             self.set_bonds(atoms)
+
+        # read in angles if there are angles from the ase-atoms object if the molecular flag is set
+        if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
+            self.set_angles(atoms)
+
 
         self.initialized = True
 
