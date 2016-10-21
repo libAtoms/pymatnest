@@ -38,11 +38,11 @@ energy_calculator=lammps
 # name of the LAMMPS machine (the one that *YOUR* LAMMPS was built with)
 LAMMPS_name=mpi
 # potential parameters
-LAMMPS_init_cmds=pair_style lj/cut 1.50; pair_coeff * * 1.0 1.0; pair_modify shift yes; bond_style harmonic; bond_coeff 1 30.0 1.5; special_bonds lj 0.0 1.0 1.0
+LAMMPS_init_cmds=pair_style lj/cut 1.50; pair_coeff * * 1.0 1.0; pair_modify shift yes; bond_style harmonic; bond_coeff 1 30.0 1.5; special_bonds lj 0.0 0.0 1.0; angle_style harmonic; angle_coeff 1 30.0 180.0
 LAMMPS_header_extra=atom_style full
 LAMMPS_atom_types=H 1
 
 rng=numpy
 
 # verbosity level
-debug=0
+debug=5

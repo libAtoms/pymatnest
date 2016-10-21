@@ -575,14 +575,25 @@ End LAMMPSlib Interface Documentation
 
         # Initialize box
         if self.parameters.create_box:
+           # count number of known types
            n_types = len(self.parameters.atom_types)
-           types_command = 'create_box {} cell'.format(n_types)
-           # Hard-coded some extra memory for different bond and angle types, and bonds and angles for each particle
+           create_box_command = 'create_box {} cell'.format(n_types)
+
+           # count numbers of bonds and angles defined by potential
+           n_angle_types = 0
+           n_bond_types = 0
+           for cmd in self.parameters.lmpcmds:
+               m = re.match('\s*angle_coeff\s+(\d+)', cmd)
+               if m is not None:
+                   n_angle_types = max(int(m.group(1)), n_angle_types)
+               m = re.match('\s*bond_coeff\s+(\d+)', cmd)
+               if m is not None:
+                   n_bond_types = max(int(m.group(1)), n_bond_types)
            if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
-               types_command += ' angle/types 1 extra/angle/per/atom 2'
+               create_box_command += ' angle/types {} extra/angle/per/atom 1'.format(n_angle_types)
            if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
-               types_command += ' bond/types 1 extra/bond/per/atom 4'
-           self.lmp.command(types_command)
+               create_box_command += ' bond/types {} extra/bond/per/atom 1'.format(n_bond_types)
+           self.lmp.command(create_box_command)
 
         # Initialize the atoms with their types
         # positions do not matter here
