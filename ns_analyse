@@ -32,8 +32,15 @@ else:
 
 (n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs(args, line_skip=opt.skip, line_end=opt.line_end, interval=opt.interval)
 
-# check this: a = N_w/(N_w+N_c)
-print "# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
+try:
+    from mpi4py import MPI
+    comm_rank = MPI.COMM_WORLD.Get_rank()
+    comm_size = MPI.COMM_WORLD.Get_size()
+    sys.stderr.write("Using mpi %d/%d\n" % (comm_rank, comm_size))
+except:
+    comm_rank = 0
+    comm_size = 1
+
 
 E_min = np.amin(Es)
 Es -= E_min
@@ -68,15 +75,30 @@ def analyse(log_a, Es, T, interval=1):
 
     return (log_Z, U, Cv, low_percentile_config, mode_config, high_percentile_config, Z_fract)
 
-print "# T      log_Z(T)               U(T)          Cv(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
-#      0.05 1.88949677673e-75 8.88841272769 56975.5011109
-
 log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=opt.interval)
-for i_T in range(n_T):
+
+if comm_rank == 0:
+    # check this: a = N_w/(N_w+N_c)
+    print "# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
+    print "# T      log_Z(T)               U(T)          Cv(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
+
+data = []
+for i_T in range(comm_rank, n_T, comm_size):
     T = T_min + i_T * dT
     if opt.profile and i_T == 0:
         import cProfile
         cProfile.run('(log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T)','ns_analyse.stats')
     else:
         (log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T, opt.interval)
-    print T, log_Z, U, Cv, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract
+    data.append( (T, log_Z, U, Cv, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract) )
+
+try:
+    data = MPI.COMM_WORLD.gather(data, root = 0)
+    data = [item for sublist in data for item in sublist]
+except:
+    pass
+
+if comm_rank == 0:
+    data = sorted(data, key = lambda x: x[0])
+    for row in data:
+        print ' '.join(map(str,row))
