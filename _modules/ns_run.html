@@ -23,6 +23,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
     <link rel="top" title="ns_doc 1 documentation" href="../index.html" />
     <link rel="up" title="Module code" href="index.html" /> 
   </head>
@@ -795,7 +797,7 @@
         <span class="c1"># http://www.mcmchandbook.net/HandbookTableofContents.html</span>
         <span class="c1"># Chapter 5 (R. Neal)</span>
         <span class="c1"># Equation (5.34)</span>
-        <span class="c1"># p&#39; = alpha*p + sqrt( 1 + alpha**2 )*p_new</span>
+        <span class="c1"># p&#39; = alpha*p + sqrt( 1 - alpha**2 )*p_new</span>
         <span class="n">velsout</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span><span class="o">*</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_momentum_retain_fraction&#39;</span><span class="p">]</span>
         <span class="n">velsout</span> <span class="o">+=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span><span class="o">-</span><span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_momentum_retain_fraction&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)))</span><span class="o">*</span><span class="n">velocities</span>
         <span class="n">at</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">velsout</span><span class="p">)</span>
@@ -3385,7 +3387,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.6.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
     </div>
   </body>
 </html>
