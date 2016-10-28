@@ -732,7 +732,7 @@ def rej_free_canonical_velo(at, currentbeta, include_ke_in_output_ns_energy=Fals
         # http://www.mcmchandbook.net/HandbookTableofContents.html
         # Chapter 5 (R. Neal)
         # Equation (5.34)
-        # p' = alpha*p + sqrt( 1 + alpha**2 )*p_new
+        # p' = alpha*p + sqrt( 1 - alpha**2 )*p_new
         velsout = at.get_velocities()*movement_args['atom_momentum_retain_fraction']
         velsout += (np.sqrt(1.0-(movement_args['atom_momentum_retain_fraction']**2)))*velocities
         at.set_velocities(velsout)
