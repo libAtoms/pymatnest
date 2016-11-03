@@ -182,6 +182,9 @@ def usage():
     ``MC_atom_Galilean=[T | F]`` 
        | default: F
 
+    ``MC_atom_Galilean_no_reverse=[T | F]`` 
+       | default: T
+
     ``MD_atom_velo_pre_perturb=[T | F]`` 
        | Perturb velocities before MD trajectory
        | default: F
@@ -284,10 +287,16 @@ def usage():
        |  default: 1.1
 
     ``MC_adjust_min_rate=float``
-       |  default: 0.2
+       |  default: 0.25
 
     ``MC_adjust_max_rate=float``
-       |  default: 0.3
+       |  default: 0.75
+
+    ``GMC_adjust_min_rate=float``
+       |  default: 0.75
+
+    ``GMC_adjust_max_rate=float``
+       |  default: 0.85
 
     ``MD_adjust_step_factor=float``
        |  default: 1.1
@@ -450,6 +459,7 @@ def usage():
     sys.stderr.write("MC_atom_step_size_max=float (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
     sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
     sys.stderr.write("MC_atom_Galilean=[T | F] (F)\n")
+    sys.stderr.write("MC_atom_Galilean_no_reverse=[T | F] (T)\n")
     sys.stderr.write("\n")
     sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
     sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory\n")
@@ -484,8 +494,10 @@ def usage():
     sys.stderr.write("adjust_step_interval_times_fraction_killed=float (5, divided by n_cull/n_walkers to get actual adjustment interval in iterations, negative for only using last iteration, 0 for no adjust)\n")
     sys.stderr.write("full_auto_step_sizes=[T | F] (T) (T. Automatically calibrate all sizes by performing additional short explorations, including at start of run. F. Use initial input step sizes and make small adjustments to step sizes during run.)\n")
     sys.stderr.write("MC_adjust_step_factor=float (1.1)\n")
-    sys.stderr.write("MC_adjust_min_rate=float (0.2)\n")
-    sys.stderr.write("MC_adjust_max_rate=float (0.3)\n")
+    sys.stderr.write("MC_adjust_min_rate=float (0.25)\n")
+    sys.stderr.write("MC_adjust_max_rate=float (0.75)\n")
+    sys.stderr.write("GMC_adjust_min_rate=float (0.75)\n")
+    sys.stderr.write("GMC_adjust_max_rate=float (0.85)\n")
     sys.stderr.write("MD_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MD_adjust_min_rate=float (0.5)\n")
     sys.stderr.write("MD_adjust_max_rate=float (0.95)\n")
@@ -883,13 +895,15 @@ def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax, currentbeta):
     n_steps = movement_args['velo_traj_len']
     step_size = movement_args['MC_atom_velo_step_size']
 
+    n_try = n_steps*len(at)
+
     initial_KE = eval_energy(at, do_PE=False, do_PV=False)
     KEmax_use = Emax - (at.info['ns_energy'] - initial_KE) # expecting ns_energy = KE + PE (+PV)
     if KEmax > 0.0 and KEmax < KEmax_use:
         KEmax_use = KEmax
 
     if do_calc_fortran:
-        (n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, KEmax_use)
+        (n_try, n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, KEmax_use)
         at.info['ns_energy'] += final_KE-initial_KE
     else:
         masses = at.get_masses()
@@ -909,7 +923,7 @@ def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax, currentbeta):
         at.set_velocities(velocities)
         at.info['ns_energy'] += KE-initial_KE
 
-    return {'MC_atom_velo' : (n_steps*len(at), n_accept)}
+    return {'MC_atom_velo' : (n_try, n_accept)}
 
 def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
 #DOC
@@ -1017,6 +1031,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
     n_steps = movement_args['atom_traj_len']
     step_size = movement_args['MC_atom_step_size']
     step_size_velo = movement_args['MC_atom_velo_step_size']
+    n_try = n_steps*len(at)
     n_accept=0
     n_accept_velo = None
 
@@ -1024,20 +1039,21 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
     if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
         do_MC_atom_velo_walk(at, movement_args, Emax, KEmax, itbeta)
 
+
     #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
         #DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk
 
         if movement_args['MC_atom_velocities']:
-            (n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), KEmax, step_size_velo)
+            (n_try, n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), KEmax, step_size_velo)
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
         else:
             if movement_args['MC_atom_Galilean']:
                 d_pos_hat = rng.normal(1.0, (len(at), 3))
                 d_pos_hat /= np.linalg.norm(d_pos_hat)
-                (n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), d_pos_hat)
+                (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), d_pos_hat, no_reverse=movement_args['MC_atom_Galilean_no_reverse'])
             else:
-                (n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
+                (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
 
     elif (do_calc_lammps and movement_args['MC_atom_Galilean'] and ns_args['LAMMPS_fix_gmc']):
@@ -1129,8 +1145,8 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
 
     out = {}
     if n_accept_velo is not None:
-        out['MC_atom_velo'] = (n_steps*len(at), n_accept_velo)
-    out['MC_atom'] = (n_steps*len(at), n_accept)
+        out['MC_atom_velo'] = (n_try, n_accept_velo)
+    out['MC_atom'] = (n_try, n_accept)
 
     return out
 
@@ -1660,8 +1676,12 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
         #DOC \item Min and max acceptance rates are copied from parameters MC\_adjust\_min\_rate / MD\_adjust\_min\_rate and MC\_adjust\_max\_rate / MD\_adjust\_max\_rate
 
         if key.find("MC") == 0:
-            min_rate = movement_args['MC_adjust_min_rate']
-            max_rate = movement_args['MC_adjust_max_rate']
+            if key.find("MC_atom_step_size") and movement_args['MC_atom_Galilean']:
+                min_rate = movement_args['GMC_adjust_min_rate']
+                max_rate = movement_args['GMC_adjust_max_rate']
+            else:
+                min_rate = movement_args['MC_adjust_min_rate']
+                max_rate = movement_args['MC_adjust_max_rate']
             suffix="step_size"
         elif key.find("MD") == 0:
             min_rate = movement_args['MD_adjust_min_rate']
@@ -1826,8 +1846,12 @@ def adjust_step_sizes(walk_stats, movement_args, comm, do_print_rate=True, monit
                 continue
 
             if key.find("MC") == 0:
-                min_rate = movement_args['MC_adjust_min_rate']
-                max_rate = movement_args['MC_adjust_max_rate']
+                if key.find("MC_atom_step_size") and movement_args['MC_atom_Galilean']:
+                    min_rate = movement_args['GMC_adjust_min_rate']
+                    max_rate = movement_args['GMC_adjust_max_rate']
+                else:
+                    min_rate = movement_args['MC_adjust_min_rate']
+                    max_rate = movement_args['MC_adjust_max_rate']
                 suffix="step_size"
             elif key.find("MD") == 0:
                 min_rate = movement_args['MD_adjust_min_rate']
@@ -3066,6 +3090,7 @@ def main():
         movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 10000.0))
         movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
         movement_args['MC_atom_Galilean'] = str_to_logical(args.pop('MC_atom_Galilean', "F"))
+        movement_args['MC_atom_Galilean_no_reverse'] = str_to_logical(args.pop('MC_atom_Galilean', "T"))
         movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
 
         movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))
@@ -3123,6 +3148,8 @@ def main():
         movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
         movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
         movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
+        movement_args['GMC_adjust_min_rate'] = float(args.pop('GMC_adjust_min_rate', 0.75))
+        movement_args['GMC_adjust_max_rate'] = float(args.pop('GMC_adjust_max_rate', 0.85))
         movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.1))
         movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.50))
         movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 0.95))

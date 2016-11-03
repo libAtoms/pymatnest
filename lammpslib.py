@@ -326,7 +326,7 @@ End LAMMPSlib Interface Documentation
     def calculate(self, atoms, properties, system_changes):
         self.propagate(atoms, properties, system_changes, 0)
 
-    def propagate(self, atoms, properties, system_changes, n_steps, dt=None, dt_not_real_time=False):
+    def propagate(self, atoms, properties, system_changes, n_steps, dt=None, dt_not_real_time=False, velocity_field=None):
 
         """"atoms: Atoms object
             Contains positions, unit-cell, ...
@@ -381,7 +381,10 @@ End LAMMPSlib Interface Documentation
         self.set_lammps_pos(atoms)
 
         if n_steps > 0:
-            vel = atoms.get_velocities() / unit_convert("velocity", self.units)
+            if velocity_field is None:
+                vel = atoms.get_velocities() / unit_convert("velocity", self.units)
+            else:
+                vel = atoms.arrays[velocity_field]
 
             # If necessary, transform the velocities to new coordinate system
             if self.coord_transform is not None:
