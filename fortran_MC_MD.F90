@@ -153,7 +153,7 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
 end subroutine fortran_MC_atom
 
 subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_steps, &
-                          Emax, final_E, n_try, n_accept, d_pos, debug)
+                           Emax, final_E, n_try, n_accept, d_pos, no_reverse, debug)
    implicit none
    integer :: N
    integer :: Z(N)
@@ -164,10 +164,12 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    double precision :: Emax, final_E
    integer :: n_try, n_accept
    double precision :: d_pos(3,N)
+   integer :: no_reverse
    integer :: debug
 
-   double precision :: E, cur_pos(3,N), Fhat(3,N), d_pos_reflect(3,N), &
-                       last_good_pos(3,N), last_good_d_pos(3,N)
+
+   double precision :: E, Fhat(3,N), d_pos_reflect(3,N), &
+                       last_good_pos(3,N), last_good_d_pos(3,N), last_good_E
 
    double precision, external :: ll_eval_energy, ll_eval_forces
 
@@ -177,93 +179,66 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    n_reflect = 0
    n_reverse = 0
 
+   if (no_reverse /= 0) then
+        last_good_pos = pos
+        last_good_d_pos = d_pos
+        last_good_E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
+   end if
+
    do i_step=1, n_steps
 
-      last_good_pos = pos
-      last_good_d_pos = d_pos
+      if (no_reverse == 0) then
+          last_good_pos = pos
+          last_good_d_pos = d_pos
+      endif
 
       pos = pos + d_pos
-      
       E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
+
       if (isnan(E) .or. E >= Emax) then ! reflect or reverse
           E = ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, Fhat)
           Fhat = Fhat / sqrt(sum(Fhat*Fhat))
+          d_pos = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
 
-          d_pos_reflect = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
-          pos = last_good_pos + d_pos + d_pos_reflect
-          d_pos = d_pos_reflect
 
           n_reflect = n_reflect + 1
 
-          E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
-          if (isnan(E) .or. E >= Emax) then ! reflect or reverse
-              pos = last_good_pos
-              d_pos = - last_good_d_pos
-              ! undo reflection that just happened, replace it with a reversal
-              n_reflect = n_reflect - 1 
-              n_reverse = n_reverse + 1
+          if (no_reverse == 0) then ! step and reverse if needed
+              pos = pos + d_pos
+              E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
+              if (isnan(E) .or. E >= Emax) then ! reflect or reverse
+                  pos = last_good_pos
+                  d_pos = - last_good_d_pos
+                  ! undo reflection that just happened, replace it with a reversal
+                  n_reflect = n_reflect - 1 
+                  n_reverse = n_reverse + 1
+              endif
           endif
       endif
    end do
 
-   if (n_reverse > 0) E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
+   if (no_reverse /= 0) then
+       n_try = 1
+       ! accept/reject
+       if (E < Emax) then ! NaN should be false also
+         final_E = E
+         n_accept = 1
+       else
+         pos = last_good_pos
+         d_pos = last_good_d_pos
+         final_E = last_good_E
+         n_accept = 0
+       endif
+   else
+       if (n_reverse > 0) E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
 
-   ! set n_accept_pos so that acceptance rate is what we need (see above)
-   n_try = n_reflect + n_reverse
-   n_accept = n_reflect
-   final_E = E
+       ! we'll use the ration n_reflect/(n_reflect+n_reverse) as the tuning parameter
+       n_try = n_reflect + n_reverse
+       n_accept = n_reflect
+       final_E = E
+  endif
 
 end subroutine fortran_GMC_atom
-
-subroutine fortran_GMC_noreverse_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_steps, &
-                           Emax, final_E, n_try, n_accept, d_pos, debug)
-   implicit none
-   integer :: N
-   integer :: Z(N)
-   double precision :: pos(3,N), mass(N), cell(3,3)
-   integer :: n_extra_data
-   double precision :: extra_data(n_extra_data,N)
-   integer :: n_steps
-   double precision :: Emax, final_E
-   integer :: n_try, n_accept
-   double precision :: d_pos(3,N)
-   integer :: debug
-
-   double precision :: E, cur_pos(3,N), Fhat(3,N)
-
-   double precision, external :: ll_eval_energy, ll_eval_forces
-
-   integer :: i_step
-
-   E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
-   final_E = E ! in case we reject
-
-   n_try = n_steps*N
-
-   ! move a copy of pos, in case we reject
-   cur_pos = pos
-   do i_step=1, n_steps
-      cur_pos = cur_pos + d_pos
-      E = ll_eval_energy(N, Z, cur_pos, n_extra_data, extra_data, cell)
-      if (isnan(E)) then ! can't reflect from NaN, forces aren't well defined
-          exit
-      endif
-      if (E >= Emax) then ! reflect
-          E = ll_eval_forces(N, Z, cur_pos, n_extra_data, extra_data, cell, Fhat)
-          Fhat = Fhat / sqrt(sum(Fhat*Fhat))
-          d_pos = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
-      end if
-   end do
-
-   if (E < Emax) then ! NaN should be false also
-     final_E = E
-     pos = cur_pos
-     n_accept = n_steps*N
-   else
-     n_accept = 0
-   endif
-
-end subroutine fortran_GMC_noreverse_atom
 
 subroutine fortran_MD_atom_NVE(N, Z, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, timestep, final_E, debug)
    implicit none

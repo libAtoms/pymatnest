@@ -111,22 +111,7 @@ class fortran_MC_MD:
            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # n_try
            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # n_accept
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # d_pos
-           ctypes.c_void_p ] # debug
-
-        # fortran_GMC_atom
-        self.lib.fortran_gmc_noreverse_atom_.argtypes = [ctypes.c_void_p, # N
-           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # Z
-           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # pos
-           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # masses
-           ctypes.c_void_p, # n_extra_data
-           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # extra_data
-           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # cell
-           ctypes.c_void_p, # n_steps
-           ctypes.c_void_p, # Emax
-           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # final_E
-           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # n_try
-           ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # n_accept
-           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # d_pos
+           ctypes.c_void_p, # no_reverse
            ctypes.c_void_p ] # debug
 
         # fortran_MD_atom_NVE
@@ -260,6 +245,10 @@ class fortran_MC_MD:
         n_steps = ctypes.c_int(n_steps)
         Emax = ctypes.c_double(Emax)
         debug = ctypes.c_int(debug)
+        if no_reverse:
+            no_reverse = ctypes.c_int(1)
+        else:
+            no_reverse = ctypes.c_int(0)
         pos = at.get_positions()
         d_pos = step_size*at.arrays['GMC_direction']
         n_try = np.zeros( (1), dtype=np.int32)
@@ -271,12 +260,8 @@ class fortran_MC_MD:
         else:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
-        if no_reverse:
-            self.lib.fortran_gmc_noreverse_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, at.get_masses(), ctypes.byref(n_extra_data_c),
-               extra_data, at.get_cell(), ctypes.byref(n_steps), ctypes.byref(Emax), final_E, n_try, n_accept, d_pos, ctypes.byref(debug))
-        else:
-            self.lib.fortran_gmc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, at.get_masses(), ctypes.byref(n_extra_data_c),
-               extra_data, at.get_cell(), ctypes.byref(n_steps), ctypes.byref(Emax), final_E, n_try, n_accept, d_pos, ctypes.byref(debug))
+        self.lib.fortran_gmc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, at.get_masses(), ctypes.byref(n_extra_data_c),
+           extra_data, at.get_cell(), ctypes.byref(n_steps), ctypes.byref(Emax), final_E, n_try, n_accept, d_pos, ctypes.byref(no_reverse), ctypes.byref(debug))
         at.set_positions(pos)
         at.arrays['GMC_direction'][:,:] = d_pos / np.linalg.norm(d_pos)
         if n_extra_data_c.value > 0:
