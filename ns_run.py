@@ -75,8 +75,12 @@ def usage():
        | default: 0
 
     ``KEmax_max_T=float`` 
-       | Maximum temperature for estimating KEmax if *P* = 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K)
+       | Maximum temperature for estimating KEmax if *P* = 0, i.e. fixed V ensemble (will be multiplied by kB)
        | default: 1.0e5
+
+    ``kB=float`` 
+       | Boltzmann constant
+       | default: 8.6173324e-5 (eV/A)
 
     ``start_energy_ceiling_per_atom=float``
        | Maximum potential energy per atom for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. 
@@ -424,7 +428,8 @@ def usage():
     sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
     sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K))\n")
+    sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB))\n")
+    sys.stderr.write("kB=float (8.6173324e-5, Boltzmann constant)\n")
     sys.stderr.write("start_energy_ceiling_per_atom=float (1.0e9, max potential energy per atom for initial configs.  P*Vmax is added to this automatically)\n")
     sys.stderr.write("start_energy_ceiling=float (DEPRECATED: use start_energy_ceiling_per_atom. 1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
     sys.stderr.write("random_init_max_n_tries=int (100, maximum number of tries for random initial positions under energy ceiling\n")
@@ -2113,7 +2118,7 @@ def do_ns_loop():
     log_X_n_term_cumsum_modified = log_X_n_term_cumsum - np.log(ns_args['n_walkers']+1-i_range_plus_1_mod_n_cull)
     log_X_n_term_sum = log_X_n_term_cumsum[-1]
     if ns_args['converge_down_to_T'] > 0:
-        converge_down_to_beta = 1.0/(kB*ns_args['converge_down_to_T'])
+        converge_down_to_beta = 1.0/(ns_args['kB']*ns_args['converge_down_to_T'])
         log_Z_term_max = None
 
     prev_snapshot_iter = None
@@ -2188,7 +2193,7 @@ def do_ns_loop():
         if output_this_iter:
                 if ns_args['T_estimate_finite_diff_lag'] > 0 and len(Emax_history) > 1:
                     beta_estimate = (len(Emax_history)-1)*log_alpha/(Emax_history[-1]-Emax_history[0])
-                    T_estimate = 1.0/(kB*beta_estimate)
+                    T_estimate = 1.0/(ns_args['kB']*beta_estimate)
                 else:
                     T_estimate = -1
                 print i_ns_step, "Emax_of_step ", Emax_of_step, "T_estimate ", T_estimate, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration
@@ -2747,7 +2752,7 @@ def do_ns_loop():
 def main():
         """ Main function """
         global movement_args
-        global ns_args, start_first_iter, kB
+        global ns_args, start_first_iter
         global max_n_cull_per_task
         global size, rank, comm, rng, np, sys
         global n_cull, n_walkers, n_walkers_per_task
@@ -2914,7 +2919,7 @@ def main():
 
 
         ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
-        kB = 8.6173324e-5 # eV/K
+        ns_args['kB'] = float(args.pop('kB', 8.6173324e-5)) # eV/K
 
         # parse energy_calculator
         ns_args['energy_calculator'] = args.pop('energy_calculator', 'fortran')
@@ -3426,7 +3431,7 @@ def main():
                 if movement_args['MC_cell_P'] > 0.0:
                     KEmax = movement_args['MC_cell_P']*len(walkers[0])*ns_args['max_volume_per_atom']
                 else:
-                    KEmax = kB*ns_args['KEmax_max_T']
+                    KEmax = 3.0/2.0*len(walkers[0])*ns_args['kB']*ns_args['KEmax_max_T']
                 if (movement_args['separable_MDNS']): # Set KEmax=-1.0, so that it does not affect dynamics
                     KEmax = -1.0
                 for at in walkers:
