@@ -153,7 +153,7 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
 end subroutine fortran_MC_atom
 
 subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_steps, &
-                          step_size_pos, Emax, final_E, n_try, n_accept, d_pos_hat, debug)
+                          Emax, final_E, n_try, n_accept, d_pos, debug)
    implicit none
    integer :: N
    integer :: Z(N)
@@ -161,9 +161,9 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data,N)
    integer :: n_steps
-   double precision :: step_size_pos, Emax, final_E
+   double precision :: Emax, final_E
    integer :: n_try, n_accept
-   double precision :: d_pos_hat(3,N)
+   double precision :: d_pos(3,N)
    integer :: debug
 
    double precision :: E, d_pos(3,N), cur_pos(3,N), Fhat(3,N), d_pos_reflect(3,N), &
@@ -174,8 +174,6 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    integer :: n_reflect, n_reverse
    integer :: i_step, i
    logical :: reflected_last, reverse, reflect, step_passed
-
-   d_pos = d_pos_hat * step_size_pos
 
    n_reflect = 0
    n_reverse = 0
@@ -237,7 +235,7 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
 end subroutine fortran_GMC_atom
 
 subroutine fortran_GMC_noreverse_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_steps, &
-                           step_size_pos, Emax, final_E, n_try, n_accept, d_pos_hat, debug)
+                           Emax, final_E, n_try, n_accept, d_pos, debug)
    implicit none
    integer :: N
    integer :: Z(N)
@@ -245,9 +243,9 @@ subroutine fortran_GMC_noreverse_atom(N, Z, pos, mass, n_extra_data, extra_data,
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data,N)
    integer :: n_steps
-   double precision :: step_size_pos, Emax, final_E
+   double precision :: Emax, final_E
    integer :: n_try, n_accept
-   double precision :: d_pos_hat(3,N)
+   double precision :: d_pos(3,N)
    integer :: debug
 
    double precision :: E, d_pos(3,N), cur_pos(3,N), Fhat(3,N)
@@ -258,7 +256,6 @@ subroutine fortran_GMC_noreverse_atom(N, Z, pos, mass, n_extra_data, extra_data,
 
    E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
    final_E = E ! in case we reject
-   d_pos = d_pos_hat * step_size_pos
 
    n_try = n_steps*N
 

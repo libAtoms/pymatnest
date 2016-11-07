@@ -1044,6 +1044,9 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
     if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
         do_MC_atom_velo_walk(at, movement_args, Emax, KEmax, itbeta)
 
+    if movement_args['MC_atom_Galilean']: # for now, completely random
+        at.arrays['GMC_direction'][:,:] = rng.normal(1.0, (len(at), 3))
+        at.arrays['GMC_direction'] /= np.linalg.norm(at.arrays['GMC_direction'])
 
     #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
@@ -1054,9 +1057,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
         else:
             if movement_args['MC_atom_Galilean']:
-                d_pos_hat = rng.normal(1.0, (len(at), 3))
-                d_pos_hat /= np.linalg.norm(d_pos_hat)
-                (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), d_pos_hat, no_reverse=movement_args['MC_atom_Galilean_no_reverse'])
+                (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), no_reverse=movement_args['MC_atom_Galilean_no_reverse'])
             else:
                 (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
@@ -1090,9 +1091,8 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             #DOC \item go Galilean MC in python
             orig_energy = at.info['ns_energy']
             orig_pos = at.get_positions()
-
-            d_pos = rng.normal(1.0, orig_pos.shape)
-            d_pos *= step_size/np.linalg.norm(d_pos)
+            
+            d_pos = step_size*at.arrays['GMC_direction']
             new_pos = orig_pos.copy()
             Fhat = np.zeros(d_pos.shape)
             for i_MC_step in range(n_steps):
@@ -1106,6 +1106,8 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             if new_E < Emax:
                 at.info['ns_energy'] = new_E
                 n_accept = n_steps*len(at)
+                # positions were already updated, now updated GMC direction
+                at.arrays['GMC_direction'][:,:] = d_pos/norm(d_pos)
             else:
                 at.info['ns_energy'] = orig_energy
                 at.set_positions(orig_pos)
@@ -2398,6 +2400,8 @@ def do_ns_loop():
                 walkers[recv_ind[0]].set_cell(walkers[send_ind[0]].get_cell())
                 if movement_args['do_velocities']:
                     walkers[recv_ind[0]].set_velocities(walkers[send_ind[0]].get_velocities())
+                if movement_args['do_GMC']:
+                    walkers[recv_ind[0]].arrays['GMC_direction'][:,:] = walkers[send_ind[0]].arrays['GMC_direction']
                 if ns_args['n_extra_data'] > 0:
                     walkers[recv_ind[0]].arrays['ns_extra_data'][...] = walkers[send_ind[0]].arrays['ns_extra_data']
                 if ns_args['swap_atomic_numbers']:
@@ -2418,6 +2422,8 @@ def do_ns_loop():
                 n_send = 3*(n_atoms + 3)
                 if movement_args['do_velocities']:
                     n_send += 3*n_atoms
+                if movement_args['do_GMC']:
+                    n_send += 3*n_atoms
                 if ns_args['n_extra_data'] > 0:
                     n_send += ns_args['n_extra_data']*n_atoms
                 if ns_args['swap_atomic_numbers']:
@@ -2433,6 +2439,8 @@ def do_ns_loop():
                     buf[buf_o:buf_o+3*3] = walkers[send_ind[0]].get_cell().reshape( (3*3) ); buf_o += 3*3
                     if movement_args['do_velocities']:
                         buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].get_velocities().reshape( (3*n_atoms) ); buf_o += 3*n_atoms
+                    if movement_args['do_GMC']:
+                        buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].arrays['GMC_direction'].reshape( (3*n_atoms) ); buf_o += 3*n_atoms
                     if ns_args['n_extra_data'] > 0:
                         buf[buf_o:buf_o+ns_args['n_extra_data']*n_atoms] = walkers[send_ind[0]].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) ); buf_o += ns_args['n_extra_data']*n_atoms
                     if ns_args['swap_atomic_numbers']:
@@ -2451,6 +2459,8 @@ def do_ns_loop():
                     walkers[recv_ind[0]].set_cell(buf[buf_o:buf_o+3*3].reshape( (3, 3) )); buf_o += 3*3
                     if movement_args['do_velocities']:
                         walkers[recv_ind[0]].set_velocities(buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, 3) )); buf_o += 3*n_atoms
+                    if movement_args['do_GMC']:
+                        walkers[recv_ind[0]].arrays['GMC_direction'][:,:] = buf[buf_o:buf_o+3*n_atoms].reshape( (n_atoms, 3) ); buf_o += 3*n_atoms
                     if ns_args['n_extra_data'] > 0:
                         walkers[recv_ind[0]].arrays['ns_extra_data'][...] = buf[buf_o:buf_o+3*n_atoms].reshape( walkers[recv_ind[0]].arrays['ns_extra_data'].shape ); buf_o += ns_args['n_extra_data']*n_atoms
                     if ns_args['swap_atomic_numbers']:
@@ -2470,6 +2480,8 @@ def do_ns_loop():
             # figure out how much is sent per config
             n_data_per_config = 1+3*(n_atoms + 3)
             if movement_args['do_velocities']:
+                n_data_per_config += 3*n_atoms
+            if movement_args['do_GMC']:
                 n_data_per_config += 3*n_atoms
             if ns_args['n_extra_data'] > 0:
                 n_data_per_config += ns_args['n_extra_data']*n_atoms
@@ -2508,6 +2520,8 @@ def do_ns_loop():
                 send_data[data_o:data_o+3*3] = walkers[i_send].get_cell().reshape( (3*3) ); data_o += 3*3
                 if movement_args['do_velocities']:
                     send_data[data_o:data_o+3*n_atoms] = walkers[i_send].get_velocities().reshape( (3*n_atoms) ); data_o += 3*n_atoms
+                if movement_args['do_GMC']:
+                    send_data[data_o:data_o+3*n_atoms] = walkers[i_send].arrays['GMC_direction'].reshape( (3*n_atoms) ); data_o += 3*n_atoms
                 if ns_args['n_extra_data'] > 0:
                     send_data[data_o:data_o+ns_args['n_extra_data']*n_atoms] = walkers[i_send].arrays['ns_extra_data'].reshape( (ns_args['n_extra_data']*n_atoms) ); data_o += ns_args['n_extra_data']*n_atoms
                 if ns_args['swap_atomic_numbers']:
@@ -2556,6 +2570,8 @@ def do_ns_loop():
                 walkers[i_recv].set_cell( recv_data[data_o:data_o+3*3].reshape( (3, 3) )); data_o += 3*3
                 if movement_args['do_velocities']:
                     walkers[i_recv].set_velocities( recv_data[data_o:data_o+3*n_atoms].reshape( (n_atoms, 3) )); data_o += 3*n_atoms
+                if movement_args['do_GMC']:
+                    walkers[i_recv].arrays['GMC_direction'][:,:] = recv_data[data_o:data_o+3*n_atoms].reshape( (n_atoms, 3) ); data_o += 3*n_atoms
                 if ns_args['n_extra_data'] > 0:
                     walkers[i_recv].arrays['ns_extra_data'][...] = recv_data[data_o:data_o+ns_args['n_extra_data']*n_atoms].reshape( walkers[i_recv].arrays['ns_extra_data'].shape ); data_o += ns_args['n_extra_data']*n_atoms
                 if ns_args['swap_atomic_numbers']:
@@ -3554,6 +3570,13 @@ def main():
                     del ind_temp
                 for at in walkers:
                     at.info['ns_beta']=ns_beta
+
+        # add GMC direction if needed
+        movement_args['do_GMC'] = ((movement_args['atom_algorithm'] == 'MC') and (movement_args['MC_atom_Galilean']))
+        if movement_args['do_GMC']:
+            for at in walkers:
+                if 'GMC_direction' not in at.arrays:
+                    at.arrays['GMC_direction'] = np.zeros( (len(at),3) )
 
         # scale MC_atom_step_size by max_vol^(1/3)
         max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
