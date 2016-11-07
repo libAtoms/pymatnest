@@ -417,7 +417,8 @@ End LAMMPSlib Interface Documentation
             vel = np.array([v for v in self.lmp.gather_atoms("v",1,3)]).reshape(-1,3)
             if self.coord_transform is not None:
                 vel = np.dot(vel, self.coord_transform)
-            atoms.set_velocities(vel * unit_convert("velocity", self.units))
+            if velocity_field is None:
+                atoms.set_velocities(vel * unit_convert("velocity", self.units))
 
         # Extract the forces and energy
 #        if 'energy' in properties:
