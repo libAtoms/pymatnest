@@ -1089,29 +1089,71 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
         #DOC \item is MC_atom_Galilean
         if movement_args['MC_atom_Galilean']:
             #DOC \item go Galilean MC in python
-            orig_energy = at.info['ns_energy']
-            orig_pos = at.get_positions()
-            
+
+            do_no_reverse = movement_args['MC_atom_Galilean_no_reverse']
+
+            if do_no_reverse:
+                last_good_pos = at.get_positions()
+            else:
+                n_reverse = 0
+
+            n_reflect = 0
+            pos = at.get_positions()
             d_pos = step_size*at.arrays['GMC_direction']
-            new_pos = orig_pos.copy()
-            Fhat = np.zeros(d_pos.shape)
+
             for i_MC_step in range(n_steps):
-                new_pos += d_pos
-                at.set_positions(new_pos)
-                new_E = eval_energy(at)
-                if new_E >= Emax:
+                if not do_no_reverse:
+                    last_good_pos = at.get_positions()
+                    last_good_d_pos = d_pos.copy()
+
+                # step and evaluate
+                pos += d_pos
+                at.set_positions(pos)
+                E = eval_energy(at)
+                cur_E_is_correct = True
+
+                if E >= Emax: # reflect
                     Fhat = eval_forces(at)
                     Fhat /= np.linalg.norm(Fhat)
                     d_pos -= 2.0*Fhat*np.sum(Fhat*d_pos)
-            if new_E < Emax:
-                at.info['ns_energy'] = new_E
-                n_accept = n_steps*len(at)
-                # positions were already updated, now updated GMC direction
-                at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
+
+                    n_reflect += 1
+
+                    if not do_no_reverse: # do reflection step and check for reverse
+                        # step on reflected traj and evaluate
+                        pos += d_pos
+                        at.set_positions(pos)
+                        E = eval_energy(at)
+                        cur_E_is_correct = True
+
+                        if E >= Emax: # reverse
+                            pos[:,:] = last_good_pos
+                            at.set_positions(pos)
+                            cur_E_is_correct = False
+                            d_pos[:,:] = -last_good_d_pos
+                            n_reflect -= 1
+                            n_reverse += 1
+
+            if do_no_reverse: # accept/reject
+                n_try = 1
+                if E < Emax: # accept
+                    at.info['ns_energy'] = E
+                    at.set_positions(pos)
+                    at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
+                    n_accept = 1
+                else: # reject
+                    # E and GMC_direction in at were never overwritten, no need to restore
+                    at.set_positions(last_good_pos)
+                    n_accept = 0
             else:
-                at.info['ns_energy'] = orig_energy
-                at.set_positions(orig_pos)
-                n_accept = 0
+                if n_reverse > 0 and not cur_E_is_correct:
+                    E = eval_energy(at)
+                at.info['ns_energy'] = E
+                at.set_positions(pos)
+                at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
+                n_try = n_reflect + n_reverse
+                n_accept = n_reflect
+
         #DOC \item else
         else:
             #DOC \item loop atom\_traj\_len times
