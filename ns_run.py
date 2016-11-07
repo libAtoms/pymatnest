@@ -1107,7 +1107,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
                 at.info['ns_energy'] = new_E
                 n_accept = n_steps*len(at)
                 # positions were already updated, now updated GMC direction
-                at.arrays['GMC_direction'][:,:] = d_pos/norm(d_pos)
+                at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
             else:
                 at.info['ns_energy'] = orig_energy
                 at.set_positions(orig_pos)

@@ -166,7 +166,7 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    double precision :: d_pos(3,N)
    integer :: debug
 
-   double precision :: E, d_pos(3,N), cur_pos(3,N), Fhat(3,N), d_pos_reflect(3,N), &
+   double precision :: E, cur_pos(3,N), Fhat(3,N), d_pos_reflect(3,N), &
                        last_good_pos(3,N), last_good_d_pos(3,N)
 
    double precision, external :: ll_eval_energy, ll_eval_forces
@@ -248,7 +248,7 @@ subroutine fortran_GMC_noreverse_atom(N, Z, pos, mass, n_extra_data, extra_data,
    double precision :: d_pos(3,N)
    integer :: debug
 
-   double precision :: E, d_pos(3,N), cur_pos(3,N), Fhat(3,N)
+   double precision :: E, cur_pos(3,N), Fhat(3,N)
 
    double precision, external :: ll_eval_energy, ll_eval_forces
 

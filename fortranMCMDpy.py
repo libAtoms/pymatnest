@@ -278,7 +278,7 @@ class fortran_MC_MD:
             self.lib.fortran_gmc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, at.get_masses(), ctypes.byref(n_extra_data_c),
                extra_data, at.get_cell(), ctypes.byref(n_steps), ctypes.byref(Emax), final_E, n_try, n_accept, d_pos, ctypes.byref(debug))
         at.set_positions(pos)
-        at.arrays['GMC_direction'][:,:] = d_pos / norm(d_pos)
+        at.arrays['GMC_direction'][:,:] = d_pos / np.linalg.norm(d_pos)
         if n_extra_data_c.value > 0:
             at.arrays['ns_extra_data'][...] = extra_data
         return (n_try[0], n_accept[0], final_E[0])
