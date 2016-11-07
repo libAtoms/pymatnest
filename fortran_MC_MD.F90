@@ -172,8 +172,7 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    double precision, external :: ll_eval_energy, ll_eval_forces
 
    integer :: n_reflect, n_reverse
-   integer :: i_step, i
-   logical :: reflected_last, reverse, reflect, step_passed
+   integer :: i_step 
 
    n_reflect = 0
    n_reverse = 0
@@ -182,47 +181,29 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
 
       last_good_pos = pos
       last_good_d_pos = d_pos
-      reflected_last = .false. 
-      step_passed = .true.
 
       pos = pos + d_pos
+      
+      E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
+      if (isnan(E) .or. E >= Emax) then ! reflect or reverse
+          E = ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, Fhat)
+          Fhat = Fhat / sqrt(sum(Fhat*Fhat))
 
-      reflect_reverse: do i = 1, 2 ! reflect and then reverse if needed
-        E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
-        if (isnan(E) .or. E >= Emax) then ! reflect or reverse
-            step_passed = .false.
-          
-            if (.not. reflected_last) then
-              reflect = .true.
-              reverse = .false.
-            else
-              reverse = .true.
-              reflect = .false.
-            end if
-     
-            if (reflect) then
-              E = ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, Fhat)
-              Fhat = Fhat / sqrt(sum(Fhat*Fhat))
-     
-              d_pos_reflect = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
-              pos = last_good_pos + d_pos + d_pos_reflect
-              d_pos = d_pos_reflect
-     
-              reflected_last = .true.
-              n_reflect = n_reflect + 1
-            else if (reverse) then
+          d_pos_reflect = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
+          pos = last_good_pos + d_pos + d_pos_reflect
+          d_pos = d_pos_reflect
+
+          n_reflect = n_reflect + 1
+
+          E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
+          if (isnan(E) .or. E >= Emax) then ! reflect or reverse
               pos = last_good_pos
               d_pos = - last_good_d_pos
               ! undo reflection that just happened, replace it with a reversal
               n_reflect = n_reflect - 1 
               n_reverse = n_reverse + 1
-            endif
-   
-        else ! coordinates (possibly after reflection) are OK. Save them.
-          exit reflect_reverse
-        end if
-      end do reflect_reverse
-
+          endif
+      endif
    end do
 
    if (n_reverse > 0) E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
