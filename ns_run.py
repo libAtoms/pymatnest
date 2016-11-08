@@ -3108,9 +3108,9 @@ def main():
 		# set KEmax from P and Vmax
 	    if (movement_args['do_velocities']):
 	        if movement_args['MC_cell_P'] > 0.0:
-	            KEmax = movement_args['MC_cell_P']*len(walkers[0])*ns_args['max_volume_per_atom']
+	            KEmax = 1.5*movement_args['MC_cell_P']*len(walkers[0])*ns_args['max_volume_per_atom']
 	        else:
-	            KEmax = kB*ns_args['KEmax_max_T']
+	            KEmax = 1.5*len(walkers[0])*kB*ns_args['KEmax_max_T']
 	        if (movement_args['separable_MDNS']): # Set KEmax=-1.0, so that it does not affect dynamics
 	            KEmax = -1.0
 	        for at in walkers:
