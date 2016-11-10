@@ -17,7 +17,7 @@ print_prefix=""
 def usage():
     """ Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:
 
-.. glossary::  
+.. glossary::
 
     ``max_volume_per_atom=float``
        | Maximum volume per atom allowed during the run.
@@ -302,6 +302,9 @@ def usage():
     ``GMC_adjust_max_rate=float``
        |  default: 0.85
 
+    ``GMC_dir_perturb_angle=float``
+       |  default: -1.0
+
     ``MD_adjust_step_factor=float``
        |  default: 1.1
 
@@ -503,6 +506,7 @@ def usage():
     sys.stderr.write("MC_adjust_max_rate=float (0.75)\n")
     sys.stderr.write("GMC_adjust_min_rate=float (0.75)\n")
     sys.stderr.write("GMC_adjust_max_rate=float (0.85)\n")
+    sys.stderr.write("GMC_dir_perturb_angle=float (-1.0)\n")
     sys.stderr.write("MD_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MD_adjust_min_rate=float (0.5)\n")
     sys.stderr.write("MD_adjust_max_rate=float (0.95)\n")
@@ -1044,9 +1048,23 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
     if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
         do_MC_atom_velo_walk(at, movement_args, Emax, KEmax, itbeta)
 
-    if movement_args['MC_atom_Galilean']: # for now, completely random
-        at.arrays['GMC_direction'][:,:] = rng.normal(1.0, (len(at), 3))
-        at.arrays['GMC_direction'] /= np.linalg.norm(at.arrays['GMC_direction'])
+    if movement_args['MC_atom_Galilean']:
+        if movement_args['GMC_dir_perturb_angle'] < 0.0 or np.linalg.norm(at.arrays['GMC_direction']) == 0.0:
+            # completely random orientation, magnitude 1
+            at.arrays['GMC_direction'][:,:] = rng.normal(1.0, (len(at), 3))
+            at.arrays['GMC_direction'] /= np.linalg.norm(at.arrays['GMC_direction'])
+        elif movement_args['GMC_dir_perturb_angle'] > 0.0:
+            # apply random rotations
+            indices = [ (int(i/3), i%3) for i in range(3*len(at)) ]
+            rng.shuffle_in_place(indices)
+            for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
+                ang = rng.float_uniform(-movement_args['GMC_dir_perturb_angle'],movement_args['GMC_dir_perturb_angle'])
+                c_ang = np.cos(ang)
+                s_ang = np.sin(ang)
+                v_1 =  at.arrays['GMC_direction'][ind_1_a,ind_1_c] * c_ang + at.arrays['GMC_direction'][ind_2_a,ind_2_c] * s_ang
+                v_2 = -at.arrays['GMC_direction'][ind_1_a,ind_1_c] * s_ang + at.arrays['GMC_direction'][ind_2_a,ind_2_c] * c_ang
+                at.arrays['GMC_direction'][ind_1_a,ind_1_c] = v_1
+                at.arrays['GMC_direction'][ind_2_a,ind_2_c] = v_2
 
     #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
@@ -1137,13 +1155,15 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             if do_no_reverse: # accept/reject
                 n_try = 1
                 if E < Emax: # accept
+                    # save new E, pos, direction
                     at.info['ns_energy'] = E
                     at.set_positions(pos)
                     at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
                     n_accept = 1
                 else: # reject
-                    # E and GMC_direction in at were never overwritten, no need to restore
+                    # E and GMC_direction in at were never overwritten, no need to restore, but do need to reverse dir
                     at.set_positions(last_good_pos)
+                    at.arrays['GMC_direction'] *= -1.0
                     n_accept = 0
             else:
                 if n_reverse > 0 and not cur_E_is_correct:
@@ -1715,7 +1735,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
             exploration_movement_args['n_cell_volume_steps'] = 1
             exploration_movement_args['n_model_calls'] = 1
             # one call to do_MC_cell_volume_step per walk_single_walker call
-        elif (key[:7] == "MC_swap"): 
+        elif (key[:7] == "MC_swap"):
             # skip swap moves, since they have no step size
             break
 
@@ -2748,7 +2768,7 @@ def do_ns_loop():
                     nlevels_since_call= movement_args['adjust_step_interval_times_fraction_killed']
                     use_emax = save_Emax_of_step_betans
                     save_Emax_of_step_betans = Emax_of_step
-                else: 
+                else:
                     nlevels_since_call=0 
                     use_emax = Emax_of_step
                     # save_Emax_of_step_betans already set
@@ -2963,10 +2983,10 @@ def main():
             ns_args['start_energy_ceiling'] = float(args.pop('start_energy_ceiling'))
         except:
             ns_args['start_energy_ceiling'] = None
-        if ns_args['start_energy_ceiling_per_atom'] is not None and ns_args['start_energy_ceiling'] is not None: 
+        if ns_args['start_energy_ceiling_per_atom'] is not None and ns_args['start_energy_ceiling'] is not None:
             # conflict
             exit_error("got both start_energy_ceiling and start_energy_ceiling_per_atom\n", 1)
-        elif ns_args['start_energy_ceiling_per_atom'] is None and ns_args['start_energy_ceiling'] is None: 
+        elif ns_args['start_energy_ceiling_per_atom'] is None and ns_args['start_energy_ceiling'] is None:
             # neither specified, use default
             ns_args['start_energy_ceiling_per_atom'] = 1.0e9
         elif ns_args['start_energy_ceiling'] is not None and rank == 0:
@@ -3213,6 +3233,7 @@ def main():
         movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
         movement_args['GMC_adjust_min_rate'] = float(args.pop('GMC_adjust_min_rate', 0.75))
         movement_args['GMC_adjust_max_rate'] = float(args.pop('GMC_adjust_max_rate', 0.85))
+        movement_args['GMC_dir_perturb_angle'] = float(args.pop('GMC_dir_perturb_angle', -1.0))
         movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.1))
         movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.50))
         movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 0.95))
