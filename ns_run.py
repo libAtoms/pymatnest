@@ -297,10 +297,10 @@ def usage():
        |  default: 0.75
 
     ``GMC_adjust_min_rate=float``
-       |  default: 0.75
+       |  default: 0.25
 
     ``GMC_adjust_max_rate=float``
-       |  default: 0.85
+       |  default: 0.75
 
     ``GMC_dir_perturb_angle=float``
        |  default: -1.0
@@ -504,8 +504,8 @@ def usage():
     sys.stderr.write("MC_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MC_adjust_min_rate=float (0.25)\n")
     sys.stderr.write("MC_adjust_max_rate=float (0.75)\n")
-    sys.stderr.write("GMC_adjust_min_rate=float (0.75)\n")
-    sys.stderr.write("GMC_adjust_max_rate=float (0.85)\n")
+    sys.stderr.write("GMC_adjust_min_rate=float (0.25)\n")
+    sys.stderr.write("GMC_adjust_max_rate=float (0.75)\n")
     sys.stderr.write("GMC_dir_perturb_angle=float (-1.0)\n")
     sys.stderr.write("MD_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MD_adjust_min_rate=float (0.5)\n")
@@ -3231,8 +3231,8 @@ def main():
         movement_args['MC_adjust_step_factor'] = float(args.pop('MC_adjust_step_factor', 1.5))
         movement_args['MC_adjust_min_rate'] = float(args.pop('MC_adjust_min_rate', 0.25))
         movement_args['MC_adjust_max_rate'] = float(args.pop('MC_adjust_max_rate', 0.75))
-        movement_args['GMC_adjust_min_rate'] = float(args.pop('GMC_adjust_min_rate', 0.75))
-        movement_args['GMC_adjust_max_rate'] = float(args.pop('GMC_adjust_max_rate', 0.85))
+        movement_args['GMC_adjust_min_rate'] = float(args.pop('GMC_adjust_min_rate', 0.25))
+        movement_args['GMC_adjust_max_rate'] = float(args.pop('GMC_adjust_max_rate', 0.75))
         movement_args['GMC_dir_perturb_angle'] = float(args.pop('GMC_dir_perturb_angle', -1.0))
         movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.1))
         movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.50))
