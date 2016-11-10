@@ -200,7 +200,6 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
           Fhat = Fhat / sqrt(sum(Fhat*Fhat))
           d_pos = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
 
-
           n_reflect = n_reflect + 1
 
           if (no_reverse == 0) then ! step and reverse if needed
@@ -220,12 +219,12 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    if (no_reverse /= 0) then
        n_try = 1
        ! accept/reject
-       if (E < Emax) then ! NaN should be false also
+       if (E < Emax) then ! accept 
          final_E = E
          n_accept = 1
-       else
+       else ! reject (E=NaN should also end up here) and reverse dir
          pos = last_good_pos
-         d_pos = last_good_d_pos
+         d_pos = -last_good_d_pos
          final_E = last_good_E
          n_accept = 0
        endif
