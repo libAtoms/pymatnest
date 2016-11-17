@@ -39,8 +39,6 @@ Make sure your ``PYTHONPATH`` is set correctly to find the ``quippy`` module.
 (Note: Check the ``QUIP_ARCH`` with which you build quippy, as some might result in segmentation fault when running
 ``ns_run`` (e.g. try gfortan_openmpi if gfortran fails)
 
-Examples are in ``tests_quip/`` directory.
-
 
 Using with ``LAMMPS``
 ------------------------------------------------------------------------------
@@ -70,7 +68,7 @@ Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where you c
 
 You HAVE TO delete the ``/`` before ``liblammps`` otherwise it is meant as an absolute path!!!
 
-Examples are in the ``tests_lammps/directory``.  ``LAMMPS_name`` is what you set for ``[machine]`` when compiling ``LAMMPS``.
+``LAMMPS_name`` is what you set for ``[machine]`` when compiling ``LAMMPS``.
 
 Note that you **have** to compile a parallel version of ``LAMMPS`` with the source patch provided in ``pymatnest``.  
 ``LAMMPS`` "serial" compilation still links to fake ``MPI`` routines, which then conflict in unpredictable ways with 
@@ -115,7 +113,8 @@ To start a nested sampling run type
 
    ``ns_run < input``
 
-Example input files for clusters and periodic systems, both with MC and MD, are in the ``tests/`` directory.
+Example input files can be found in the folder ``./example_inputs``.
+
 For further help see also
 
    ``ns_run --help``
