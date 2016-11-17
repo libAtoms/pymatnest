@@ -119,7 +119,6 @@ You have to have <code class="docutils literal"><span class="pre">mpi4py</span><
 <p>Make sure your <code class="docutils literal"><span class="pre">PYTHONPATH</span></code> is set correctly to find the <code class="docutils literal"><span class="pre">quippy</span></code> module.
 (Note: Check the <code class="docutils literal"><span class="pre">QUIP_ARCH</span></code> with which you build quippy, as some might result in segmentation fault when running
 <code class="docutils literal"><span class="pre">ns_run</span></code> (e.g. try gfortan_openmpi if gfortran fails)</p>
-<p>Examples are in <code class="docutils literal"><span class="pre">tests_quip/</span></code> directory.</p>
 </div>
 <div class="section" id="using-with-lammps">
 <h2>Using with <code class="docutils literal"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#using-with-lammps" title="Permalink to this headline">¶</a></h2>
@@ -140,7 +139,7 @@ in the <code class="docutils literal"><span class="pre">LMP_INC</span></code> ma
 <p><strong>Important note:</strong> Check the <code class="docutils literal"><span class="pre">lammps.py</span></code> file as the path definition used to have a bug in the line:</p>
 <p><code class="docutils literal"><span class="pre">else:</span> <span class="pre">self.lib</span> <span class="pre">=</span> <span class="pre">CDLL(join(modpath,&quot;/liblammps_%s.so&quot;</span> <span class="pre">%</span> <span class="pre">name),RTLD_GLOBAL)</span></code></p>
 <p>You HAVE TO delete the <code class="docutils literal"><span class="pre">/</span></code> before <code class="docutils literal"><span class="pre">liblammps</span></code> otherwise it is meant as an absolute path!!!</p>
-<p>Examples are in the <code class="docutils literal"><span class="pre">tests_lammps/directory</span></code>.  <code class="docutils literal"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal"><span class="pre">[machine]</span></code> when compiling <code class="docutils literal"><span class="pre">LAMMPS</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal"><span class="pre">[machine]</span></code> when compiling <code class="docutils literal"><span class="pre">LAMMPS</span></code>.</p>
 <p>Note that you <strong>have</strong> to compile a parallel version of <code class="docutils literal"><span class="pre">LAMMPS</span></code> with the source patch provided in <code class="docutils literal"><span class="pre">pymatnest</span></code>.
 <code class="docutils literal"><span class="pre">LAMMPS</span></code> &#8220;serial&#8221; compilation still links to fake <code class="docutils literal"><span class="pre">MPI</span></code> routines, which then conflict in unpredictable ways with
 the true mpi routines that <code class="docutils literal"><span class="pre">mpi4py</span></code> includes.</p>
@@ -174,8 +173,8 @@ The <code class="docutils literal"><span class="pre">LAMMPS</span> <span class="
 <p>To start a nested sampling run type</p>
 <blockquote>
 <div><code class="docutils literal"><span class="pre">ns_run</span> <span class="pre">&lt;</span> <span class="pre">input</span></code></div></blockquote>
-<p>Example input files for clusters and periodic systems, both with MC and MD, are in the <code class="docutils literal"><span class="pre">tests/</span></code> directory.
-For further help see also</p>
+<p>Example input files can be found in the folder <code class="docutils literal"><span class="pre">./example_inputs</span></code>.</p>
+<p>For further help see also</p>
 <blockquote>
 <div><code class="docutils literal"><span class="pre">ns_run</span> <span class="pre">--help</span></code></div></blockquote>
 <p>If you get weird errors about modules and/or <code class="docutils literal"><span class="pre">.so</span></code> files not found, do (in sh syntax)</p>
