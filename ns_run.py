@@ -722,6 +722,19 @@ def pairwise(iterable):
     a = iter(iterable)
     return izip(a, a)
 
+def rotate_vec(vec, max_ang):
+    # apply random rotations
+    indices = [ (int(i/3), i%3) for i in range(3*vec.shape[0]) ]
+    rng.shuffle_in_place(indices)
+    for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
+        ang = rng.float_uniform(-max_ang,max_ang)
+        c_ang = np.cos(ang)
+        s_ang = np.sin(ang)
+        v_1 = vec[ind_1_a,ind_1_c] * c_ang + vec[ind_2_a,ind_2_c] * s_ang
+        v_2 = -vec[ind_1_a,ind_1_c] * s_ang + vec[ind_2_a,ind_2_c] * c_ang
+        vec[ind_1_a,ind_1_c] = v_1
+        vec[ind_2_a,ind_2_c] = v_2
+
 def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 #DOC
 #DOC ``rej_free_perturb_velo``
@@ -765,17 +778,7 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
             scaled_vel = gen_random_velo(at, KEmax_use, velo/velo_mag) * sqrt_masses_2D
 
             if rotate:
-                # apply random rotations
-                indices = [ (int(i/3), i%3) for i in range(3*len(at)) ]
-                rng.shuffle_in_place(indices)
-                for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
-                    ang = rng.float_uniform(-movement_args['atom_velo_rej_free_perturb_angle'],movement_args['atom_velo_rej_free_perturb_angle'])
-                    c_ang = np.cos(ang)
-                    s_ang = np.sin(ang)
-                    v_1 = scaled_vel[ind_1_a,ind_1_c] * c_ang + scaled_vel[ind_2_a,ind_2_c] * s_ang
-                    v_2 = -scaled_vel[ind_1_a,ind_1_c] * s_ang + scaled_vel[ind_2_a,ind_2_c] * c_ang
-                    scaled_vel[ind_1_a,ind_1_c] = v_1
-                    scaled_vel[ind_2_a,ind_2_c] = v_2
+                rotate_vec(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
 
             at.set_velocities(scaled_vel / sqrt_masses_2D)
 
@@ -1055,16 +1058,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             at.arrays['GMC_direction'] /= np.linalg.norm(at.arrays['GMC_direction'])
         elif movement_args['GMC_dir_perturb_angle'] > 0.0:
             # apply random rotations
-            indices = [ (int(i/3), i%3) for i in range(3*len(at)) ]
-            rng.shuffle_in_place(indices)
-            for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
-                ang = rng.float_uniform(-movement_args['GMC_dir_perturb_angle'],movement_args['GMC_dir_perturb_angle'])
-                c_ang = np.cos(ang)
-                s_ang = np.sin(ang)
-                v_1 =  at.arrays['GMC_direction'][ind_1_a,ind_1_c] * c_ang + at.arrays['GMC_direction'][ind_2_a,ind_2_c] * s_ang
-                v_2 = -at.arrays['GMC_direction'][ind_1_a,ind_1_c] * s_ang + at.arrays['GMC_direction'][ind_2_a,ind_2_c] * c_ang
-                at.arrays['GMC_direction'][ind_1_a,ind_1_c] = v_1
-                at.arrays['GMC_direction'][ind_2_a,ind_2_c] = v_2
+            rotate_vec(at.arrays['GMC_direction'], movement_args['GMC_dir_perturb_angle'])
 
     #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
