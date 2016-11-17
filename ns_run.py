@@ -865,7 +865,7 @@ def rej_free_canonical_velo(at, currentbeta, include_ke_in_output_ns_energy=Fals
         # http://www.mcmchandbook.net/HandbookTableofContents.html
         # Chapter 5 (R. Neal)
         # Equation (5.34)
-        # p' = alpha*p + sqrt( 1 + alpha**2 )*p_new
+        # p' = alpha*p + sqrt( 1 - alpha**2 )*p_new
         velsout = at.get_velocities()*movement_args['atom_momentum_retain_fraction']
         velsout += (np.sqrt(1.0-(movement_args['atom_momentum_retain_fraction']**2)))*velocities
         at.set_velocities(velsout)
@@ -3508,9 +3508,9 @@ def main():
                 # set KEmax from P and Vmax
             if (movement_args['do_velocities']):
                 if movement_args['MC_cell_P'] > 0.0:
-                    KEmax = movement_args['MC_cell_P']*len(walkers[0])*ns_args['max_volume_per_atom']
+                    KEmax = 1.5*movement_args['MC_cell_P']*len(walkers[0])*ns_args['max_volume_per_atom']
                 else:
-                    KEmax = 3.0/2.0*len(walkers[0])*ns_args['kB']*ns_args['KEmax_max_T']
+                    KEmax = 1.5*len(walkers[0])*kB*ns_args['KEmax_max_T']
                 if (movement_args['separable_MDNS']): # Set KEmax=-1.0, so that it does not affect dynamics
                     KEmax = -1.0
                 for at in walkers:
