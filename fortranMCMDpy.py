@@ -112,6 +112,7 @@ class fortran_MC_MD:
            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # n_accept
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # d_pos
            ctypes.c_void_p, # no_reverse
+           ctypes.c_void_p, # pert_ang
            ctypes.c_void_p ] # debug
 
         # fortran_MD_atom_NVE
@@ -240,7 +241,7 @@ class fortran_MC_MD:
             at.set_velocities(velo)
             return (n_try[0], n_accept_pos[0], n_accept_velo[0], final_E[0])
 
-    def GMC_atom_walk(self, at, n_steps, step_size, Emax, no_reverse=True, debug = 0):
+    def GMC_atom_walk(self, at, n_steps, step_size, Emax, no_reverse=True, pert_ang=0.0, debug = 0):
         n = ctypes.c_int(len(at))
         n_steps = ctypes.c_int(n_steps)
         Emax = ctypes.c_double(Emax)
@@ -249,6 +250,7 @@ class fortran_MC_MD:
             no_reverse = ctypes.c_int(1)
         else:
             no_reverse = ctypes.c_int(0)
+        pert_ang = ctypes.c_double(pert_ang)
         pos = at.get_positions()
         d_pos = step_size*at.arrays['GMC_direction']
         n_try = np.zeros( (1), dtype=np.int32)
@@ -261,7 +263,7 @@ class fortran_MC_MD:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
         self.lib.fortran_gmc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, at.get_masses(), ctypes.byref(n_extra_data_c),
-           extra_data, at.get_cell(), ctypes.byref(n_steps), ctypes.byref(Emax), final_E, n_try, n_accept, d_pos, ctypes.byref(no_reverse), ctypes.byref(debug))
+           extra_data, at.get_cell(), ctypes.byref(n_steps), ctypes.byref(Emax), final_E, n_try, n_accept, d_pos, ctypes.byref(no_reverse), ctypes.byref(pert_ang), ctypes.byref(debug))
         at.set_positions(pos)
         at.arrays['GMC_direction'][:,:] = d_pos / np.linalg.norm(d_pos)
         if n_extra_data_c.value > 0:
