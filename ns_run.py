@@ -305,6 +305,9 @@ def usage():
     ``GMC_dir_perturb_angle=float``
        |  default: -1.0
 
+    ``GMC_dir_perturb_angle_during=float``
+       |  default: 0.0
+
     ``MD_adjust_step_factor=float``
        |  default: 1.1
 
@@ -507,6 +510,7 @@ def usage():
     sys.stderr.write("GMC_adjust_min_rate=float (0.25)\n")
     sys.stderr.write("GMC_adjust_max_rate=float (0.75)\n")
     sys.stderr.write("GMC_dir_perturb_angle=float (-1.0)\n")
+    sys.stderr.write("GMC_dir_perturb_angle_during=float (0.0)\n")
     sys.stderr.write("MD_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MD_adjust_min_rate=float (0.5)\n")
     sys.stderr.write("MD_adjust_max_rate=float (0.95)\n")
@@ -722,6 +726,21 @@ def pairwise(iterable):
     a = iter(iterable)
     return izip(a, a)
 
+def rotate_dir_3N(vec, max_ang):
+    if max_ang <= 0.0:
+        return
+    # apply random rotations
+    indices = [ (int(i/3), i%3) for i in range(3*vec.shape[0]) ]
+    rng.shuffle_in_place(indices)
+    for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
+        ang = rng.float_uniform(-max_ang,max_ang)
+        c_ang = np.cos(ang)
+        s_ang = np.sin(ang)
+        v_1 =  vec[ind_1_a,ind_1_c] * c_ang + vec[ind_2_a,ind_2_c] * s_ang
+        v_2 = -vec[ind_1_a,ind_1_c] * s_ang + vec[ind_2_a,ind_2_c] * c_ang
+        vec[ind_1_a,ind_1_c] = v_1
+        vec[ind_2_a,ind_2_c] = v_2
+
 def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 #DOC
 #DOC ``rej_free_perturb_velo``
@@ -765,17 +784,7 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
             scaled_vel = gen_random_velo(at, KEmax_use, velo/velo_mag) * sqrt_masses_2D
 
             if rotate:
-                # apply random rotations
-                indices = [ (int(i/3), i%3) for i in range(3*len(at)) ]
-                rng.shuffle_in_place(indices)
-                for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
-                    ang = rng.float_uniform(-movement_args['atom_velo_rej_free_perturb_angle'],movement_args['atom_velo_rej_free_perturb_angle'])
-                    c_ang = np.cos(ang)
-                    s_ang = np.sin(ang)
-                    v_1 = scaled_vel[ind_1_a,ind_1_c] * c_ang + scaled_vel[ind_2_a,ind_2_c] * s_ang
-                    v_2 = -scaled_vel[ind_1_a,ind_1_c] * s_ang + scaled_vel[ind_2_a,ind_2_c] * c_ang
-                    scaled_vel[ind_1_a,ind_1_c] = v_1
-                    scaled_vel[ind_2_a,ind_2_c] = v_2
+                rotate_dir_3N(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
 
             at.set_velocities(scaled_vel / sqrt_masses_2D)
 
@@ -1054,17 +1063,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             at.arrays['GMC_direction'][:,:] = rng.normal(1.0, (len(at), 3))
             at.arrays['GMC_direction'] /= np.linalg.norm(at.arrays['GMC_direction'])
         elif movement_args['GMC_dir_perturb_angle'] > 0.0:
-            # apply random rotations
-            indices = [ (int(i/3), i%3) for i in range(3*len(at)) ]
-            rng.shuffle_in_place(indices)
-            for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
-                ang = rng.float_uniform(-movement_args['GMC_dir_perturb_angle'],movement_args['GMC_dir_perturb_angle'])
-                c_ang = np.cos(ang)
-                s_ang = np.sin(ang)
-                v_1 =  at.arrays['GMC_direction'][ind_1_a,ind_1_c] * c_ang + at.arrays['GMC_direction'][ind_2_a,ind_2_c] * s_ang
-                v_2 = -at.arrays['GMC_direction'][ind_1_a,ind_1_c] * s_ang + at.arrays['GMC_direction'][ind_2_a,ind_2_c] * c_ang
-                at.arrays['GMC_direction'][ind_1_a,ind_1_c] = v_1
-                at.arrays['GMC_direction'][ind_2_a,ind_2_c] = v_2
+            rotate_dir_3N(at.arrays['GMC_direction'], movement_args['GMC_dir_perturb_angle'])
 
     #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
@@ -1075,7 +1074,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
         else:
             if movement_args['MC_atom_Galilean']:
-                (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), no_reverse=movement_args['MC_atom_Galilean_no_reverse'])
+                (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), no_reverse=movement_args['MC_atom_Galilean_no_reverse'], pert_ang=movement_args['GMC_dir_perturb_angle_during'])
             else:
                 (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
@@ -1123,6 +1122,9 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
                 if not do_no_reverse:
                     last_good_pos = at.get_positions()
                     last_good_d_pos = d_pos.copy()
+
+                # perturb direction if needed
+                rotate_dir_3N(d_pos, movement_args['GMC_dir_perturb_angle_during'])
 
                 # step and evaluate
                 pos += d_pos
@@ -3234,6 +3236,7 @@ def main():
         movement_args['GMC_adjust_min_rate'] = float(args.pop('GMC_adjust_min_rate', 0.25))
         movement_args['GMC_adjust_max_rate'] = float(args.pop('GMC_adjust_max_rate', 0.75))
         movement_args['GMC_dir_perturb_angle'] = float(args.pop('GMC_dir_perturb_angle', -1.0))
+        movement_args['GMC_dir_perturb_angle_during'] = float(args.pop('GMC_dir_perturb_angle_during', 0.0))
         movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.1))
         movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.50))
         movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 0.95))

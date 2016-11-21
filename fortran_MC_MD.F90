@@ -152,8 +152,31 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
 
 end subroutine fortran_MC_atom
 
+subroutine rotate_dir(N, dir, max_ang)
+implicit none
+    integer :: N
+    double precision :: dir(3, N), max_ang
+
+    double precision :: d_r, ang, v1, v2, c, s
+    integer :: ii, i1, i2, c1, c2
+
+    do ii=1, 3*N
+        call random_number(d_r); i1 = floor(d_r*N)+1
+        call random_number(d_r); i2 = floor(d_r*N)+2
+        call random_number(d_r); c1 = floor(d_r*3)+1
+        call random_number(d_r); c2 = floor(d_r*3)+2
+        call random_number(d_r); ang = max_ang*2.0*(d_r-0.5)
+        c = cos(ang)
+        s = sin(ang)
+        v1 = c*dir(i1,c1) + s*dir(i2,c2)
+        v2 = -s*dir(i1,c1) + c*dir(i2,c2)
+        dir(i1,c1) = v1
+        dir(i2,c2) = v2
+    end do
+end subroutine rotate_dir
+
 subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_steps, &
-                           Emax, final_E, n_try, n_accept, d_pos, no_reverse, debug)
+                           Emax, final_E, n_try, n_accept, d_pos, no_reverse, pert_ang, debug)
    implicit none
    integer :: N
    integer :: Z(N)
@@ -165,6 +188,7 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
    integer :: n_try, n_accept
    double precision :: d_pos(3,N)
    integer :: no_reverse
+   double precision :: pert_ang
    integer :: debug
 
 
@@ -192,11 +216,13 @@ subroutine fortran_GMC_atom(N, Z, pos, mass, n_extra_data, extra_data, cell, n_s
           last_good_d_pos = d_pos
       endif
 
+      call rotate_dir(N, d_pos, pert_ang)
+
       pos = pos + d_pos
-      E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
+      E = ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, Fhat)
 
       if (isnan(E) .or. E >= Emax) then ! reflect or reverse
-          E = ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, Fhat)
+          ! E = ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, Fhat)
           Fhat = Fhat / sqrt(sum(Fhat*Fhat))
           d_pos = d_pos - 2.0*Fhat*sum(Fhat*d_pos)
 
