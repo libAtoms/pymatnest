@@ -124,49 +124,71 @@ You have to have <code class="docutils literal"><span class="pre">mpi4py</span><
 <h2>Using with <code class="docutils literal"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#using-with-lammps" title="Permalink to this headline">¶</a></h2>
 <p>These instructions assume the latest (git/svn) version of <code class="docutils literal"><span class="pre">LAMMPS</span></code>.  It is not tested how
 far back older versions would also work.</p>
-<p>Apply the <code class="docutils literal"><span class="pre">MPI</span></code> patch to the <code class="docutils literal"><span class="pre">LAMMPS</span></code> source by doing</p>
-<blockquote>
-<div><p><code class="docutils literal"><span class="pre">cd</span> <span class="pre">lammps_top_dir/src</span></code></p>
-<p><code class="docutils literal"><span class="pre">patch</span> <span class="pre">&lt;</span> <span class="pre">ns_run_dir/lammps.patch</span></code></p>
-</div></blockquote>
-<p>where <code class="docutils literal"><span class="pre">ns_run_dir</span></code> is the directory where <code class="docutils literal"><span class="pre">ns_run</span></code> is, and <code class="docutils literal"><span class="pre">lammps_top_dir</span></code> is the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory.
-Create a Makefile for <strong>parallel</strong> lammps in <code class="docutils literal"><span class="pre">lammps_top_dir/src/MAKE</span></code>, and define <code class="docutils literal"><span class="pre">-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF</span></code>
-in the <code class="docutils literal"><span class="pre">LMP_INC</span></code> makefile variable. Then</p>
-<blockquote>
-<div><code class="docutils literal"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></div></blockquote>
-<p>Copy <code class="docutils literal"><span class="pre">lammps_top_dir/python/lammps.py</span></code> to the directory set in your <code class="docutils literal"><span class="pre">PYTHONPATH</span></code>.</p>
+<p>### Basic instructions for recent versions of <code class="docutils literal"><span class="pre">LAMMPS</span></code> and <code class="docutils literal"><span class="pre">mpi4py</span></code> version 2.0.0 or newer</p>
+<p>Create an appropriate <code class="docutils literal"><span class="pre">LAMMPS</span></code> <strong>parallel</strong> makefile, and compile with</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></li>
+</ul>
+<p>Copy <code class="docutils literal"><span class="pre">lammps_top_dir/python/lammps.py</span></code> to a directory set in your <code class="docutils literal"><span class="pre">PYTHONPATH</span></code>.</p>
 <p>Copy <code class="docutils literal"><span class="pre">lammps_top_dir/src/liblammps_[machine].so</span></code> to the same place where you copied <code class="docutils literal"><span class="pre">lammps.py</span></code>.</p>
-<p><strong>Important note:</strong> Check the <code class="docutils literal"><span class="pre">lammps.py</span></code> file as the path definition used to have a bug in the line:</p>
-<p><code class="docutils literal"><span class="pre">else:</span> <span class="pre">self.lib</span> <span class="pre">=</span> <span class="pre">CDLL(join(modpath,&quot;/liblammps_%s.so&quot;</span> <span class="pre">%</span> <span class="pre">name),RTLD_GLOBAL)</span></code></p>
-<p>You HAVE TO delete the <code class="docutils literal"><span class="pre">/</span></code> before <code class="docutils literal"><span class="pre">liblammps</span></code> otherwise it is meant as an absolute path!!!</p>
-<p><code class="docutils literal"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal"><span class="pre">[machine]</span></code> when compiling <code class="docutils literal"><span class="pre">LAMMPS</span></code>.</p>
-<p>Note that you <strong>have</strong> to compile a parallel version of <code class="docutils literal"><span class="pre">LAMMPS</span></code> with the source patch provided in <code class="docutils literal"><span class="pre">pymatnest</span></code>.
-<code class="docutils literal"><span class="pre">LAMMPS</span></code> &#8220;serial&#8221; compilation still links to fake <code class="docutils literal"><span class="pre">MPI</span></code> routines, which then conflict in unpredictable ways with
-the true mpi routines that <code class="docutils literal"><span class="pre">mpi4py</span></code> includes.</p>
+<p>The input file variable <code class="docutils literal"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal"><span class="pre">[machine]</span></code> when installing <code class="docutils literal"><span class="pre">lammps_[machine].so</span></code>.
+By default it is what you set for <code class="docutils literal"><span class="pre">machine</span></code> when compiling <code class="docutils literal"><span class="pre">LAMMPS</span></code>, unless the library was renamed when installing.</p>
+<p>### Support for GMC within LAMMPS</p>
+<p>Copy the two GMC-related files <code class="docutils literal"><span class="pre">ns_run_dir/lammps_patches/fix_gmc.*</span></code> to the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory <code class="docutils literal"><span class="pre">lammps_top_dir/src/</span></code>
+before compiling, and set <code class="docutils literal"><span class="pre">LAMMPS_fix_gmc=T</span></code> in the input file.</p>
+<p>### Support for polymers</p>
+<p>Copy the four bond and angle related files <code class="docutils literal"><span class="pre">ns_run_dir/lammps_patches/create_*</span></code> to the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory <code class="docutils literal"><span class="pre">lammps_top_dir/src/</span></code>
+before compiling.  See the file <code class="docutils literal"><span class="pre">example_inputs/inputs.test.cluster.MD.lammps.polymer</span></code> for an example.</p>
+<p>### Mixed <code class="docutils literal"><span class="pre">MPI-OpenMP</span></code></p>
 <p>It is possible to use <code class="docutils literal"><span class="pre">OpenMP</span></code> to parallelize each <code class="docutils literal"><span class="pre">LAMMPS</span></code> task.  This has been tested to run, but not for correctness or efficiency.</p>
-<blockquote>
-<div><p><code class="docutils literal"><span class="pre">cd</span> <span class="pre">lammps_top_dir/src</span></code></p>
-<p><code class="docutils literal"><span class="pre">make</span> <span class="pre">yes-user-omp</span></code></p>
-</div></blockquote>
-<p>Add openmp enabling flag (e.g. <code class="docutils literal"><span class="pre">-fopenmp</span></code> for gfortran) to <code class="docutils literal"><span class="pre">CCFLAGS</span></code> in the <code class="docutils literal"><span class="pre">MAKE/MINE/Makefile.[machine]</span></code></p>
-<blockquote>
-<div><code class="docutils literal"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></div></blockquote>
-<p>Copy <code class="docutils literal"><span class="pre">liblammps_[machine].so</span></code> as before.</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">cd</span> <span class="pre">lammps_top_dir/src</span></code></li>
+<li><code class="docutils literal"><span class="pre">make</span> <span class="pre">yes-user-omp</span></code></li>
+</ul>
+<p>Add openmp enabling flag (e.g. <code class="docutils literal"><span class="pre">-fopenmp</span></code> for gfortran) to <code class="docutils literal"><span class="pre">CCFLAGS</span></code> in the <code class="docutils literal"><span class="pre">MAKE/MINE/Makefile.[machine]</span></code>, then compile and install
+as above.</p>
 <p>When running:</p>
-<p>Set <code class="docutils literal"><span class="pre">OMP_NUM_THREADS</span></code> environment variable for number of <code class="docutils literal"><span class="pre">OpenMP</span></code> threads per task, and
-add <code class="docutils literal"><span class="pre">LAMMPS_header_extra='package</span> <span class="pre">omp</span> <span class="pre">0'</span></code> input file argument.
-Use <code class="docutils literal"><span class="pre">LAMMPS</span></code> pair style that activates omp, e.g. <code class="docutils literal"><span class="pre">pair_style</span> <span class="pre">lj/cut/omp</span> <span class="pre">3.00</span></code>.
-Pass flags to <code class="docutils literal"><span class="pre">mpirun</span></code> to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are
-available for OpenMP parallelization.
-Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task&#8217;s <code class="docutils literal"><span class="pre">LAMMPS</span></code> work over all 16 cores:</p>
+<ul>
+<li><p class="first">Set <code class="docutils literal"><span class="pre">OMP_NUM_THREADS</span></code> environment variable for number of <code class="docutils literal"><span class="pre">OpenMP</span></code> threads per task, and</p>
+</li>
+<li><p class="first">add <code class="docutils literal"><span class="pre">LAMMPS_header_extra='package</span> <span class="pre">omp</span> <span class="pre">0'</span></code> input file argument.</p>
+</li>
+<li><p class="first">Use <code class="docutils literal"><span class="pre">LAMMPS</span></code> pair style that activates omp, e.g. <code class="docutils literal"><span class="pre">pair_style</span> <span class="pre">lj/cut/omp</span> <span class="pre">3.00</span></code>.</p>
+</li>
+<li><p class="first">Pass flags to <code class="docutils literal"><span class="pre">mpirun</span></code> to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are available for OpenMP parallelization.</p>
+</li>
+<li><p class="first">Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task&#8217;s <code class="docutils literal"><span class="pre">LAMMPS</span></code> work over all 16 cores:</p>
 <blockquote>
-<div><p><code class="docutils literal"><span class="pre">export</span> <span class="pre">OMP_NUM_THREADS=16</span></code></p>
-<p><code class="docutils literal"><span class="pre">mpirun</span> <span class="pre">-np</span> <span class="pre">8</span> <span class="pre">-x</span> <span class="pre">OMP_NUM_THREADS</span> <span class="pre">--map-by</span> <span class="pre">slot:pe=$OMP_NUM_THREADS</span> <span class="pre">ns_run</span> <span class="pre">&lt;</span> <span class="pre">inputs</span></code></p>
+<div><ul class="simple">
+<li><code class="docutils literal"><span class="pre">export</span> <span class="pre">OMP_NUM_THREADS=16</span></code></li>
+<li><code class="docutils literal"><span class="pre">mpirun</span> <span class="pre">-np</span> <span class="pre">8</span> <span class="pre">-x</span> <span class="pre">OMP_NUM_THREADS</span> <span class="pre">--map-by</span> <span class="pre">slot:pe=$OMP_NUM_THREADS</span> <span class="pre">ns_run</span> <span class="pre">&lt;</span> <span class="pre">inputs</span></code></li>
+</ul>
 </div></blockquote>
-<p>Note: the <code class="docutils literal"><span class="pre">-np</span> <span class="pre">8</span></code> may not be needed, depending on your queueing system.
-The <code class="docutils literal"><span class="pre">LAMMPS</span> <span class="pre">ASE</span></code> interface (<code class="docutils literal"><span class="pre">lammpslib.py</span></code>) is a heavily modified version of</p>
+</li>
+</ul>
+<p>Note: the <code class="docutils literal"><span class="pre">-np</span> <span class="pre">8</span></code> may not be needed, depending on your queueing system.</p>
+<p>### Other notes</p>
+<p>You <strong>have</strong> to compile a parallel version of <code class="docutils literal"><span class="pre">LAMMPS</span></code>.  <code class="docutils literal"><span class="pre">LAMMPS</span></code> &#8220;serial&#8221; compilation still
+links to fake <code class="docutils literal"><span class="pre">MPI</span></code> routines, which then conflict in unpredictable ways with
+the true mpi routines that <code class="docutils literal"><span class="pre">mpi4py</span></code> includes.</p>
+<p>The <code class="docutils literal"><span class="pre">LAMMPS</span> <span class="pre">ASE</span></code> interface (<code class="docutils literal"><span class="pre">ns_run_dir/lammpslib.py</span></code>) is a heavily modified version of</p>
 <p>&lt;<a class="reference external" href="https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py">https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py</a>&gt;</p>
 <p>For more information on how the interface works, see the <a class="reference internal" href="lammpslib.html"><span class="doc">lammpslib module</span></a>.</p>
+<p>### For versions of <code class="docutils literal"><span class="pre">mpi4py</span></code> older than 2.0.0</p>
+<p>If you have <code class="docutils literal"><span class="pre">mpi4py</span></code> version older than 2.0.0, you will need to patch LAMMPS as follows.</p>
+<p>Apply the communicator patch to the <code class="docutils literal"><span class="pre">LAMMPS</span></code> source by doing</p>
+<ul class="simple">
+<li><code class="docutils literal"><span class="pre">cd</span> <span class="pre">lammps_top_dir/src</span></code></li>
+<li><code class="docutils literal"><span class="pre">patch</span> <span class="pre">&lt;</span> <span class="pre">ns_run_dir/lammps_patches/communicator_self.patch</span></code></li>
+</ul>
+<p>where <code class="docutils literal"><span class="pre">ns_run_dir</span></code> is the directory where <code class="docutils literal"><span class="pre">ns_run</span></code> is, and <code class="docutils literal"><span class="pre">lammps_top_dir</span></code> is the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory.
+Create a Makefile for <strong>parallel</strong> lammps in <code class="docutils literal"><span class="pre">lammps_top_dir/src/MAKE</span></code>.
+Define <code class="docutils literal"><span class="pre">-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF</span></code> in the <code class="docutils literal"><span class="pre">LMP_INC</span></code> makefile variable, then compile
+as above.</p>
+<p>### For older versions of <code class="docutils literal"><span class="pre">LAMMPS</span></code></p>
+<p><strong>Important note:</strong> Check the <code class="docutils literal"><span class="pre">lammps.py</span></code> file as the path definition used to have a bug in the line:</p>
+<p><code class="docutils literal"><span class="pre">else:</span> <span class="pre">self.lib</span> <span class="pre">=</span> <span class="pre">CDLL(join(modpath,&quot;/liblammps_%s.so&quot;</span> <span class="pre">%</span> <span class="pre">name),RTLD_GLOBAL)</span></code></p>
+<p>You HAVE TO delete the <code class="docutils literal"><span class="pre">/</span></code> before <code class="docutils literal"><span class="pre">liblammps</span></code> otherwise it is interpreted as an absolute path!!!</p>
 </div>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
