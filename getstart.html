@@ -118,8 +118,15 @@
 </dd>
 <dt id="term-start-species-int-int-float-int-int-float"><code class="docutils literal"><span class="pre">start_species=int</span> <span class="pre">int</span> <span class="pre">[</span> <span class="pre">float</span> <span class="pre">]</span> <span class="pre">[,</span> <span class="pre">int</span> <span class="pre">int</span> <span class="pre">[</span> <span class="pre">float</span> <span class="pre">]</span> <span class="pre">...</span> <span class="pre">]</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">MANDATORY</div>
+<div class="line">MANDATORY (or start_config_file)</div>
 <div class="line">Atomic number; multiplicity; [ not recommended: mass (amu) ]. Info repeated for each species, separated by commas, mass is optional and not recommended.</div>
+</div>
+</dd>
+<dt id="term-start-config-file-str"><a href="#id1"><span class="problematic" id="id2">``</span></a>start_config_file=str</dt>
+<dd><div class="first last line-block">
+<div class="line">MANDATORY (or start_species)</div>
+<div class="line">Name of file to read in for atom information</div>
+<div class="line">default: &#8216;&#8217;</div>
 </div>
 </dd>
 <dt id="term-restart-file-path-to-file"><code class="docutils literal"><span class="pre">restart_file=path_to_file</span></code></dt>
@@ -156,6 +163,12 @@
 <div class="line">temperature down to which Z(T) should be converged.  Either this or n_iter_times_fraction_killed is required.</div>
 </div>
 </dd>
+<dt id="term-t-estimate-finite-diff-lag-int"><code class="docutils literal"><span class="pre">T_estimate_finite_diff_lag=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 1000</div>
+<div class="line">Lag (in iterations) for doing d log Omega / d E finite difference derivative</div>
+</div>
+</dd>
 <dt id="term-min-emax-float"><code class="docutils literal"><span class="pre">min_Emax=float</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">Termination condition based on Emax: if this value is reached, the iteration will stop.</div>
@@ -182,14 +195,32 @@
 </dd>
 <dt id="term-kemax-max-t-float"><code class="docutils literal"><span class="pre">KEmax_max_T=float</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Maximum temperature for estimating KEmax if <em>P</em> = 0, i.e. fixed V ensemble (will be multiplied by kB ~= 8.6e-5 eV/K)</div>
+<div class="line">Maximum temperature for estimating KEmax if <em>P</em> = 0, i.e. fixed V ensemble (will be multiplied by kB)</div>
 <div class="line">default: 1.0e5</div>
+</div>
+</dd>
+<dt id="term-kb-float"><code class="docutils literal"><span class="pre">kB=float</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">Boltzmann constant</div>
+<div class="line">default: 8.6173324e-5 (eV/A)</div>
+</div>
+</dd>
+<dt id="term-start-energy-ceiling-per-atom-float"><code class="docutils literal"><span class="pre">start_energy_ceiling_per_atom=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum potential energy per atom for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. </div>
+<div class="line">default: 1.0e9</div>
 </div>
 </dd>
 <dt id="term-start-energy-ceiling-float"><code class="docutils literal"><span class="pre">start_energy_ceiling=float</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.</div>
+<div class="line">DEPRECATED: use start_energy_ceiling_per_atom. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. </div>
 <div class="line">default: 1.0e9</div>
+</div>
+</dd>
+<dt id="term-random-init-max-n-tries-int"><code class="docutils literal"><span class="pre">random_init_max_n_tries=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Maximum number of tries to create initial random atomic configuration</div>
+<div class="line">default 100</div>
 </div>
 </dd>
 <dt id="term-n-model-calls-expected-int"><code class="docutils literal"><span class="pre">n_model_calls_expected=int</span></code></dt>
@@ -332,6 +363,16 @@
 <dt id="term-mc-atom-uniform-rv-t-f"><code class="docutils literal"><span class="pre">MC_atom_uniform_rv=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
 <dd><div class="first last line-block">
 <div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-mc-atom-galilean-t-f"><code class="docutils literal"><span class="pre">MC_atom_Galilean=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-mc-atom-galilean-no-reverse-t-f"><code class="docutils literal"><span class="pre">MC_atom_Galilean_no_reverse=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: T</div>
 </div>
 </dd>
 <dt id="term-md-atom-velo-pre-perturb-t-f"><code class="docutils literal"><span class="pre">MD_atom_velo_pre_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
@@ -492,12 +533,32 @@
 </dd>
 <dt id="term-mc-adjust-min-rate-float"><code class="docutils literal"><span class="pre">MC_adjust_min_rate=float</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">default: 0.2</div>
+<div class="line">default: 0.25</div>
 </div>
 </dd>
 <dt id="term-mc-adjust-max-rate-float"><code class="docutils literal"><span class="pre">MC_adjust_max_rate=float</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">default: 0.3</div>
+<div class="line">default: 0.75</div>
+</div>
+</dd>
+<dt id="term-gmc-adjust-min-rate-float"><code class="docutils literal"><span class="pre">GMC_adjust_min_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.25</div>
+</div>
+</dd>
+<dt id="term-gmc-adjust-max-rate-float"><code class="docutils literal"><span class="pre">GMC_adjust_max_rate=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.75</div>
+</div>
+</dd>
+<dt id="term-gmc-dir-perturb-angle-float"><code class="docutils literal"><span class="pre">GMC_dir_perturb_angle=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: -1.0</div>
+</div>
+</dd>
+<dt id="term-gmc-dir-perturb-angle-during-float"><code class="docutils literal"><span class="pre">GMC_dir_perturb_angle_during=float</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">default: 0.0</div>
 </div>
 </dd>
 <dt id="term-md-adjust-step-factor-float"><code class="docutils literal"><span class="pre">MD_adjust_step_factor=float</span></code></dt>
@@ -528,6 +589,11 @@
 <dt id="term-fortran-model-str"><code class="docutils literal"><span class="pre">FORTRAN_model=str</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">MANDATORY if energy_calculator=fortran</div>
+</div>
+</dd>
+<dt id="term-lammps-fix-gmc-t-f"><code class="docutils literal"><span class="pre">LAMMPS_fix_gmc=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dd><div class="first last line-block">
+<div class="line">default: F</div>
 </div>
 </dd>
 <dt id="term-lammps-init-cmds-str"><code class="docutils literal"><span class="pre">LAMMPS_init_cmds=str</span></code></dt>
@@ -596,6 +662,42 @@
 <dd><div class="first last line-block">
 <div class="line">If true, delete previous iteration snapshot files</div>
 <div class="line">default: T</div>
+</div>
+</dd>
+<dt id="term-random-initialise-pos-t-f"><code class="docutils literal"><span class="pre">random_initialise_pos=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">If true, randomize the initial positions</div>
+<div class="line">default: T</div>
+</div>
+</dd>
+<dt id="term-random-initialise-cell-t-f"><code class="docutils literal"><span class="pre">random_initialise_cell=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">If true, randomize the initial cell (currently by random walk)</div>
+<div class="line">default: T</div>
+</div>
+</dd>
+<dt id="term-lammps-molecular-info-t-f"><code class="docutils literal"><span class="pre">LAMMPS_molecular_info=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">If true, create lammps bonds and other molecular MM features from initial atoms config (e.g. can be read from a file)</div>
+<div class="line">default: T</div>
+</div>
+</dd>
+<dt id="term-initial-walk-n-walks-int"><a href="#id3"><span class="problematic" id="id4">``</span></a>initial_walk_N_walks=int</dt>
+<dd><div class="first last line-block">
+<div class="line">number of initial random walks to apply to all walkers</div>
+<div class="line">default: &#8216;&#8217;</div>
+</div>
+</dd>
+<dt id="term-initial-walk-adjust-interval-int"><a href="#id5"><span class="problematic" id="id6">``</span></a>initial_walk_adjust_interval=int</dt>
+<dd><div class="first last line-block">
+<div class="line">in initial walks, interval between walks for adjusting step size </div>
+<div class="line">default: &#8216;&#8217;</div>
+</div>
+</dd>
+<dt id="term-initial-walk-emax-offset-per-atom-float"><a href="#id7"><span class="problematic" id="id8">``</span></a>initial_walk_Emax_offset_per_atom=float</dt>
+<dd><div class="first last line-block">
+<div class="line">offset (per atom) to increase Emax during initial random walk applied to all walkers</div>
+<div class="line">default: &#8216;&#8217;</div>
 </div>
 </dd>
 <dt id="term-traj-interval-int"><code class="docutils literal"><span class="pre">traj_interval=int</span></code></dt>
@@ -870,7 +972,7 @@ value if the run already reached the number of iterations set previously.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
     </div>
   </body>
 </html>

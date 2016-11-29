@@ -281,6 +281,17 @@ It can be used with the supplied fortran potential models and it also has interf
 <li><p class="first">do python MC</p>
 </li>
 <li><dl class="first docutils">
+<dt>is MC_atom_Galilean</dt>
+<dd><ul class="first last simple">
+<li>go Galilean MC in python</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>else</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
 <dt>loop atom_traj_len times</dt>
 <dd><ul class="first last">
 <li><dl class="first docutils">
@@ -288,6 +299,10 @@ It can be used with the supplied fortran potential models and it also has interf
 <dd><ul class="first last simple">
 <li>propose single atom move</li>
 <li>accept/reject on E &lt; Emax</li>
+</ul>
+</dd>
+</dl>
+</li>
 </ul>
 </dd>
 </dl>
@@ -505,7 +520,7 @@ running statistics for the number of accepted/rejected moves on each process are
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
     </div>
   </body>
 </html>

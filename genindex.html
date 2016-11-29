@@ -100,6 +100,24 @@
   <dt><a href="getstart.html#term-2d-t-f"><strong>2D=[ T | F ]</strong></a>, <a href="ns_run.html#term-2d-t-f"><strong>[1]</strong></a>
   </dt>
 
+      
+  <dt><a href="getstart.html#term-initial-walk-adjust-interval-int"><strong>``initial_walk_adjust_interval=int</strong></a>, <a href="ns_run.html#term-initial-walk-adjust-interval-int"><strong>[1]</strong></a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="getstart.html#term-initial-walk-emax-offset-per-atom-float"><strong>``initial_walk_Emax_offset_per_atom=float</strong></a>, <a href="ns_run.html#term-initial-walk-emax-offset-per-atom-float"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-initial-walk-n-walks-int"><strong>``initial_walk_N_walks=int</strong></a>, <a href="ns_run.html#term-initial-walk-n-walks-int"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-start-config-file-str"><strong>``start_config_file=str</strong></a>, <a href="ns_run.html#term-start-config-file-str"><strong>[1]</strong></a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -290,14 +308,22 @@
   <dt><a href="ns_run.html#ns_run.energy_internal">energy_internal() (in module ns_run)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="ns_run.html#ns_run.energy_internal_pos">energy_internal_pos() (in module ns_run)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="ns_run.html#ns_run.eval_energy">eval_energy() (in module ns_run)</a>
+  </dt>
+
+      
+  <dt><a href="ns_run.html#ns_run.eval_forces">eval_forces() (in module ns_run)</a>
+  </dt>
+
+      
+  <dt><a href="ns_run.html#ns_run.excepthook_mpi_abort">excepthook_mpi_abort() (in module ns_run)</a>
   </dt>
 
       
@@ -352,10 +378,26 @@
   <dt><a href="ns_run.html#ns_run.gen_random_velo">gen_random_velo() (in module ns_run)</a>
   </dt>
 
+      
+  <dt><a href="rngstream.html#rngstream.RngStream.get_state">get_state() (rngstream.RngStream method)</a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-gmc-adjust-max-rate-float"><strong>GMC_adjust_max_rate=float</strong></a>, <a href="ns_run.html#term-gmc-adjust-max-rate-float"><strong>[1]</strong></a>
+  </dt>
+
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="rngstream.html#rngstream.RngStream.get_state">get_state() (rngstream.RngStream method)</a>
+  <dt><a href="getstart.html#term-gmc-adjust-min-rate-float"><strong>GMC_adjust_min_rate=float</strong></a>, <a href="ns_run.html#term-gmc-adjust-min-rate-float"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-gmc-dir-perturb-angle-float"><strong>GMC_dir_perturb_angle=float</strong></a>, <a href="ns_run.html#term-gmc-dir-perturb-angle-float"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-gmc-dir-perturb-angle-during-float"><strong>GMC_dir_perturb_angle_during=float</strong></a>, <a href="ns_run.html#term-gmc-dir-perturb-angle-during-float"><strong>[1]</strong></a>
   </dt>
 
   </dl></td>
@@ -407,6 +449,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="getstart.html#term-kb-float"><strong>kB=float</strong></a>, <a href="ns_run.html#term-kb-float"><strong>[1]</strong></a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
   <dt><a href="getstart.html#term-kemax-max-t-float"><strong>KEmax_max_T=float</strong></a>, <a href="ns_run.html#term-kemax-max-t-float"><strong>[1]</strong></a>
   </dt>
 
@@ -421,6 +469,10 @@
   </dt>
 
       
+  <dt><a href="getstart.html#term-lammps-fix-gmc-t-f"><strong>LAMMPS_fix_gmc=[T | F]</strong></a>, <a href="ns_run.html#term-lammps-fix-gmc-t-f"><strong>[1]</strong></a>
+  </dt>
+
+      
   <dt><a href="getstart.html#term-lammps-header-str"><strong>LAMMPS_header=str</strong></a>, <a href="ns_run.html#term-lammps-header-str"><strong>[1]</strong></a>
   </dt>
 
@@ -432,6 +484,10 @@
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-lammps-init-cmds-str"><strong>LAMMPS_init_cmds=str</strong></a>, <a href="ns_run.html#term-lammps-init-cmds-str"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-lammps-molecular-info-t-f"><strong>LAMMPS_molecular_info=[ T | F ]</strong></a>, <a href="ns_run.html#term-lammps-molecular-info-t-f"><strong>[1]</strong></a>
   </dt>
 
       
@@ -470,6 +526,14 @@
 
       
   <dt><a href="getstart.html#term-mc-adjust-step-factor-float"><strong>MC_adjust_step_factor=float</strong></a>, <a href="ns_run.html#term-mc-adjust-step-factor-float"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-mc-atom-galilean-t-f"><strong>MC_atom_Galilean=[T | F]</strong></a>, <a href="ns_run.html#term-mc-atom-galilean-t-f"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-mc-atom-galilean-no-reverse-t-f"><strong>MC_atom_Galilean_no_reverse=[T | F]</strong></a>, <a href="ns_run.html#term-mc-atom-galilean-no-reverse-t-f"><strong>[1]</strong></a>
   </dt>
 
       
@@ -520,12 +584,12 @@
   <dt><a href="getstart.html#term-mc-cell-shear-step-size-float"><strong>MC_cell_shear_step_size=float</strong></a>, <a href="ns_run.html#term-mc-cell-shear-step-size-float"><strong>[1]</strong></a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-mc-cell-shear-step-size-max-float"><strong>MC_cell_shear_step_size_max=float</strong></a>, <a href="ns_run.html#term-mc-cell-shear-step-size-max-float"><strong>[1]</strong></a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="getstart.html#term-mc-cell-stretch-prob-float"><strong>MC_cell_stretch_prob=float</strong></a>, <a href="ns_run.html#term-mc-cell-stretch-prob-float"><strong>[1]</strong></a>
   </dt>
@@ -751,7 +815,7 @@
   </dt>
 
       
-  <dt><a href="ns_run.html#ns_run.propagate_NVE_lammps">propagate_NVE_lammps() (in module ns_run)</a>
+  <dt><a href="ns_run.html#ns_run.propagate_lammps">propagate_lammps() (in module ns_run)</a>
   </dt>
 
   </dl></td>
@@ -803,15 +867,27 @@
   </dt>
 
       
-  <dt><a href="ns_run.html#ns_run.rej_free_canonical_velo">rej_free_canonical_velo() (in module ns_run)</a>
+  <dt><a href="getstart.html#term-random-init-max-n-tries-int"><strong>random_init_max_n_tries=int</strong></a>, <a href="ns_run.html#term-random-init-max-n-tries-int"><strong>[1]</strong></a>
   </dt>
 
       
-  <dt><a href="ns_run.html#ns_run.rej_free_perturb_velo">rej_free_perturb_velo() (in module ns_run)</a>
+  <dt><a href="getstart.html#term-random-initialise-cell-t-f"><strong>random_initialise_cell=[ T | F ]</strong></a>, <a href="ns_run.html#term-random-initialise-cell-t-f"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="getstart.html#term-random-initialise-pos-t-f"><strong>random_initialise_pos=[ T | F ]</strong></a>, <a href="ns_run.html#term-random-initialise-pos-t-f"><strong>[1]</strong></a>
+  </dt>
+
+      
+  <dt><a href="ns_run.html#ns_run.rej_free_canonical_velo">rej_free_canonical_velo() (in module ns_run)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="ns_run.html#ns_run.rej_free_perturb_velo">rej_free_perturb_velo() (in module ns_run)</a>
+  </dt>
+
       
   <dt><a href="getstart.html#term-restart-file-path-to-file"><strong>restart_file=path_to_file</strong></a>, <a href="ns_run.html#term-restart-file-path-to-file"><strong>[1]</strong></a>
   </dt>
@@ -830,6 +906,10 @@
 
       
   <dt><a href="rngstream.html#rngstream.RngStream_InfoState">RngStream_InfoState (class in rngstream)</a>
+  </dt>
+
+      
+  <dt><a href="ns_run.html#ns_run.rotate_dir_3N">rotate_dir_3N() (in module ns_run)</a>
   </dt>
 
   </dl></td>
@@ -909,6 +989,10 @@
   </dt>
 
       
+  <dt><a href="getstart.html#term-start-energy-ceiling-per-atom-float"><strong>start_energy_ceiling_per_atom=float</strong></a>, <a href="ns_run.html#term-start-energy-ceiling-per-atom-float"><strong>[1]</strong></a>
+  </dt>
+
+      
   <dt><a href="getstart.html#term-start-species-int-int-float-int-int-float"><strong>start_species=int int [ float ] [, int int [ float ] ... ]</strong></a>, <a href="ns_run.html#term-start-species-int-int-float-int-int-float"><strong>[1]</strong></a>
   </dt>
 
@@ -967,11 +1051,15 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="getstart.html#term-track-configs-t-f"><strong>track_configs=[ T | F ]</strong></a>, <a href="ns_run.html#term-track-configs-t-f"><strong>[1]</strong></a>
+  <dt><a href="getstart.html#term-t-estimate-finite-diff-lag-int"><strong>T_estimate_finite_diff_lag=int</strong></a>, <a href="ns_run.html#term-t-estimate-finite-diff-lag-int"><strong>[1]</strong></a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="getstart.html#term-track-configs-t-f"><strong>track_configs=[ T | F ]</strong></a>, <a href="ns_run.html#term-track-configs-t-f"><strong>[1]</strong></a>
+  </dt>
+
       
   <dt><a href="getstart.html#term-traj-interval-int"><strong>traj_interval=int</strong></a>, <a href="ns_run.html#term-traj-interval-int"><strong>[1]</strong></a>
   </dt>
@@ -1050,7 +1138,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.8.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
     </div>
   </body>
 </html>
