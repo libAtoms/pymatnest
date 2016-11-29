@@ -46,65 +46,87 @@ Using with ``LAMMPS``
 These instructions assume the latest (git/svn) version of ``LAMMPS``.  It is not tested how
 far back older versions would also work.
 
-Apply the ``MPI`` patch to the ``LAMMPS`` source by doing
+### Basic instructions for recent versions of ``LAMMPS`` and ``mpi4py`` version 2.0.0 or newer
 
-    ``cd lammps_top_dir/src``
+Create an appropriate ``LAMMPS`` **parallel** makefile, and compile with 
 
-    ``patch < ns_run_dir/lammps.patch``
+- ``make [machine] mode=shlib``
 
-where ``ns_run_dir`` is the directory where ``ns_run`` is, and ``lammps_top_dir`` is the ``LAMMPS`` directory.
-Create a Makefile for **parallel** lammps in ``lammps_top_dir/src/MAKE``, and define ``-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF`` 
-in the ``LMP_INC`` makefile variable. Then
-
-    ``make [machine] mode=shlib``
-
-Copy ``lammps_top_dir/python/lammps.py`` to the directory set in your ``PYTHONPATH``.
+Copy ``lammps_top_dir/python/lammps.py`` to a directory set in your ``PYTHONPATH``.
 
 Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where you copied ``lammps.py``.
+
+The input file variable ``LAMMPS_name`` is what you set for ``[machine]`` when installing ``lammps_[machine].so``.
+By default it is what you set for ``machine`` when compiling ``LAMMPS``, unless the library was renamed when installing.
+
+### Support for GMC within LAMMPS
+
+Copy the two GMC-related files ``ns_run_dir/lammps_patches/fix_gmc.*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
+before compiling, and set ``LAMMPS_fix_gmc=T`` in the input file.
+
+### Support for polymers
+
+Copy the four bond and angle related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
+before compiling.  See the file ``example_inputs/inputs.test.cluster.MD.lammps.polymer`` for an example.
+
+### Mixed ``MPI-OpenMP``
+
+It is possible to use ``OpenMP`` to parallelize each ``LAMMPS`` task.  This has been tested to run, but not for correctness or efficiency.
+
+- ``cd lammps_top_dir/src``
+- ``make yes-user-omp``
+
+Add openmp enabling flag (e.g. ``-fopenmp`` for gfortran) to ``CCFLAGS`` in the ``MAKE/MINE/Makefile.[machine]``, then compile and install
+as above.
+
+When running:
+
+- Set ``OMP_NUM_THREADS`` environment variable for number of ``OpenMP`` threads per task, and
+- add ``LAMMPS_header_extra='package omp 0'`` input file argument.
+- Use ``LAMMPS`` pair style that activates omp, e.g. ``pair_style lj/cut/omp 3.00``.
+- Pass flags to ``mpirun`` to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are available for OpenMP parallelization.
+- Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task's ``LAMMPS`` work over all 16 cores:
+
+     - ``export OMP_NUM_THREADS=16``
+
+     - ``mpirun -np 8 -x OMP_NUM_THREADS --map-by slot:pe=$OMP_NUM_THREADS ns_run < inputs``
+
+Note: the ``-np 8`` may not be needed, depending on your queueing system. 
+
+### Other notes
+
+You **have** to compile a parallel version of ``LAMMPS``.  ``LAMMPS`` "serial" compilation still 
+links to fake ``MPI`` routines, which then conflict in unpredictable ways with 
+the true mpi routines that ``mpi4py`` includes.
+
+The ``LAMMPS ASE`` interface (``ns_run_dir/lammpslib.py``) is a heavily modified version of
+
+<https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py>
+
+For more information on how the interface works, see the :any:`lammpslib`.
+
+### For versions of ``mpi4py`` older than 2.0.0
+
+If you have ``mpi4py`` version older than 2.0.0, you will need to patch LAMMPS as follows.
+
+Apply the communicator patch to the ``LAMMPS`` source by doing
+
+- ``cd lammps_top_dir/src``
+- ``patch < ns_run_dir/lammps_patches/communicator_self.patch``
+
+where ``ns_run_dir`` is the directory where ``ns_run`` is, and ``lammps_top_dir`` is the ``LAMMPS`` directory.
+Create a Makefile for **parallel** lammps in ``lammps_top_dir/src/MAKE``. 
+Define ``-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF`` in the ``LMP_INC`` makefile variable, then compile
+as above.
+
+### For older versions of ``LAMMPS``
 
 **Important note:** Check the ``lammps.py`` file as the path definition used to have a bug in the line:
 
 ``else: self.lib = CDLL(join(modpath,"/liblammps_%s.so" % name),RTLD_GLOBAL)`` 
 
-You HAVE TO delete the ``/`` before ``liblammps`` otherwise it is meant as an absolute path!!!
+You HAVE TO delete the ``/`` before ``liblammps`` otherwise it is interpreted as an absolute path!!!
 
-``LAMMPS_name`` is what you set for ``[machine]`` when compiling ``LAMMPS``.
-
-Note that you **have** to compile a parallel version of ``LAMMPS`` with the source patch provided in ``pymatnest``.  
-``LAMMPS`` "serial" compilation still links to fake ``MPI`` routines, which then conflict in unpredictable ways with 
-the true mpi routines that ``mpi4py`` includes.
-
-It is possible to use ``OpenMP`` to parallelize each ``LAMMPS`` task.  This has been tested to run, but not for correctness or efficiency.
-
-    ``cd lammps_top_dir/src``
-
-    ``make yes-user-omp``
-
-Add openmp enabling flag (e.g. ``-fopenmp`` for gfortran) to ``CCFLAGS`` in the ``MAKE/MINE/Makefile.[machine]``
-
-    ``make [machine] mode=shlib``
-
-Copy ``liblammps_[machine].so`` as before.
-
-When running:
-
-Set ``OMP_NUM_THREADS`` environment variable for number of ``OpenMP`` threads per task, and
-add ``LAMMPS_header_extra='package omp 0'`` input file argument.
-Use ``LAMMPS`` pair style that activates omp, e.g. ``pair_style lj/cut/omp 3.00``.
-Pass flags to ``mpirun`` to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are 
-available for OpenMP parallelization.
-Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task's ``LAMMPS`` work over all 16 cores:
-
-     ``export OMP_NUM_THREADS=16``
-
-     ``mpirun -np 8 -x OMP_NUM_THREADS --map-by slot:pe=$OMP_NUM_THREADS ns_run < inputs``
-
-Note: the ``-np 8`` may not be needed, depending on your queueing system. 
-The ``LAMMPS ASE`` interface (``lammpslib.py``) is a heavily modified version of
-
-<https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py>
-
-For more information on how the interface works, see the :any:`lammpslib`.
 
 Running 
 ------------------------------------------------------------------------------
