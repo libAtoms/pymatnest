@@ -182,7 +182,7 @@ For further help see also
 
 
 Temperature averaged analysis workflow
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-------------------------------------------------------------------------------
 
 Merge configurations using
    ``ns_process_traj -t``
