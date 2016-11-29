@@ -59,10 +59,8 @@
 <li><a class="reference internal" href="#using-with-lammps">Using with <code class="docutils literal"><span class="pre">LAMMPS</span></code></a></li>
 <li><a class="reference internal" href="#running">Running</a></li>
 <li><a class="reference internal" href="#running-on-archer-uk-national-supercomputing-service">Running on ARCHER (UK National Supercomputing Service)</a></li>
-<li><a class="reference internal" href="#analysis">Analysis</a><ul>
+<li><a class="reference internal" href="#analysis">Analysis</a></li>
 <li><a class="reference internal" href="#temperature-averaged-analysis-workflow">Temperature averaged analysis workflow</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#about-the-documentation">About the documentation</a></li>
 </ul>
 </li>
@@ -229,8 +227,9 @@ able to read all the relevant python files.</p>
 <p>For further help see also</p>
 <blockquote>
 <div><code class="docutils literal"><span class="pre">ns_analyse</span> <span class="pre">--help</span></code></div></blockquote>
+</div>
 <div class="section" id="temperature-averaged-analysis-workflow">
-<h3>Temperature averaged analysis workflow<a class="headerlink" href="#temperature-averaged-analysis-workflow" title="Permalink to this headline">¶</a></h3>
+<h2>Temperature averaged analysis workflow<a class="headerlink" href="#temperature-averaged-analysis-workflow" title="Permalink to this headline">¶</a></h2>
 <dl class="docutils">
 <dt>Merge configurations using</dt>
 <dd><code class="docutils literal"><span class="pre">ns_process_traj</span> <span class="pre">-t</span></code></dd>
@@ -238,7 +237,6 @@ able to read all the relevant python files.</p>
 <p>Do analysis on output of <code class="docutils literal"><span class="pre">ns_process_traj</span></code> using <code class="docutils literal"><span class="pre">structure_analysis_traj</span></code>.</p>
 <p>Add T-dependent weights to analyses using <code class="docutils literal"><span class="pre">ns_set_analysis_weights</span></code>.  This will write new analysis files, one per temperature per analysis, with do_weights set in the header and each data line prepended by the weight.</p>
 <p>Finally, use <code class="docutils literal"><span class="pre">mean_var_correl</span></code> to calculated the weighted mean of each analysis at each temperature.</p>
-</div>
 </div>
 <div class="section" id="about-the-documentation">
 <h2>About the documentation<a class="headerlink" href="#about-the-documentation" title="Permalink to this headline">¶</a></h2>
