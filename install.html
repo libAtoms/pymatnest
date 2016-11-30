@@ -57,6 +57,9 @@
 <li><a class="reference internal" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">Compilation of the streamlined FORTRAN models and MC/MD walkers.</a></li>
 <li><a class="reference internal" href="#using-with-quip">Using with <code class="docutils literal"><span class="pre">QUIP</span></code></a></li>
 <li><a class="reference internal" href="#using-with-lammps">Using with <code class="docutils literal"><span class="pre">LAMMPS</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#basic-instructions-for-recent-versions-of-lammps-and-mpi4py-version-2-0-0-or-newer">Basic instructions for recent versions of <code class="docutils literal"><span class="pre">LAMMPS</span></code> and <code class="docutils literal"><span class="pre">mpi4py</span></code> version 2.0.0 or newer</a><ul>
 <li><a class="reference internal" href="#running">Running</a></li>
 <li><a class="reference internal" href="#running-on-archer-uk-national-supercomputing-service">Running on ARCHER (UK National Supercomputing Service)</a></li>
 <li><a class="reference internal" href="#analysis">Analysis</a></li>
@@ -122,7 +125,10 @@ You have to have <code class="docutils literal"><span class="pre">mpi4py</span><
 <h2>Using with <code class="docutils literal"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#using-with-lammps" title="Permalink to this headline">¶</a></h2>
 <p>These instructions assume the latest (git/svn) version of <code class="docutils literal"><span class="pre">LAMMPS</span></code>.  It is not tested how
 far back older versions would also work.</p>
-<p>### Basic instructions for recent versions of <code class="docutils literal"><span class="pre">LAMMPS</span></code> and <code class="docutils literal"><span class="pre">mpi4py</span></code> version 2.0.0 or newer</p>
+</div>
+</div>
+<div class="section" id="basic-instructions-for-recent-versions-of-lammps-and-mpi4py-version-2-0-0-or-newer">
+<h1>Basic instructions for recent versions of <code class="docutils literal"><span class="pre">LAMMPS</span></code> and <code class="docutils literal"><span class="pre">mpi4py</span></code> version 2.0.0 or newer<a class="headerlink" href="#basic-instructions-for-recent-versions-of-lammps-and-mpi4py-version-2-0-0-or-newer" title="Permalink to this headline">¶</a></h1>
 <p>Create an appropriate <code class="docutils literal"><span class="pre">LAMMPS</span></code> <strong>parallel</strong> makefile, and compile with</p>
 <ul class="simple">
 <li><code class="docutils literal"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></li>
@@ -187,7 +193,6 @@ as above.</p>
 <p><strong>Important note:</strong> Check the <code class="docutils literal"><span class="pre">lammps.py</span></code> file as the path definition used to have a bug in the line:</p>
 <p><code class="docutils literal"><span class="pre">else:</span> <span class="pre">self.lib</span> <span class="pre">=</span> <span class="pre">CDLL(join(modpath,&quot;/liblammps_%s.so&quot;</span> <span class="pre">%</span> <span class="pre">name),RTLD_GLOBAL)</span></code></p>
 <p>You HAVE TO delete the <code class="docutils literal"><span class="pre">/</span></code> before <code class="docutils literal"><span class="pre">liblammps</span></code> otherwise it is interpreted as an absolute path!!!</p>
-</div>
 <div class="section" id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
 <p>To start a nested sampling run type</p>
