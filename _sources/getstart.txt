@@ -49,17 +49,28 @@ and using MD trajectory for generating a new sample configuration.
 .. literalinclude:: ../example_inputs/inputs.test.periodic.MD.lammps
     :language: python
 
-Periodic binary Lennard-Jones system with ``LAMMPS``, using MD
+Periodic binary Lennard-Jones system with the supplied fortran code or``LAMMPS``, using MD
 ---------------------------------------------------------------
 
 This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
 Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.
-The cell is of variable shape and size at the set pressure value, using the potential implemented in ``LAMMPS``
-and using MD trajectory for generating a new sample configuration. 
-The input parameters in this example, such as the number of walkers and the length of the trajectory, will lead to a longer run producing converged results.  
+The cell is of variable shape and size at the set pressure value.
 
-.. literalinclude:: ../example_inputs/inputs.test.periodic_binary.MD.lammps
+.. literalinclude:: ../example_inputs/inputs.test.periodic_binary.MD.FORTRAN_LJ
     :language: python
+
+Polymer with ``LAMMPS``, using MD
+---------------------------------------------------------------
+
+Start a nested sampling simulation with a polymer. Initially the random placement of atoms has to be turned off, 
+and a configuration file has to be read. The initial walk is done with a heuristic choice for E_max.
+
+.. literalinclude:: ../example_inputs/inputs.test.cluster.MD.lammps.polymer
+    :language: python
+
+The corresponding ``test_start_config_polymer.xyz`` file is the following:
+
+.. literalinclude:: ../example_inputs/test_start_config_polymer.xyz
 
 Some tips on setting the input parameters
 +++++++++++++++++++++++++++++++++++++++++
