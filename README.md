@@ -47,7 +47,7 @@ These instructions assume the latest (git/svn) version of ``LAMMPS``.  It is not
 far back older versions would also work.
 
 Basic instructions for recent versions of ``LAMMPS`` and ``mpi4py`` version 2.0.0 or newer
-==================================================================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Create an appropriate ``LAMMPS`` **parallel** makefile, and compile with 
 
