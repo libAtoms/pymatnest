@@ -556,7 +556,10 @@ def excepthook_mpi_abort(exctype, value, tb):
     # print_tb(tb)
     print_exception(exctype, value, tb)
     print print_prefix, "Aborting"
-    MPI.COMM_WORLD.Abort(1)
+    try:
+        MPI.COMM_WORLD.Abort(1)
+    except:
+        pass
     sys.exit(1)
 
 def exit_error(message, stat):
@@ -2962,7 +2965,7 @@ def main():
             exit_error("always need start_species or start_config_file, even if restart_file is specified\n",1)
         if ns_args['start_species'] is not None and ns_args['start_config_file'] is not None:
             exit_error("can't specify both start_species and start_config_file\n",1)
-        ns_args['restart_file'] = args.pop('restart_file', '')
+        ns_args['restart_file'] = args.pop('restart_file', 'AUTO')
 
         ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
 
@@ -3375,6 +3378,24 @@ def main():
             if np.any(mass_list != mass_list[0]) and not movement_args['atom_velo_rej_free_fully_randomize']:
                 exit_error("ERROR: Masses are not all equal, and atom_velo_rej_free_fully_randomize is false. Refusing to produce incorrect results\n", 1)
 
+
+        if ns_args['restart_file'] == "AUTO":
+            # maybe do with less shell escapes
+            if rank == 0:
+                print "DOING restart_file=AUTO"
+                import subprocess
+                sfx=ns_args['config_file_format']
+                last_snapshot=subprocess.check_output(["bash","-c","ls -tr *.snapshot.*.0.%s 2> /dev/null | tail -1" % sfx], shell=False).rstrip()
+                if last_snapshot == "":
+                    ns_args['restart_file'] = ""
+                else:
+                    snapshot_root=re.sub("\.0\.%s" % sfx,"",last_snapshot)
+                    restart_file=snapshot_root+".ALL."+sfx
+                    print("cat %s.[0-9]*.%s > %s" % (snapshot_root, sfx, restart_file))
+                    os.system("cat %s.*.%s > %s" % (snapshot_root, sfx, restart_file))
+                    ns_args['restart_file'] = restart_file
+            if comm is not None:
+                ns_args['restart_file'] = comm.bcast(ns_args['restart_file'], root=0)
 
         walkers=[]
         if ns_args['restart_file'] == '': # start from scratch
