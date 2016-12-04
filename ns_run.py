@@ -412,6 +412,10 @@ def usage():
      | Track configrations across all walks/clones.
      | default: F
 
+    ``track_configs_write=[ T | F ]``
+     | Write tracked configrations to a file (if false, tracking info will still be in snapshot and traj files)
+     | default: F
+
     ``separable_MDNS=[ T | F ]``
      | Use separable mdns (rather than MDNS in the total energy).
      | default: F
@@ -542,6 +546,7 @@ def usage():
     sys.stderr.write("delta_random_seed=int (-1, < 0 for seed from /dev/urandom)\n")
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
     sys.stderr.write("track_configs=[ T | F ] (F)\n")
+    sys.stderr.write("track_configs_write=[ T | F ] (F)\n")
     sys.stderr.write("separable_MDNS=[ T | F ] (F)\n")
 
 def excepthook_mpi_abort(exctype, value, tb):
@@ -3066,6 +3071,7 @@ def main():
         ns_args['no_extra_walks_at_all'] = str_to_logical(args.pop('no_extra_walks_at_all', "F"))
 
         ns_args['track_configs'] = str_to_logical(args.pop('track_configs', "F"))
+        ns_args['track_configs_write'] = str_to_logical(args.pop('track_configs_write', "F"))
 
         ns_args['config_file_format'] = args.pop('config_file_format', 'extxyz')
 
@@ -3455,7 +3461,7 @@ def main():
                 ns_args['start_energy_ceiling'] = ns_args['start_energy_ceiling_per_atom'] * len(init_atoms)
             ns_args['start_energy_ceiling'] += movement_args['MC_cell_P']*ns_args['max_volume_per_atom']*len(init_atoms)
             # initial positions are just random, up to an energy ceiling
-            for at in walkers:
+            for (i_at, at) in enumerate(walkers):
                 # randomize cell if P is set, both volume (from appropriate distribution) and shape (from uniform distribution with min aspect ratio limit)
 
                 if ns_args['random_initialise_cell']:
@@ -3668,13 +3674,13 @@ def main():
         # open the file where the trajectory will be printed
         if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
             traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
-            if ns_args['track_configs']:
+            if ns_args['track_configs'] and ns_args['track_configs_write']:
                 track_traj_io = open(ns_args['out_file_prefix']+'track_traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
             else:
                 track_traj_io = None
         else: # restart, so the existing file should be appended
             traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
-            if ns_args['track_configs']:
+            if ns_args['track_configs'] and ns_args['track_configs_write']:
                 track_traj_io = open(ns_args['out_file_prefix']+'track_traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
             else:
                 track_traj_io = None
