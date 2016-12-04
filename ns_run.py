@@ -399,7 +399,7 @@ def usage():
 
     ``traj_interval=int``
      |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
-     |  default: 1 
+     |  default: 100
 
     ``delta_random_seed=int``
      | Random number seed to be used in the run. If smaller than 0, a seed from /dev/urandom is used.
@@ -542,7 +542,7 @@ def usage():
     sys.stderr.write("initial_walk_N_walks=int (0 number of rounds for initial walk) \n")
     sys.stderr.write("initial_walk_adjust_interval=int (10 interval (in walks) between adjustments of steps during initial walk) \n")
     sys.stderr.write("initial_walk_Emax_offset_per_atom=float (1.0, offset (per atom) to add to Emax for initial walks) \n")
-    sys.stderr.write("traj_interval=int (1, <=0 for no trajectory)\n")
+    sys.stderr.write("traj_interval=int (100, <=0 for no trajectory)\n")
     sys.stderr.write("delta_random_seed=int (-1, < 0 for seed from /dev/urandom)\n")
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
     sys.stderr.write("track_configs=[ T | F ] (F)\n")
@@ -2980,7 +2980,7 @@ def main():
         ns_args['initial_walk_N_walks'] = int(args.pop('initial_walk_N_walks', 0))
         ns_args['initial_walk_adjust_interval'] = int(args.pop('initial_walk_adjust_interval', 10))
         ns_args['initial_walk_Emax_offset_per_atom'] = float(args.pop('initial_walk_Emax_offset_per_atom', 1))
-        ns_args['traj_interval'] = int(args.pop('traj_interval', 1))
+        ns_args['traj_interval'] = int(args.pop('traj_interval', 100))
         ns_args['E_dump_interval'] = int(args.pop('E_dump_interval', -1))
         ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
         ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
