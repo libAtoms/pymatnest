@@ -2325,7 +2325,8 @@ def do_ns_loop():
             E_dump_list_times.append(i_ns_step)
 
         # print the recorded Emax walkers configurations to output file
-        if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
+        if (ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1 or
+            (ns_args['snapshot_seq_pairs'] and i_ns_step > 0 and i_ns_step%ns_args['snapshot_interval'] == 0) ) :
             if ns_args['traj_interval'] > 0:
                 for at in traj_walker_list:
                     ase.io.write(traj_io, at, format=ns_args['config_file_format'])
@@ -2692,6 +2693,7 @@ def do_ns_loop():
             if ns_args['debug'] >= 4:
                 print print_prefix, "INFO: 40 WALK clone_target ", rank, i_at
             walk_stats = walk_single_walker(walkers[i_at], movement_args, Emax_of_step, KEmax, ns_beta)
+            walkers[i_at].info['last_walked_iter_clone'] = i_ns_step
             # if tracking all configs, save this one that has been walked
             if track_traj_io is not None:
                 walkers[i_at].info['iter'] = i_ns_step
@@ -2747,6 +2749,7 @@ def do_ns_loop():
                 if ns_args['debug'] >= 4:
                     print print_prefix, "INFO: 50 WALK extra ",rank, r_i
                 walk_stats = walk_single_walker(walkers[r_i], movement_args, Emax_of_step, KEmax, ns_beta)
+                walkers[r_i].info['last_walked_iter_extra'] = i_ns_step
                 # if tracking all configs, save this one that has been walked
                 if track_traj_io is not None:
                     walkers[i_at].info['iter'] = i_ns_step
@@ -2759,7 +2762,7 @@ def do_ns_loop():
 
         monitored_this_step=False
         if movement_args['monitor_step_interval'] != 0 and i_ns_step % abs(movement_args['monitor_step_interval']) == abs(movement_args['monitor_step_interval'])-1:
-            adjust_step_sizes(walk_stats_adjust, movement_args, comm, monitor_only=True)
+            adjust_step_sizes(walk_stats_monitor, movement_args, comm, monitor_only=True)
             zero_stats(walk_stats_monitor, movement_args)
             monitored_this_step=True
 
@@ -2796,7 +2799,8 @@ def do_ns_loop():
             for r in range(len(status)):
                 print print_prefix, ": final status ", r, [ s for s in status[r,:] ]
 
-        if ns_args['snapshot_interval'] > 0 and i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
+        if (ns_args['snapshot_interval'] > 0 and i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1 or
+            (ns_args['snapshot_seq_pairs'] and i_ns_step > 0 and i_ns_step%ns_args['snapshot_interval'] == 0) ) :
             save_snapshot(i_ns_step)
             clean_prev_snapshot(pprev_snapshot_iter)
             pprev_snapshot_iter = prev_snapshot_iter
@@ -2938,7 +2942,7 @@ def main():
             ns_args['n_iter'] = -1
         ns_args['converge_down_to_T'] = float(args.pop('converge_down_to_T', -1))
         if ns_args['n_iter'] <= 0 and ns_args['converge_down_to_T'] <= 0:
-            exit_error("need either n_iter_times_fraction_killed or converge_down_to_T")
+            exit_error("need either n_iter_times_fraction_killed or converge_down_to_T", 1)
 
         ns_args['T_estimate_finite_diff_lag'] = int(args.pop('T_estimate_finite_diff_lag', 1000))+1
 
@@ -2963,6 +2967,7 @@ def main():
         ns_args['profile'] = int(args.pop('profile', -1))
         ns_args['debug'] = int(args.pop('debug', -1))
         ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
+        ns_args['snapshot_seq_pairs'] = str_to_logical(args.pop('snapshot_seq_pairs', "F"))
         ns_args['snapshot_clean'] = str_to_logical(args.pop('snapshot_clean', "T"))
         ns_args['random_initialise_pos'] = str_to_logical(args.pop('random_initialise_pos', "T"))
         ns_args['random_initialise_cell'] = str_to_logical(args.pop('random_initialise_cell', "T"))
