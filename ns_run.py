@@ -3599,6 +3599,17 @@ def main():
                 print rank, "waiting for walkers"
                 walkers = comm.recv(source=0, tag=1)
 
+            if ns_args['track_configs']:
+                if comm is not None:
+                    cur_config_ind = comm.size*n_walkers
+                else:
+                    cur_config_ind = n_walkers
+                if 'config_ind' in walkers[0].info:
+                    max_config_ind = max([at.info['config_ind'] for at in walkers])
+                    if comm is not None:
+                        comm.allreduce(max_config_ind, op=MPI.MAX)
+                    cur_config_ind = max_config_ind+1
+
             if movement_args['do_velocities']:
                 KEmax = walkers[0].info['KEmax']
                 ns_beta = walkers[0].info['ns_beta']
