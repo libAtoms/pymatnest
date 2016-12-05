@@ -3389,7 +3389,7 @@ def main():
                 print "DOING restart_file=AUTO"
                 import subprocess
                 sfx=ns_args['config_file_format']
-                last_snapshot=subprocess.check_output(["bash","-c","ls -tr *.snapshot.[0-9]*.0.%s 2> /dev/null | tail -1" % sfx], shell=False).rstrip()
+                last_snapshot=subprocess.check_output(["bash","-c","ls -tr %ssnapshot.[0-9]*.0.%s 2> /dev/null | tail -1" % (ns_args['out_file_prefix'],sfx)], shell=False).rstrip()
                 if last_snapshot == "":
                     ns_args['restart_file'] = ""
                 else:
