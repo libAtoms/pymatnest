@@ -2240,6 +2240,7 @@ def do_ns_loop():
             if rank == 0:
                 # if the termination was set by a minimum energy, and it is reached, stop.
                 print "Leaving loop because Emax=",Emax_of_step," < min_Emax =",ns_args['min_Emax']
+            i_ns_step += 1 # add one so outside loop when one is subtracted to get real last iteration it's still correct
             break
 
         if rank == 0:
@@ -2261,6 +2262,7 @@ def do_ns_loop():
             if log_Z_term_last <  log_Z_term_max - 10.0:
                 if rank == 0:
                     print print_prefix, "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T']
+                i_ns_step += 1 # add one so outside loop when one is subtracted to get real last iteration it's still correct
                 break
 
         if ns_args['T_estimate_finite_diff_lag'] > 0:
@@ -2842,6 +2844,8 @@ def do_ns_loop():
         print "LOOP TIME total ",cur_time-initial_time-total_step_size_setting_duration, " per iter ", (cur_time-initial_time-total_step_size_setting_duration)/(i_ns_step+1)
         print "TIME SPENT SETTING STEP SIZES total ",total_step_size_setting_duration
 
+    return i_ns_step-1
+
 def main():
         """ Main function """
         global movement_args
@@ -3385,7 +3389,7 @@ def main():
                 print "DOING restart_file=AUTO"
                 import subprocess
                 sfx=ns_args['config_file_format']
-                last_snapshot=subprocess.check_output(["bash","-c","ls -tr *.snapshot.*.0.%s 2> /dev/null | tail -1" % sfx], shell=False).rstrip()
+                last_snapshot=subprocess.check_output(["bash","-c","ls -tr *.snapshot.[0-9]*.0.%s 2> /dev/null | tail -1" % sfx], shell=False).rstrip()
                 if last_snapshot == "":
                     ns_args['restart_file'] = ""
                 else:
@@ -3648,13 +3652,10 @@ def main():
                 else:
                     at.info['ns_energy'] = rand_perturb_energy(eval_energy(at, do_KE=False), ns_args['random_energy_perturbation'])
 
-                key_found = False
-                for key in at.info: # check if 'iter=' info is present in the file used for restart
-                    if key == 'iter':
-                        start_first_iter = at.info['iter']+1
-                        key_found = True
-                if not key_found:
-                    print "WARNING: no iteration number information was found in the restart file"
+                if 'iter' in at.info:
+                    start_first_iter = at.info['iter'] + 1
+                else:
+                    print "ERROR: no iteration number information was found in the restart file"
                     exit_error("no iteration number information was found in the restart file\n",5)
 
                 key_found = False
@@ -3769,13 +3770,13 @@ def main():
         if ns_args['profile'] == rank:
             import cProfile
             pr = cProfile.Profile()
-            pr.runcall(do_ns_loop)
+            final_iter = pr.runcall(do_ns_loop)
             pr.dump_stats(ns_args['out_file_prefix']+'profile.stats')
         else:
-            do_ns_loop()
+            final_iter = do_ns_loop()
 
         # cleanup post loop
-        save_snapshot(ns_args['n_iter']-1) # this is the final configuration
+        save_snapshot(final_iter) # this is the final configuration
         #clean_prev_snapshot(prev_snapshot_iter) # !!!! This line is commented out as sometimes it deleted the final snapshot - check the prev_snashot_iter vale in case of normal termination!!!!!!!!!!!!
 
         for at in walkers:
