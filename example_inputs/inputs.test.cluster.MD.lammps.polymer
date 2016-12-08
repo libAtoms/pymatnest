@@ -1,9 +1,10 @@
 # starting volume (in this example it is Angstrom^3)
 max_volume_per_atom=108.0
-# 6 atoms with atomic number 1 and mass 1.0
+# read in the initial configuration of the polymer
 start_config_file=test_start_config_polymer.xyz
 start_energy_ceiling=1.0e9
 
+# switch off initial random displacement
 random_initialise_pos=F
 random_initialise_cell=F
 initial_walk_N_walks=20

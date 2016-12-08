@@ -27,7 +27,7 @@ def usage():
        | MANDATORY (or start_config_file)
        | Atomic number; multiplicity; [ not recommended: mass (amu) ]. Info repeated for each species, separated by commas, mass is optional and not recommended.
 
-    ``start_config_file=str
+    ``start_config_file=str``
        | MANDATORY (or start_species)
        | Name of file to read in for atom information
        | default: ''
@@ -385,15 +385,15 @@ def usage():
        | If true, create lammps bonds and other molecular MM features from initial atoms config (e.g. can be read from a file)
        | default: T
 
-    ``initial_walk_N_walks=int
+    ``initial_walk_N_walks=int``
        | number of initial random walks to apply to all walkers
        | default: ''
 
-    ``initial_walk_adjust_interval=int
+    ``initial_walk_adjust_interval=int``
        | in initial walks, interval between walks for adjusting step size 
        | default: ''
 
-    ``initial_walk_Emax_offset_per_atom=float
+    ``initial_walk_Emax_offset_per_atom=float``
        | offset (per atom) to increase Emax during initial random walk applied to all walkers
        | default: ''
 
