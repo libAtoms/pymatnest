@@ -2,7 +2,7 @@
 max_volume_per_atom=108.0
 # 6 atoms with atomic number 1 and mass 1.0
 start_config_filename=test_start_config.xyz
-start_energy_ceiling=1.0e9
+start_energy_ceiling_per_atom=0.17e9
 
 random_initialise_pos=F
 random_initialise_cell=F

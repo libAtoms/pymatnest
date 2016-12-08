@@ -1,0 +1,49 @@
+# starting volume (in this example it is Angstrom^3)
+max_volume_per_atom=100.0
+
+# 64 atoms with atomic number 1, let mass default to 1.0
+start_species=1 64
+# maximum initial energy per atom
+start_energy_ceiling_per_atom=1.5
+
+# size of live set
+n_walkers=2034
+# at each iteration 1 walker is killed
+n_cull=1
+# converge until partition function appears to be converged down to T=5000.0 K, assuming that there is not a phase transition too near this temp.
+converge_down_to_T=5000.0
+# prefix of all the output files
+out_file_prefix=test.periodic.MD.lammps.converged
+
+
+# use MD generating a new walker
+atom_algorithm=MD
+# total work to be done for each walker before it is killed (total length of walk if serial, proportionately less if parallel)
+n_model_calls_expected=640
+
+# number and length of atomic trajectories
+n_atom_steps=1
+atom_traj_len=8
+# number of cell volume steps
+n_cell_volume_steps=16
+# number of cell shear steps
+n_cell_shear_steps=8
+# number of cell strectch steps
+n_cell_stretch_steps=8
+
+# Pressure (in the energy and length units of the potential)
+MC_cell_P=0.03162
+
+# use LAMMPS
+energy_calculator=lammps
+# name of the LAMMPS machine (the one that *YOUR* LAMMPS was built with)
+LAMMPS_name=mpi
+# potential parameters
+LAMMPS_init_cmds=pair_style lj/cut 3.00; pair_coeff * * 1.0 1.0; pair_modify shift yes
+LAMMPS_atom_types=H 1
+
+# rng, use default
+# rng=numpy
+
+# verbosity level, use default
+# debug=0

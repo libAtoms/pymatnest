@@ -6,7 +6,7 @@ max_volume_per_atom=2000.0
 start_species=1 32, 2 32
 
 # prevent atoms completely on top of each other
-start_energy_ceiling=100.0
+start_energy_ceiling_per_atom=1.5
 
 n_walkers=9216
 n_cull=1
