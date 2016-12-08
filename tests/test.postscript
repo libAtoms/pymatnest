@@ -1,1 +1,0 @@
-cp *.out *.energies *traj* *snap* $startdir
