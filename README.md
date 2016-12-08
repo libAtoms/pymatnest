@@ -59,6 +59,12 @@ Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where you c
 The input file variable ``LAMMPS_name`` is what you set for ``[machine]`` when installing ``lammps_[machine].so``.
 By default it is what you set for ``machine`` when compiling ``LAMMPS``, unless the library was renamed when installing.
 
+### Nearly mandatory compilation flags
+
+It is extremely useful, essentially required, to take advantage of the (relatively recent) ``-DLAMMPS_EXCEPTIONS``
+flag, which allows lammps crashes to be handled gracefully within python.  Add it to the ``LMP_INC`` variable in the
+``LAMMPS`` makefile before compiling
+
 ### Support for GMC within LAMMPS
 
 Copy the two GMC-related files ``ns_run_dir/lammps_patches/fix_gmc.*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
