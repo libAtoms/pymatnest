@@ -3,7 +3,7 @@ max_volume_per_atom=1000000.0
 
 # 64 atoms with atomic number 1, let mass default to 1.0
 start_species=1 64
-start_energy_ceiling=100.0
+start_energy_ceiling_per_atom=1.5
 
 # size of live set
 n_walkers=256

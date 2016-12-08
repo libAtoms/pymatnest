@@ -2,7 +2,7 @@
 max_volume_per_atom=108.0
 # read in the initial configuration of the polymer
 start_config_file=test_start_config_polymer.xyz
-start_energy_ceiling=1.0e9
+start_energy_ceiling_per_atom=0.17e9
 
 # switch off initial random displacement
 random_initialise_pos=F
