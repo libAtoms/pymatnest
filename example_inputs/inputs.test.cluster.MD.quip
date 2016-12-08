@@ -1,7 +1,7 @@
 # starting volume (in this example it is Angstrom^3)
 max_volume_per_atom=108.0     
-# 6 atoms with atomic number 1 and mass 1.0
-start_species=1 6 1.0        
+# 6 atoms with atomic number 1, let mass default to 1.0
+start_species=1 6
 start_energy_ceiling=40.0
 
 # size of live set
