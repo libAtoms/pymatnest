@@ -369,9 +369,13 @@ def usage():
        | Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
        | default: 10000
 
-     ``snapshot_dir=str``
-       | Directory to save snapshots to (useful when running in per-node scratch directory)
-       | default: .
+    ``snapshot_time=int``
+       | Max time between snapshots in seconds
+       | default: 3600
+
+    ``snapshot_per_parallel_task=[ T | F ]``
+       | Save a separate snapshot file for each parallel task.  Faster I/O (in parallel), but less convenient in some cases.
+       | default: T
 
     ``snapshot_clean=[ T | F ]``
        | If true, delete previous iteration snapshot files
@@ -539,7 +543,8 @@ def usage():
     sys.stderr.write("2D=[ T | F ] (F, unsupported)\n")
     sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
     sys.stderr.write("snapshot_interval=int (10000, <=0 for no snapshots except final positions)\n")
-    sys.stderr.write("snapshot_dir=str (.)\n")
+    sys.stderr.write("snapshot_time=int (3600, <=0 for no time based snapshots)\n")
+    sys.stderr.write("snapshot_per_parallel_task=[T | F] (T, if true save separate snapshot file for each parallel task)\n")
     sys.stderr.write("snapshot_clean=[T | F] (T, if true clean previous iter snapshots\n")
     sys.stderr.write("random_initialise_pos=[T | F] (T, if true randomize the initial positions\n")
     sys.stderr.write("random_initialise_cell=[T | F] (T, if true randomize the initial cell\n")
@@ -2091,35 +2096,50 @@ def check_eners_consistency(walkers,elim, movement_args, loc, it):
         print "All energies OK"
 
 
-def save_snapshot(id):
+def save_snapshot(snapshot_id):
     """
     Save the current walker configurations' as a snapshot in the file ``out_file_prefix.iter.rank.config_file_format``
     """
-    #QUIP_IO if have_quippy:
-        #QUIP_IO snapshot_io = quippy.CInOutput(ns_args['out_file_prefix']+'snapshot.%s.%d.extxyz' % (id,rank), action=quippy.OUTPUT)
-    #QUIP_IO else:
-        #QUIP_IO try:
-            #QUIP_IO snapshot_file=ns_args['out_file_prefix']+'snapshot.'+('%d' % id)+'.%05d.'+('%04d' % rank)+'.extxyz'
-        #QUIP_IO except:
-            #QUIP_IO snapshot_file=ns_args['out_file_prefix']+'snapshot.'+id+'.%05d.'+('%04d' % rank)+'.extxyz'
 
     if comm is not None:
         comm.barrier() # if parallel, ensure that we are always in sync, so snapshots are always a consistent set
-    try:
-        snapshot_io = open(os.path.join(ns_args['snapshot_dir'],ns_args['out_file_prefix']+'snapshot.%s.%d.%s' % (id,rank, ns_args['config_file_format'])), "w")
-    except:
-        snapshot_io = open(os.path.join(ns_args['snapshot_dir'],ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (id,rank, ns_args['config_file_format'])), "w")
 
-    for at in walkers:
-        #QUIP_IO if have_quippy:
-            #QUIP_IO at.write(snapshot_io)
-        #QUIP_IO else:
-            #QUIP_IO ase.io.write(snapshot_file % i_at, ase.Atoms(at))
-        at.info['volume'] = at.get_volume()
-        at.info['iter']=id
-        ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
+    if ns_args['snapshot_per_parallel_task']:
+        rank_id = "%d" % rank
+    else:
+        rank_id = "ALL"
 
-    snapshot_io.close()
+    if ns_args['snapshot_per_parallel_task'] or rank == 0:
+        try:
+            snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%s.%s.%s' % (snapshot_id, rank_id, ns_args['config_file_format']), "w")
+        except:
+            snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%d.%s.%s' % (snapshot_id, rank_id, ns_args['config_file_format']), "w")
+
+        root_walkers_write_t0 = time.time()
+        for at in walkers:
+            at.info['volume'] = at.get_volume()
+            at.info['iter']=snapshot_id
+            ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
+        print "root walkers write time ", time.time() - root_walkers_write_t0
+
+    if not ns_args['snapshot_per_parallel_task']:
+        if comm is not None: # gather other walkers to do I/O on master task
+            if rank == 0: # I/O on master task
+                for r in range(1,size):
+                    remote_walkers_recv_t0 = time.time()
+                    remote_walkers = comm.recv(source=r, tag=2)
+                    print "save_snapshot remote walkers recv time ", r, time.time() - remote_walkers_recv_t0
+                    remote_walkers_write_t0 = time.time()
+                    for at in remote_walkers:
+                        at.info['volume'] = at.get_volume()
+                        at.info['iter']=snapshot_id
+                        ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
+                    print "save_snapshot remote walkers write time ", r, time.time() - remote_walkers_write_t0
+            else: # not master task
+                comm.send(walkers, dest=0, tag=2)
+
+    if ns_args['snapshot_per_parallel_task'] or rank == 0:
+        snapshot_io.close()
 
 def clean_prev_snapshot(iter):
     if iter is not None and ns_args['snapshot_clean']:
@@ -2203,6 +2223,7 @@ def do_ns_loop():
 
     prev_snapshot_iter = None
     pprev_snapshot_iter = None
+    last_snapshot_time = time.time()
 
     # for estimating current temperature from d log Omega / d E
     if ns_args['T_estimate_finite_diff_lag'] > 0:
@@ -2814,9 +2835,17 @@ def do_ns_loop():
             for r in range(len(status)):
                 print print_prefix, ": final status ", r, [ s for s in status[r,:] ]
 
-        if (ns_args['snapshot_interval'] > 0 and i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1 or
-            (ns_args['snapshot_seq_pairs'] and i_ns_step > 0 and i_ns_step%ns_args['snapshot_interval'] == 0) ) :
+        if (rank == 0) and ((ns_args['snapshot_interval'] > 0 and i_ns_step > 0 and i_ns_step % ns_args['snapshot_interval'] == 0) or
+                            (ns_args['snapshot_seq_pairs'] and i_ns_step > 1 and i_ns_step%ns_args['snapshot_interval'] == 1) or
+                            (ns_args['snapshot_time'] > 0 and time.time()-last_snapshot_time > ns_args['snapshot_time'])):
+            do_snapshot=True
+        else:
+            do_snapshot=False
+        if comm is not None:
+            do_snapshot = comm.bcast(do_snapshot, root=0)
+        if do_snapshot:
             save_snapshot(i_ns_step)
+            last_snapshot_time = time.time()
             clean_prev_snapshot(pprev_snapshot_iter)
             pprev_snapshot_iter = prev_snapshot_iter
             prev_snapshot_iter = i_ns_step
@@ -2984,7 +3013,8 @@ def main():
         ns_args['profile'] = int(args.pop('profile', -1))
         ns_args['debug'] = int(args.pop('debug', -1))
         ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 10000))
-        ns_args['snapshot_dir'] = args.pop('snapshot_dir', '.')
+        ns_args['snapshot_time'] = int(args.pop('snapshot_time', 3600))
+        ns_args['snapshot_per_parallel_task'] = str_to_logical(args.pop('snapshot_per_parallel_task', 'T'))
         ns_args['snapshot_seq_pairs'] = str_to_logical(args.pop('snapshot_seq_pairs', "F"))
         ns_args['snapshot_clean'] = str_to_logical(args.pop('snapshot_clean', "T"))
         ns_args['random_initialise_pos'] = str_to_logical(args.pop('random_initialise_pos', "T"))
@@ -3393,17 +3423,29 @@ def main():
             # maybe do with less shell escapes
             if rank == 0:
                 print "DOING restart_file=AUTO"
-                import subprocess
+                import glob
                 sfx=ns_args['config_file_format']
-                last_snapshot=subprocess.check_output(["bash","-c","ls -tr %ssnapshot.[0-9]*.0.%s 2> /dev/null | tail -1" % (ns_args['out_file_prefix'],sfx)], shell=False).rstrip()
-                if last_snapshot == "":
-                    ns_args['restart_file'] = ""
-                else:
-                    snapshot_root=re.sub("\.0\.%s" % sfx,"",last_snapshot)
-                    restart_file=snapshot_root+".ALL."+sfx
-                    print("cat %s.[0-9]*.%s > %s" % (snapshot_root, sfx, restart_file))
-                    os.system("cat %s.*.%s > %s" % (snapshot_root, sfx, restart_file))
-                    ns_args['restart_file'] = restart_file
+
+                try:
+                    newest_single_snapshot = max(glob.iglob('%ssnapshot.[0-9]*.ALL.%s' % (ns_args['out_file_prefix'],sfx)), key=os.path.getmtime)
+                    print "restarting from ",newest_single_snapshot
+                    ns_args['restart_file'] = newest_single_snapshot
+                except: # no single snapshot
+                    try:
+                        newest_snapshot = max(glob.iglob('%ssnapshot.[0-9]*.0.%s' % (ns_args['out_file_prefix'],sfx)), key=os.path.getmtime)
+                        print "restarting from ",newest_snapshot
+                        snapshot_root=re.sub('\.0\.%s' % sfx,"",newest_snapshot)
+                        restart_file=snapshot_root+".ALL."+sfx
+                        print "creating combined file", restart_file
+                        with open(restart_file, "w") as snapshot_out:
+                            for snapshot_file in glob.iglob('%s.[0-9]*.%s' % (snapshot_root, sfx)):
+                                with open(snapshot_file, "r") as snapshot_in:
+                                    for line in snapshot_in:
+                                        snapshot_out.write(line)
+                        ns_args['restart_file'] = restart_file
+                    except: # no snapshot at all
+                        ns_args['restart_file'] = ''
+
             if comm is not None:
                 ns_args['restart_file'] = comm.bcast(ns_args['restart_file'], root=0)
 
