@@ -367,7 +367,11 @@ def usage():
 
     ``snapshot_interval=int``
        | Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set <=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.
-       | default: 1000
+       | default: 10000
+
+     ``snapshot_dir=str``
+       | Directory to save snapshots to (useful when running in per-node scratch directory)
+       | default: .
 
     ``snapshot_clean=[ T | F ]``
        | If true, delete previous iteration snapshot files
@@ -534,7 +538,8 @@ def usage():
     sys.stderr.write("profile=rank_to_profile (-1)\n")
     sys.stderr.write("2D=[ T | F ] (F, unsupported)\n")
     sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
-    sys.stderr.write("snapshot_interval=int (1000, <=0 for no snapshots except final positions)\n")
+    sys.stderr.write("snapshot_interval=int (10000, <=0 for no snapshots except final positions)\n")
+    sys.stderr.write("snapshot_dir=str (.)\n")
     sys.stderr.write("snapshot_clean=[T | F] (T, if true clean previous iter snapshots\n")
     sys.stderr.write("random_initialise_pos=[T | F] (T, if true randomize the initial positions\n")
     sys.stderr.write("random_initialise_cell=[T | F] (T, if true randomize the initial cell\n")
@@ -2101,9 +2106,9 @@ def save_snapshot(id):
     if comm is not None:
         comm.barrier() # if parallel, ensure that we are always in sync, so snapshots are always a consistent set
     try:
-        snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%s.%d.%s' % (id,rank, ns_args['config_file_format']), "w")
+        snapshot_io = open(os.path.join(ns_args['snapshot_dir'],ns_args['out_file_prefix']+'snapshot.%s.%d.%s' % (id,rank, ns_args['config_file_format'])), "w")
     except:
-        snapshot_io = open(ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (id,rank, ns_args['config_file_format']), "w")
+        snapshot_io = open(os.path.join(ns_args['snapshot_dir'],ns_args['out_file_prefix']+'snapshot.%d.%d.%s' % (id,rank, ns_args['config_file_format'])), "w")
 
     for at in walkers:
         #QUIP_IO if have_quippy:
@@ -2978,7 +2983,8 @@ def main():
             ns_args['out_file_prefix'] += '.'
         ns_args['profile'] = int(args.pop('profile', -1))
         ns_args['debug'] = int(args.pop('debug', -1))
-        ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 1000))
+        ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 10000))
+        ns_args['snapshot_dir'] = args.pop('snapshot_dir', '.')
         ns_args['snapshot_seq_pairs'] = str_to_logical(args.pop('snapshot_seq_pairs', "F"))
         ns_args['snapshot_clean'] = str_to_logical(args.pop('snapshot_clean', "T"))
         ns_args['random_initialise_pos'] = str_to_logical(args.pop('random_initialise_pos', "T"))
