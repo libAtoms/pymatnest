@@ -5,13 +5,13 @@
 subroutine ll_init_model()
 use example_LJ_params_mod
 implicit none
-   epsilon(1,1) = 1.0
-   epsilon(2,2) = 1.0
-   epsilon(1,2) = 1.5
+   epsilon(1,1) = 4.0
+   epsilon(2,2) = 4.0
+   epsilon(1,2) = 6.0
    epsilon(2,1) = epsilon(1,2)
 
    sigma(1,1) = 1.0
-   sigma(2,2) = 1.1
+   sigma(2,2) = 1.0
    sigma(1,2) = (sigma(1,1)+sigma(2,2))/2.0
    sigma(2,1) = sigma(1,2)
 
