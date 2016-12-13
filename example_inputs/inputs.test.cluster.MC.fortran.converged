@@ -30,6 +30,11 @@ n_cell_volume_steps=0
 n_cell_shear_steps=0
 n_cell_stretch_steps=0
 
+# upper and lower bounds for MC move acceptance rates
+# used when adjusting the step size
+MC_adjust_min_rate=0.2
+MC_adjust_max_rate=0.3
+
 # use fortran minimum-image build-in model
 energy_calculator=fortran
 FORTRAN_model=example_LJ_min_image_model.so
