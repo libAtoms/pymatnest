@@ -1,0 +1,30 @@
+language: python
+env:
+  global:
+    - secure: "k2l1imZMgm2CVtKMu0zmCkHbrTXABer5q2TTfeisCtxc29Ut4lhTqZTeho2HE9HUfblhKMwtlz438/a2JeLkvjACgv/mPTEGelVPF5TqdT5bkpBjpCf2soaswFtsjPGVJJ5OH6vaKUfGkL2VMO1F2DCxHtElOKcb/ppz3kErIgaZe0yOmzKSp0LS434CcfjgWPJ8oaJr4vXlT32lDT8uQNSe3glyBzRRHv6NekTtAWusFOXZ1Khh0dWDgWEq71ZeJxkZDEcdd5Cr7/YpRqHp9XHjLDxA+/YZ2fCXXHiT0Z9BNqg1uEW1HU9TTsqwQlDe9Wlp+aSY0wOOakF3r641tqdVB4Z1aMrWjGFXizO9kGMeC8v+KrtSuYLlgmKvI6lTQfPiXdAjux3qi/Kn3zsfrXmgaGVyDeokTsaroigZUJwe4CpbklfY61NUKmjEzZoXocvAkwagypuOYa2gmfqKF6dvDiO6rYfFcuFXc0vpLFUwsQVTKwc0oCcZmPqPEuaqZ8CGhb7ilzhbxEEiQY2fUW5H3SV7D/lEgPiwbWTbWKH5i9I+99X+DbZJ2SUHJA1bjchSP2xad/pFcNncgsLI1eEOPpmgzytb2wEXyF0oS2SDeKNfMSv5SZazRr2hD9KGvBYUpYRUFulSg2HjqoHrSsL40cKwUcekjSwyNh10q7Y="
+    - DOCS=true
+python:
+  - 2.6
+  - 2.7
+install:
+  # Compile pymatnest
+  - make libs
+  # Use pypi version of ase
+  - pip install ase
+script:
+  - ulimit -a
+  # Sometimes file limit is 64000 and read_loop reads and writes this many files 
+  # causing the build to time out
+  - ulimit -n 256
+  # pymatnest should be built -> start tests
+  #- travis_wait make test
+after_success:
+  - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 2.7 ]; then travis/build_docs.sh; fi
+addons:
+  apt:
+    packages:
+    - gfortran
+    - python-numpy
+notifications:
+  email:
+    - lb415@cam.ac.uk
