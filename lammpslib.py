@@ -284,6 +284,21 @@ End LAMMPSlib Interface Documentation
                     m = re.match('(\d+)\-(\d+)\((\d+)\)',j)
                     self.lmp.command('create_angle {} {} {} {}'.format(int(m.group(3)),int(m.group(1))+1,i+1,int(m.group(2))+1))
 
+    def set_dihedrals(self, atoms):
+
+        for i in range(len(atoms)):
+            if atoms.arrays['dihedrals'][i] != '_':
+                for j in atoms.arrays['dihedrals'][i].split(','):
+                    m = re.match('(\d+)\-(\d+)\-(\d+)\((\d+)\)',j)
+                    self.lmp.command('create_dihedral {} {} {} {} {}'.format(int(m.group(4)),i+1,int(m.group(1))+1,int(m.group(2))+1,int(m.group(3))+1))
+
+    def set_charges(self, atoms):
+
+        for i,j in enumerate(atoms.arrays['mmcharge']):
+            self.lmp.command('set atom {} charge {} '.format(i+1,j))
+
+
+
     def set_cell(self, atoms, change=False):
         lammps_cell, self.coord_transform = convert_cell(atoms.get_cell())
         xhi = lammps_cell[0, 0]
@@ -419,6 +434,11 @@ End LAMMPSlib Interface Documentation
                 vel = np.dot(vel, self.coord_transform)
             if velocity_field is None:
                 atoms.set_velocities(vel * unit_convert("velocity", self.units))
+            if velocity_field is not None:
+                nreflects = self.lmp.extract_fix('1',0,1,0)
+                atoms.info['nreflects'] = nreflects
+                nreversals = self.lmp.extract_fix('1',0,1,1)
+                atoms.info['nreversals'] = nreversals
 
         # Extract the forces and energy
 #        if 'energy' in properties:
@@ -584,6 +604,7 @@ End LAMMPSlib Interface Documentation
            create_box_command = 'create_box {} cell'.format(n_types)
 
            # count numbers of bonds and angles defined by potential
+           n_dihedral_types = 0
            n_angle_types = 0
            n_bond_types = 0
            for cmd in self.parameters.lmpcmds:
@@ -593,10 +614,17 @@ End LAMMPSlib Interface Documentation
                m = re.match('\s*bond_coeff\s+(\d+)', cmd)
                if m is not None:
                    n_bond_types = max(int(m.group(1)), n_bond_types)
+               m = re.match('\s*dihedral_coeff\s+(\d+)', cmd)
+               if m is not None:
+                   n_dihedral_types = max(int(m.group(1)), n_dihedral_types)
+
            if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
-               create_box_command += ' angle/types {} extra/angle/per/atom 1'.format(n_angle_types)
+               create_box_command += ' angle/types {} extra/angle/per/atom 4'.format(n_angle_types)
            if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
-               create_box_command += ' bond/types {} extra/bond/per/atom 1'.format(n_bond_types)
+               create_box_command += ' bond/types {} extra/bond/per/atom 2'.format(n_bond_types)
+           if self.parameters.read_molecular_info and 'dihedrals' in atoms.arrays:
+               create_box_command += ' dihedral/types {} extra/dihedral/per/atom 4'.format(n_dihedral_types)
+
            self.lmp.command(create_box_command)
 
         # Initialize the atoms with their types
@@ -631,7 +659,7 @@ End LAMMPSlib Interface Documentation
         # I am not sure why we need this next line but LAMMPS will
         # raise an error if it is not there. Perhaps it is needed to
         # ensure the cell stresses are calculated
-        self.lmp.command('thermo_style custom pe pxx emol')
+        self.lmp.command('thermo_style custom pe pxx emol ecoul')
 
         self.lmp.command('variable fx atom fx')
         self.lmp.command('variable fy atom fy')
@@ -650,6 +678,13 @@ End LAMMPSlib Interface Documentation
         if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
             self.set_angles(atoms)
 
+        if self.parameters.read_molecular_info and 'dihedrals' in atoms.arrays:
+            self.set_dihedrals(atoms)
+
+        print atoms.arrays
+        if self.parameters.read_molecular_info and 'mmcharge' in atoms.arrays: 
+            print atoms.arrays['mmcharge']
+            self.set_charges(atoms)
 
         self.initialized = True
 
