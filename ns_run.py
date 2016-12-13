@@ -106,6 +106,10 @@ def usage():
        | Whether to do steps in blocks or not.
        | default: F
 
+    ``do_good_load_balance=[T | F]``
+       | Whether to do steps in groups with good load balance
+       | default: F
+
     ``do_partial_blocks=[T | F]``
        | Whether to do partial blocks if n_model_calls(_expected) is met.
        | default: F
@@ -455,6 +459,7 @@ def usage():
     sys.stderr.write("n_model_calls_expected=int (0, one of these is required)\n")
     sys.stderr.write("n_model_calls=int (0, one of these is required)\n")
     sys.stderr.write("do_blocks=[T | F] (F, whether to do steps in blocks\n")
+    sys.stderr.write("do_good_load_balance=[T | F] (F, whether to do steps in groups with good load balance\n")
     sys.stderr.write("do_partial_blocks=[T | F] (F, whether to allow partial blocks if n_model_calls(_expected) is met\n")
     sys.stderr.write("\n")
     sys.stderr.write("n_atom_steps=int (1, number of atomic trajectories per block\n")
@@ -1519,52 +1524,111 @@ def rand_perturb_energy(energy, perturbation, Emax=None):
 
     return energy
 
+####################################################################################################
+
+def add_to_list(list, ind, costs, nums, walk_len_avail, first_free_slot):
+
+    if nums[0] == 0:
+        return (walk_len_avail, first_free_slot)
+
+    n_steps_r = float(walk_len_avail) * (float(costs[0]*nums[0]) / float(sum(costs*nums))) / float(costs[0])
+
+    n_steps_r_fract = n_steps_r - math.floor(n_steps_r)
+    rv = np.random.rand()
+    if rv < n_steps_r_fract:
+        n_steps = int(math.floor(n_steps_r)+1)
+    else:
+        n_steps = int(math.floor(n_steps_r))
+
+    list[first_free_slot:first_free_slot+n_steps] = [ind]*n_steps
+    first_free_slot += n_steps
+    walk_len_avail -= n_steps*costs[0]
+
+    return (walk_len_avail, first_free_slot)
+
+def create_list(costs, nums, walk_len):
+
+    list = []
+    walk_len_avail = walk_len
+    first_free_slot = 1
+    for i in range(len(costs)):
+        (walk_len_avail, first_free_slot) = add_to_list(list, i, costs[i:], nums[i:], walk_len_avail, first_free_slot)
+
+    return list
+
+####################################################################################################
+
 def walk_single_walker(at, movement_args, Emax, KEmax, itbeta):
     """Do random walk on a single atoms object."""
 #DOC
 #DOC ``walk_single_walker``
 
-    #DOC \item create block list
-                        #DOC \item do\_atom\_walk :math:`*` n\_atom\_step\_n\_calls
-    possible_moves = ( [do_atom_walk] * movement_args['n_atom_steps_n_calls'] +
-                        #DOC \item do\_cell\_volume\_step :math:`*` n\_cell\_volume\_steps
-                       [do_MC_cell_volume_step] * movement_args['n_cell_volume_steps'] + 
-                        #DOC \item do\_cell\_shear\_step :math:`*` n\_cell\_shear\_steps
-                       [do_MC_cell_shear_step] * movement_args['n_cell_shear_steps'] + 
-                        #DOC \item do\_cell\_stretch\_step :math:`*` n\_cell\_stretch\_steps
-                       [do_MC_cell_stretch_step] * movement_args['n_cell_stretch_steps'] + 
-                        #DOC \item do\_swap\_step :math:`*` n\_swap\_steps
-                       [do_MC_swap_step] * movement_args['n_swap_steps'] )
-
     out = {}
-    n_model_calls_used=0
 
-    #DOC \item if do\_blocks
-    if movement_args['do_blocks']:
-        #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
-        while n_model_calls_used < movement_args['n_model_calls']:
-            #DOC \item shuffle block list
-            rng.shuffle_in_place(possible_moves)
-            #DOC \item loop over items in list
-            for move in possible_moves:
+    if movement_args['do_good_load_balance']:
+        possible_moves = np.array( [ do_atom_walk,
+                                     do_MC_cell_volume_step,
+                                     do_MC_cell_shear_step,
+                                     do_MC_cell_stretch_step,
+                                     do_MC_swap_step ] )
+        nums = np.array( [ movement_args['n_atom_steps_n_calls'],
+                           movement_args['n_cell_volume_steps'],
+                           movement_args['n_cell_shear_steps'],
+                           movement_args['n_cell_stretch_steps'],
+                           movement_args['n_swap_steps'] ] )
+        costs = np.array( [ movement_args['atom_traj_len'],
+                            1,
+                            1,
+                            1,
+                            1 ] )
+
+        list = create_list(costs, nums, movement_args['n_model_calls'])
+        for move_i in list:
+            (t_n_model_calls, t_out) = possible_moves[move_i](at, movement_args, Emax, KEmax, itbeta)
+            accumulate_stats(out, t_out)
+
+
+    else:
+        #DOC \item create block list
+                            #DOC \item do\_atom\_walk :math:`*` n\_atom\_step\_n\_calls
+        possible_moves = ( [do_atom_walk] * movement_args['n_atom_steps_n_calls'] +
+                            #DOC \item do\_cell\_volume\_step :math:`*` n\_cell\_volume\_steps
+                           [do_MC_cell_volume_step] * movement_args['n_cell_volume_steps'] + 
+                            #DOC \item do\_cell\_shear\_step :math:`*` n\_cell\_shear\_steps
+                           [do_MC_cell_shear_step] * movement_args['n_cell_shear_steps'] + 
+                            #DOC \item do\_cell\_stretch\_step :math:`*` n\_cell\_stretch\_steps
+                           [do_MC_cell_stretch_step] * movement_args['n_cell_stretch_steps'] + 
+                            #DOC \item do\_swap\_step :math:`*` n\_swap\_steps
+                           [do_MC_swap_step] * movement_args['n_swap_steps'] )
+
+        n_model_calls_used=0
+
+        #DOC \item if do\_blocks
+        if movement_args['do_blocks']:
+            #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
+            while n_model_calls_used < movement_args['n_model_calls']:
+                #DOC \item shuffle block list
+                rng.shuffle_in_place(possible_moves)
+                #DOC \item loop over items in list
+                for move in possible_moves:
+                    #DOC \item do move
+                    (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax, itbeta)
+                    n_model_calls_used += t_n_model_calls
+                    accumulate_stats(out, t_out)
+
+                    #DOC \item break if do\_partial\_blocks and n\_model\_calls is reached
+                    if movement_args['do_partial_blocks'] and n_model_calls_used >= movement_args['n_model_calls']:
+                        break
+        #DOC \item else
+        else:
+            #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
+            while n_model_calls_used < movement_args['n_model_calls']:
+                #DOC \item pick random item from list
+                move = possible_moves[rng.int_uniform(0,len(possible_moves))]
                 #DOC \item do move
                 (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax, itbeta)
                 n_model_calls_used += t_n_model_calls
                 accumulate_stats(out, t_out)
-
-                #DOC \item break if do\_partial\_blocks and n\_model\_calls is reached
-                if movement_args['do_partial_blocks'] and n_model_calls_used >= movement_args['n_model_calls']:
-                    break
-    #DOC \item else
-    else:
-        #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
-        while n_model_calls_used < movement_args['n_model_calls']:
-            #DOC \item pick random item from list
-            move = possible_moves[rng.int_uniform(0,len(possible_moves))]
-            #DOC \item do move
-            (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax, itbeta)
-            n_model_calls_used += t_n_model_calls
-            accumulate_stats(out, t_out)
 
 
     #DOC \item perturb final energy by random\_energy\_perturbation
@@ -3012,7 +3076,7 @@ def main():
             ns_args['out_file_prefix'] += '.'
         ns_args['profile'] = int(args.pop('profile', -1))
         ns_args['debug'] = int(args.pop('debug', -1))
-        ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', 10000))
+        ns_args['snapshot_interval'] = int(args.pop('snapshot_interval', -1))
         ns_args['snapshot_time'] = int(args.pop('snapshot_time', 3600))
         ns_args['snapshot_per_parallel_task'] = str_to_logical(args.pop('snapshot_per_parallel_task', 'T'))
         ns_args['snapshot_seq_pairs'] = str_to_logical(args.pop('snapshot_seq_pairs', "F"))
@@ -3158,6 +3222,7 @@ def main():
         movement_args['n_model_calls_expected'] = int(args.pop('n_model_calls_expected', 0))
         movement_args['n_model_calls'] = int(args.pop('n_model_calls', 0))
         movement_args['do_blocks'] = str_to_logical(args.pop('do_blocks', "F"))
+        movement_args['do_good_load_balance'] = str_to_logical(args.pop('do_good_load_balance', "F"))
         movement_args['do_partial_blocks'] = str_to_logical(args.pop('do_partial_blocks', "F"))
 
         #DOC \item process n\_atom\_steps
