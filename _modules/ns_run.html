@@ -17,16 +17,15 @@
         VERSION:     '1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="top" title="ns_doc 1 documentation" href="../index.html" />
-    <link rel="up" title="Module code" href="index.html" /> 
+    <link rel="search" title="Search" href="../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -3579,7 +3578,7 @@
                 <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="p">:</span>
                     <span class="n">KEmax</span> <span class="o">=</span> <span class="mf">1.5</span><span class="o">*</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;max_volume_per_atom&#39;</span><span class="p">]</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">KEmax</span> <span class="o">=</span> <span class="mf">1.5</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="n">kB</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;KEmax_max_T&#39;</span><span class="p">]</span>
+                    <span class="n">KEmax</span> <span class="o">=</span> <span class="mf">1.5</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;kB&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;KEmax_max_T&#39;</span><span class="p">]</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;separable_MDNS&#39;</span><span class="p">]):</span> <span class="c1"># Set KEmax=-1.0, so that it does not affect dynamics</span>
                     <span class="n">KEmax</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
                 <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">:</span>
@@ -3837,7 +3836,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.
     </div>
   </body>
 </html>

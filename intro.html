@@ -17,7 +17,8 @@
         VERSION:     '1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
@@ -25,7 +26,6 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="top" title="ns_doc 1 documentation" href="index.html" />
     <link rel="next" title="Installation and quick start guide" href="install.html" />
     <link rel="prev" title="pymatnest documentation" href="index.html" /> 
   </head>
@@ -73,7 +73,7 @@
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/intro.txt"
+      <li><a href="_sources/intro.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -120,26 +120,21 @@ parameter space - i.e. in the context of materials, the low-energy region of con
 and its several advantages mean it became a powerful method to sample atomic
 configuration spaces.</p>
 <blockquote>
-<div><ul>
+<div><ul class="simple">
 <li><dl class="first docutils">
 <dt>calculate the partition function, hence all thermodynamic properties become accessible</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>calculate the heat capacity and locate the phase transitions</li>
 <li>with an order parameter calculate the free energy</li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><p class="first">the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step</p>
-</li>
-<li><p class="first">no prior knowledge is needed of the phases or phase transitions</p>
-</li>
-<li><p class="first">can be used with both constant volume and constant pressure calculations</p>
-</li>
-<li><p class="first">calculate the entire phase diagram in an automated way</p>
-</li>
-<li><p class="first">considerable computational gain over parallel tempering</p>
-</li>
+<li>the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step</li>
+<li>no prior knowledge is needed of the phases or phase transitions</li>
+<li>can be used with both constant volume and constant pressure calculations</li>
+<li>calculate the entire phase diagram in an automated way</li>
+<li>considerable computational gain over parallel tempering</li>
 </ul>
 </div></blockquote>
 <table class="docutils footnote" frame="void" id="f1" rules="none">
@@ -182,12 +177,11 @@ It can be used with the supplied fortran potential models and it also has interf
 <h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
 <dt><code class="docutils literal"><span class="pre">rej_free_perturb_velo</span></code></dt>
-<dd><ul class="first last">
-<li><p class="first">if atom_velo_rej_free_fully_randomize, pick random velocities consistent with Emax</p>
-</li>
+<dd><ul class="first last simple">
+<li>if atom_velo_rej_free_fully_randomize, pick random velocities consistent with Emax</li>
 <li><dl class="first docutils">
 <dt>else perturb velocities</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>if current velocity=0, can&#8217;t rescale, so pick random velocities consistent with Emax</li>
 <li>else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom_velo_rej_free_perturb_angle</li>
 </ul>
@@ -201,12 +195,11 @@ It can be used with the supplied fortran potential models and it also has interf
 <code class="docutils literal"><span class="pre">This</span> <span class="pre">routine</span> <span class="pre">computes</span> <span class="pre">beta</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">NS</span> <span class="pre">estimate</span> <span class="pre">of</span> <span class="pre">$`frac{\Delta</span> <span class="pre">X}{\Delta</span> <span class="pre">E}$.</span> <span class="pre">($E=$potential</span> <span class="pre">energy.)</span></code></p>
 <dl class="docutils">
 <dt><code class="docutils literal"><span class="pre">rej\_free\_canonical\_velo</span></code></dt>
-<dd><ul class="first last">
-<li><p class="first">pick random velocities from cannonical distribution with inverse T currentbeta</p>
-</li>
+<dd><ul class="first last simple">
+<li>pick random velocities from cannonical distribution with inverse T currentbeta</li>
 <li><dl class="first docutils">
 <dt>If movement_args[&#8216;atom_momentum_retain_fraction&#8217;]&gt;0.0</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Partial momentum update</li>
 <li>$p&#8217; = alpha p + ( 1- alpha^2  )^{frac{1}{2}}n$ www.mcmchandbook.net eq. (5.34)</li>
 <li>Else if &#8220;rescale_only&#8221; rescale velocities to current temperature</li>
@@ -218,34 +211,28 @@ It can be used with the supplied fortran potential models and it also has interf
 </ul>
 </dd>
 <dt><code class="docutils literal"><span class="pre">do\_MC\_atom\_velo\_walk</span></code></dt>
-<dd><ul class="first last">
-<li><p class="first">If separable_MDNS = T , call rej_free_canonical_velo()</p>
-</li>
+<dd><ul class="first last simple">
+<li>If separable_MDNS = T , call rej_free_canonical_velo()</li>
 <li><dl class="first docutils">
 <dt>Else if MC_atom_velo_walk_rej_free</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>call rej_free_perturb_velo()</li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><p class="first">else do MC pertubation to velocities</p>
-</li>
+<li>else do MC pertubation to velocities</li>
 </ul>
 </dd>
 <dt><code class="docutils literal"><span class="pre">do_MD_atom_walk</span></code></dt>
-<dd><ul class="first last">
-<li><p class="first">if MD_atom_velo_pre_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</p>
-</li>
-<li><p class="first">propagate in time atom_traj_len time steps of length MD_atom_timestep</p>
-</li>
-<li><p class="first">If MD_atom_reject_energy_violation is set, accept/reject entire move on E deviating by less than MD_atom_energy_fuzz times kinetic energy</p>
-</li>
-<li><p class="first">accept/reject entire move on E &lt; Emax and KE &lt; KEmax</p>
-</li>
+<dd><ul class="first last simple">
+<li>if MD_atom_velo_pre_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</li>
+<li>propagate in time atom_traj_len time steps of length MD_atom_timestep</li>
+<li>If MD_atom_reject_energy_violation is set, accept/reject entire move on E deviating by less than MD_atom_energy_fuzz times kinetic energy</li>
+<li>accept/reject entire move on E &lt; Emax and KE &lt; KEmax</li>
 <li><dl class="first docutils">
 <dt>if reject</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>set positions, velocities, energy back to value before perturbation (maybe should be after?)</li>
 </ul>
 </dd>
@@ -253,23 +240,21 @@ It can be used with the supplied fortran potential models and it also has interf
 </li>
 <li><dl class="first docutils">
 <dt>else</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>flip velocities if MD_atom_velo_flip_accept</li>
 </ul>
 </dd>
 </dl>
 </li>
-<li><p class="first">if MD_atom_velo_post_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</p>
-</li>
+<li>if MD_atom_velo_post_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</li>
 </ul>
 </dd>
 <dt><code class="docutils literal"><span class="pre">do_MC_atom_walk</span></code></dt>
-<dd><ul class="first last">
-<li><p class="first">if MC_atom_velocities and MC_atom_velocities_pre_perturb, call do_MC_atom_velo_walk() to perturb velocities, magnitude and and rotation</p>
-</li>
+<dd><ul class="first last simple">
+<li>if MC_atom_velocities and MC_atom_velocities_pre_perturb, call do_MC_atom_velo_walk() to perturb velocities, magnitude and and rotation</li>
 <li><dl class="first docutils">
 <dt>if using fortran calculator and not reproducible</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>call fortran MC code f_MC_MD.MC_atom_walk</li>
 </ul>
 </dd>
@@ -278,11 +263,10 @@ It can be used with the supplied fortran potential models and it also has interf
 <li><dl class="first docutils">
 <dt>else</dt>
 <dd><ul class="first last">
-<li><p class="first">do python MC</p>
-</li>
+<li>do python MC</li>
 <li><dl class="first docutils">
 <dt>is MC_atom_Galilean</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>go Galilean MC in python</li>
 </ul>
 </dd>
@@ -296,7 +280,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <dd><ul class="first last">
 <li><dl class="first docutils">
 <dt>loop over atoms in random order</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>propose single atom move</li>
 <li>accept/reject on E &lt; Emax</li>
 </ul>
@@ -336,10 +320,10 @@ It can be used with the supplied fortran potential models and it also has interf
 </ul>
 </dd>
 <dt><code class="docutils literal"><span class="pre">walk_single_walker</span></code></dt>
-<dd><ul class="first last">
+<dd><ul class="first last simple">
 <li><dl class="first docutils">
 <dt>create block list</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>do_atom_walk <span class="math">*</span> n_atom_step_n_calls</li>
 <li>do_cell_volume_step <span class="math">*</span> n_cell_volume_steps</li>
 <li>do_cell_shear_step <span class="math">*</span> n_cell_shear_steps</li>
@@ -355,11 +339,10 @@ It can be used with the supplied fortran potential models and it also has interf
 <li><dl class="first docutils">
 <dt>loop while n_model_calls_used &lt; n_model_calls</dt>
 <dd><ul class="first last">
-<li><p class="first">shuffle block list</p>
-</li>
+<li>shuffle block list</li>
 <li><dl class="first docutils">
 <dt>loop over items in list</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>do move</li>
 <li>break if do_partial_blocks and n_model_calls is reached</li>
 </ul>
@@ -379,7 +362,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <dd><ul class="first last">
 <li><dl class="first docutils">
 <dt>loop while n_model_calls_used &lt; n_model_calls</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>pick random item from list</li>
 <li>do move</li>
 </ul>
@@ -390,29 +373,24 @@ It can be used with the supplied fortran potential models and it also has interf
 </dd>
 </dl>
 </li>
-<li><p class="first">perturb final energy by random_energy_perturbation</p>
-</li>
+<li>perturb final energy by random_energy_perturbation</li>
 </ul>
 </dd>
 <dt><code class="docutils literal"><span class="pre">full_auto_set_stepsizes</span></code></dt>
-<dd><ul class="first last">
-<li><p class="first">Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.</p>
-</li>
-<li><p class="first">The routine is MPI parallelised, so that the wall time goes as 1/num_of_processes</p>
-</li>
+<dd><ul class="first last simple">
+<li>Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.</li>
+<li>The routine is MPI parallelised, so that the wall time goes as 1/num_of_processes</li>
 <li><dl class="first docutils">
 <dt>For each (H)MC move type the following is performed</dt>
 <dd><ul class="first last">
-<li><p class="first">Set &#8216;&#8217;movement_args&#8217;&#8217; parameters so that only one (H)MC call is made at a time</p>
-</li>
-<li><p class="first">Min and max acceptance rates are copied from parameters MC_adjust_min_rate / MD_adjust_min_rate and MC_adjust_max_rate / MD_adjust_max_rate</p>
-</li>
+<li>Set &#8216;&#8217;movement_args&#8217;&#8217; parameters so that only one (H)MC call is made at a time</li>
+<li>Min and max acceptance rates are copied from parameters MC_adjust_min_rate / MD_adjust_min_rate and MC_adjust_max_rate / MD_adjust_max_rate</li>
 <li><dl class="first docutils">
 <dt>Step size calibration loop:</dt>
 <dd><ul class="first last">
 <li><dl class="first docutils">
 <dt>Repeat the following 200/num_of_MPI_processes times:</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Copy a configuration from the live set (each MPI process chooses a different configuration)</li>
 <li>Each MPI processes performs one (H)MC move on its cloned configuration
 running statistics for the number of accepted/rejected moves on each process are recorded</li>
@@ -428,7 +406,7 @@ running statistics for the number of accepted/rejected moves on each process are
 <dd><ul class="first last">
 <li><dl class="first docutils">
 <dt>If this is NOT the first time the loop has been performed for this (H)MC move AND we previously obtained an acceptance rate on one side of the desired range, and now find an acceptance rate on the other side of the desired range</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>Return the step size that gave an acceptance rate closest to the middle of the desired range.</li>
 </ul>
 </dd>
@@ -438,12 +416,9 @@ running statistics for the number of accepted/rejected moves on each process are
 </dd>
 </dl>
 </li>
-<li><p class="first">Store step length and acceptance rate</p>
-</li>
-<li><p class="first">update step length, by <span class="math">*</span> or <span class="math">/</span> by MC_adjust_step_factor, to improve acceptance rate</p>
-</li>
-<li><p class="first">Check that step size is not larger than max allowed value (specified by user), and also that step size is not smaller than 10<sup>-20</sup>(useful for detecting errors).</p>
-</li>
+<li>Store step length and acceptance rate</li>
+<li>update step length, by <span class="math">*</span> or <span class="math">/</span> by MC_adjust_step_factor, to improve acceptance rate</li>
+<li>Check that step size is not larger than max allowed value (specified by user), and also that step size is not smaller than 10<sup>-20</sup>(useful for detecting errors).</li>
 </ul>
 </dd>
 </dl>
@@ -456,18 +431,17 @@ running statistics for the number of accepted/rejected moves on each process are
 </dd>
 </dl>
 </li>
-<li><p class="first">Return step sizes and time taken for routine to run</p>
-</li>
+<li>Return step sizes and time taken for routine to run</li>
 </ul>
 </dd>
 <dt><code class="docutils literal"><span class="pre">main</span></code>: parse arguments</dt>
-<dd><ul class="first last">
+<dd><ul class="first last simple">
 <li><dl class="first docutils">
 <dt>process n_atom_steps</dt>
 <dd><ul class="first last">
 <li><dl class="first docutils">
 <dt>If break_up_atom_traj</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>n_atom_steps_per_call = 1</li>
 <li>n_atom_steps_n_calls = n_atom_steps</li>
 </ul>
@@ -476,7 +450,7 @@ running statistics for the number of accepted/rejected moves on each process are
 </li>
 <li><dl class="first docutils">
 <dt>else</dt>
-<dd><ul class="first last simple">
+<dd><ul class="first last">
 <li>n_atom_steps_per_call = n_atom_steps</li>
 <li>n_atom_steps_n_calls = 1</li>
 </ul>
@@ -520,7 +494,7 @@ running statistics for the number of accepted/rejected moves on each process are
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.9.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.
     </div>
   </body>
 </html>
