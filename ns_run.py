@@ -700,10 +700,11 @@ def propagate_lammps(at, dt, n_steps, algo, Emax=None):
             pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
         else:
             pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt, dt_not_real_time=True)
-    # except Exception as err:
-    except:
+    except Exception as err:
+    #  except:
         # clean up and return failure
-        # print "propagate_lammps got exception ", err
+        if ns_args['debug'] >= 4:
+            print "propagate_lammps got exception ", err
         pot.restart_lammps(at)
         pot.first_propagate=True
         return False
@@ -1326,9 +1327,22 @@ def do_cell_step(at, Emax, p_accept, transform):
 
     # calculate new energy
     if (not movement_args['separable_MDNS']):
-        new_energy = eval_energy(at)
+        try:
+            new_energy = eval_energy(at)
+        except Exception as err:
+            if ns_args['debug'] >= 4:
+                print "eval_energy got exception ", err
+            new_energy = 2.0*abs(Emax)
+            #print "error in eval_energy setting new_energy = 2*abs(Emax)=" , new_energy
     else:
-        new_energy = eval_energy(at,do_KE=False)
+        try:
+            new_energy = eval_energy(at,do_KE=False)
+        except Exception as err:
+            if ns_args['debug'] >= 4:
+                print "eval_energy got exception ", err
+            new_energy = 2.0*abs(Emax)
+            #print "error in eval_energy setting new_energy = 2*abs(Emax)=" , new_energy
+
     # accept or reject
     if new_energy < Emax: # accept
         at.info['ns_energy'] = new_energy
