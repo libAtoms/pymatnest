@@ -455,11 +455,8 @@ End LAMMPSlib Interface Documentation
         self.results['stress'] = stress * (-unit_convert("pressure", self.units))
 
 #        if 'forces' in properties:
-        f = np.zeros((len(atoms), 3))
-        force_vars = ['fx', 'fy', 'fz']
-        for i, var in enumerate(force_vars):
-            f[:, i] = np.asarray(self.lmp.extract_variable(
-                    var, 'all', 1)[:len(atoms)]) * unit_convert("force", self.units)
+        f = np.array(self.lmp.gather_atoms("f",1,3)).reshape(-1,3)
+        f *= unit_convert("force", self.units)
 
         if self.coord_transform is not None:
             self.results['forces'] = np.dot(f, self.coord_transform)
