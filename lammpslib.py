@@ -268,32 +268,55 @@ End LAMMPSlib Interface Documentation
         read_molecular_info=False,
         comm=None)
 
-    def set_bonds(self, atoms):
-
+    def parse_bonds(self, atoms):
+        atoms.bonds = []
+        atoms.max_n_bonds = 0
         for i in range(len(atoms)):
             if atoms.arrays['bonds'][i] != '_':
-                for j in atoms.arrays['bonds'][i].split(','):
-                    m = re.match('(\d+)\((\d+)\)',j)
-                    self.lmp.command('create_bond {} {} {} '.format(int(m.group(2)),i+1,int(m.group(1))+1))
+                n_bonds = 0
+                for bond_list in atoms.arrays['bonds'][i].split(','):
+                    n_bonds += 1
+                    m = re.match('(\d+)\((\d+)\)',bond_list)
+                    atoms.bonds.append(int(m.group(2)),i+1,int(m.group(1))+1)
+                atoms.max_n_bonds = max(atoms.max_n_bonds, n_bonds)
 
-    def set_angles(self, atoms):
+    def set_bonds(self, atoms):
+        for (t, i1, i2) in atoms.bonds:
+            self.lmp.command('create_bond {} {} {} '.format(t, i1, i2))
 
+    def parse_angles(self, atoms):
+        atoms.angles = []
+        atoms.max_n_angles = 0
         for i in range(len(atoms)):
             if atoms.arrays['angles'][i] != '_':
-                for j in atoms.arrays['angles'][i].split(','):
-                    m = re.match('(\d+)\-(\d+)\((\d+)\)',j)
-                    self.lmp.command('create_angle {} {} {} {}'.format(int(m.group(3)),int(m.group(1))+1,i+1,int(m.group(2))+1))
+                n_angles = 0
+                for angle_list in atoms.arrays['angles'][i].split(','):
+                    n_angles += 1
+                    m = re.match('(\d+)\-(\d+)\((\d+)\)',angle_list)
+                    atoms.angles.append(int(m.group(3)),int(m.group(1))+1,i+1,int(m.group(2))+1)
+                atoms.max_n_angles = max(atoms.max_n_angles, n_angles)
 
-    def set_dihedrals(self, atoms):
+    def set_angles(self, atoms):
+        for (t, i1, i2, i3) in atoms.angles
+            self.lmp.command('create_angle {} {} {} {}'.format(t, i1, i2, i3))
 
+    def parse_dihedrals(self,atoms):
+        atoms.dihedrals = []
+        atoms.max_n_dihedrals = 0
         for i in range(len(atoms)):
             if atoms.arrays['dihedrals'][i] != '_':
-                for j in atoms.arrays['dihedrals'][i].split(','):
-                    m = re.match('(\d+)\-(\d+)\-(\d+)\((\d+)\)',j)
-                    self.lmp.command('create_dihedral {} {} {} {} {}'.format(int(m.group(4)),i+1,int(m.group(1))+1,int(m.group(2))+1,int(m.group(3))+1))
+                n_dihedrals = 0
+                for dihedral_list in atoms.arrays['dihedrals'][i].split(','):
+                    n_dihedrals += 1
+                    m = re.match('(\d+)\-(\d+)\-(\d+)\((\d+)\)',dihedral_list)
+                    atoms.dihedrals.append((int(m.group(4)),i+1,int(m.group(1))+1,int(m.group(2))+1,int(m.group(3))+1))
+                atoms.max_n_dihedrals = max(atoms.max_n_dihedrals, n_dihedrals)
+
+    def set_dihedrals(self, atoms):
+        for (t, i1, i2, i3, i4) in atoms.dihedrals:
+            self.lmp.command('create_dihedral {} {} {} {} {}'.format(t, i1, i2, i3, i4))
 
     def set_charges(self, atoms):
-
         for i,j in enumerate(atoms.arrays['mmcharge']):
             self.lmp.command('set atom {} charge {} '.format(i+1,j))
 
@@ -618,12 +641,16 @@ End LAMMPSlib Interface Documentation
                if m is not None:
                    n_dihedral_types = max(int(m.group(1)), n_dihedral_types)
 
-           if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
-               create_box_command += ' angle/types {} extra/angle/per/atom 4'.format(n_angle_types)
-           if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
-               create_box_command += ' bond/types {} extra/bond/per/atom 2'.format(n_bond_types)
-           if self.parameters.read_molecular_info and 'dihedrals' in atoms.arrays:
-               create_box_command += ' dihedral/types {} extra/dihedral/per/atom 4'.format(n_dihedral_types)
+           if self.parameters.read_molecular_info:
+               if 'bonds' in atoms.arrays:
+                   self.parse_bonds(atoms)
+                   create_box_command += ' bond/types {} extra/bond/per/atom {}'.format(n_bond_types,atoms.max_n_bonds)
+               if 'angles' in atoms.arrays:
+                   self.parse_angles(atoms)
+                   create_box_command += ' angle/types {} extra/angle/per/atom {}'.format(n_angle_types,atoms.max_n_angles)
+               if 'dihedrals' in atoms.arrays:
+                   self.parse_dihedrals(atoms)
+                   create_box_command += ' dihedral/types {} extra/dihedral/per/atom {}'.format(n_dihedral_types,atoms.max_n_dihedrals)
 
            self.lmp.command(create_box_command)
 
@@ -670,16 +697,16 @@ End LAMMPSlib Interface Documentation
 
         self.lmp.command("neigh_modify delay 0 every 1 check yes")
 
-        # read in bonds if there are bonds from the ase-atoms object if the molecular flag is set
-        if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
-            self.set_bonds(atoms)
-
-        # read in angles if there are angles from the ase-atoms object if the molecular flag is set
-        if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
-            self.set_angles(atoms)
-
-        if self.parameters.read_molecular_info and 'dihedrals' in atoms.arrays:
-            self.set_dihedrals(atoms)
+        if self.parameters.read_molecular_info:
+            # read in bonds if there are bonds from the ase-atoms object if the molecular flag is set
+            if 'bonds' in atoms.arrays:
+                self.set_bonds(atoms)
+            # read in angles if there are angles from the ase-atoms object if the molecular flag is set
+            if 'angles' in atoms.arrays:
+                self.set_angles(atoms)
+            # read in dihedrals if there are angles from the ase-atoms object if the molecular flag is set
+            if 'dihedrals' in atoms.arrays:
+                self.set_dihedrals(atoms)
 
         print atoms.arrays
         if self.parameters.read_molecular_info and 'mmcharge' in atoms.arrays: 
