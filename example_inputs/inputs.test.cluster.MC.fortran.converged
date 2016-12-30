@@ -3,8 +3,7 @@ max_volume_per_atom=650.0
 
 # 6 atoms with atomic number 1
 start_species=1 6
-# maximum initial energy per atom (to avoid overflow and taking too much time in the gas if using MD)
-start_energy_ceiling_per_atom=1000.0
+
 kB=1.0
 
 # size of live set
@@ -15,7 +14,6 @@ n_cull=1
 n_iter_times_fraction_killed=65
 # prefix of all the output files
 out_file_prefix=test.cluster.MC.fortran.converged
-
 
 # use MC generating a new walker
 atom_algorithm=MC
@@ -29,6 +27,11 @@ atom_traj_len=1
 n_cell_volume_steps=0
 n_cell_shear_steps=0
 n_cell_stretch_steps=0
+
+# upper and lower bounds for MC move acceptance rates
+# used when adjusting the step size
+MC_adjust_min_rate=0.2
+MC_adjust_max_rate=0.3
 
 # use fortran minimum-image build-in model
 energy_calculator=fortran
