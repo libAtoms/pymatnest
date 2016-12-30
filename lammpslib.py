@@ -277,7 +277,7 @@ End LAMMPSlib Interface Documentation
                 for bond_list in atoms.arrays['bonds'][i].split(','):
                     n_bonds += 1
                     m = re.match('(\d+)\((\d+)\)',bond_list)
-                    atoms.bonds.append(int(m.group(2)),i+1,int(m.group(1))+1)
+                    atoms.bonds.append((int(m.group(2)),i+1,int(m.group(1))+1))
                 atoms.max_n_bonds = max(atoms.max_n_bonds, n_bonds)
 
     def set_bonds(self, atoms):
@@ -293,11 +293,11 @@ End LAMMPSlib Interface Documentation
                 for angle_list in atoms.arrays['angles'][i].split(','):
                     n_angles += 1
                     m = re.match('(\d+)\-(\d+)\((\d+)\)',angle_list)
-                    atoms.angles.append(int(m.group(3)),int(m.group(1))+1,i+1,int(m.group(2))+1)
+                    atoms.angles.append((int(m.group(3)),int(m.group(1))+1,i+1,int(m.group(2))+1))
                 atoms.max_n_angles = max(atoms.max_n_angles, n_angles)
 
     def set_angles(self, atoms):
-        for (t, i1, i2, i3) in atoms.angles
+        for (t, i1, i2, i3) in atoms.angles:
             self.lmp.command('create_angle {} {} {} {}'.format(t, i1, i2, i3))
 
     def parse_dihedrals(self,atoms):
