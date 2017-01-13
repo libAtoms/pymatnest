@@ -41,7 +41,7 @@ def convert_cell(ase_cell):
     """
     cell = np.matrix.transpose(ase_cell)
 
-    if not is_upper_triangular(cell):
+    if not is_upper_triangular(cell) or cell[0,0] < 0.0 or cell[1,1] < 0.0 or cell[2,2] < 0.0:
         # rotate bases into triangular matrix
         tri_mat = np.zeros((3, 3))
         A = cell[:, 0]
@@ -708,9 +708,7 @@ End LAMMPSlib Interface Documentation
             if 'dihedrals' in atoms.arrays:
                 self.set_dihedrals(atoms)
 
-        print atoms.arrays
         if self.parameters.read_molecular_info and 'mmcharge' in atoms.arrays: 
-            print atoms.arrays['mmcharge']
             self.set_charges(atoms)
 
         self.initialized = True
