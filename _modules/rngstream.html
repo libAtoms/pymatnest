@@ -77,7 +77,7 @@
 
 <div class="viewcode-block" id="RngStream"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream">[docs]</a><span class="k">class</span> <span class="nc">RngStream</span><span class="p">():</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span> <span class="o">=</span> <span class="n">CDLL</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/RngStream.so&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span> <span class="o">=</span> <span class="n">CDLL</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/RngStream.so&quot;</span><span class="p">)</span>
 
         <span class="c1">#initialize with pointer</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_CreateStream</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">POINTER</span><span class="p">(</span><span class="n">RngStream_InfoState</span><span class="p">)</span>
@@ -129,7 +129,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>
 </html>

@@ -756,7 +756,7 @@ thermodynamic variables will not be necessarily well converged.</p>
 <span class="n">n_walkers</span><span class="o">=</span><span class="mi">128</span>
 <span class="c1"># at each iteration 1 walker is killed (n_cull=1 is strongly recommended)</span>
 <span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>
-<span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers/n_cull</span>
+<span class="c1"># total number of iterations will be n_iter_times_fraction_killed /(n_cull/n_walkers)</span>
 <span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">100</span>
 <span class="c1"># prefix of all the output files</span>
 <span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">MC</span><span class="o">.</span><span class="n">fortran</span>
@@ -802,7 +802,7 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
 <span class="n">n_walkers</span><span class="o">=</span><span class="mi">256</span>                 
 <span class="c1"># at each iteration 1 walker is killed</span>
 <span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>                      
-<span class="c1"># total number of iterations will be n_iter_per_walker*n_walker/n_cull</span>
+<span class="c1"># total number of iterations will be n_iter_times_fraction_killed / (n_cull/n_walkers)</span>
 <span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">150</span>         
 <span class="c1"># prefix of all the output files</span>
 <span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">quip</span>   
@@ -859,7 +859,7 @@ and using MD trajectory for generating a new sample configuration.</p>
 <span class="n">n_walkers</span><span class="o">=</span><span class="mi">256</span>
 <span class="c1"># at each iteration 1 walker is killed</span>
 <span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>
-<span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers</span>
+<span class="c1"># total number of iterations will be n_iter_times_fraction_killed / (n_cull/n_walkers)</span>
 <span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">5000</span>
 <span class="c1"># prefix of all the output files</span>
 <span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">periodic</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">lammps</span>
@@ -994,7 +994,7 @@ The <code class="docutils literal"><span class="pre">atom_style</span> <span cla
 <span class="n">n_walkers</span><span class="o">=</span><span class="mi">128</span>
 <span class="c1"># at each iteration 1 walker is killed (n_cull=1 is strongly recommended)</span>
 <span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>
-<span class="c1"># total number of iterations will be n_iter_per_walker*n_walkers/n_cull</span>
+<span class="c1"># total number of iterations will be n_iter_times_fraction_killed / (n_cull/n_walkers)</span>
 <span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">100</span>
 <span class="c1"># prefix of all the output files</span>
 <span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">lammps</span><span class="o">.</span><span class="n">polymer</span>
@@ -1105,7 +1105,7 @@ value if the run already reached the number of iterations set previously.</p>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
     </div>
   </body>
 </html>
