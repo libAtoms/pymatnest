@@ -35,12 +35,16 @@ for i in range(len(args.analysis_files)):
     analyses.append(analysis)
     desc_lines.append(desc_line)
 
-    p = re.search("^\s*n_bins=(\d+)\s+n_data=(\d+)\s*$", desc_line)
+    p = re.search(r'\bn_bins=(\d+)\b', desc_line)
     if p is None:
-        sys.stderr.write("Failed to parse description line '%s'\n" % desc_line)
+        sys.stderr.write("Failed to parse bins from description line '%s'\n" % desc_line)
         sys.exit(2)
     n_bins.append(int(p.group(1)))
-    n_data.append(int(p.group(2)))
+    p = re.search(r'\bn_data=(\d+)\b', desc_line)
+    if p is None:
+        sys.stderr.write("Failed to parse data from description line '%s'\n" % desc_line)
+        sys.exit(2)
+    n_data.append(int(p.group(1)))
     bin_labels.append([])
     for i_bin in range(n_bins[i]):
         bin_labels[i].append(analysis.readline().strip())
@@ -60,7 +64,7 @@ else:
 
 sys.stderr.write("reading energies\n")
 (n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs([args.energy_file])
-if n_data is not None: 
+if n_data is not None and n_data > 0:
     # clip Es to be as long as necessary to match n_data
     Es = Es[0:n_data*args.interval]
 sys.stderr.write("got n_walkers %d n_cull %d len(Es) %d\n" % (n_walkers, n_cull, len(Es)))
