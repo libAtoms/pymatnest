@@ -9,7 +9,8 @@ from numpy.linalg import norm
 
 from lammps import lammps
 from ase.calculators.calculator import Calculator
-from ase.data import chemical_symbols, atomic_masses
+from ase.data import generalized_chemical_symbols, atomic_masses
+from ase.atoms import symbols2numbers
 import ase.units
 import re
 
@@ -549,7 +550,7 @@ End LAMMPSlib Interface Documentation
        current_types = { (i+1,self.parameters.atom_types[sym]) for i,sym in enumerate( atoms.get_chemical_symbols() ) }
 
        try:
-          previous_types = { (i+1,self.parameters.atom_types[ chemical_symbols[Z] ])
+          previous_types = { (i+1,self.parameters.atom_types[ generalized_chemical_symbols(Z) ])
                               for i,Z in enumerate( self.previous_atoms_numbers ) }
        except:
           previous_types = set()
@@ -807,7 +808,7 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
                 sym_mass[sym] = masses[i] / unit_convert("mass", units)
                 break
             else:
-                sym_mass[sym] = atomic_masses[chemical_symbols.index(sym)] / unit_convert("mass", units)
+                sym_mass[sym] = atomic_masses[symbols2numbers(sym)] / unit_convert("mass", units)
 
     for (sym, typ) in sorted(atom_types.items(), key=operator.itemgetter(1)):
         fh.write('{0} {1}\n'.format(typ, sym_mass[sym]))
