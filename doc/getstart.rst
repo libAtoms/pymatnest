@@ -59,7 +59,7 @@ The cell is of variable shape and size at the set pressure value.
 .. literalinclude:: ../example_inputs/inputs.test.periodic_binary.MD.FORTRAN_LJ
     :language: python
 
-Polymer with ``LAMMPS``, using MD
+Molecule with ``LAMMPS``, using MD
 ---------------------------------------------------------------
 
 Start a nested sampling simulation with a polymer. Initially the random placement of atoms has to be turned off, 
@@ -70,9 +70,12 @@ The ``atom_style full`` used in this example is part of the MOLECULE package, yo
 .. literalinclude:: ../example_inputs/inputs.test.cluster.MD.lammps.polymer
     :language: python
 
-The corresponding ``test_start_config_polymer.xyz`` file is the following:
+The corresponding ``test_start_config_polymer.xyz`` file is the following: (note that _ is an underscore not a -)
 
 .. literalinclude:: ../example_inputs/test_start_config_polymer.xyz
+
+If multiple bonds or angles have to be defined per atom, use a comma to separate the entries without spaces, and if no entries are needed for an atom
+still use a single underscore.
 
 Some tips on setting the input parameters
 +++++++++++++++++++++++++++++++++++++++++
