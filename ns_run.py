@@ -701,7 +701,6 @@ def propagate_lammps(at, dt, n_steps, algo, Emax=None):
         else:
             pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt, dt_not_real_time=True)
     except Exception as err:
-    #  except:
         # clean up and return failure
         if ns_args['debug'] >= 4:
             print "propagate_lammps got exception ", err
@@ -3169,10 +3168,13 @@ def main():
             ns_args['LAMMPS_fix_gmc'] = str_to_logical(args.pop('LAMMPS_fix_gmc', "F"))
             LAMMPS_atom_types = args.pop('LAMMPS_atom_types', '')
             if len(LAMMPS_atom_types) > 0:
-                ns_args['LAMMPS_atom_types'] = {}
-                for type_pair in [s.strip() for s in LAMMPS_atom_types.split(',')]:
-                    f = type_pair.split()
-                    ns_args['LAMMPS_atom_types'][f[0]] = int(f[1])
+                if LAMMPS_atom_types == 'TYPE_EQUALS_Z':
+                    ns_args['LAMMPS_atom_types'] = LAMMPS_atom_types
+                else:
+                    ns_args['LAMMPS_atom_types'] = {}
+                    for type_pair in [s.strip() for s in LAMMPS_atom_types.split(',')]:
+                        f = type_pair.split()
+                        ns_args['LAMMPS_atom_types'][f[0]] = int(f[1])
             else:
                exit_error("LAMMPS_atom_types is mandatory if calculator type is LAMMPS\n",1)
         elif ns_args['energy_calculator'] == 'internal':
@@ -3480,7 +3482,7 @@ def main():
                 species_list = comm.bcast(species_list, root=0)
 
         if do_calc_lammps:
-           if not {ase.data.chemical_symbols[int(species.split()[0])] for species in species_list} == set(ns_args['LAMMPS_atom_types'].keys()):
+           if not ns_args['LAMMPS_atom_types'] == 'TYPE_EQUALS_Z' and not {ase.atoms.generalized_chemical_symbols(int(species.split()[0])) for species in species_list} == set(ns_args['LAMMPS_atom_types'].keys()):
               exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
         mass_list=[]
         warned=False

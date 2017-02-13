@@ -547,11 +547,18 @@ End LAMMPSlib Interface Documentation
 
     def redo_atom_types(self,atoms):
 
-       current_types = { (i+1,self.parameters.atom_types[sym]) for i,sym in enumerate( atoms.get_chemical_symbols() ) }
+       if self.parameters.atom_types_equal_atomic_numbers:
+          current_types = { (i+1,Z) for i,Z in enumerate( atoms.get_atomic_numbers() ) }
+       else:
+          current_types = { (i+1,self.parameters.atom_types[Z]) for i,Z in enumerate( atoms.get_atomic_numbers() ) }
 
        try:
-          previous_types = { (i+1,self.parameters.atom_types[ generalized_chemical_symbols(Z) ])
-                              for i,Z in enumerate( self.previous_atoms_numbers ) }
+          if self.parameters.atom_types_equal_atomic_numbers:
+             previous_types = { (i+1,Z)
+                                 for i,Z in enumerate( self.previous_atoms_numbers ) }
+          else:
+             previous_types = { (i+1,self.parameters.atom_types[Z])
+                                 for i,Z in enumerate( self.previous_atoms_numbers ) }
        except:
           previous_types = set()
 
@@ -618,8 +625,29 @@ End LAMMPSlib Interface Documentation
         if self.parameters.atom_types  is None:
            raise NameError("atom_types are mandatory.")
 
+        if isinstance(self.parameters.atom_types,basestring):
+           if self.parameters.atom_types == "TYPE_EQUALS_Z":
+              self.parameters.atom_types_equal_atomic_numbers = True
+              self.parameters.atom_types = {}
+              for Z in atoms.get_atomic_numbers():
+                 self.parameters.atom_types[Z] = Z
+           else:
+              raise ValueError('atom_types parameter "%s" is string, but not TYPE_EQUALS_Z' % self.parameters.atom_types)
+        else:
+           # assume atom_types is a dictionary with symbols (or numbers) as keys
+           self.parameters.atom_types_equal_atomic_numbers = False
+           symbol_atom_types = self.parameters.atom_types.copy()
+           self.parameters.atom_types = {}
+           for sym in symbol_atom_types:
+              try:
+                 num = int(sym)
+              except:
+                 num = symbols2numbers(sym)
+              self.parameters.atom_types[num] = symbol_atom_types[sym]
+
         # Collect chemical symbols
         symbols = np.asarray(atoms.get_chemical_symbols())
+        numbers = np.asarray(atoms.get_atomic_numbers())
 
         # Initialize box
         if self.parameters.create_box:
@@ -668,11 +696,11 @@ End LAMMPSlib Interface Documentation
 
         # Set masses after user commands, to override EAM provided masses, e.g.
         masses = atoms.get_masses()
-        for sym in self.parameters.atom_types:
+        for Z in self.parameters.atom_types:
             for i in range(len(atoms)):
-                if symbols[i] == sym:
+                if numbers[i] == Z:
                     # convert from amu (ASE) to lammps mass unit)
-                    self.lmp.command('mass %d %.30f' % (self.parameters.atom_types[sym], masses[i] /
+                    self.lmp.command('mass %d %.30f' % (self.parameters.atom_types[Z], masses[i] /
                                                      unit_convert("mass", self.units) ))
                     break
 
@@ -802,25 +830,26 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
     sym_mass = {}
     masses = atoms.get_masses()
     symbols = atoms.get_chemical_symbols()
-    for sym in atom_types:
+    numbers = atoms.get_atomic_numbers()
+    for Z in atom_types:
         for i in range(len(atoms)):
-            if symbols[i] == sym:
-                sym_mass[sym] = masses[i] / unit_convert("mass", units)
+            if numbers[i] == Z:
+                Z_mass[Z] = masses[i] / unit_convert("mass", units)
                 break
             else:
-                sym_mass[sym] = atomic_masses[symbols2numbers(sym)] / unit_convert("mass", units)
+                Z_mass[Z] = atomic_masses[Z] / unit_convert("mass", units)
 
-    for (sym, typ) in sorted(atom_types.items(), key=operator.itemgetter(1)):
-        fh.write('{0} {1}\n'.format(typ, sym_mass[sym]))
+    for (Z, typ) in sorted(atom_types.items(), key=operator.itemgetter(1)):
+        fh.write('{0} {1}\n'.format(typ, Z_mass[Z]))
 
     fh.write('\nAtoms # full\n\n')
     if molecule_ids is None:
         molecule_ids = np.zeros(len(atoms), dtype=int)
     if charges is None:
         charges = atoms.get_initial_charges()
-    for i, (sym, mol, q, pos) in enumerate(zip(symbols, molecule_ids,
+    for i, (Z, mol, q, pos) in enumerate(zip(numbers, molecule_ids,
                                                charges, atoms.get_positions())):
-        typ = atom_types[sym]
+        typ = atom_types[Z]
         fh.write('{0} {1} {2} {3:16.8e} {4:16.8e} {5:16.8e} {6:16.8e}\n'
                  .format(i+1, mol, typ, q, pos[0], pos[1], pos[2]))
 
