@@ -236,7 +236,9 @@ def usage():
        | default: T. If true, use rejection free algorithm for MC_atom_walk
 
     ``MC_cell_P=float``
-       | Pressure value to be used. (Note: the unit of pressure depends on both the energy calculator and on the potential model used)
+       | Pressure value to be used. The unit of pressure depends on both the energy calculator and on the potential model used. Note that ASE uses
+       | eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS
+       | the lammpslib module will convert the units for lammps to whatever units are set by the potential type) 
        | default: 0.0 
 
     ``MC_cell_volume_per_atom_step_size=float``
@@ -594,7 +596,7 @@ def energy_internal(at):
     return energy_internal_pos(at.get_positions(), at.get_cell()[0,0])
 
 def eval_energy(at, do_PE=True, do_KE=True, do_PV=True):
-    """Calls appropriate functions to calcaulet the potential energy, kinetic energy and the p*V term. 
+    """Calls appropriate functions to calculate the potential energy, kinetic energy and the p*V term. 
     """
     # potential
     if do_PE:
