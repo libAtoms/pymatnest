@@ -62,7 +62,7 @@ The cell is of variable shape and size at the set pressure value.
 Molecule with ``LAMMPS``, using MD
 ---------------------------------------------------------------
 
-Start a nested sampling simulation with a polymer. Initially the random placement of atoms has to be turned off, 
+Start a nested sampling simulation with a polymer in a cell with constant volume and shape. Initially the random placement of atoms has to be turned off, 
 and a configuration file has to be read. The initial walk is done with a heuristic choice for E_max.
 The ``atom_style full`` used in this example is part of the MOLECULE package, you have to include that when compling
 ``LAMPS``.

@@ -184,7 +184,7 @@
 <dl class="function">
 <dt id="ns_run.eval_energy">
 <code class="descclassname">ns_run.</code><code class="descname">eval_energy</code><span class="sig-paren">(</span><em>at</em>, <em>do_PE=True</em>, <em>do_KE=True</em>, <em>do_PV=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#eval_energy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.eval_energy" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calls appropriate functions to calcaulet the potential energy, kinetic energy and the p*V term.</p>
+<dd><p>Calls appropriate functions to calculate the potential energy, kinetic energy and the p*V term.</p>
 </dd></dl>
 
 <dl class="function">
@@ -650,7 +650,9 @@
 </dd>
 <dt id="term-mc-cell-p-float"><code class="docutils literal"><span class="pre">MC_cell_P=float</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">Pressure value to be used. (Note: the unit of pressure depends on both the energy calculator and on the potential model used)</div>
+<div class="line">Pressure value to be used. The unit of pressure depends on both the energy calculator and on the potential model used. Note that ASE uses</div>
+<div class="line">eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS</div>
+<div class="line">the lammpslib module will convert the units for lammps to whatever units are set by the potential type) </div>
 <div class="line">default: 0.0 </div>
 </div>
 </dd>

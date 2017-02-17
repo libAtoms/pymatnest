@@ -450,7 +450,9 @@
 </dd>
 <dt id="term-mc-cell-p-float"><code class="docutils literal"><span class="pre">MC_cell_P=float</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">Pressure value to be used. (Note: the unit of pressure depends on both the energy calculator and on the potential model used)</div>
+<div class="line">Pressure value to be used. The unit of pressure depends on both the energy calculator and on the potential model used. Note that ASE uses</div>
+<div class="line">eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS</div>
+<div class="line">the lammpslib module will convert the units for lammps to whatever units are set by the potential type) </div>
 <div class="line">default: 0.0 </div>
 </div>
 </dd>
@@ -972,7 +974,7 @@ The cell is of variable shape and size at the set pressure value.</p>
 </div>
 <div class="section" id="molecule-with-lammps-using-md">
 <h3>Molecule with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#molecule-with-lammps-using-md" title="Permalink to this headline">¶</a></h3>
-<p>Start a nested sampling simulation with a polymer. Initially the random placement of atoms has to be turned off,
+<p>Start a nested sampling simulation with a polymer in a cell with constant volume and shape. Initially the random placement of atoms has to be turned off,
 and a configuration file has to be read. The initial walk is done with a heuristic choice for E_max.
 The <code class="docutils literal"><span class="pre">atom_style</span> <span class="pre">full</span></code> used in this example is part of the MOLECULE package, you have to include that when compling
 <code class="docutils literal"><span class="pre">LAMPS</span></code>.</p>

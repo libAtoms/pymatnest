@@ -300,7 +300,9 @@
 <span class="sd">       | default: T. If true, use rejection free algorithm for MC_atom_walk</span>
 
 <span class="sd">    ``MC_cell_P=float``</span>
-<span class="sd">       | Pressure value to be used. (Note: the unit of pressure depends on both the energy calculator and on the potential model used)</span>
+<span class="sd">       | Pressure value to be used. The unit of pressure depends on both the energy calculator and on the potential model used. Note that ASE uses</span>
+<span class="sd">       | eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS</span>
+<span class="sd">       | the lammpslib module will convert the units for lammps to whatever units are set by the potential type) </span>
 <span class="sd">       | default: 0.0 </span>
 
 <span class="sd">    ``MC_cell_volume_per_atom_step_size=float``</span>
@@ -658,7 +660,7 @@
     <span class="k">return</span> <span class="n">energy_internal_pos</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="n">at</span><span class="o">.</span><span class="n">get_cell</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span></div>
 
 <div class="viewcode-block" id="eval_energy"><a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy">[docs]</a><span class="k">def</span> <span class="nf">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_PV</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Calls appropriate functions to calcaulet the potential energy, kinetic energy and the p*V term. </span>
+    <span class="sd">&quot;&quot;&quot;Calls appropriate functions to calculate the potential energy, kinetic energy and the p*V term. </span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># potential</span>
     <span class="k">if</span> <span class="n">do_PE</span><span class="p">:</span>
