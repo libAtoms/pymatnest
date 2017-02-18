@@ -109,17 +109,16 @@ conditions.
 Restart a run
 ++++++++++++++++++++++++++++++++
 
-If one needs to continue a run, i.e. perform more iteration cycles, the input file has to be modified as
+If one needs to continue a run, i.e. perform more iteration cycles, the input file has to be modified with adding the following line
 
 ::
 
-    #start_species=1 64 1.0
     restart_file=my_output.snapshot.all.extxyz
 
 
-Comment out the ``start_species`` option and include a keyword ``restart_file``. This defines the name of the file 
-where all the walker configurations can be read from. This file should be a produced by
+Include the keyword ``restart_file``. This defines the name of the file 
+where all the walker configurations can be read from. This file should be produced by
 concatenating the last saved snapshot files of all the processors. You might also need to increase the ``n_iter_per_walker``
-value if the run already reached the number of iterations set previously.
+value if the run already reached the number of iterations set previously. (Note: you do not have to comment out the ``start_species`` option.)
 
 

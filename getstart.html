@@ -1071,15 +1071,14 @@ conditions.
 </div>
 <div class="section" id="restart-a-run">
 <h2>Restart a run<a class="headerlink" href="#restart-a-run" title="Permalink to this headline">¶</a></h2>
-<p>If one needs to continue a run, i.e. perform more iteration cycles, the input file has to be modified as</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1">#start_species=1 64 1.0</span>
-<span class="n">restart_file</span><span class="o">=</span><span class="n">my_output</span><span class="o">.</span><span class="n">snapshot</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="n">extxyz</span>
+<p>If one needs to continue a run, i.e. perform more iteration cycles, the input file has to be modified with adding the following line</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">restart_file</span><span class="o">=</span><span class="n">my_output</span><span class="o">.</span><span class="n">snapshot</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="n">extxyz</span>
 </pre></div>
 </div>
-<p>Comment out the <code class="docutils literal"><span class="pre">start_species</span></code> option and include a keyword <code class="docutils literal"><span class="pre">restart_file</span></code>. This defines the name of the file
-where all the walker configurations can be read from. This file should be a produced by
+<p>Include the keyword <code class="docutils literal"><span class="pre">restart_file</span></code>. This defines the name of the file
+where all the walker configurations can be read from. This file should be produced by
 concatenating the last saved snapshot files of all the processors. You might also need to increase the <code class="docutils literal"><span class="pre">n_iter_per_walker</span></code>
-value if the run already reached the number of iterations set previously.</p>
+value if the run already reached the number of iterations set previously. (Note: you do not have to comment out the <code class="docutils literal"><span class="pre">start_species</span></code> option.)</p>
 </div>
 </div>
 
