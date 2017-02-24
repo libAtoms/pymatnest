@@ -97,7 +97,7 @@
 <span class="sd">       | default: &#39;&#39;</span>
 
 <span class="sd">    ``restart_file=path_to_file``</span>
-<span class="sd">       | File for restart configs. Mutually exclusive with start_*, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. </span>
+<span class="sd">       | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. </span>
 
 <span class="sd">    ``n_walkers=int``</span>
 <span class="sd">       | MANDATORY</span>
@@ -112,11 +112,11 @@
 
 <span class="sd">    ``n_iter_times_fraction_killed=int``</span>
 <span class="sd">       | MANDATORY</span>
-<span class="sd">       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``. Either this or converge_down_to_T is required.</span>
+<span class="sd">       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``. Either this or ``converge_down_to_T`` is required.</span>
 
 <span class="sd">    ``converge_down_to_T=flot``</span>
 <span class="sd">       | MANDATORY</span>
-<span class="sd">       | temperature down to which Z(T) should be converged.  Either this or n_iter_times_fraction_killed is required.</span>
+<span class="sd">       | temperature down to which Z(T) should be converged.  Either this or ``n_iter_times_fraction_killed`` is required.</span>
 
 <span class="sd">    ``T_estimate_finite_diff_lag=int``</span>
 <span class="sd">       | default: 1000</span>
@@ -151,7 +151,7 @@
 <span class="sd">       | default: 1.0e9</span>
 
 <span class="sd">    ``start_energy_ceiling=float``</span>
-<span class="sd">       | DEPRECATED: use start_energy_ceiling_per_atom. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. </span>
+<span class="sd">       | DEPRECATED: use ``start_energy_ceiling_per_atom``. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. </span>
 <span class="sd">       | default: 1.0e9</span>
 
 <span class="sd">    ``random_init_max_n_tries=int``</span>
@@ -159,11 +159,11 @@
 <span class="sd">       | default 100</span>
 
 <span class="sd">    ``n_model_calls_expected=int``</span>
-<span class="sd">       | Number of model calls. Either this or the keyword n_model_calls is mandatory.</span>
+<span class="sd">       | Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword ``n_model_calls`` is mandatory, but the use of this keyword is strongly recommended.</span>
 <span class="sd">       | default: 0</span>
 
 <span class="sd">    ``n_model_calls=int``</span>
-<span class="sd">       | Number of model calls. Either this or the keyword n_model_calls_expected is mandatory.</span>
+<span class="sd">       | Number of model calls performed during the random walk. This is the actual number of calls performed, ideally the program sets its value depending on n_model_calls_expected and the number of processors used. Either this or the keyword ``n_model_calls_expected`` is mandatory, though the usage of the latter is strongly recommended.</span>
 <span class="sd">       | default: 0</span>
 
 <span class="sd">    ``do_blocks=[T | F]``</span>
@@ -171,50 +171,55 @@
 <span class="sd">       | default: F</span>
 
 <span class="sd">    ``do_partial_blocks=[T | F]``</span>
-<span class="sd">       | Whether to do partial blocks if n_model_calls(_expected) is met.</span>
+<span class="sd">       | Whether to do partial blocks if ``n_model_calls(_expected)`` is met.</span>
 <span class="sd">       | default: F</span>
 
 <span class="sd">    ``n_atom_steps=int`` </span>
-<span class="sd">       | Number of atomic trajectoris in each block.</span>
+<span class="sd">       | Ratio of atomic trajectoris (in each block, if applicable) will be determined by ``n_atom_steps``/SUM(``n_*_steps``).</span>
 <span class="sd">       | default: 1</span>
 
 <span class="sd">    ``atom_traj_len=int`` </span>
-<span class="sd">       | Length of atomic trajectory (MD steps or MC sweeps) in each step.</span>
+<span class="sd">       | Length of atomic trajectory (MD steps or MC sweeps) in each atomic type step.</span>
 <span class="sd">       | default: 8</span>
 
 <span class="sd">    ``break_up_atom_traj=[T | F]`` </span>
-<span class="sd">       | Whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps.</span>
+<span class="sd">       | Whether to intersperse ``n_atom_steps` atomic sub-trajectories with other types of steps.</span>
 <span class="sd">       | default: F </span>
 
 <span class="sd">    ``n_cell_volume_steps=int`` </span>
-<span class="sd">       | Number of cell volume steps in each block.</span>
+<span class="sd">       | Ratio of cell volume steps (in each block, if applicable) will be determined by ``n_cell_volume_steps``/SUM(``n_*_steps``).</span>
 <span class="sd">       | default: 1</span>
 
 <span class="sd">    ``n_cell_shear_steps=int`` </span>
-<span class="sd">       | Number of cell shear steps in each block.</span>
+<span class="sd">       | Ratio of cell shear steps (in each block, if applicable) will be determined by ``n_cell_shear_steps``/SUM(``n_*_steps``).</span>
 <span class="sd">       | default: 1</span>
 
 <span class="sd">    ``n_cell_stretch_steps=int`` </span>
-<span class="sd">       | Number of cell stretch steps in each block.</span>
+<span class="sd">       | Ratio of cell stretch steps (in each block, if applicable) will be determined by ``n_cell_stretch_steps``/SUM(``n_*_steps``).</span>
 <span class="sd">       | default: 1</span>
 
 <span class="sd">    ``n_swap_steps=int`` </span>
-<span class="sd">       | Number of species swap steps in each block. Has to be set other than zero for a multicomponent system.</span>
+<span class="sd">       | Ratio of species swap steps in (in each block, if applicable) will be determined by ``n_swap_steps``/SUM(``n_*_steps``). It has to be set other than zero for a multicomponent system.</span>
 <span class="sd">       | default: 0</span>
+
 <span class="sd">    ``swap_max_cluster=int`` </span>
-<span class="sd">       | (maximum size of interconnected cluster to try to swap)</span>
+<span class="sd">       | Maximum size of interconnected cluster to try to swap.</span>
 <span class="sd">       | default: 1</span>
+
 <span class="sd">    ``swap_r_cut=float`` </span>
-<span class="sd">       | (cutoff radius for defining connected atoms for cluster)</span>
+<span class="sd">       | Cutoff radius for defining connected atoms for cluster.</span>
 <span class="sd">       | default: 2.5</span>
+
 <span class="sd">    ``swap_cluster_probability_increment=float`` </span>
-<span class="sd">       | (factor between prob. of picking increasing larger clusters)</span>
+<span class="sd">       | Factor between prob. of picking increasing larger clusters.</span>
 <span class="sd">       | default: 0.75</span>
+
 <span class="sd">    ``swap_velo=[T | F]`` </span>
-<span class="sd">       | (if true, swap velocities when swapping atoms, breaking coherence a bit)</span>
+<span class="sd">       | If true, swap velocities when swapping atoms, breaking coherence a bit.</span>
 <span class="sd">       | default: F</span>
+
 <span class="sd">    ``no_swap_velo_fix_mag_alt=[T | F]`` </span>
-<span class="sd">       | (if true, use alternate method for correcting velocity magnitudes when not swapping velocities)</span>
+<span class="sd">       | If true, use alternate method for correcting velocity magnitudes when not swapping velocities.</span>
 <span class="sd">       | default: F</span>
 
 <span class="sd">    ``velo_traj_len=int`` </span>
@@ -335,7 +340,7 @@
 <span class="sd">       | default: 1.0</span>
 
 <span class="sd">    ``MC_cell_min_aspect_ratio=float``</span>
-<span class="sd">       | Smallest allowed distance between parallel faces for cell normalised to unit volume. A higher value of MC_cell_min_aspect_ratio restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of MC_cell_min_aspect_ratio &lt; 0.65 *does* effect the melting transition.</span>
+<span class="sd">       | Smallest allowed distance between parallel faces for cell normalised to unit volume. A higher value of ``MC_cell_min_aspect_ratio`` restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of ``MC_cell_min_aspect_ratio`` &lt; 0.65 *does* effect the melting transition.</span>
 <span class="sd">       | default: 0.8</span>
 
 <span class="sd">    ``cell_shape_equil_steps=int``</span>
