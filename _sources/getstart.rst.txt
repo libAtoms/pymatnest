@@ -91,17 +91,17 @@ if applicable. This can be done by one of the following different methods: MC, M
 set by the ``atom_algorithm`` keyword. Although infinitely long walks would be the best,
 we can rarely wait that long, thus we have to determine a finite length we allow for the walk.
 The length is determined by "step", i.e. the number of model calls. One MD timestep, one lattice 
-modification, one atomtype swap or one MC all-atom sweep is counted as a single model call. 
+modification, one atom type swap or one MC all-atom sweep is counted as a single model call. 
 The number of model calls a user wants to be performed on a walker between its birth (by cloning) and 
 discard (having the highest energy among all the walkers) is set by the ``n_model_calls_expected`` 
-keyword. If the sampling is run in parallel, the code performs n_model_calls_expected/number_of_processors
+keyword. If the sampling is run in parallel, the code performs approximately ``n_model_calls_expected * n_cull / number_of_processors``
 model calls on each processors at each iteration. This means that all walkers will perform 
-``n_model_calls_expected`` steps on *average*. In order to improve load balance, if the modulo of
-n_model_calls_expected/number_of_processors is not zero, additional steps will be performed, thus the 
-real number of model calls will be larger than ``n_model_calls_expected``.
+``n_model_calls_expected`` steps on *average*.  Note that the code will continue to do
+steps until it has done at least the requested number of calls, so this number may sometimes 
+be exceeded, e.g.  if the last step is a long one (e.g. an atomic trajectory with multiple steps).
 
 Currently the following step types are allowed: changing atomic coordinates, changing the volume of the
-cell, changing the shape of the cell by shear, changing the shape of the cell by stretch and swapping 
+cell, changing the shape of the cell by shear, changing the shape of the cell by stretch, and swapping 
 coordinates of different types of atoms. The ratio of these steps are determined by the keywords
 ``n_atom_steps``, ``n_cell_volume_steps``, ``n_cell_shear_steps``, ``n_cell_stretch_steps`` and ``n_swap_steps``,
 respectively. E.g. if the values for these keywords are set as 10, 4, 4, 4, 3, respectively, then the probability 

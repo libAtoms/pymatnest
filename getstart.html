@@ -1057,16 +1057,16 @@ if applicable. This can be done by one of the following different methods: MC, M
 set by the <code class="docutils literal"><span class="pre">atom_algorithm</span></code> keyword. Although infinitely long walks would be the best,
 we can rarely wait that long, thus we have to determine a finite length we allow for the walk.
 The length is determined by &#8220;step&#8221;, i.e. the number of model calls. One MD timestep, one lattice
-modification, one atomtype swap or one MC all-atom sweep is counted as a single model call.
+modification, one atom type swap or one MC all-atom sweep is counted as a single model call.
 The number of model calls a user wants to be performed on a walker between its birth (by cloning) and
 discard (having the highest energy among all the walkers) is set by the <code class="docutils literal"><span class="pre">n_model_calls_expected</span></code>
-keyword. If the sampling is run in parallel, the code performs n_model_calls_expected/number_of_processors
+keyword. If the sampling is run in parallel, the code performs approximately <code class="docutils literal"><span class="pre">n_model_calls_expected</span> <span class="pre">*</span> <span class="pre">n_cull</span> <span class="pre">/</span> <span class="pre">number_of_processors</span></code>
 model calls on each processors at each iteration. This means that all walkers will perform
-<code class="docutils literal"><span class="pre">n_model_calls_expected</span></code> steps on <em>average</em>. In order to improve load balance, if the modulo of
-n_model_calls_expected/number_of_processors is not zero, additional steps will be performed, thus the
-real number of model calls will be larger than <code class="docutils literal"><span class="pre">n_model_calls_expected</span></code>.</p>
+<code class="docutils literal"><span class="pre">n_model_calls_expected</span></code> steps on <em>average</em>.  Note that the code will continue to do
+steps until it has done at least the requested number of calls, so this number may sometimes
+be exceeded, e.g.  if the last step is a long one (e.g. an atomic trajectory with multiple steps).</p>
 <p>Currently the following step types are allowed: changing atomic coordinates, changing the volume of the
-cell, changing the shape of the cell by shear, changing the shape of the cell by stretch and swapping
+cell, changing the shape of the cell by shear, changing the shape of the cell by stretch, and swapping
 coordinates of different types of atoms. The ratio of these steps are determined by the keywords
 <code class="docutils literal"><span class="pre">n_atom_steps</span></code>, <code class="docutils literal"><span class="pre">n_cell_volume_steps</span></code>, <code class="docutils literal"><span class="pre">n_cell_shear_steps</span></code>, <code class="docutils literal"><span class="pre">n_cell_stretch_steps</span></code> and <code class="docutils literal"><span class="pre">n_swap_steps</span></code>,
 respectively. E.g. if the values for these keywords are set as 10, 4, 4, 4, 3, respectively, then the probability
