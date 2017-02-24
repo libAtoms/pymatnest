@@ -17,7 +17,7 @@ in a cubic cell with volume 648 Angstrom^3, using the potential implemented in t
 and using MC trajectory for generating a new sample configuration. As the shape 
 and volume of the cell will not be changed, a cluster will be formed by the atoms.
 Note that the input parameters given below, such as the number of walkers and length of trajectory, 
-are for a short test run. For six atoms this calcualtion should take only a couple of minutes on one processor, and although
+are for a short test run. For six atoms this calculation should take only a couple of minutes on one processor, and although
 the calculation should end up in the global minimum octahedral cluster structure, 
 thermodynamic variables will not be necessarily well converged.
 
@@ -88,26 +88,26 @@ another randomly picked walker, this clone has to be perturbed in order to satis
 that all walkers should be uniformly distributed in the available phase space. This perturbation 
 is done by performing a random walk, modifying the atomic coordinates and the lattice parameters
 if applicable. This can be done by one of the following different methods: MC, MD or GMC, 
-set by the ``atom_algorithm`` keyword. Although infinitly long walks would be the best,
+set by the ``atom_algorithm`` keyword. Although infinitely long walks would be the best,
 we can rarely wait that long, thus we have to determine a finite length we allow for the walk.
-The length is determined by "step", i.e. the number of model calls. One MD timstep, one lattice 
+The length is determined by "step", i.e. the number of model calls. One MD timestep, one lattice 
 modification, one atomtype swap or one MC all-atom sweep is counted as a single model call. 
 The number of model calls a user wants to be performed on a walker between its birth (by cloning) and 
 discard (having the highest energy among all the walkers) is set by the ``n_model_calls_expected`` 
-keyword. If the sampling is run in parallel, the code performes n_model_calls_expected/number_of_processors
+keyword. If the sampling is run in parallel, the code performs n_model_calls_expected/number_of_processors
 model calls on each processors at each iteration. This means that all walkers will perform 
 ``n_model_calls_expected`` steps on *average*. In order to improve load balance, if the modulo of
-n_model_calls_expected/number_of_processors is not zero, additional steps will be perfomed, thus the 
+n_model_calls_expected/number_of_processors is not zero, additional steps will be performed, thus the 
 real number of model calls will be larger than ``n_model_calls_expected``.
 
 Currently the following step types are allowed: changing atomic coordinates, changing the volume of the
 cell, changing the shape of the cell by shear, changing the shape of the cell by stretch and swapping 
-coordintes of different types of atoms. The ratio of these steps are determined by the keywords
+coordinates of different types of atoms. The ratio of these steps are determined by the keywords
 ``n_atom_steps``, ``n_cell_volume_steps``, ``n_cell_shear_steps``, ``n_cell_stretch_steps`` and ``n_swap_steps``,
 respectively. E.g. if the values for these keywords are set as 10, 4, 4, 4, 3, respectively, then the probability 
 of performing an atomic step will be 10/(10+4+4+4+3)=0.4, the probability of performing a volume change will be 0.16,...etc.
 If any of these keywords is set to zero, the corresponding step type will never be performed.
-It is important to consider that one ``n_atom_steps`` does not necessarily cover only one model call. To improve efficency
+It is important to consider that one ``n_atom_steps`` does not necessarily cover only one model call. To improve efficiency
 several MD time steps or MC sweeps can be (and should be) performed consecutively, set by the parameter ``atom_traj_len``.
 If ``atom_traj_len=8`` and an atomic step is chosen, then 8 model calls will be performed out of the 
 total ``n_model_calls_expected``.
