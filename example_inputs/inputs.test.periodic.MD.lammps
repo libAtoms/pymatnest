@@ -9,7 +9,7 @@ start_energy_ceiling_per_atom=1.5
 n_walkers=256
 # at each iteration 1 walker is killed
 n_cull=1
-# total number of iterations will be n_iter_per_walker*n_walkers
+# total number of iterations will be n_iter_times_fraction_killed / (n_cull/n_walkers)
 n_iter_times_fraction_killed=5000
 # prefix of all the output files
 out_file_prefix=test.periodic.MD.lammps

@@ -33,7 +33,7 @@ def usage():
        | default: ''
 
     ``restart_file=path_to_file``
-       | File for restart configs. Mutually exclusive with start_*, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. 
+       | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. 
 
     ``n_walkers=int``
        | MANDATORY
@@ -48,11 +48,11 @@ def usage():
 
     ``n_iter_times_fraction_killed=int``
        | MANDATORY
-       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``. Either this or converge_down_to_T is required.
+       | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``. Either this or ``converge_down_to_T`` is required.
 
     ``converge_down_to_T=flot``
        | MANDATORY
-       | temperature down to which Z(T) should be converged.  Either this or n_iter_times_fraction_killed is required.
+       | temperature down to which Z(T) should be converged.  Either this or ``n_iter_times_fraction_killed`` is required.
 
     ``T_estimate_finite_diff_lag=int``
        | default: 1000
@@ -87,7 +87,7 @@ def usage():
        | default: 1.0e9
 
     ``start_energy_ceiling=float``
-       | DEPRECATED: use start_energy_ceiling_per_atom. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. 
+       | DEPRECATED: use ``start_energy_ceiling_per_atom``. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. 
        | default: 1.0e9
 
     ``random_init_max_n_tries=int``
@@ -95,11 +95,11 @@ def usage():
        | default 100
 
     ``n_model_calls_expected=int``
-       | Number of model calls. Either this or the keyword n_model_calls is mandatory.
+       | Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword ``n_model_calls`` is mandatory, but the use of this keyword is strongly recommended.
        | default: 0
 
     ``n_model_calls=int``
-       | Number of model calls. Either this or the keyword n_model_calls_expected is mandatory.
+       | Number of model calls performed during the random walk. This is the actual number of calls performed, ideally the program sets its value depending on n_model_calls_expected and the number of processors used. Either this or the keyword ``n_model_calls_expected`` is mandatory, though the usage of the latter is strongly recommended.
        | default: 0
 
     ``do_blocks=[T | F]``
@@ -111,50 +111,55 @@ def usage():
        | default: F
 
     ``do_partial_blocks=[T | F]``
-       | Whether to do partial blocks if n_model_calls(_expected) is met.
+       | Whether to do partial blocks if ``n_model_calls(_expected)`` is met.
        | default: F
 
     ``n_atom_steps=int`` 
-       | Number of atomic trajectoris in each block.
+       | Ratio of atomic trajectoris (in each block, if applicable) will be determined by ``n_atom_steps``/SUM(``n_*_steps``).
        | default: 1
 
     ``atom_traj_len=int`` 
-       | Length of atomic trajectory (MD steps or MC sweeps) in each step.
+       | Length of atomic trajectory (MD steps or MC sweeps) in each atomic type step.
        | default: 8
 
     ``break_up_atom_traj=[T | F]`` 
-       | Whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps.
+       | Whether to intersperse ``n_atom_steps` atomic sub-trajectories with other types of steps.
        | default: F 
 
     ``n_cell_volume_steps=int`` 
-       | Number of cell volume steps in each block.
+       | Ratio of cell volume steps (in each block, if applicable) will be determined by ``n_cell_volume_steps``/SUM(``n_*_steps``).
        | default: 1
 
     ``n_cell_shear_steps=int`` 
-       | Number of cell shear steps in each block.
+       | Ratio of cell shear steps (in each block, if applicable) will be determined by ``n_cell_shear_steps``/SUM(``n_*_steps``).
        | default: 1
 
     ``n_cell_stretch_steps=int`` 
-       | Number of cell stretch steps in each block.
+       | Ratio of cell stretch steps (in each block, if applicable) will be determined by ``n_cell_stretch_steps``/SUM(``n_*_steps``).
        | default: 1
 
     ``n_swap_steps=int`` 
-       | Number of species swap steps in each block. Has to be set other than zero for a multicomponent system.
+       | Ratio of species swap steps in (in each block, if applicable) will be determined by ``n_swap_steps``/SUM(``n_*_steps``). It has to be set other than zero for a multicomponent system.
        | default: 0
+
     ``swap_max_cluster=int`` 
-       | (maximum size of interconnected cluster to try to swap)
+       | Maximum size of interconnected cluster to try to swap.
        | default: 1
+
     ``swap_r_cut=float`` 
-       | (cutoff radius for defining connected atoms for cluster)
+       | Cutoff radius for defining connected atoms for cluster.
        | default: 2.5
+
     ``swap_cluster_probability_increment=float`` 
-       | (factor between prob. of picking increasing larger clusters)
+       | Factor between prob. of picking increasing larger clusters.
        | default: 0.75
+
     ``swap_velo=[T | F]`` 
-       | (if true, swap velocities when swapping atoms, breaking coherence a bit)
+       | If true, swap velocities when swapping atoms, breaking coherence a bit.
        | default: F
+
     ``no_swap_velo_fix_mag_alt=[T | F]`` 
-       | (if true, use alternate method for correcting velocity magnitudes when not swapping velocities)
+       | If true, use alternate method for correcting velocity magnitudes when not swapping velocities.
        | default: F
 
     ``velo_traj_len=int`` 
@@ -240,7 +245,9 @@ def usage():
        | default: T. If true, use rejection free algorithm for MC_atom_walk
 
     ``MC_cell_P=float``
-       | Pressure value to be used. (Note: the unit of pressure depends on both the energy calculator and on the potential model used)
+       | Pressure value to be used. The unit of pressure depends on both the energy calculator and on the potential model used. Note that ASE uses
+       | eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS
+       | the lammpslib module will convert the units for lammps to whatever units are set by the potential type) 
        | default: 0.0 
 
     ``MC_cell_volume_per_atom_step_size=float``
@@ -273,7 +280,7 @@ def usage():
        | default: 1.0
 
     ``MC_cell_min_aspect_ratio=float``
-       | Smallest allowed distance between parallel faces for cell normalised to unit volume. A higher value of MC_cell_min_aspect_ratio restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of MC_cell_min_aspect_ratio < 0.65 *does* effect the melting transition.
+       | Smallest allowed distance between parallel faces for cell normalised to unit volume. A higher value of ``MC_cell_min_aspect_ratio`` restricts the system to more cube-like cell shapes, while a low value allows the system to become essentially flat. In case of 64 atoms the use of ``MC_cell_min_aspect_ratio`` < 0.65 *does* effect the melting transition.
        | default: 0.8
 
     ``cell_shape_equil_steps=int``
@@ -617,7 +624,7 @@ def energy_internal(at):
     return energy_internal_pos(at.get_positions(), at.get_cell()[0,0])
 
 def eval_energy(at, do_PE=True, do_KE=True, do_PV=True):
-    """Calls appropriate functions to calcaulet the potential energy, kinetic energy and the p*V term. 
+    """Calls appropriate functions to calculate the potential energy, kinetic energy and the p*V term. 
     """
     # potential
     if do_PE:

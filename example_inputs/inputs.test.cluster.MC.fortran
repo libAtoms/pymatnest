@@ -8,7 +8,7 @@ start_energy_ceiling_per_atom=0.17e9
 n_walkers=128
 # at each iteration 1 walker is killed (n_cull=1 is strongly recommended)
 n_cull=1
-# total number of iterations will be n_iter_per_walker*n_walkers/n_cull
+# total number of iterations will be n_iter_times_fraction_killed /(n_cull/n_walkers)
 n_iter_times_fraction_killed=100
 # prefix of all the output files
 out_file_prefix=test.cluster.MC.fortran
