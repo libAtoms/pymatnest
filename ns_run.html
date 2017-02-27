@@ -436,21 +436,9 @@
 <div class="line">default: 0</div>
 </div>
 </dd>
-<dt id="term-do-blocks-t-f"><code class="docutils literal"><span class="pre">do_blocks=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
-<dd><div class="first last line-block">
-<div class="line">Whether to do steps in blocks or not.</div>
-<div class="line">default: F</div>
-</div>
-</dd>
-<dt id="term-do-partial-blocks-t-f"><code class="docutils literal"><span class="pre">do_partial_blocks=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
-<dd><div class="first last line-block">
-<div class="line">Whether to do partial blocks if <code class="docutils literal"><span class="pre">n_model_calls(_expected)</span></code> is met.</div>
-<div class="line">default: F</div>
-</div>
-</dd>
 <dt id="term-n-atom-steps-int"><code class="docutils literal"><span class="pre">n_atom_steps=int</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Ratio of atomic trajectoris (in each block, if applicable) will be determined by <code class="docutils literal"><span class="pre">n_atom_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
+<div class="line">Ratio of atomic trajectoris will be determined by <code class="docutils literal"><span class="pre">n_atom_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
@@ -468,25 +456,25 @@
 </dd>
 <dt id="term-n-cell-volume-steps-int"><code class="docutils literal"><span class="pre">n_cell_volume_steps=int</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Ratio of cell volume steps (in each block, if applicable) will be determined by <code class="docutils literal"><span class="pre">n_cell_volume_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
+<div class="line">Ratio of cell volume steps will be determined by <code class="docutils literal"><span class="pre">n_cell_volume_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
 <dt id="term-n-cell-shear-steps-int"><code class="docutils literal"><span class="pre">n_cell_shear_steps=int</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Ratio of cell shear steps (in each block, if applicable) will be determined by <code class="docutils literal"><span class="pre">n_cell_shear_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
+<div class="line">Ratio of cell shear steps will be determined by <code class="docutils literal"><span class="pre">n_cell_shear_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
 <dt id="term-n-cell-stretch-steps-int"><code class="docutils literal"><span class="pre">n_cell_stretch_steps=int</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Ratio of cell stretch steps (in each block, if applicable) will be determined by <code class="docutils literal"><span class="pre">n_cell_stretch_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
+<div class="line">Ratio of cell stretch steps will be determined by <code class="docutils literal"><span class="pre">n_cell_stretch_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
 <dt id="term-n-swap-steps-int"><code class="docutils literal"><span class="pre">n_swap_steps=int</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Ratio of species swap steps in (in each block, if applicable) will be determined by <code class="docutils literal"><span class="pre">n_swap_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>). It has to be set other than zero for a multicomponent system.</div>
+<div class="line">Ratio of species swap steps in will be determined by <code class="docutils literal"><span class="pre">n_swap_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>). It has to be set other than zero for a multicomponent system.</div>
 <div class="line">default: 0</div>
 </div>
 </dd>
@@ -984,7 +972,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>
 </html>

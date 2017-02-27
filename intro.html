@@ -322,7 +322,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <dt><code class="docutils literal"><span class="pre">walk_single_walker</span></code></dt>
 <dd><ul class="first last simple">
 <li><dl class="first docutils">
-<dt>create block list</dt>
+<dt>create list</dt>
 <dd><ul class="first last">
 <li>do_atom_walk <span class="math">*</span> n_atom_step_n_calls</li>
 <li>do_cell_volume_step <span class="math">*</span> n_cell_volume_steps</li>
@@ -334,41 +334,10 @@ It can be used with the supplied fortran potential models and it also has interf
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>if do_blocks</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>loop while n_model_calls_used &lt; n_model_calls</dt>
-<dd><ul class="first last">
-<li>shuffle block list</li>
-<li><dl class="first docutils">
-<dt>loop over items in list</dt>
-<dd><ul class="first last">
-<li>do move</li>
-<li>break if do_partial_blocks and n_model_calls is reached</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>else</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
 <dt>loop while n_model_calls_used &lt; n_model_calls</dt>
 <dd><ul class="first last">
 <li>pick random item from list</li>
 <li>do move</li>
-</ul>
-</dd>
-</dl>
-</li>
 </ul>
 </dd>
 </dl>
@@ -494,7 +463,7 @@ running statistics for the number of accepted/rejected moves on each process are
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>
 </html>

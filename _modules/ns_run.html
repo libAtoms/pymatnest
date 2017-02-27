@@ -166,16 +166,8 @@
 <span class="sd">       | Number of model calls performed during the random walk. This is the actual number of calls performed, ideally the program sets its value depending on n_model_calls_expected and the number of processors used. Either this or the keyword ``n_model_calls_expected`` is mandatory, though the usage of the latter is strongly recommended.</span>
 <span class="sd">       | default: 0</span>
 
-<span class="sd">    ``do_blocks=[T | F]``</span>
-<span class="sd">       | Whether to do steps in blocks or not.</span>
-<span class="sd">       | default: F</span>
-
-<span class="sd">    ``do_partial_blocks=[T | F]``</span>
-<span class="sd">       | Whether to do partial blocks if ``n_model_calls(_expected)`` is met.</span>
-<span class="sd">       | default: F</span>
-
 <span class="sd">    ``n_atom_steps=int`` </span>
-<span class="sd">       | Ratio of atomic trajectoris (in each block, if applicable) will be determined by ``n_atom_steps``/SUM(``n_*_steps``).</span>
+<span class="sd">       | Ratio of atomic trajectoris will be determined by ``n_atom_steps``/SUM(``n_*_steps``).</span>
 <span class="sd">       | default: 1</span>
 
 <span class="sd">    ``atom_traj_len=int`` </span>
@@ -187,19 +179,19 @@
 <span class="sd">       | default: F </span>
 
 <span class="sd">    ``n_cell_volume_steps=int`` </span>
-<span class="sd">       | Ratio of cell volume steps (in each block, if applicable) will be determined by ``n_cell_volume_steps``/SUM(``n_*_steps``).</span>
+<span class="sd">       | Ratio of cell volume steps will be determined by ``n_cell_volume_steps``/SUM(``n_*_steps``).</span>
 <span class="sd">       | default: 1</span>
 
 <span class="sd">    ``n_cell_shear_steps=int`` </span>
-<span class="sd">       | Ratio of cell shear steps (in each block, if applicable) will be determined by ``n_cell_shear_steps``/SUM(``n_*_steps``).</span>
+<span class="sd">       | Ratio of cell shear steps will be determined by ``n_cell_shear_steps``/SUM(``n_*_steps``).</span>
 <span class="sd">       | default: 1</span>
 
 <span class="sd">    ``n_cell_stretch_steps=int`` </span>
-<span class="sd">       | Ratio of cell stretch steps (in each block, if applicable) will be determined by ``n_cell_stretch_steps``/SUM(``n_*_steps``).</span>
+<span class="sd">       | Ratio of cell stretch steps will be determined by ``n_cell_stretch_steps``/SUM(``n_*_steps``).</span>
 <span class="sd">       | default: 1</span>
 
 <span class="sd">    ``n_swap_steps=int`` </span>
-<span class="sd">       | Ratio of species swap steps in (in each block, if applicable) will be determined by ``n_swap_steps``/SUM(``n_*_steps``). It has to be set other than zero for a multicomponent system.</span>
+<span class="sd">       | Ratio of species swap steps in will be determined by ``n_swap_steps``/SUM(``n_*_steps``). It has to be set other than zero for a multicomponent system.</span>
 <span class="sd">       | default: 0</span>
 
 <span class="sd">    ``swap_max_cluster=int`` </span>
@@ -513,17 +505,15 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_model_calls_expected=int (0, one of these is required)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_model_calls=int (0, one of these is required)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;do_blocks=[T | F] (F, whether to do steps in blocks</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;do_partial_blocks=[T | F] (F, whether to allow partial blocks if n_model_calls(_expected) is met</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_atom_steps=int (1, number of atomic trajectories per block</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_atom_steps=int (1, number of atomic trajectories </span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;atom_traj_len=int (8, length of atomic trajectory (MD steps or MC sweeps) in each step</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;break_up_atom_traj=[T | F] (F, whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_cell_volume_steps=int (1, number of cell MC volume steps each block)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_cell_shear_steps=int (1, number of cell MC shear steps each block)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_cell_stretch_steps=int (1, number of cell MC stretch steps each block)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_swap_steps=int (0, number of atom swaps in each block)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_cell_volume_steps=int (1, number of cell MC volume steps )</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_cell_shear_steps=int (1, number of cell MC shear steps )</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_cell_stretch_steps=int (1, number of cell MC stretch steps )</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;n_swap_steps=int (0, number of atom swaps in )</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;swap_max_cluster=int (1, maximum size of interconnected cluster to try to swap)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;swap_r_cut=float (2.5, cutoff radius for defining connected atoms for cluster)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;swap_cluster_probability_increment=float (0.75, factor between prob. of picking increasing larger clusters)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1577,7 +1567,7 @@
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``walk_single_walker``</span>
 
-    <span class="c1">#DOC \item create block list</span>
+    <span class="c1">#DOC \item create list</span>
                         <span class="c1">#DOC \item do\_atom\_walk :math:`*` n\_atom\_step\_n\_calls</span>
     <span class="n">possible_moves</span> <span class="o">=</span> <span class="p">(</span> <span class="p">[</span><span class="n">do_atom_walk</span><span class="p">]</span> <span class="o">*</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_atom_steps_n_calls&#39;</span><span class="p">]</span> <span class="o">+</span>
                         <span class="c1">#DOC \item do\_cell\_volume\_step :math:`*` n\_cell\_volume\_steps</span>
@@ -1592,32 +1582,14 @@
     <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">n_model_calls_used</span><span class="o">=</span><span class="mi">0</span>
 
-    <span class="c1">#DOC \item if do\_blocks</span>
-    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_blocks&#39;</span><span class="p">]:</span>
-        <span class="c1">#DOC \item loop while n\_model\_calls\_used &lt; n\_model\_calls</span>
-        <span class="k">while</span> <span class="n">n_model_calls_used</span> <span class="o">&lt;</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]:</span>
-            <span class="c1">#DOC \item shuffle block list</span>
-            <span class="n">rng</span><span class="o">.</span><span class="n">shuffle_in_place</span><span class="p">(</span><span class="n">possible_moves</span><span class="p">)</span>
-            <span class="c1">#DOC \item loop over items in list</span>
-            <span class="k">for</span> <span class="n">move</span> <span class="ow">in</span> <span class="n">possible_moves</span><span class="p">:</span>
-                <span class="c1">#DOC \item do move</span>
-                <span class="p">(</span><span class="n">t_n_model_calls</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
-                <span class="n">n_model_calls_used</span> <span class="o">+=</span> <span class="n">t_n_model_calls</span>
-                <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span>
-
-                <span class="c1">#DOC \item break if do\_partial\_blocks and n\_model\_calls is reached</span>
-                <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_partial_blocks&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">n_model_calls_used</span> <span class="o">&gt;=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]:</span>
-                    <span class="k">break</span>
-    <span class="c1">#DOC \item else</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="c1">#DOC \item loop while n\_model\_calls\_used &lt; n\_model\_calls</span>
-        <span class="k">while</span> <span class="n">n_model_calls_used</span> <span class="o">&lt;</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]:</span>
-            <span class="c1">#DOC \item pick random item from list</span>
-            <span class="n">move</span> <span class="o">=</span> <span class="n">possible_moves</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_moves</span><span class="p">))]</span>
-            <span class="c1">#DOC \item do move</span>
-            <span class="p">(</span><span class="n">t_n_model_calls</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
-            <span class="n">n_model_calls_used</span> <span class="o">+=</span> <span class="n">t_n_model_calls</span>
-            <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span>
+    <span class="c1">#DOC \item loop while n\_model\_calls\_used &lt; n\_model\_calls</span>
+    <span class="k">while</span> <span class="n">n_model_calls_used</span> <span class="o">&lt;</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]:</span>
+        <span class="c1">#DOC \item pick random item from list</span>
+        <span class="n">move</span> <span class="o">=</span> <span class="n">possible_moves</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">possible_moves</span><span class="p">))]</span>
+        <span class="c1">#DOC \item do move</span>
+        <span class="p">(</span><span class="n">t_n_model_calls</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">itbeta</span><span class="p">)</span>
+        <span class="n">n_model_calls_used</span> <span class="o">+=</span> <span class="n">t_n_model_calls</span>
+        <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span>
 
 
     <span class="c1">#DOC \item perturb final energy by random\_energy\_perturbation</span>
@@ -1690,7 +1662,7 @@
 
     <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
         <span class="c1"># Identify move types that are being used</span>
-        <span class="c1"># Not all processes may have used the same move types, if blocks are turned off</span>
+        <span class="c1"># Not all processes may have used the same move types</span>
         <span class="n">key_ints</span><span class="o">=</span><span class="p">[]</span>
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">key_list</span><span class="p">:</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;MD_atom&quot;</span><span class="p">):</span>
@@ -3174,8 +3146,6 @@
 
         <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls_expected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;n_model_calls_expected&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-        <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_blocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;do_blocks&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
-        <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_partial_blocks&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;do_partial_blocks&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
 
         <span class="c1">#DOC \item process n\_atom\_steps</span>
             <span class="c1">#DOC \item If break\_up\_atom\_traj</span>
@@ -3843,7 +3813,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
     </div>
   </body>
 </html>
