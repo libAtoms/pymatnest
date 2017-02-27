@@ -102,16 +102,8 @@ def usage():
        | Number of model calls performed during the random walk. This is the actual number of calls performed, ideally the program sets its value depending on n_model_calls_expected and the number of processors used. Either this or the keyword ``n_model_calls_expected`` is mandatory, though the usage of the latter is strongly recommended.
        | default: 0
 
-    ``do_blocks=[T | F]``
-       | Whether to do steps in blocks or not.
-       | default: F
-
-    ``do_partial_blocks=[T | F]``
-       | Whether to do partial blocks if ``n_model_calls(_expected)`` is met.
-       | default: F
-
     ``n_atom_steps=int`` 
-       | Ratio of atomic trajectoris (in each block, if applicable) will be determined by ``n_atom_steps``/SUM(``n_*_steps``).
+       | Ratio of atomic trajectoris will be determined by ``n_atom_steps``/SUM(``n_*_steps``).
        | default: 1
 
     ``atom_traj_len=int`` 
@@ -123,19 +115,19 @@ def usage():
        | default: F 
 
     ``n_cell_volume_steps=int`` 
-       | Ratio of cell volume steps (in each block, if applicable) will be determined by ``n_cell_volume_steps``/SUM(``n_*_steps``).
+       | Ratio of cell volume steps will be determined by ``n_cell_volume_steps``/SUM(``n_*_steps``).
        | default: 1
 
     ``n_cell_shear_steps=int`` 
-       | Ratio of cell shear steps (in each block, if applicable) will be determined by ``n_cell_shear_steps``/SUM(``n_*_steps``).
+       | Ratio of cell shear steps will be determined by ``n_cell_shear_steps``/SUM(``n_*_steps``).
        | default: 1
 
     ``n_cell_stretch_steps=int`` 
-       | Ratio of cell stretch steps (in each block, if applicable) will be determined by ``n_cell_stretch_steps``/SUM(``n_*_steps``).
+       | Ratio of cell stretch steps will be determined by ``n_cell_stretch_steps``/SUM(``n_*_steps``).
        | default: 1
 
     ``n_swap_steps=int`` 
-       | Ratio of species swap steps in (in each block, if applicable) will be determined by ``n_swap_steps``/SUM(``n_*_steps``). It has to be set other than zero for a multicomponent system.
+       | Ratio of species swap steps in will be determined by ``n_swap_steps``/SUM(``n_*_steps``). It has to be set other than zero for a multicomponent system.
        | default: 0
 
     ``swap_max_cluster=int`` 
@@ -449,17 +441,15 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("n_model_calls_expected=int (0, one of these is required)\n")
     sys.stderr.write("n_model_calls=int (0, one of these is required)\n")
-    sys.stderr.write("do_blocks=[T | F] (F, whether to do steps in blocks\n")
-    sys.stderr.write("do_partial_blocks=[T | F] (F, whether to allow partial blocks if n_model_calls(_expected) is met\n")
     sys.stderr.write("\n")
-    sys.stderr.write("n_atom_steps=int (1, number of atomic trajectories per block\n")
+    sys.stderr.write("n_atom_steps=int (1, number of atomic trajectories \n")
     sys.stderr.write("atom_traj_len=int (8, length of atomic trajectory (MD steps or MC sweeps) in each step\n")
     sys.stderr.write("break_up_atom_traj=[T | F] (F, whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps\n")
     sys.stderr.write("\n")
-    sys.stderr.write("n_cell_volume_steps=int (1, number of cell MC volume steps each block)\n")
-    sys.stderr.write("n_cell_shear_steps=int (1, number of cell MC shear steps each block)\n")
-    sys.stderr.write("n_cell_stretch_steps=int (1, number of cell MC stretch steps each block)\n")
-    sys.stderr.write("n_swap_steps=int (0, number of atom swaps in each block)\n")
+    sys.stderr.write("n_cell_volume_steps=int (1, number of cell MC volume steps )\n")
+    sys.stderr.write("n_cell_shear_steps=int (1, number of cell MC shear steps )\n")
+    sys.stderr.write("n_cell_stretch_steps=int (1, number of cell MC stretch steps )\n")
+    sys.stderr.write("n_swap_steps=int (0, number of atom swaps in )\n")
     sys.stderr.write("swap_max_cluster=int (1, maximum size of interconnected cluster to try to swap)\n")
     sys.stderr.write("swap_r_cut=float (2.5, cutoff radius for defining connected atoms for cluster)\n")
     sys.stderr.write("swap_cluster_probability_increment=float (0.75, factor between prob. of picking increasing larger clusters)\n")
@@ -1513,7 +1503,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax, itbeta):
 #DOC
 #DOC ``walk_single_walker``
 
-    #DOC \item create block list
+    #DOC \item create list
                         #DOC \item do\_atom\_walk :math:`*` n\_atom\_step\_n\_calls
     possible_moves = ( [do_atom_walk] * movement_args['n_atom_steps_n_calls'] +
                         #DOC \item do\_cell\_volume\_step :math:`*` n\_cell\_volume\_steps
@@ -1528,32 +1518,14 @@ def walk_single_walker(at, movement_args, Emax, KEmax, itbeta):
     out = {}
     n_model_calls_used=0
 
-    #DOC \item if do\_blocks
-    if movement_args['do_blocks']:
-        #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
-        while n_model_calls_used < movement_args['n_model_calls']:
-            #DOC \item shuffle block list
-            rng.shuffle_in_place(possible_moves)
-            #DOC \item loop over items in list
-            for move in possible_moves:
-                #DOC \item do move
-                (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax, itbeta)
-                n_model_calls_used += t_n_model_calls
-                accumulate_stats(out, t_out)
-
-                #DOC \item break if do\_partial\_blocks and n\_model\_calls is reached
-                if movement_args['do_partial_blocks'] and n_model_calls_used >= movement_args['n_model_calls']:
-                    break
-    #DOC \item else
-    else:
-        #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
-        while n_model_calls_used < movement_args['n_model_calls']:
-            #DOC \item pick random item from list
-            move = possible_moves[rng.int_uniform(0,len(possible_moves))]
-            #DOC \item do move
-            (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax, itbeta)
-            n_model_calls_used += t_n_model_calls
-            accumulate_stats(out, t_out)
+    #DOC \item loop while n\_model\_calls\_used < n\_model\_calls
+    while n_model_calls_used < movement_args['n_model_calls']:
+        #DOC \item pick random item from list
+        move = possible_moves[rng.int_uniform(0,len(possible_moves))]
+        #DOC \item do move
+        (t_n_model_calls, t_out) = move(at, movement_args, Emax, KEmax, itbeta)
+        n_model_calls_used += t_n_model_calls
+        accumulate_stats(out, t_out)
 
 
     #DOC \item perturb final energy by random\_energy\_perturbation
@@ -1626,7 +1598,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
 
     if (comm is not None):
         # Identify move types that are being used
-        # Not all processes may have used the same move types, if blocks are turned off
+        # Not all processes may have used the same move types
         key_ints=[]
         for key in key_list:
             if (key == "MD_atom"):
@@ -3110,8 +3082,6 @@ def main():
 
         movement_args['n_model_calls_expected'] = int(args.pop('n_model_calls_expected', 0))
         movement_args['n_model_calls'] = int(args.pop('n_model_calls', 0))
-        movement_args['do_blocks'] = str_to_logical(args.pop('do_blocks', "F"))
-        movement_args['do_partial_blocks'] = str_to_logical(args.pop('do_partial_blocks', "F"))
 
         #DOC \item process n\_atom\_steps
             #DOC \item If break\_up\_atom\_traj
