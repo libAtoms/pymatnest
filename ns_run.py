@@ -329,6 +329,9 @@ def usage():
     ``FORTRAN_model=str``
        |  MANDATORY if energy_calculator=fortran
 
+    ``FORTRAN_model_params=str``
+       |  parameters (optional) for fortran model
+
     ``LAMMPS_fix_gmc=[T | F]`` 
        | default: F
 
@@ -532,6 +535,7 @@ def usage():
     sys.stderr.write("QUIP_pot_args=str (MANDATORY if energy_calculator=quip)\n")
     sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=quip)\n")
     sys.stderr.write("FORTRAN_model=str (MANDATORY if energy_calculator=fortran)\n")
+    sys.stderr.write("FORTRAN_model_params=str (parameters for energy_calculator=fortran)\n")
     sys.stderr.write("LAMMPS_fix_gmc=[T | F]\n") 
     sys.stderr.write("LAMMPS_init_cmds=str (MANDATORY if energy_calculator=lammps)\n")
     sys.stderr.write("LAMMPS_name=str ('', arch name for lammps shared object file)\n")
@@ -3165,8 +3169,10 @@ def main():
                 ns_args['FORTRAN_model'] = args.pop('FORTRAN_model')
             except:
                 exit_error("need FORTRAN model FORTRAN_model\n",1)
+            ns_args['FORTRAN_model_params'] = args.pop('FORTRAN_model_params', '0')
             f_MC_MD = fortranMCMDpy.fortran_MC_MD(ns_args['FORTRAN_model'])
-            f_MC_MD.init_model()
+            params = np.array([ float(x) for x in ns_args['FORTRAN_model_params'].split() ])
+            f_MC_MD.init_model(params)
         else:
             exit_error("energy_calculator=%s unknown\n" % ns_args['energy_calculator'], 3)
 
