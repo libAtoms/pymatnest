@@ -15,7 +15,7 @@ class fortran_MC_MD:
 
 
         # ll_init_model
-        self.model_lib.ll_init_config_.argtypes = [ctypes.c_void_p, # N_params
+        self.model_lib.ll_init_model_.argtypes = [ctypes.c_void_p, # N_params
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS") ] # params
 
         # ll_init_config
