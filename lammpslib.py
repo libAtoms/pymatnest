@@ -642,7 +642,7 @@ End LAMMPSlib Interface Documentation
               try:
                  num = int(sym)
               except:
-                 num = symbols2numbers(sym)
+                 num = symbols2numbers(sym)[0]
               self.parameters.atom_types[num] = symbol_atom_types[sym]
 
         # Collect chemical symbols
