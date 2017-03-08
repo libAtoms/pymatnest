@@ -161,9 +161,9 @@ def usage():
     ``random_energy_perturbation=float`` 
        | default: 1.0e-12
 
-    ``atom_algorithm=[MC | MD]``
+    ``atom_algorithm=[MC | MD | GMC]``
        | MANDATORY
-       | Use either Monte Carlo or Molecular dynamics to explore.
+       | Use either Monte Carlo or Molecular dynamics to explore. GMC is an alias for atom_algorithm=MC, MC_atom_Galilean=True.
 
     ``MC_atom_velocities=[T | F]`` 
        | This keyword is supported only for energy_calculator=fortran.
@@ -479,7 +479,7 @@ def usage():
     sys.stderr.write("velo_traj_len=int (0, number of MC sweeps in each velocity MC segement)\n")
     sys.stderr.write("\n")
     sys.stderr.write("random_energy_perturbation=float (1.0e-12)\n")
-    sys.stderr.write("atom_algorithm=[MC | MD] (MANDATORY)\n")
+    sys.stderr.write("atom_algorithm=[MC | MD | GMC] (MANDATORY)\n")
     sys.stderr.write("\n")
     sys.stderr.write("MC_atom_velocities=[T | F] (F, supported only for energy_calculator=fortran)\n")
     sys.stderr.write("MC_atom_velocities_pre_perturb=[T | F] (F, Perturb velocities (rejection free) before MC + velocities walk)\n")
@@ -3283,8 +3283,8 @@ def main():
             movement_args['atom_algorithm'] = args.pop('atom_algorithm')
         except:
             exit_error("Failed to read algorithm for atom motion atom_algorithm", 1)
-        if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD':
-            exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorith,'], 3)
+        if movement_args['atom_algorithm'] != 'MC' and movement_args['atom_algorithm'] != 'MD' and movement_args['atom_algorithm'] != 'GMC':
+            exit_error("Got unknown atom_algorithm '%s'\n" % movement_args['atom_algorithm'], 3)
 
         movement_args['MC_atom_velocities'] = str_to_logical(args.pop('MC_atom_velocities', "F"))
         movement_args['MC_atom_velocities_pre_perturb'] = str_to_logical(args.pop('MC_atom_velocities_pre_perturb', "F"))
@@ -3296,6 +3296,10 @@ def main():
         movement_args['MC_atom_Galilean'] = str_to_logical(args.pop('MC_atom_Galilean', "F"))
         movement_args['MC_atom_Galilean_no_reverse'] = str_to_logical(args.pop('MC_atom_Galilean_no_reverse', "T"))
         movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
+        # atom_algorithm == GMC is just an alias for atom_algorithm = MC, MC_atom_Galilean = True
+        if movement_args['atom_algorithm'] == 'GMC':
+            movement_args['atom_algorithm'] == 'MC'
+            movement_args['MC_atom_Galilean'] = True
 
         movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))
         movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_velo_post_perturb', "T"))
@@ -3513,6 +3517,7 @@ def main():
             if comm is not None:
                 ns_args['restart_file'] = comm.bcast(ns_args['restart_file'], root=0)
 
+        # set up walkers
         walkers=[]
         if ns_args['restart_file'] == '': # start from scratch
             start_first_iter = 0
@@ -3543,9 +3548,10 @@ def main():
                 if do_calc_quip:
                     init_atoms = quippy.Atoms(init_atoms)
                 ase.io.write(sys.stdout, init_atoms, format=ns_args['config_file_format'])
-            else:
+            else: # rank != 0
                 init_atoms = None
 
+            # bcast atoms created on rank == 0
             if comm is not None:
                 init_atoms = comm.bcast(init_atoms, root=0)
             if do_calc_quip:
@@ -3568,6 +3574,7 @@ def main():
             for i_walker in range(n_walkers):
                 walkers.append(init_atoms.copy())
 
+            # set up data structures to track configs as they are cloned and evolve
             if ns_args['track_configs']:
                 if comm is None:
                     config_ind = 0
@@ -3643,7 +3650,7 @@ def main():
                 at.info['ns_energy'] = rand_perturb_energy(energy, ns_args['random_energy_perturbation'])
                 at.info['volume'] = at.get_volume()
 
-            # Done initialise atomic positions. Now initialise all momenta
+            # Done initialising atomic positions. Now initialise momenta
 
             ns_beta = -1.0 # default value, if not doing separable_MDNS
             (emx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
@@ -3671,7 +3678,7 @@ def main():
             else:
                 KEmax = -1.0
 
-                # set initial velocities, rejection free
+            # set initial velocities, rejection free
             if movement_args['do_velocities']:
                if (not movement_args['separable_MDNS']):
                     for at in walkers:
@@ -3682,37 +3689,7 @@ def main():
 
             ns_args['swap_atomic_numbers'] = False
         
-        
-            # the initialization loop applied to all walkers:
-            if(ns_args['initial_walk_N_walks'] > 0):
-                print "doing initial_walk"
-                (Emax, cull_rank, cull_ind) = max_energy(walkers, 1)
-                # WARNING: this assumes that all walkers have same numbers of atoms
-                Emax = Emax[0] + ns_args['initial_walk_Emax_offset_per_atom']*len(walkers[0])
-
-                # do full walks, not shortened walks that account for NS algorithm parallelization
-                save_n_model_calls = movement_args['n_model_calls']
-                movement_args['n_model_calls'] = movement_args['n_model_calls_expected']
-
-                walk_stats_adjust={}
-                zero_stats(walk_stats_adjust, movement_args)
-                for Nloop in range(ns_args['initial_walk_N_walks']):
-                    print "initial walk iter ", Nloop
-
-                    if Nloop % ns_args['initial_walk_adjust_interval'] == 1: # first adjust is after first walk
-                        # could be done before first walk if full_auto_set_stepsize didn't need walk_stats
-                        full_auto_set_stepsizes(walkers, walk_stats_adjust, movement_args, comm, Emax, KEmax, size, ns_beta)
-                        walk_stats_adjust={}
-                        zero_stats(walk_stats_adjust, movement_args)
-
-                    for at in walkers:
-                        walk_stats = walk_single_walker(at, movement_args, Emax, KEmax, ns_beta)
-                        accumulate_stats(walk_stats_adjust, walk_stats)
-
-                # restore walk lengths for rest of NS run
-                movement_args['n_model_calls'] = save_n_model_calls
-                
-        else: # doing a restart
+        else: # set up walkers with a restart
             ns_args['swap_atomic_numbers'] = False
             if rank == 0: # read on head task and send to other tasks
                 for r in range(size):
@@ -3800,6 +3777,38 @@ def main():
             for at in walkers:
                 if 'GMC_direction' not in at.arrays:
                     at.arrays['GMC_direction'] = np.zeros( (len(at),3) )
+
+        # do initial walks if needed
+        if ns_args['initial_walk_N_walks'] > 0 and ns_args['restart_file'] == '':
+            if rank == 0:
+                print "doing initial_walk"
+            (Emax, cull_rank, cull_ind) = max_energy(walkers, 1)
+            # WARNING: this assumes that all walkers have same numbers of atoms
+            Emax = Emax[0] + ns_args['initial_walk_Emax_offset_per_atom']*len(walkers[0])
+
+            # do full walks, not shortened walks that account for NS algorithm parallelization
+            save_n_model_calls = movement_args['n_model_calls']
+            movement_args['n_model_calls'] = movement_args['n_model_calls_expected']
+
+            walk_stats_adjust={}
+            zero_stats(walk_stats_adjust, movement_args)
+            for Nloop in range(ns_args['initial_walk_N_walks']):
+                if rank == 0:
+                    print "initial walk iter ", Nloop
+
+                if Nloop % ns_args['initial_walk_adjust_interval'] == 1: # first adjust is after first walk
+                    # could be done before first walk if full_auto_set_stepsize didn't need walk_stats
+                    full_auto_set_stepsizes(walkers, walk_stats_adjust, movement_args, comm, Emax, KEmax, size, ns_beta)
+                    walk_stats_adjust={}
+                    zero_stats(walk_stats_adjust, movement_args)
+
+                for at in walkers:
+                    walk_stats = walk_single_walker(at, movement_args, Emax, KEmax, ns_beta)
+                    accumulate_stats(walk_stats_adjust, walk_stats)
+
+            # restore walk lengths for rest of NS run
+            movement_args['n_model_calls'] = save_n_model_calls
+
 
         # scale MC_atom_step_size by max_vol^(1/3)
         max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
