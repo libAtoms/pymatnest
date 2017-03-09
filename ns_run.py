@@ -2074,7 +2074,7 @@ def set_n_from_expected(prop):
             # n(1) <- f_c n_t + (1-f_c)*(1-f_e) n(1)
             # n(l >= 2) <- (1-f_c)(1-f_e) n(l) + (1-f_c) f_e n(l-1)
 
-            # f = (1-f_c)f_e / (f_c+f_f_c f_e)
+            # f = (1-f_c)f_e / (f_c+f_e - f_c f_e)
 
             # n(1)/n_t = f_c/(1-(1-f_c)(1-f_e)) = f_c/(f_c+f_e-f_c f_e)
             # n(l >= 2)/n_t = f n(l-1) = f^(l-1) n(1)/n_t
