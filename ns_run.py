@@ -2290,7 +2290,21 @@ def do_ns_loop():
         log_alpha = np.log(float(ns_args['n_walkers']+1-ns_args['n_cull'])/float(ns_args['n_walkers']+1))
         Emax_history=collections.deque(maxlen=ns_args['T_estimate_finite_diff_lag'])
 
-    # actual iteration cycle starts here
+    try:
+        from ns_run_analysis import NSAnalyzer
+        if comm.rank == 0:
+            print "successfully imported NSAnalyzer"
+        ns_analyzer = NSAnalyzer(comm)
+        if comm.rank == 0:
+            print "successfully created NSAnalyzer object"
+    except:
+        print "failed to import NSAnalyzer"
+        ns_analyzer = None
+
+    if ns_analyzer is not None:
+        ns_analyzer.analyze(walkers, -1)
+
+    # START MAIN LOOP
     i_ns_step = start_first_iter
     while ns_args['n_iter'] < 0 or i_ns_step < ns_args['n_iter']:
         print_prefix="%d %d" % (rank, i_ns_step)
@@ -2910,6 +2924,8 @@ def do_ns_loop():
             pprev_snapshot_iter = prev_snapshot_iter
             prev_snapshot_iter = i_ns_step
 
+        if ns_analyzer is not None:
+            ns_analyzer.analyze(walkers, i_ns_step)
         i_ns_step += 1
         ### END OF MAIN LOOP
 
