@@ -2292,13 +2292,14 @@ def do_ns_loop():
 
     try:
         from ns_run_analysis import NSAnalyzer
-        if comm.rank == 0:
+        if rank == 0:
             print "successfully imported NSAnalyzer"
         ns_analyzer = NSAnalyzer(comm)
-        if comm.rank == 0:
+        if rank == 0:
             print "successfully created NSAnalyzer object"
-    except:
-        print "failed to import NSAnalyzer"
+    except ImportError:
+        if rank == 0:
+            print "failed to import NSAnalyzer"
         ns_analyzer = None
 
     if ns_analyzer is not None:
