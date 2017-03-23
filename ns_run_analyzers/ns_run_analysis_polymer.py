@@ -45,14 +45,15 @@ class NSAnalyzer():
 
         if self.comm is None or self.comm.rank == 0:
             global_histo = np.histogram(global_dists, bins=20)
+            bin_width = global_histo[1][1]-global_histo[1][0]
             for (n, r) in izip(global_histo[0], global_histo[1]):
-                print "NSAnalyzer:",label,calculator_label, r, n
+                print "NSAnalyzer:",label,calculator_label, r, n/bin_width
 
 
-    def analyze(self, walkers, iter):
+    def analyze(self, walkers, iter, label):
         if iter < 0: # startup
-            self.print_quantity_distributions(walkers, "initial", self.end_to_end_distances, "end_to_end_distance")
-            self.print_quantity_distributions(walkers, "initial", self.radii_of_gyration, "radius_of_gyration")
+            self.print_quantity_distributions(walkers, label+" initial", self.end_to_end_distances, "end_to_end_distance")
+            self.print_quantity_distributions(walkers, label+" initial", self.radii_of_gyration, "radius_of_gyration")
         elif iter % 10000 == 0: 
-            self.print_quantity_distributions(walkers, "%d" % iter, self.end_to_end_distances,"end_to_end_distance")
-            self.print_quantity_distributions(walkers, "%d" % iter, self.radii_of_gyration, "radius_of_gyration")
+            self.print_quantity_distributions(walkers, label+" %d" % iter, self.end_to_end_distances,"end_to_end_distance")
+            self.print_quantity_distributions(walkers, label+" %d" % iter, self.radii_of_gyration, "radius_of_gyration")
