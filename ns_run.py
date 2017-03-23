@@ -95,7 +95,7 @@ def usage():
        | default 100
 
     ``n_model_calls_expected=int``
-       | Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword ``n_model_calls`` is mandatory, but the use of this keyword is strongly recommended.
+       | Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls and the parallel performance is optimal, it can be increased for some. For best practice it is strongly recommended to choose n_model_calls_expected/[number of processors] > 20. Either this or the keyword ``n_model_calls`` is mandatory, but the use of this keyword is strongly recommended. 
        | default: 0
 
     ``n_model_calls=int``
@@ -1991,6 +1991,7 @@ def set_n_from_expected(prop):
 
             n_walks = f_cull/(f_cull+f_extra-f_cull*f_extra) * (1.0 + f/(1.0-f) + f/(1.0-f)**2)
             if rank == 0:
+		print "f_cull" ,f_cull,"f_extra", f_extra, "f", f 
                 print "Calculated average n_walks at kill = ",n_walks, " from f_cull ",f_cull," f_extra (due to otherwise idle processors doing walks and explicitly requested extra walks) ",f_extra
                 if n_walks < 1:
                     print "WARNING: got average n_walks < 1, but will always do at least 1 walk, so effective %s_expected will be higher than requested" % prop
