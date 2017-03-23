@@ -1004,7 +1004,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
                 final_E = pot.results['energy'] + eval_energy(at, do_PE=False, do_KE=False)
         else: # propagate returned success == False
             final_E = 2.0*abs(Emax)
-            print "error in propagate_lammps NVE, setting final_E = 2*Emax =" , final_E
+            print "error in propagate_lammps NVE, setting final_E = 2*abs(Emax) =" , final_E
     elif do_calc_fortran:
         final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_traj_len'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
         if (not movement_args['separable_MDNS']):
@@ -3099,7 +3099,7 @@ def main():
         ns_args['random_initialise_cell'] = str_to_logical(args.pop('random_initialise_cell', "T"))
         ns_args['LAMMPS_molecular_info'] = str_to_logical(args.pop('LAMMPS_molecular_info', "T"))
         ns_args['initial_walk_N_walks'] = int(args.pop('initial_walk_N_walks', 0))
-        ns_args['initial_walk_adjust_interval'] = int(args.pop('initial_walk_adjust_interval', 10))
+        ns_args['initial_walk_adjust_interval'] = int(args.pop('initial_walk_adjust_interval', 1))
         ns_args['initial_walk_Emax_offset_per_atom'] = float(args.pop('initial_walk_Emax_offset_per_atom', 1))
         ns_args['traj_interval'] = int(args.pop('traj_interval', 100))
         ns_args['E_dump_interval'] = int(args.pop('E_dump_interval', -1))
@@ -3816,7 +3816,7 @@ def main():
                 if rank == 0:
                     print "initial walk iter ", Nloop
 
-                if Nloop % ns_args['initial_walk_adjust_interval'] == 1: # first adjust is after first walk
+                if Nloop > 0 and (Nloop-1) % ns_args['initial_walk_adjust_interval'] == 0: # first adjust is after first walk
                     # could be done before first walk if full_auto_set_stepsize didn't need walk_stats
                     full_auto_set_stepsizes(walkers, walk_stats_adjust, movement_args, comm, Emax, KEmax, size, ns_beta)
                     walk_stats_adjust={}
@@ -3831,7 +3831,6 @@ def main():
 
             # restore walk lengths for rest of NS run
             movement_args['n_model_calls'] = save_n_model_calls
-
 
         # scale MC_atom_step_size by max_vol^(1/3)
         max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
