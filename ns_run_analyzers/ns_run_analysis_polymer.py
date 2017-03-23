@@ -5,21 +5,44 @@ from itertools import izip
 class NSAnalyzer():
     def __init__(self, comm):
         self.comm = comm
+        self.orig_end_to_end_vector = []
+        self.config_counter = 0
         return
+
+    def find_ends(self, at):
+        return (np.reshape(np.where(at.arrays['angles'] == '_')[0],(-1,2)))
 
     def end_to_end_distances(self, at):
         dists = []
-        for ends in np.reshape(np.where(at.arrays['angles'] == '_')[0],(-1,2)):
+        if len(self.orig_end_to_end_vector) == 0:
+            first_time=True
+        else:
+            first_time=False
+        for ends in self.find_ends(at):
             cur_pos = np.zeros((3))
             for i_at in range(ends[0], ends[1]):
                 cur_pos += at.get_distance(i_at, i_at+1, mic=True, vector=True)
+            if first_time:
+                self.orig_end_to_end_vector.append(cur_pos/np.linalg.norm(cur_pos))
             dists.append(np.linalg.norm(cur_pos))
 
-        return dists
+        return (dists)
+
+    def end_to_end_vector_dots(self, at):
+        vec_dots = []
+        for ends in self.find_ends(at):
+            cur_pos = np.zeros((3))
+            for i_at in range(ends[0], ends[1]):
+                cur_pos += at.get_distance(i_at, i_at+1, mic=True, vector=True)
+            vec_dots.append(np.dot(self.orig_end_to_end_vector[self.config_counter], cur_pos)/np.linalg.norm(cur_pos))
+            self.config_counter += 1
+            if self.config_counter == len(self.orig_end_to_end_vector):
+                self.config_counter = 0
+        return (vec_dots)
 
     def radii_of_gyration(self, at):
         dists = []
-        for ends in np.reshape(np.where(at.arrays['angles'] == '_')[0],(-1,2)):
+        for ends in self.find_ends(at):
             cur_pos = np.zeros((3))
             r_CoM = np.zeros((3))
             vecs = []
@@ -34,7 +57,7 @@ class NSAnalyzer():
                 r_g += (cur_pos-r_CoM)**2
             dists.append(np.sqrt(r_g[0] + r_g[1] + r_g[2]))
 
-        return dists
+        return (dists)
 
     def print_quantity_distributions(self, walkers, label, calculator, calculator_label):
         local_dists = [calculator(at) for at in walkers]
@@ -53,7 +76,9 @@ class NSAnalyzer():
     def analyze(self, walkers, iter, label):
         if iter < 0: # startup
             self.print_quantity_distributions(walkers, label+" initial", self.end_to_end_distances, "end_to_end_distance")
+            self.print_quantity_distributions(walkers, label+" initial", self.end_to_end_vector_dots, "end_to_end_vector_dots")
             self.print_quantity_distributions(walkers, label+" initial", self.radii_of_gyration, "radius_of_gyration")
         elif iter % 10000 == 0: 
-            self.print_quantity_distributions(walkers, label+" %d" % iter, self.end_to_end_distances,"end_to_end_distance")
+            self.print_quantity_distributions(walkers, label+" %d" % iter, self.end_to_end_distances,"end_to_end_distances")
+            self.print_quantity_distributions(walkers, label+" %d" % iter, self.end_to_end_vector_dots,"end_to_end_vector_dots")
             self.print_quantity_distributions(walkers, label+" %d" % iter, self.radii_of_gyration, "radius_of_gyration")
