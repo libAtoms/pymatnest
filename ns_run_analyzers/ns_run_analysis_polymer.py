@@ -60,17 +60,18 @@ class NSAnalyzer():
         return (dists)
 
     def print_quantity_distributions(self, walkers, label, calculator, calculator_label):
-        local_dists = [calculator(at) for at in walkers]
+        local_quantities = [calculator(at) for at in walkers]
         if self.comm is None:
-            global_dists = local_dists
+            global_quantities = local_quantities
         else:
-            global_dists = self.comm.gather(local_dists, root=0)
+            global_quantities = self.comm.gather(local_quantities, root=0)
 
         if self.comm is None or self.comm.rank == 0:
-            global_histo = np.histogram(global_dists, bins=20)
+            print "NSAnalyzer:", label, calculator_label, "var", np.var(global_quantities)
+            global_histo = np.histogram(global_quantities, bins=20)
             bin_width = global_histo[1][1]-global_histo[1][0]
-            for (n, r) in izip(global_histo[0], global_histo[1]):
-                print "NSAnalyzer:",label,calculator_label, r, n/bin_width
+            for (i, (n, r)) in enumerate(izip(global_histo[0], global_histo[1])):
+                print "NSAnalyzer:", label, calculator_label, i, r, n/bin_width
 
 
     def analyze(self, walkers, iter, label):
