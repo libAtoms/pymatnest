@@ -215,6 +215,10 @@ def usage():
        | Use energy conservation violation (exceeding MD_atom_energy_fuzz * KE) to reject MD trajectories.
        | default: F
 
+    ``python_MD=[ T | F ]``
+       | Do MD using python code rather than underlying driver
+       | default: F
+
     ``atom_velo_rej_free_fully_randomize=[T | F]``
        | If true, randomize velocities completely rather than just perturbing.
        | default: F
@@ -990,30 +994,46 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax, itbeta):
     pre_MD_E = at.info['ns_energy']
 
     #DOC \item propagate in time atom\_traj\_len time steps of length MD\_atom\_timestep
-    if do_calc_quip:
-        propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
-        if (not movement_args['separable_MDNS']):
+    if movement_args['python_MD']:
+        forces = eval_forces(at)
+        final_E = None
+        timestep = movement_args['MD_atom_timestep']
+        for i in range(movement_args['atom_traj_len']):
+            at.set_momenta(at.get_momenta()+forces*0.5*timestep)
+            at.set_positions(at.get_positions()+at.get_momenta()*timestep)
+            try:
+                forces = eval_forces(at)
+            except:
+                final_E = 2.0*abs(Emax)
+                break
+            at.set_momenta(at.get_momenta()+forces*0.5*timestep)
+        if final_E is None: # didn't abort due to exception in eval_forces()
             final_E = eval_energy(at)
-        else:
-            final_E = eval_energy(at, do_KE=False)
-    elif do_calc_lammps:
-        if propagate_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'], algo='NVE'):
-            if (not movement_args['separable_MDNS']):
-                final_E = pot.results['energy'] + eval_energy(at, do_PE=False)
-            else:
-                final_E = pot.results['energy'] + eval_energy(at, do_PE=False, do_KE=False)
-        else: # propagate returned success == False
-            final_E = 2.0*abs(Emax)
-            print "error in propagate_lammps NVE, setting final_E = 2*abs(Emax) =" , final_E
-    elif do_calc_fortran:
-        final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_traj_len'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
-        if (not movement_args['separable_MDNS']):
-            final_E += eval_energy(at,do_PE=False, do_KE=False)
-        else:
-            # recompute final energy, rather than subtracting KE from PE+PV+KE, for consistency
-            final_E = eval_energy(at, do_KE=False) 
     else:
-        exit_error("Need some non-quippy, non-fortran, non-lammps way of doing MD\n",3)
+        if do_calc_quip:
+            propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
+            if (not movement_args['separable_MDNS']):
+                final_E = eval_energy(at)
+            else:
+                final_E = eval_energy(at, do_KE=False)
+        elif do_calc_lammps:
+            if propagate_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'], algo='NVE'):
+                if (not movement_args['separable_MDNS']):
+                    final_E = pot.results['energy'] + eval_energy(at, do_PE=False)
+                else:
+                    final_E = pot.results['energy'] + eval_energy(at, do_PE=False, do_KE=False)
+            else: # propagate returned success == False
+                final_E = 2.0*abs(Emax)
+                ## print "error in propagate_lammps NVE, setting final_E = 2*abs(Emax) =" , final_E
+        elif do_calc_fortran:
+            final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_traj_len'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
+            if (not movement_args['separable_MDNS']):
+                final_E += eval_energy(at,do_PE=False, do_KE=False)
+            else:
+                # recompute final energy, rather than subtracting KE from PE+PV+KE, for consistency
+                final_E = eval_energy(at, do_KE=False) 
+        else:
+            exit_error("Need some non-quippy, non-fortran, non-lammps way of doing MD\n",3)
 
     reject_fuzz = False
     final_KE = eval_energy(at, do_PE=False, do_PV=False)
@@ -1128,7 +1148,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
         if movement_args['MC_atom_velocities']:
             exit_error("MC_atom_velocities only supported for FORTRAN calculator\n", 8)
         dz=0.0
-        #DOC \item is MC_atom_Galilean
+        #DOC \item if MC_atom_Galilean
         if movement_args['MC_atom_Galilean']:
             #DOC \item go Galilean MC in python
 
@@ -1681,6 +1701,11 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
 #DOC ``full_auto_set_stepsizes``
     #DOC \item Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range. 
 
+    global print_prefix
+
+    orig_prefix = print_prefix
+    print_prefix = "%d full_auto" % comm.rank
+
     full_auto_start_time = time.time()
     n_samples_per_move_type=200 # total number of (H)MC moves used to set each step length
 
@@ -1964,6 +1989,8 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                     break
 
     #DOC \item Return step sizes and time taken for routine to run
+
+    print_prefix = orig_prefix
 
     full_auto_end_time = time.time()
     duration = full_auto_end_time - full_auto_start_time
@@ -2296,7 +2323,7 @@ def do_ns_loop():
     # START MAIN LOOP
     i_ns_step = start_first_iter
     while ns_args['n_iter'] < 0 or i_ns_step < ns_args['n_iter']:
-        print_prefix="%d %d" % (rank, i_ns_step)
+        print_prefix="%d NS %d" % (rank, i_ns_step)
 
         if ns_args['debug'] >= 4 and ns_args['track_configs']:
             for at in walkers:
@@ -2959,6 +2986,7 @@ def main():
         global MPI, quippy, f_MC_MD
         global track_traj_io, cur_config_ind
         global E_dump_io
+        global print_prefix
 
         import sys
 
@@ -3318,6 +3346,7 @@ def main():
         if movement_args['atom_algorithm'] == 'GMC':
             movement_args['atom_algorithm'] == 'MC'
             movement_args['MC_atom_Galilean'] = True
+        movement_args['python_MD'] = str_to_logical(args.pop('python_MD', "F"))
 
         movement_args['MD_atom_velo_pre_perturb'] = str_to_logical(args.pop('MD_atom_velo_pre_perturb', "F"))
         movement_args['MD_atom_velo_post_perturb'] = str_to_logical(args.pop('MD_atom_velo_post_perturb', "T"))
@@ -3815,6 +3844,7 @@ def main():
             for Nloop in range(ns_args['initial_walk_N_walks']):
                 if rank == 0:
                     print "initial walk iter ", Nloop
+                print_prefix="%d initial_walk %d" % (rank, Nloop)
 
                 if Nloop > 0 and (Nloop-1) % ns_args['initial_walk_adjust_interval'] == 0: # first adjust is after first walk
                     # could be done before first walk if full_auto_set_stepsize didn't need walk_stats
