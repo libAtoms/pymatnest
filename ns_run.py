@@ -315,6 +315,10 @@ def usage():
     ``GMC_dir_perturb_angle_during=float``
        |  default: 0.0
 
+    ``GMC_randomize_on_reject=[T | F]``
+       |  If true, randomize on rejection rather than reflecting
+       |  default: F
+
     ``MD_adjust_step_factor=float``
        |  default: 1.1
 
@@ -532,6 +536,7 @@ def usage():
     sys.stderr.write("GMC_adjust_max_rate=float (0.75)\n")
     sys.stderr.write("GMC_dir_perturb_angle=float (-1.0)\n")
     sys.stderr.write("GMC_dir_perturb_angle_during=float (0.0)\n")
+    sys.stderr.write("GMC_randomize_on_reject=[T | F] (F)\n")
     sys.stderr.write("MD_adjust_step_factor=float (1.1)\n")
     sys.stderr.write("MD_adjust_min_rate=float (0.5)\n")
     sys.stderr.write("MD_adjust_max_rate=float (0.95)\n")
@@ -1195,7 +1200,11 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
                             pos[:,:] = last_good_pos
                             at.set_positions(pos)
                             cur_E_is_correct = False
-                            d_pos[:,:] = -last_good_d_pos
+                            if movement_args['GMC_randomize_on_reject']:
+                                d_pos[:,:] = rng.normal(1.0, (len(at), 3))
+                                d_pos /= np.linalg.norm(d_pos)
+                            else:
+                                d_pos[:,:] = -last_good_d_pos
                             n_reflect -= 1
                             n_reverse += 1
 
@@ -1210,7 +1219,11 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
                 else: # reject
                     # E and GMC_direction in at were never overwritten, no need to restore, but do need to reverse dir
                     at.set_positions(last_good_pos)
-                    at.arrays['GMC_direction'] *= -1.0
+                    if movement_args['GMC_randomize_on_reject']:
+                        at.arrays['GMC_direction'][:,:] = rng.normal(1.0, (len(at), 3))
+                        at.arrays['GMC_direction'] /= np.linalg.norm(at.arrays['GMC_direction'])
+                    else:
+                        at.arrays['GMC_direction'] *= -1.0
                     n_accept = 0
             else:
                 if n_reverse > 0 and not cur_E_is_correct:
@@ -3407,6 +3420,7 @@ def main():
         movement_args['GMC_adjust_max_rate'] = float(args.pop('GMC_adjust_max_rate', 0.75))
         movement_args['GMC_dir_perturb_angle'] = float(args.pop('GMC_dir_perturb_angle', -1.0))
         movement_args['GMC_dir_perturb_angle_during'] = float(args.pop('GMC_dir_perturb_angle_during', 0.0))
+        movement_args['GMC_randomize_on_reject'] = str_to_logical(args.pop('GMC_randomize_on_reject', 'F'))
         movement_args['MD_adjust_step_factor'] = float(args.pop('MD_adjust_step_factor', 1.1))
         movement_args['MD_adjust_min_rate'] = float(args.pop('MD_adjust_min_rate', 0.50))
         movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 0.95))
@@ -3852,7 +3866,8 @@ def main():
                     walk_stats_adjust={}
                     zero_stats(walk_stats_adjust, movement_args)
 
-                for at in walkers:
+                for (i_at, at) in enumerate(walkers):
+                    print_prefix="%d initial_walk %d at %d" % (rank, Nloop, i_at)
                     walk_stats = walk_single_walker(at, movement_args, Emax, KEmax, ns_beta)
                     accumulate_stats(walk_stats_adjust, walk_stats)
 
