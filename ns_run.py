@@ -419,6 +419,10 @@ def usage():
        | offset (per atom) to increase Emax during initial random walk applied to all walkers
        | default: ''
 
+    ``initial_walk_only=[T | F]``
+       | do initial walk only, then quit
+       | default: F
+
     ``traj_interval=int``
      |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
      |  default: 100
@@ -567,6 +571,7 @@ def usage():
     sys.stderr.write("initial_walk_N_walks=int (0 number of rounds for initial walk) \n")
     sys.stderr.write("initial_walk_adjust_interval=int (10 interval (in walks) between adjustments of steps during initial walk) \n")
     sys.stderr.write("initial_walk_Emax_offset_per_atom=float (1.0, offset (per atom) to add to Emax for initial walks) \n")
+    sys.stderr.write("initial_walk_only=[T | F] (F, quit after doing initial walk) \n")
     sys.stderr.write("traj_interval=int (100, <=0 for no trajectory)\n")
     sys.stderr.write("delta_random_seed=int (-1, < 0 for seed from /dev/urandom)\n")
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
@@ -3131,6 +3136,7 @@ def main():
         ns_args['initial_walk_N_walks'] = int(args.pop('initial_walk_N_walks', 0))
         ns_args['initial_walk_adjust_interval'] = int(args.pop('initial_walk_adjust_interval', 1))
         ns_args['initial_walk_Emax_offset_per_atom'] = float(args.pop('initial_walk_Emax_offset_per_atom', 1))
+        ns_args['initial_walk_only'] = str_to_logical(args.pop('initial_walk_only', 'F'))
         ns_args['traj_interval'] = int(args.pop('traj_interval', 100))
         ns_args['E_dump_interval'] = int(args.pop('E_dump_interval', -1))
         ns_args['delta_random_seed'] = int(args.pop('delta_random_seed', -1))
@@ -3890,6 +3896,11 @@ def main():
 
             # restore walk lengths for rest of NS run
             movement_args['n_model_calls'] = save_n_model_calls
+
+            if ns_args['initial_walk_only']:
+                if comm is not None:
+                    MPI.Finalize()
+                sys.exit(0)
 
         # scale MC_atom_step_size by max_vol^(1/3)
         max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
