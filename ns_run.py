@@ -446,6 +446,11 @@ def usage():
      | Use separable mdns (rather than MDNS in the total energy).
      | default: F
 
+     ``ns_run_analyzers=string
+     | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
+     | Positive interval refers to NS loop, negative to initial walks
+     | default: ''
+
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
     sys.stderr.write("input:\n")
@@ -463,6 +468,7 @@ def usage():
     sys.stderr.write("out_file_prefix=str (None)\n")
     sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
     sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
+    sys.stderr.write("ns_run_analyzers=str ('', analyzers to apply during run\n")
     sys.stderr.write("\n")
     sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB))\n")
     sys.stderr.write("kB=float (8.6173324e-5, Boltzmann constant)\n")
@@ -2336,7 +2342,7 @@ def do_ns_loop():
         Emax_history=collections.deque(maxlen=ns_args['T_estimate_finite_diff_lag'])
 
     if ns_analyzers is not None:
-        for ns_analyzer in ns_analyzers:
+        for (ns_analyzer, ns_analyzer_interval) in ns_analyzers:
             ns_analyzer.analyze(walkers, -1, "NS_loop start")
 
     # START MAIN LOOP
@@ -2960,8 +2966,9 @@ def do_ns_loop():
             prev_snapshot_iter = i_ns_step
 
         if ns_analyzers is not None:
-            for ns_analyzer in ns_analyzers:
-                ns_analyzer.analyze(walkers, i_ns_step, "NS_loop %d" % i_ns_step)
+            for (ns_analyzer, ns_analyzer_interval) in ns_analyzers:
+                if ns_analyzer_interval > 0 and (i_ns_step+1)%ns_analyzer_interval == 0:
+                    ns_analyzer.analyze(walkers, i_ns_step, "NS_loop %d" % i_ns_step)
         i_ns_step += 1
         ### END OF MAIN LOOP
 
@@ -3454,15 +3461,17 @@ def main():
         try:
             import importlib
             ns_analyzers=[]
-            for analyzer_name in ns_args['ns_run_analyzers'].split(";"):
+            for analyzer_str in ns_args['ns_run_analyzers'].split(";"):
                 try:
+                    (analyzer_name, ns_analyzer_interval) = analyzer_str.split()
+                    ns_analyzer_interval = int(ns_analyzer_interval)
                     try:
                         analyzer_module = importlib.import_module(analyzer_name.strip())
                     except:
                         analyzer_module = importlib.import_module("ns_run_analyzers."+analyzer_name.strip())
-                    ns_analyzers.append(analyzer_module.NSAnalyzer(comm))
+                    ns_analyzers.append((analyzer_module.NSAnalyzer(comm), ns_analyzer_interval))
                     if rank == 0:
-                        print "Got NSAnalyzer from",analyzer_name.strip()
+                        print "Got NSAnalyzer from",analyzer_name.strip(),"ns_analyzer_interval",ns_analyzer_interval
                 except:
                     if rank == 0:
                         print "Failed to get NSAnalyzer from",analyzer_name.strip()
@@ -3858,8 +3867,9 @@ def main():
                     at.arrays['GMC_direction'] = np.zeros( (len(at),3) )
 
         if ns_analyzers is not None:
-            for ns_analyzer in ns_analyzers:
-                ns_analyzer.analyze(walkers, -1, "initial_walk start")
+            for (ns_analyzer, ns_analyzer_interval) in ns_analyzers:
+                if ns_analyzer_interval < 0:
+                    ns_analyzer.analyze(walkers, -1, "initial_walk start")
         # do initial walks if needed
         if ns_args['initial_walk_N_walks'] > 0 and ns_args['restart_file'] == '':
             if rank == 0:
@@ -3891,8 +3901,9 @@ def main():
                     accumulate_stats(walk_stats_adjust, walk_stats)
 
                 if ns_analyzers is not None:
-                    for ns_analyzer in ns_analyzers:
-                        ns_analyzer.analyze(walkers, -1, "initial_walk %d" % Nloop)
+                    for (ns_analyzer, ns_analyzer_interval) in ns_analyzers:
+                        if ns_analyzer_interval < 0 and (ns_analyzer_interval == -1 or (Nloop+1)%(-ns_analyzer_interval) == 0):
+                            ns_analyzer.analyze(walkers, -1, "initial_walk %d" % Nloop)
 
             # restore walk lengths for rest of NS run
             movement_args['n_model_calls'] = save_n_model_calls

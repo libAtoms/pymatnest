@@ -13,7 +13,4 @@ class NSAnalyzer():
         return at.info['ns_energy'] - KE
 
     def analyze(self, walkers, iter, label):
-        if iter < 0: # startup
-            print_quantity_distributions(self, walkers, label, self.config_enthalpy, "config_enthalpy")
-        elif iter % 10000 == 0: 
-            print_quantity_distributions(self, walkers, label, self.config_enthalpy, "config_enthalpy")
+        print_quantity_distributions(self, walkers, label, self.config_enthalpy, "config_enthalpy")

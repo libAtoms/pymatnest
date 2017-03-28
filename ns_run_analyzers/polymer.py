@@ -54,18 +54,12 @@ class NSAnalyzer():
 
 
     def analyze(self, walkers, iter, label):
-        if iter < 0: # startup
-            if label.find("initial_walk") >= 0:
-                self.config_counter = 0
-                print_quantity_distributions(self, walkers, label, self.end_to_end_vector_dots, "end_to_end_vector_dot")
+        if label.find("initial_walk") >= 0:
             self.config_counter = 0
-            print_quantity_distributions(self, walkers, label, self.end_to_end_distances, "end_to_end_distance")
-            self.config_counter = 0
-            print_quantity_distributions(self, walkers, label, self.radii_of_gyration, "radius_of_gyration")
-        elif iter % 10000 == 0: 
-            self.config_counter = 0
-            print_quantity_distributions(self, walkers, label, self.end_to_end_distances,"end_to_end_distances")
-            self.config_counter = 0
-            print_quantity_distributions(self, walkers, label, self.radii_of_gyration, "radius_of_gyration")
+            print_quantity_distributions(self, walkers, label, self.end_to_end_vector_dots, "end_to_end_vector_dot")
+        self.config_counter = 0
+        print_quantity_distributions(self, walkers, label, self.end_to_end_distances, "end_to_end_distance")
+        self.config_counter = 0
+        print_quantity_distributions(self, walkers, label, self.radii_of_gyration, "radius_of_gyration")
 
         self.first_time = False
