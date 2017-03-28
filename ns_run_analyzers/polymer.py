@@ -1,12 +1,11 @@
 import numpy as np
-from mpi4py import MPI
-from itertools import izip
+from ns_analyzers_util import print_quantity_distributions
 
 class NSAnalyzer():
     def __init__(self, comm):
         self.comm = comm
         self.orig_end_to_end_vector = []
-        self.first_time = {}
+        self.first_time = True
         return
 
     def find_ends(self, at):
@@ -28,7 +27,7 @@ class NSAnalyzer():
             cur_pos = np.zeros((3))
             for i_at in range(ends[0], ends[1]):
                 cur_pos += at.get_distance(i_at, i_at+1, mic=True, vector=True)
-            if self.first_time[label]:
+            if self.first_time:
                 self.orig_end_to_end_vector.append(cur_pos/np.linalg.norm(cur_pos))
             vec_dots.append(np.dot(self.orig_end_to_end_vector[self.config_counter], cur_pos)/np.linalg.norm(cur_pos))
             self.config_counter += 1
@@ -53,34 +52,20 @@ class NSAnalyzer():
 
         return (dists)
 
-    def print_quantity_distributions(self, walkers, label, calculator, calculator_label):
-        self.config_counter = 0
-        if calculator_label not in self.first_time: # first time
-            self.first_time[calculator_label] = True
-        else:
-            self.first_time[calculator_label] = False
-
-        local_quantities = [calculator(at, calculator_label) for at in walkers]
-
-        if self.comm is None:
-            global_quantities = local_quantities
-        else:
-            global_quantities = self.comm.gather(local_quantities, root=0)
-
-        if self.comm is None or self.comm.rank == 0:
-            print "NSAnalyzer:", label, calculator_label, "var", np.var(global_quantities)
-            global_histo = np.histogram(global_quantities, bins=20)
-            bin_width = global_histo[1][1]-global_histo[1][0]
-            for (i, (n, r)) in enumerate(izip(global_histo[0], global_histo[1])):
-                print "NSAnalyzer:", label, calculator_label, i, r, n/bin_width
-
 
     def analyze(self, walkers, iter, label):
         if iter < 0: # startup
             if label.find("initial_walk") >= 0:
-                self.print_quantity_distributions(walkers, label, self.end_to_end_vector_dots, "end_to_end_vector_dot")
-            self.print_quantity_distributions(walkers, label, self.end_to_end_distances, "end_to_end_distance")
-            self.print_quantity_distributions(walkers, label, self.radii_of_gyration, "radius_of_gyration")
+                self.config_counter = 0
+                print_quantity_distributions(self, walkers, label, self.end_to_end_vector_dots, "end_to_end_vector_dot")
+            self.config_counter = 0
+            print_quantity_distributions(self, walkers, label, self.end_to_end_distances, "end_to_end_distance")
+            self.config_counter = 0
+            print_quantity_distributions(self, walkers, label, self.radii_of_gyration, "radius_of_gyration")
         elif iter % 10000 == 0: 
-            self.print_quantity_distributions(walkers, label, self.end_to_end_distances,"end_to_end_distances")
-            self.print_quantity_distributions(walkers, label, self.radii_of_gyration, "radius_of_gyration")
+            self.config_counter = 0
+            print_quantity_distributions(self, walkers, label, self.end_to_end_distances,"end_to_end_distances")
+            self.config_counter = 0
+            print_quantity_distributions(self, walkers, label, self.radii_of_gyration, "radius_of_gyration")
+
+        self.first_time = False

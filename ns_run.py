@@ -2330,8 +2330,9 @@ def do_ns_loop():
         log_alpha = np.log(float(ns_args['n_walkers']+1-ns_args['n_cull'])/float(ns_args['n_walkers']+1))
         Emax_history=collections.deque(maxlen=ns_args['T_estimate_finite_diff_lag'])
 
-    if ns_analyzer is not None:
-        ns_analyzer.analyze(walkers, -1, "NS_loop start")
+    if ns_analyzers is not None:
+        for ns_analyzer in ns_analyzers:
+            ns_analyzer.analyze(walkers, -1, "NS_loop start")
 
     # START MAIN LOOP
     i_ns_step = start_first_iter
@@ -2953,8 +2954,9 @@ def do_ns_loop():
             pprev_snapshot_iter = prev_snapshot_iter
             prev_snapshot_iter = i_ns_step
 
-        if ns_analyzer is not None:
-            ns_analyzer.analyze(walkers, i_ns_step, "NS_loop %d" % i_ns_step)
+        if ns_analyzers is not None:
+            for ns_analyzer in ns_analyzers:
+                ns_analyzer.analyze(walkers, i_ns_step, "NS_loop %d" % i_ns_step)
         i_ns_step += 1
         ### END OF MAIN LOOP
 
@@ -2990,7 +2992,7 @@ def main():
         global movement_args
         global ns_args, start_first_iter
         global max_n_cull_per_task
-        global size, rank, comm, rng, np, sys, ns_analyzer
+        global size, rank, comm, rng, np, sys, ns_analyzers
         global n_cull, n_walkers, n_walkers_per_task
         global n_extra_walk_per_task
         global do_calc_quip, do_calc_lammps, do_calc_internal, do_calc_fortran
@@ -3051,19 +3053,6 @@ def main():
 
         if comm is not None:
             print "comm ", comm, " size ", size, " rank ", rank
-
-        # initialize in-situ analyzers
-        try:
-            from ns_run_analysis import NSAnalyzer
-            if rank == 0:
-                print "successfully imported NSAnalyzer"
-            ns_analyzer = NSAnalyzer(comm)
-            if rank == 0:
-                print "successfully created NSAnalyzer object"
-        except ImportError:
-            if rank == 0:
-                print "failed to import NSAnalyzer"
-            ns_analyzer = None
 
         # read inputs on root, then bcast
         if rank == 0:
@@ -3243,6 +3232,8 @@ def main():
         ns_args['config_file_format'] = args.pop('config_file_format', 'extxyz')
 
         ns_args['rng'] = args.pop('rng', 'numpy')
+
+        ns_args['ns_run_analyzers'] = args.pop('ns_run_analyzers', '')
 
         if ns_args['rng'] == 'numpy':
             rng = ns_rng.NsRngNumpy(ns_args['delta_random_seed'],comm)
@@ -3452,6 +3443,27 @@ def main():
             print "ns_args ",ns_args
             print "movement_args ",movement_args
 
+
+        # initialize in-situ analyzers
+        try:
+            import importlib
+            ns_analyzers=[]
+            for analyzer_name in ns_args['ns_run_analyzers'].split(";"):
+                try:
+                    try:
+                        analyzer_module = importlib.import_module(analyzer_name.strip())
+                    except:
+                        analyzer_module = importlib.import_module("ns_run_analyzers."+analyzer_name.strip())
+                    ns_analyzers.append(analyzer_module.NSAnalyzer(comm))
+                    if rank == 0:
+                        print "Got NSAnalyzer from",analyzer_name.strip()
+                except:
+                    if rank == 0:
+                        print "Failed to get NSAnalyzer from",analyzer_name.strip()
+        except:
+            if rank == 0:
+                print "no ns_run_analyzers set"
+            ns_analyzers = None
 
         # initialise potential
         if do_calc_quip:
@@ -3839,8 +3851,9 @@ def main():
                 if 'GMC_direction' not in at.arrays:
                     at.arrays['GMC_direction'] = np.zeros( (len(at),3) )
 
-        if ns_analyzer is not None:
-            ns_analyzer.analyze(walkers, -1, "initial_walk start")
+        if ns_analyzers is not None:
+            for ns_analyzer in ns_analyzers:
+                ns_analyzer.analyze(walkers, -1, "initial_walk start")
         # do initial walks if needed
         if ns_args['initial_walk_N_walks'] > 0 and ns_args['restart_file'] == '':
             if rank == 0:
@@ -3871,8 +3884,9 @@ def main():
                     walk_stats = walk_single_walker(at, movement_args, Emax, KEmax, ns_beta)
                     accumulate_stats(walk_stats_adjust, walk_stats)
 
-                if ns_analyzer is not None:
-                    ns_analyzer.analyze(walkers, -1, "initial_walk %d" % Nloop)
+                if ns_analyzers is not None:
+                    for ns_analyzer in ns_analyzers:
+                        ns_analyzer.analyze(walkers, -1, "initial_walk %d" % Nloop)
 
             # restore walk lengths for rest of NS run
             movement_args['n_model_calls'] = save_n_model_calls
