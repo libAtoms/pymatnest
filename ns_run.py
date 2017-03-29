@@ -187,7 +187,7 @@ def usage():
     ``MC_atom_Galilean=[T | F]`` 
        | default: F
 
-    ``MC_atom_Galilean_no_reverse=[T | F]`` 
+    ``GMC_no_reverse=[T | F]`` 
        | default: T
 
     ``MD_atom_velo_pre_perturb=[T | F]`` 
@@ -505,7 +505,7 @@ def usage():
     sys.stderr.write("MC_atom_step_size_max=float (1.0, in units of (max_volume_per_atom * N_atoms)^(1/3) )\n")
     sys.stderr.write("MC_atom_uniform_rv=[T | F] (F)\n")
     sys.stderr.write("MC_atom_Galilean=[T | F] (F)\n")
-    sys.stderr.write("MC_atom_Galilean_no_reverse=[T | F] (T)\n")
+    sys.stderr.write("GMC_no_reverse=[T | F] (T)\n")
     sys.stderr.write("\n")
     sys.stderr.write("MD_atom_velo_pre_perturb=[T | F] (F. Perturb velocities before MD trajectory\n")
     sys.stderr.write("MD_atom_velo_post_perturb=[T | F] (T. Perturb velocities after MD trajectory\n")
@@ -1135,7 +1135,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
         else:
             if movement_args['MC_atom_Galilean']:
-                (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), no_reverse=movement_args['MC_atom_Galilean_no_reverse'], pert_ang=movement_args['GMC_dir_perturb_angle_during'])
+                (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), no_reverse=movement_args['GMC_no_reverse'], pert_ang=movement_args['GMC_dir_perturb_angle_during'])
             else:
                 (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
@@ -1168,7 +1168,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
         if movement_args['MC_atom_Galilean']:
             #DOC \item go Galilean MC in python
 
-            do_no_reverse = movement_args['MC_atom_Galilean_no_reverse']
+            do_no_reverse = movement_args['GMC_no_reverse']
 
             if do_no_reverse:
                 last_good_pos = at.get_positions()
@@ -3357,7 +3357,7 @@ def main():
         movement_args['MC_atom_velo_step_size_max'] = float(args.pop('MC_atom_velo_step_size_max', 10000.0))
         movement_args['MC_atom_uniform_rv'] = str_to_logical(args.pop('MC_atom_uniform_rv', "F"))
         movement_args['MC_atom_Galilean'] = str_to_logical(args.pop('MC_atom_Galilean', "F"))
-        movement_args['MC_atom_Galilean_no_reverse'] = str_to_logical(args.pop('MC_atom_Galilean_no_reverse', "T"))
+        movement_args['GMC_no_reverse'] = str_to_logical(args.pop('GMC_no_reverse', "T"))
         movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
         # atom_algorithm == GMC is just an alias for atom_algorithm = MC, MC_atom_Galilean = True
         if movement_args['atom_algorithm'] == 'GMC':
