@@ -13,4 +13,4 @@ class NSAnalyzer():
         return at.info['ns_energy'] - KE
 
     def analyze(self, walkers, iter, label):
-        print_quantity_distributions(self, walkers, label, self.config_enthalpy, "config_enthalpy")
+        print_quantity_distributions(self, walkers, label, self.config_enthalpy, "config_enthalpy", do_bimodality=True)
