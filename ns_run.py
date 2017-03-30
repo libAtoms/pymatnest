@@ -95,7 +95,7 @@ def usage():
        | default 100
 
     ``n_model_calls_expected=int``
-       | Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword ``n_model_calls`` is mandatory, but the use of this keyword is strongly recommended.
+       | Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword ``n_model_calls`` is mandatory, but the use of this keyword is strongly recommended. If < 0, value will be set to _sum_ of each type of steps (accounting for atom_traj_len), so ``n_*_steps`` will be setting the _number_ of calls, rather than just the ratios.
        | default: 0
 
     ``n_model_calls=int``
@@ -3297,7 +3297,7 @@ def main():
 
         movement_args['n_atom_steps'] = int(args.pop('n_atom_steps', 1))
         movement_args['atom_traj_len'] = int(args.pop('atom_traj_len', 8))
-        movement_args['break_up_atom_traj'] = str_to_logical(args.pop('break_up_atom_traj', "F"))
+        movement_args['break_up_atom_traj'] = str_to_logical(args.pop('break_up_atom_traj', "T"))
         if movement_args['n_atom_steps'] == 0:
             movement_args['n_atom_steps_per_call'] = 0
             movement_args['n_atom_steps_n_calls'] = 0
@@ -3319,6 +3319,13 @@ def main():
         movement_args['swap_cluster_probability_increment'] = float(args.pop('cluster_probability_increment', 0.75))
         movement_args['swap_velo'] = str_to_logical(args.pop('swap_velo', "F"))
         movement_args['no_swap_velo_fix_mag_alt'] = str_to_logical(args.pop('no_swap_velo_fix_mag_alt', "F"))
+
+        if movement_args['n_model_calls_expected'] < 0:
+            movement_args['n_model_calls_expected'] = (movement_args['n_atom_steps']*movement_args['atom_traj_len'] +
+                                                       movement_args['n_cell_volume_steps'] +
+                                                       movement_args['n_cell_shear_steps'] +
+                                                       movement_args['n_cell_stretch_steps'] +
+                                                       movement_args['n_swap_steps'])
 
         # initialize swap cluster size probabilities
         movement_args['swap_probs'] = np.zeros( (movement_args['swap_max_cluster']) )
