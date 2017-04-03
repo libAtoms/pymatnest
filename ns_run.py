@@ -1213,7 +1213,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
                             cur_E_is_correct = False
                             if movement_args['GMC_randomize_on_reject']:
                                 d_pos[:,:] = rng.normal(1.0, (len(at), 3))
-                                d_pos /= np.linalg.norm(d_pos)
+                                d_pos *= step_size/np.linalg.norm(d_pos)
                             else:
                                 d_pos[:,:] = -last_good_d_pos
                             n_reflect -= 1
