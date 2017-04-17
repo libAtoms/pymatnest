@@ -248,6 +248,7 @@ def usage():
 
     ``MC_cell_flat_V_prior''
        | Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)
+       | POORLY TESTED, DO NOT TRUST (YET).
        | default: False
 
     ``MC_cell_volume_per_atom_step_size=float``
@@ -524,7 +525,7 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("\n")
     sys.stderr.write("MC_cell_P=float (0.0)\n")
-    sys.stderr.write("MC_cell_flat_V_prior=[T | F] (F)\n")
+    sys.stderr.write("MC_cell_flat_V_prior=[T | F] (F). POORLY TESTED, DO NOT TRUST (YET)\n")
     sys.stderr.write("MC_cell_volume_per_atom_step_size=float (5% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (50% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_prob=float (1.0)\n")
