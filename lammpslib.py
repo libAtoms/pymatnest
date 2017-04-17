@@ -697,12 +697,16 @@ End LAMMPSlib Interface Documentation
         # Set masses after user commands, to override EAM provided masses, e.g.
         masses = atoms.get_masses()
         for Z in self.parameters.atom_types:
+            in_cur_sys=False
             for i in range(len(atoms)):
                 if numbers[i] == Z:
                     # convert from amu (ASE) to lammps mass unit)
                     self.lmp.command('mass %d %.30f' % (self.parameters.atom_types[Z], masses[i] /
                                                      unit_convert("mass", self.units) ))
+                    in_cur_sys=True
                     break
+            if not in_cur_sys:
+                self.lmp.command('mass %d %.30f' % (self.parameters.atom_types[Z], 1.0))
 
         # Define force & energy variables for extraction
         self.lmp.command('variable pxx equal pxx')
