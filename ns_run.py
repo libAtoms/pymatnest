@@ -246,6 +246,10 @@ def usage():
        | the lammpslib module will convert the units for lammps to whatever units are set by the potential type) 
        | default: 0.0 
 
+    ``MC_cell_flat_V_prior''
+       | Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)
+       | default: False
+
     ``MC_cell_volume_per_atom_step_size=float``
        | Initial volume stepsize for volume change.
        | default: 5% of the maximum allowed volume
@@ -520,6 +524,7 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("\n")
     sys.stderr.write("MC_cell_P=float (0.0)\n")
+    sys.stderr.write("MC_cell_flat_V_prior=[T | F] (F)\n")
     sys.stderr.write("MC_cell_volume_per_atom_step_size=float (5% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_step_size_max=float (50% of the maximum allowed volume)\n")
     sys.stderr.write("MC_cell_volume_per_atom_prob=float (1.0)\n")
@@ -1277,16 +1282,19 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax, itbeta):
 
     return out
 
-def propose_volume_step(at, step_size):
+def propose_volume_step(at, step_size, flat_V_prior):
     dV = rng.normal(step_size*len(at))
     orig_V = at.get_volume()
     new_V = orig_V+dV
     if new_V < 0: # negative number cannot be raised to fractional power, so this is only to avoid fatal error during the run
         new_V=abs(new_V)
-        print "Warning, the step_size for volume change might be too big, resulted negativ new volume", step_size, dV, orig_V+dV
+        # print "Warning, the step_size for volume change might be too big, resulted in negative new volume", step_size, dV, orig_V+dV
     #print "TRANSFORM", new_V, orig_V, dV, step_size, len(at)
     transform = np.identity(3)*(new_V/orig_V)**(1.0/3.0)
-    p_accept = min(1.0, (new_V/orig_V)**len(at))
+    if flat_V_prior:
+        p_accept = 1.0
+    else:
+        p_accept = min(1.0, (new_V/orig_V)**len(at))
     return (p_accept, transform)
 
 def propose_shear_step(at, step_size):
@@ -1494,7 +1502,7 @@ def do_MC_cell_volume_step(at, movement_args, Emax, KEmax, itbeta):
     step_rv = rng.float_uniform(0.0, 1.0)
     if step_rv > movement_args['MC_cell_volume_per_atom_prob']:
         return (0, {})
-    (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_per_atom_step_size'])
+    (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_per_atom_step_size'], movement_args['MC_cell_flat_V_prior'])
     if do_cell_step(at, Emax, p_accept, transform):
         return (1, {'MC_cell_volume_per_atom' : (1, 1) })
     else:
@@ -1670,22 +1678,28 @@ def max_energy(walkers, n):
     """Collect the current energies of the walkers from all the processes and chooses the right number of highest energies to be culled"""
     # do local max
     energies_loc = np.array([ at.info['ns_energy'] for at in walkers])
+    volumes_loc = np.array([ at.get_volume() for at in walkers])
     if comm is not None:
         energies = np.zeros( (comm.size*len(energies_loc)) )
+        volumes = np.zeros( (comm.size*len(volumes_loc)) )
         # comm.barrier() #BARRIER
         comm.Allgather( [ energies_loc, MPI.DOUBLE ], [ energies, MPI.DOUBLE ] )
         energies = energies.flatten()
+        comm.Allgather( [ volumes_loc, MPI.DOUBLE ], [ volumes, MPI.DOUBLE ] )
+        volumes = volumes.flatten()
     else:
         energies = energies_loc
-   
+        volumes = volumes_loc
+
     # n is n_cull
     Emax_ind = energies.argsort()[-1:-n-1:-1]
     Emax = energies[Emax_ind]
+    Vmax = volumes[Emax_ind]
     # WARNING: assumes that each node has equal number of walkers
     rank_of_max = np.floor(Emax_ind/len(walkers)).astype(int)
     ind_of_max = np.mod(Emax_ind,len(walkers))
 
-    return (Emax, rank_of_max, ind_of_max)
+    return (Emax, Vmax, rank_of_max, ind_of_max)
 
 def median_PV(walkers):
     # do local max
@@ -2264,7 +2278,7 @@ def do_ns_loop():
                 nExtraDOF = 0
             else:
                 nExtraDOF = n_atoms*nD
-            energy_io.write("%d %d %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF) )
+            energy_io.write("%d %d %d %s %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF, movement_args['MC_cell_flat_V_prior'], n_atoms) )
 
     ## print print_prefix, ": random state ", np.random.get_state()
     ## if rank == 0:
@@ -2278,9 +2292,9 @@ def do_ns_loop():
         at.info['KEmax']=KEmax 
         at.info['ns_beta']=ns_beta
         if movement_args['MC_cell_P'] > 0:
-            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False, do_PV=False), " KE ", eval_energy(at, do_PE=False, do_PV=False)
+            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False, do_PV=False), " KE ", eval_energy(at, do_PE=False, do_PV=False), " PV ", eval_energy(at, do_KE=False, do_PE=False)
         else:
-            print rank, ": initial energy ", at.info['ns_energy']
+            print rank, ": initial energy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False), " KE ", eval_energy(at, do_PE=False)
 
     # stats for purpose of adjusting step size
     walk_stats_adjust={}
@@ -2352,7 +2366,7 @@ def do_ns_loop():
             print print_prefix, "%30s" % ": LOOP_X START 02 ",i_ns_step, [ "%.10f" % at.positions[0,0] for at in walkers ]
 
         # get list of highest energy configs
-        (Emax, cull_rank, cull_ind) = max_energy(walkers, n_cull)
+        (Emax, Vmax, cull_rank, cull_ind) = max_energy(walkers, n_cull)
         Emax_next = Emax[-1]
         if rank == 0 and Emax_of_step is not None and Emax[0] > Emax_of_step:
             print print_prefix, ": WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step)], cull_rank[np.where(Emax > Emax_of_step)], cull_ind[np.where(Emax > Emax_of_step)]
@@ -2412,8 +2426,8 @@ def do_ns_loop():
 
         # record Emax walkers energies
         if rank == 0:
-            for E in Emax:
-                energy_io.write("%d %.60f\n" % (i_ns_step, E))
+            for (E, V) in izip(Emax, Vmax):
+                energy_io.write("%d %.60f %.60f\n" % (i_ns_step, E, V))
             energy_io.flush()
 
             ## Save the energies and corresponding iteration numbers in a list then print them out only when printing a snapshot
@@ -3374,11 +3388,7 @@ def main():
         movement_args['MD_atom_reject_energy_violation'] = str_to_logical(args.pop('MD_atom_reject_energy_violation', "F"))
 
         movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
-        if movement_args['MC_cell_P'] <= 0.0 and (movement_args['n_cell_shear_steps'] > 0 or
-                                                  movement_args['n_cell_stretch_steps'] > 0 or
-                                                  movement_args['n_cell_volume_steps']):
-            exit_error("Got MC_cell_P %f <= 0 but some n_cell_*_steps %d %d %d > 0" % (movement_args['MC_cell_P'],
-                movement_args['n_cell_shear_steps'], movement_args['n_cell_stretch_steps'], movement_args['n_cell_volume_steps']) , 3)
+        movement_args['MC_cell_flat_V_prior'] = str_to_logical(args.pop('MC_cell_flat_V_prior', "F"))
 
 
         default_value = ns_args['max_volume_per_atom']/20.0 # 5% of maximum allowed volume per atom
@@ -3734,10 +3744,10 @@ def main():
             # Done initialising atomic positions. Now initialise momenta
 
             ns_beta = -1.0 # default value, if not doing separable_MDNS
-            (emx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
+            (emx_temp, vmx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
 #           ns_beta = beta_from_ns_pe_values(walkers, emx_temp[0],ns_args['n_walkers'],dorescale_velos=False) #, ns_args['max_volume_per_atom']*len(walkers[0]), 0.0) # do for comparison
             if (movement_args['separable_MDNS']): # find ns_beta from initial coordinates
-                (emx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
+                (emx_temp, vmx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
                 ns_beta = beta_from_ns_pe_values(walkers, emx_temp[0],ns_args['n_walkers'],0,dorescale_velos=False) #, ns_args['max_volume_per_atom']*len(walkers[0]), 0.0)
                 del emx_temp
                 del rnktemp
@@ -3840,10 +3850,10 @@ def main():
                 walkers = [quippy.Atoms(at) for at in walkers]
 
                 ns_beta=-1.0 # default value, if not doing separable_MDNS
-                (emx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
+                (emx_temp, vmx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
 #               ns_beta = beta_from_ns_pe_values(walkers, emx_temp[0],ns_args['n_walkers'],dorescale_velos=False) #, ns_args['max_volume_per_atom']*len(walkers[0]), 0.0) # do for comparison
                 if (movement_args['separable_MDNS']): # find ns_beta from initial coordinates
-                    (emx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
+                    (emx_temp, vmx_temp, rnktemp, ind_temp) = max_energy(walkers, 1)
                     # set beta using energies of current liveset
                     ns_beta = beta_from_ns_pe_values(walkers, emx_temp[0],0,ns_args['n_walkers']) #, ns_args['max_volume_per_atom']*len(walkers[0]), 0.0)
                     del emx_temp
@@ -3867,7 +3877,7 @@ def main():
         if ns_args['initial_walk_N_walks'] > 0 and ns_args['restart_file'] == '':
             if rank == 0:
                 print "doing initial_walk"
-            (Emax, cull_rank, cull_ind) = max_energy(walkers, 1)
+            (Emax, Vmax, cull_rank, cull_ind) = max_energy(walkers, 1)
             # WARNING: this assumes that all walkers have same numbers of atoms
             Emax = Emax[0] + ns_args['initial_walk_Emax_offset_per_atom']*len(walkers[0])
 

@@ -15,6 +15,7 @@ p.add_option('-p','--profile', action='store_true', help="""do profiling""")
 p.add_option('-s','--skip', action='store', help="""number of lines to skip""", type='int', default=0)
 p.add_option('-l','--line_end', action='store', help="""line to ened analysis (python std. zero based last line + 1)""", type='int', default=None)
 p.add_option('-i','--interval', action='store', help="""interval between lines to use""", type='int', default=1)
+p.add_option('-P','--pressure', action='store', help="""pressure to use for reweighting with flat V prior""", type='float', default=0.0)
 
 opt, args = p.parse_args()
 
@@ -24,13 +25,14 @@ n_T = opt.n_T
 k_Boltzmann = opt.kB
 debug = opt.verbose
 profile = opt.profile
+reweight_P = opt.pressure
 
 if opt.accurate_sum:
     sum=math.fsum
 else:
     sum=np.sum
 
-(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs(args, line_skip=opt.skip, line_end=opt.line_end, interval=opt.interval)
+(n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms, Es, Vs) = ns_analyse.read_inputs(args, line_skip=opt.skip, line_end=opt.line_end, interval=opt.interval)
 
 try:
     from mpi4py import MPI
@@ -45,10 +47,10 @@ except:
 E_min = np.amin(Es)
 Es -= E_min
 
-def analyse(log_a, Es, T, interval=1):
+def analyse(log_a, T, interval=1):
     beta = 1.0/(k_Boltzmann*T)
 
-    (Z_term, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es)
+    (Z_term, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es, flat_V_prior, reweight_P, N_atoms, Vs)
 
     if debug:
         for i in range(len(Z_term)):
@@ -84,12 +86,13 @@ if comm_rank == 0:
 
 data = []
 for i_T in range(comm_rank, n_T, comm_size):
+    sys.stderr.write("%d\n" % i_T)
     T = T_min + i_T * dT
     if opt.profile and i_T == 0:
         import cProfile
-        cProfile.run('(log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T)','ns_analyse.stats')
+        cProfile.run('(log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
     else:
-        (log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, Es, T, opt.interval)
+        (log_Z, U, Cv, low_pct, mode, high_pct, Z_fract) = analyse(log_a, T, opt.interval)
     data.append( (T, log_Z, U, Cv, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract) )
 
 try:
