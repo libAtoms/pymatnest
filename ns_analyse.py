@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import numpy as np, fileinput, itertools
+import numpy as np, fileinput, itertools, sys
 
 def read_inputs(args, line_skip=0, line_end=None, interval=1):
 
@@ -9,8 +9,8 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
     fields = inputs.readline().split()
     if len(fields) == 3:
         (n_walkers, n_cull, n_Extra_DOF) = fields
-        flat_V_prior = False
-        N_atoms = 0
+        flat_V_prior = "False"
+        N_atoms = "0"
     elif len(fields) == 5:
         (n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms) = fields
     else:
@@ -18,15 +18,24 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
     n_walkers = int(n_walkers)
     n_cull = int(n_cull)
     n_Extra_DOF = int(n_Extra_DOF)
+    if flat_V_prior.lower() == "t" or flat_V_prior.lower() == "true":
+        flat_V_prior = True
+    elif flat_V_prior.lower() == "f" or flat_V_prior.lower() == "false":
+        flat_V_prior = False
+    else:
+        sys.stderr.write("Unknown flat_V_prior string '%s'\n" % flat_V_prior)
+        sys.exit(1)
+    N_atoms = int(N_atoms)
 
     Es=[]
     Vs=[]
     lines = itertools.islice(inputs, line_skip, line_end, interval)
     for line in lines:
-        if flat_V_prior:
-            (n_iter, E, V) = line.split()
-        else:
-            (n_iter, E) = line.split()
+        fields = line.split()
+        if flat_V_prior: # need volumes
+            (n_iter, E, V) = fields[0:3]
+        else: # no need
+            (n_iter, E) = fields[0:2]
         Es.append(float(E))
         if flat_V_prior:
             Vs.append(float(V))
@@ -57,11 +66,11 @@ def calc_log_a(n_Es, n_walkers, n_cull, interval=1):
     log_a = log_X_n[0::interval] - np.log(n_walkers+1-i_range_plus_1_mod_n_cull[0::interval])
     return log_a
 
-def calc_Z_terms(beta, log_a, Es, flat_V_prior=False, reweight_P=0.0, N_atoms=0, Vs=1.0):
+def calc_Z_terms(beta, log_a, Es, flat_V_prior=False, reweight_delta_P=0.0, N_atoms=0, Vs=1.0):
     #DEBUG for i in range(len(log_a)):
         #DEBUG print "calc_Z_terms log_a ", log_a[i], beta*Es[i]
     if not flat_V_prior:
         Vs = 1.0
-    shift = np.amax(float(N_atoms)*np.log(Vs) + log_a[:] - beta*(Es[:] + reweight_P*Vs))
-    Z_term = np.exp(float(N_atoms)*np.log(Vs) + log_a[:] - beta*(Es[:] + reweight_P*Vs) - shift)
+    shift = np.amax(float(N_atoms)*np.log(Vs) + log_a[:] - beta*(Es[:] + reweight_delta_P*Vs))
+    Z_term = np.exp(float(N_atoms)*np.log(Vs) + log_a[:] - beta*(Es[:] + reweight_delta_P*Vs) - shift)
     return (Z_term, shift)
