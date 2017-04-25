@@ -32,16 +32,15 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
     lines = itertools.islice(inputs, line_skip, line_end, interval)
     for line in lines:
         fields = line.split()
-        if flat_V_prior: # need volumes
+        try:
             (n_iter, E, V) = fields[0:3]
-        else: # no need
+            Vs.append(float(V))
+        except:
             (n_iter, E) = fields[0:2]
         Es.append(float(E))
-        if flat_V_prior:
-            Vs.append(float(V))
 
     if len(Vs) == 0:
-        Vs = 1.0
+        Vs = None
     else:
         Vs = np.array(Vs)
     return (n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms, np.array(Es), Vs)
@@ -66,11 +65,12 @@ def calc_log_a(n_Es, n_walkers, n_cull, interval=1):
     log_a = log_X_n[0::interval] - np.log(n_walkers+1-i_range_plus_1_mod_n_cull[0::interval])
     return log_a
 
-def calc_Z_terms(beta, log_a, Es, flat_V_prior=False, reweight_delta_P=0.0, N_atoms=0, Vs=1.0):
+def calc_Z_terms(beta, log_a, Es, flat_V_prior=False, N_atoms=0, Vs=None):
     #DEBUG for i in range(len(log_a)):
         #DEBUG print "calc_Z_terms log_a ", log_a[i], beta*Es[i]
-    if not flat_V_prior:
-        Vs = 1.0
-    shift = np.amax(float(N_atoms)*np.log(Vs) + log_a[:] - beta*(Es[:] + reweight_delta_P*Vs))
-    Z_term = np.exp(float(N_atoms)*np.log(Vs) + log_a[:] - beta*(Es[:] + reweight_delta_P*Vs) - shift)
+    log_Z_term = log_a[:] - beta*Es[:]
+    if flat_V_prior:
+        log_Z_term += float(N_atoms)*np.log(Vs[:])
+    shift = np.amax(log_Z_term[:])
+    Z_term = np.exp(log_Z_term[:] - shift)
     return (Z_term, shift)
