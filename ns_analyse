@@ -16,6 +16,7 @@ p.add_option('-s','--skip', action='store', help="""number of lines to skip""", 
 p.add_option('-l','--line_end', action='store', help="""line to ened analysis (python std. zero based last line + 1)""", type='int', default=None)
 p.add_option('-i','--interval', action='store', help="""interval between lines to use""", type='int', default=1)
 p.add_option('-P','--delta_pressure', action='store', help="""delta pressure to use for reweighting with flat V prior""", type='float', default=0.0)
+p.add_option('-V','--dump_terms', action='store', help="""dump weight of each sample""", type='float', default=-1.0)
 
 opt, args = p.parse_args()
 
@@ -84,6 +85,17 @@ def analyse(log_a, T, interval=1):
     mode_config = np.argmax(Z_term)*interval
 
     Z_fract = np.sum(Z_term[low_percentile_config:high_percentile_config+1])/Z
+
+    if opt.dump_terms >= 0.0:
+        n_Z_terms=0
+        Z_terms_fract=0.0
+        print "#Z_term i H V Z_term"
+        for i in range(len(Es)):
+            if Z_term[i] > Z_max*opt.dump_terms:
+                Z_terms_fract += Z_term[i]
+                n_Z_terms += 1
+                print "Z_term",i, Es[i]+E_min, Vs[i], Z_term[i]
+        print "#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract
 
     return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V)
 
