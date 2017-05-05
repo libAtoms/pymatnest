@@ -17,6 +17,7 @@ p.add_option('-l','--line_end', action='store', help="""line to ened analysis (p
 p.add_option('-i','--interval', action='store', help="""interval between lines to use""", type='int', default=1)
 p.add_option('-P','--delta_pressure', action='store', help="""delta pressure to use for reweighting with flat V prior""", type='float', default=0.0)
 p.add_option('-V','--dump_terms', action='store', help="""dump weight of each sample""", type='float', default=-1.0)
+p.add_option('-K','--kolmogorov_smirnov_test', action='store_true', help="""Do Kolmogorov-Smirnov test for Gaussianity of distribution of Vs (when --delta_pressure is set)""")
 
 opt, args = p.parse_args()
 
@@ -51,6 +52,19 @@ if reweight_delta_P != 0.0:
 E_min = np.amin(Es)
 Es -= E_min
 
+if opt.kolmogorov_smirnov_test:
+    from scipy import stats
+    def ks_test_gaussianity_histogram(histogram):
+        dev_max = 0.0
+        histo_mean =    np.sum(histogram[0] * (histogram[1][1:]-histogram[1][0:-1]) * (histogram[1][1:]+histogram[1][0:-1])/2.0 )
+        histo_2nd_mom = np.sum(histogram[0] * (histogram[1][1:]-histogram[1][0:-1]) * ((histogram[1][1:]+histogram[1][0:-1])/2.0)**2 )
+        histo_std_dev = np.sqrt(histo_2nd_mom - histo_mean**2)
+        for ibin in range(1,len(histogram[0])):
+            numerical_cumul = np.sum(histogram[0][0:ibin] * (histogram[1][1:ibin+1]-histogram[1][0:ibin]))
+            analytical_cumul = stats.norm.cdf(histogram[1][ibin], histo_mean, histo_std_dev)
+            dev_max = max(dev_max, np.abs( numerical_cumul - analytical_cumul))
+        return dev_max
+
 def analyse(log_a, T, interval=1):
     beta = 1.0/(k_Boltzmann*T)
 
@@ -84,6 +98,14 @@ def analyse(log_a, T, interval=1):
     high_percentile_config = np.where(Z_term > Z_max/10.0)[0][-1]*interval
     mode_config = np.argmax(Z_term)*interval
 
+    if opt.kolmogorov_smirnov_test and reweight_delta_P != 0.0:
+        very_low_percentile_config = np.where(Z_term > Z_max/100.0)[0][0]*interval
+        very_high_percentile_config = np.where(Z_term > Z_max/100.0)[0][-1]*interval
+        V_histogram = np.histogram(Vs[very_low_percentile_config:very_high_percentile_config], bins=30, weights=Z_term[very_low_percentile_config:very_high_percentile_config], density=True)
+        ks_gaussianity = ks_test_gaussianity_histogram(V_histogram)
+    else:
+        ks_gaussianity = None
+
     Z_fract = np.sum(Z_term[low_percentile_config:high_percentile_config+1])/Z
 
     if opt.dump_terms >= 0.0:
@@ -97,7 +119,7 @@ def analyse(log_a, T, interval=1):
                 print "Z_term",i, Es[i]+E_min, Vs[i], Z_term[i]
         print "#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract
 
-    return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V)
+    return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity)
 
 log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=opt.interval)
 
@@ -107,6 +129,8 @@ if comm_rank == 0:
     line = "# T      log_Z(T)               U(T)          Cvp(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
     if Vs is not None:
         line += " V(T)"
+    if opt.kolmogorov_smirnov_test:
+        line += " KS_V_gaussian(T)"
     print line
 
 data = []
@@ -115,10 +139,10 @@ for i_T in range(comm_rank, n_T, comm_size):
     T = T_min + i_T * dT
     if opt.profile and i_T == 0:
         import cProfile
-        cProfile.run('(log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
+        cProfile.run('(log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
     else:
-        (log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V) = analyse(log_a, T, opt.interval)
-    data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V) )
+        (log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)
+    data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity) )
 
 try:
     data = MPI.COMM_WORLD.gather(data, root = 0)
