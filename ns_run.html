@@ -1,6 +1,6 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -29,7 +29,7 @@
     <link rel="next" title="ns_rng module" href="ns_rng.html" />
     <link rel="prev" title="Getting started" href="getstart.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -89,6 +89,11 @@
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="ns_run.add_to_list">
+<code class="descclassname">ns_run.</code><code class="descname">add_to_list</code><span class="sig-paren">(</span><em>list</em>, <em>ind</em>, <em>costs</em>, <em>nums</em>, <em>walk_len_avail</em>, <em>first_free_slot</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#add_to_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.add_to_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="ns_run.additive_init_config">
 <code class="descclassname">ns_run.</code><code class="descname">additive_init_config</code><span class="sig-paren">(</span><em>at</em>, <em>Emax</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#additive_init_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.additive_init_config" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -112,6 +117,11 @@
 <dl class="function">
 <dt id="ns_run.clean_prev_snapshot">
 <code class="descclassname">ns_run.</code><code class="descname">clean_prev_snapshot</code><span class="sig-paren">(</span><em>iter</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#clean_prev_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.clean_prev_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ns_run.create_list">
+<code class="descclassname">ns_run.</code><code class="descname">create_list</code><span class="sig-paren">(</span><em>costs</em>, <em>nums</em>, <em>walk_len</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#create_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.create_list" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -267,7 +277,7 @@
 
 <dl class="function">
 <dt id="ns_run.propose_volume_step">
-<code class="descclassname">ns_run.</code><code class="descname">propose_volume_step</code><span class="sig-paren">(</span><em>at</em>, <em>step_size</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#propose_volume_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.propose_volume_step" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ns_run.</code><code class="descname">propose_volume_step</code><span class="sig-paren">(</span><em>at</em>, <em>step_size</em>, <em>flat_V_prior</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#propose_volume_step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.propose_volume_step" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
@@ -292,8 +302,8 @@
 
 <dl class="function">
 <dt id="ns_run.save_snapshot">
-<code class="descclassname">ns_run.</code><code class="descname">save_snapshot</code><span class="sig-paren">(</span><em>id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#save_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.save_snapshot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the current walker configurations&#8217; as a snapshot in the file <code class="docutils literal"><span class="pre">out_file_prefix.iter.rank.config_file_format</span></code></p>
+<code class="descclassname">ns_run.</code><code class="descname">save_snapshot</code><span class="sig-paren">(</span><em>snapshot_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#save_snapshot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ns_run.save_snapshot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the current walker configurations’ as a snapshot in the file <code class="docutils literal"><span class="pre">out_file_prefix.iter.rank.config_file_format</span></code></p>
 </dd></dl>
 
 <dl class="function">
@@ -327,7 +337,7 @@
 <dd><div class="first last line-block">
 <div class="line">MANDATORY (or start_species)</div>
 <div class="line">Name of file to read in for atom information</div>
-<div class="line">default: &#8216;&#8217;</div>
+<div class="line">default: ”</div>
 </div>
 </dd>
 <dt id="term-restart-file-path-to-file"><code class="docutils literal"><span class="pre">restart_file=path_to_file</span></code></dt>
@@ -426,7 +436,7 @@
 </dd>
 <dt id="term-n-model-calls-expected-int"><code class="docutils literal"><span class="pre">n_model_calls_expected=int</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword <code class="docutils literal"><span class="pre">n_model_calls</span></code> is mandatory, but the use of this keyword is strongly recommended.</div>
+<div class="line">Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword <code class="docutils literal"><span class="pre">n_model_calls</span></code> is mandatory, but the use of this keyword is strongly recommended. If &lt; 0, value will be set to _sum_ of each type of steps (accounting for atom_traj_len), so <code class="docutils literal"><span class="pre">n_*_steps</span></code> will be setting the _number_ of calls, rather than just the ratios.</div>
 <div class="line">default: 0</div>
 </div>
 </dd>
@@ -436,9 +446,15 @@
 <div class="line">default: 0</div>
 </div>
 </dd>
+<dt id="term-do-good-load-balance-t-f"><code class="docutils literal"><span class="pre">do_good_load_balance=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Whether to do steps in groups with good load balance</div>
+<div class="line">default: F</div>
+</div>
+</dd>
 <dt id="term-n-atom-steps-int"><code class="docutils literal"><span class="pre">n_atom_steps=int</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Ratio of atomic trajectoris will be determined by <code class="docutils literal"><span class="pre">n_atom_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
+<div class="line">Ratio of atomic trajectories will be determined by <code class="docutils literal"><span class="pre">n_atom_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
@@ -519,10 +535,10 @@
 <div class="line">default: 1.0e-12</div>
 </div>
 </dd>
-<dt id="term-atom-algorithm-mc-md"><code class="docutils literal"><span class="pre">atom_algorithm=[MC</span> <span class="pre">|</span> <span class="pre">MD]</span></code></dt>
+<dt id="term-atom-algorithm-mc-md-gmc"><code class="docutils literal"><span class="pre">atom_algorithm=[MC</span> <span class="pre">|</span> <span class="pre">MD</span> <span class="pre">|</span> <span class="pre">GMC]</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">MANDATORY</div>
-<div class="line">Use either Monte Carlo or Molecular dynamics to explore.</div>
+<div class="line">Use either Monte Carlo or Molecular dynamics to explore. GMC is an alias for atom_algorithm=MC, MC_atom_Galilean=True.</div>
 </div>
 </dd>
 <dt id="term-mc-atom-velocities-t-f"><code class="docutils literal"><span class="pre">MC_atom_velocities=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
@@ -559,7 +575,7 @@
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-mc-atom-galilean-no-reverse-t-f"><code class="docutils literal"><span class="pre">MC_atom_Galilean_no_reverse=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dt id="term-gmc-no-reverse-t-f"><code class="docutils literal"><span class="pre">GMC_no_reverse=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
 <dd><div class="first last line-block">
 <div class="line">default: T</div>
 </div>
@@ -603,6 +619,12 @@
 <div class="line">default: F</div>
 </div>
 </dd>
+<dt id="term-python-md-t-f"><code class="docutils literal"><span class="pre">python_MD=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Do MD using python code rather than underlying driver</div>
+<div class="line">default: F</div>
+</div>
+</dd>
 <dt id="term-atom-velo-rej-free-fully-randomize-t-f"><code class="docutils literal"><span class="pre">atom_velo_rej_free_fully_randomize=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">If true, randomize velocities completely rather than just perturbing.</div>
@@ -642,6 +664,13 @@
 <div class="line">eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS</div>
 <div class="line">the lammpslib module will convert the units for lammps to whatever units are set by the potential type) </div>
 <div class="line">default: 0.0 </div>
+</div>
+</dd>
+<dt id="term-mc-cell-flat-v-prior"><a href="#id3"><span class="problematic" id="id4">``</span></a>MC_cell_flat_V_prior”</dt>
+<dd><div class="first last line-block">
+<div class="line">Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)</div>
+<div class="line">POORLY TESTED, DO NOT TRUST (YET).</div>
+<div class="line">default: False</div>
 </div>
 </dd>
 <dt id="term-mc-cell-volume-per-atom-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_step_size=float</span></code></dt>
@@ -701,7 +730,7 @@
 <dd><div class="first line-block">
 <div class="line">default: 1000</div>
 </div>
-<p class="last">full_auto_step_sizes=[T | F]``
+<p class="last">full_auto_step_sizes=[T | F]“
 | If true (T), automatically calibrate all sizes by performing additional short explorations, including at the start of run. If false (F), use initial input step sizes and make small adjustments to these during the run.
 | default: T</p>
 </dd>
@@ -782,6 +811,11 @@
 <div class="line">MANDATORY if energy_calculator=fortran</div>
 </div>
 </dd>
+<dt id="term-fortran-model-params-str"><code class="docutils literal"><span class="pre">FORTRAN_model_params=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">parameters (optional) for fortran model</div>
+</div>
+</dd>
 <dt id="term-lammps-fix-gmc-t-f"><code class="docutils literal"><span class="pre">LAMMPS_fix_gmc=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
 <dd><div class="first last line-block">
 <div class="line">default: F</div>
@@ -794,7 +828,7 @@
 </dd>
 <dt id="term-lammps-name-str"><code class="docutils literal"><span class="pre">LAMMPS_name=str</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">&#8216;&#8217;, arch name for lammps shared object file</div>
+<div class="line">”, arch name for lammps shared object file</div>
 </div>
 </dd>
 <dt id="term-lammps-header-str"><code class="docutils literal"><span class="pre">LAMMPS_header=str</span></code></dt>
@@ -804,13 +838,13 @@
 </dd>
 <dt id="term-lammps-header-extra-str"><code class="docutils literal"><span class="pre">LAMMPS_header_extra=str</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">&#8216;&#8217;, extra lammpslib.py header commands for energy_calculator=lammps</div>
+<div class="line">”, extra lammpslib.py header commands for energy_calculator=lammps</div>
 </div>
 </dd>
 <dt id="term-lammps-atom-types-str"><code class="docutils literal"><span class="pre">LAMMPS_atom_types=str</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">MANDATORY if energy_calculator=lammps</div>
-<div class="line">atomic_symbol1 lammps_type1 [, atomic_symbol2 lammps_type2, ...]</div>
+<div class="line">atomic_symbol1 lammps_type1 [, atomic_symbol2 lammps_type2, …]</div>
 <div class="line">mapping between atom species and lammps potential types</div>
 </div>
 </dd>
@@ -846,7 +880,19 @@
 <dt id="term-snapshot-interval-int"><code class="docutils literal"><span class="pre">snapshot_interval=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set &lt;=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.</div>
-<div class="line">default: 1000</div>
+<div class="line">default: 10000</div>
+</div>
+</dd>
+<dt id="term-snapshot-time-int"><code class="docutils literal"><span class="pre">snapshot_time=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Max time between snapshots in seconds</div>
+<div class="line">default: 3600</div>
+</div>
+</dd>
+<dt id="term-snapshot-per-parallel-task-t-f"><code class="docutils literal"><span class="pre">snapshot_per_parallel_task=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Save a separate snapshot file for each parallel task.  Faster I/O (in parallel), but less convenient in some cases.</div>
+<div class="line">default: T</div>
 </div>
 </dd>
 <dt id="term-snapshot-clean-t-f"><code class="docutils literal"><span class="pre">snapshot_clean=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
@@ -876,25 +922,31 @@
 <dt id="term-initial-walk-n-walks-int"><code class="docutils literal"><span class="pre">initial_walk_N_walks=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">number of initial random walks to apply to all walkers</div>
-<div class="line">default: &#8216;&#8217;</div>
+<div class="line">default: ”</div>
 </div>
 </dd>
 <dt id="term-initial-walk-adjust-interval-int"><code class="docutils literal"><span class="pre">initial_walk_adjust_interval=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">in initial walks, interval between walks for adjusting step size </div>
-<div class="line">default: &#8216;&#8217;</div>
+<div class="line">default: ”</div>
 </div>
 </dd>
 <dt id="term-initial-walk-emax-offset-per-atom-float"><code class="docutils literal"><span class="pre">initial_walk_Emax_offset_per_atom=float</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">offset (per atom) to increase Emax during initial random walk applied to all walkers</div>
-<div class="line">default: &#8216;&#8217;</div>
+<div class="line">default: ”</div>
+</div>
+</dd>
+<dt id="term-initial-walk-only-t-f"><code class="docutils literal"><span class="pre">initial_walk_only=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">do initial walk only, then quit</div>
+<div class="line">default: F</div>
 </div>
 </dd>
 <dt id="term-traj-interval-int"><code class="docutils literal"><span class="pre">traj_interval=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set &lt;=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. </div>
-<div class="line">default: 1 </div>
+<div class="line">default: 100</div>
 </div>
 </dd>
 <dt id="term-delta-random-seed-int"><code class="docutils literal"><span class="pre">delta_random_seed=int</span></code></dt>
@@ -914,11 +966,21 @@
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-separable-mdns-t-f"><code class="docutils literal"><span class="pre">separable_MDNS=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dt id="term-track-configs-write-t-f"><code class="docutils literal"><span class="pre">track_configs_write=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
 <dd><div class="first last line-block">
+<div class="line">Write tracked configrations to a file (if false, tracking info will still be in snapshot and traj files)</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-separable-mdns-t-f"><code class="docutils literal"><span class="pre">separable_MDNS=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first line-block">
 <div class="line">Use separable mdns (rather than MDNS in the total energy).</div>
 <div class="line">default: F</div>
 </div>
+<p class="last"><a href="#id5"><span class="problematic" id="id6">``</span></a>ns_run_analyzers=string
+| Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
+| Positive interval refers to NS loop, negative to initial walks
+| default: ”</p>
 </dd>
 </dl>
 </dd></dl>
@@ -972,7 +1034,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.1.
     </div>
   </body>
 </html>

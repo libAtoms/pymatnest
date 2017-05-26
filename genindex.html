@@ -1,7 +1,7 @@
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -28,7 +28,7 @@
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -99,6 +99,10 @@
       <li><a href="getstart.html#term-2d-t-f"><strong>2D=[ T | F ]</strong></a>, <a href="ns_run.html#term-2d-t-f"><strong>[1]</strong></a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="getstart.html#term-mc-cell-flat-v-prior"><strong>``MC_cell_flat_V_prior&#39;&#39;</strong></a>, <a href="ns_run.html#term-mc-cell-flat-v-prior"><strong>[1]</strong></a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="A">A</h2>
@@ -106,17 +110,19 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ns_run.html#ns_run.accumulate_stats">accumulate_stats() (in module ns_run)</a>
 </li>
+      <li><a href="ns_run.html#ns_run.add_to_list">add_to_list() (in module ns_run)</a>
+</li>
       <li><a href="ns_run.html#ns_run.additive_init_config">additive_init_config() (in module ns_run)</a>
 </li>
       <li><a href="getstart.html#term-adjust-step-interval-times-fraction-killed-float"><strong>adjust_step_interval_times_fraction_killed=float</strong></a>, <a href="ns_run.html#term-adjust-step-interval-times-fraction-killed-float"><strong>[1]</strong></a>
 </li>
       <li><a href="ns_run.html#ns_run.adjust_step_sizes">adjust_step_sizes() (in module ns_run)</a>
 </li>
-      <li><a href="rngstream.html#rngstream.RngStream_InfoState.Anti">Anti (rngstream.RngStream_InfoState attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="getstart.html#term-atom-algorithm-mc-md"><strong>atom_algorithm=[MC | MD]</strong></a>, <a href="ns_run.html#term-atom-algorithm-mc-md"><strong>[1]</strong></a>
+      <li><a href="rngstream.html#rngstream.RngStream_InfoState.Anti">Anti (rngstream.RngStream_InfoState attribute)</a>
+</li>
+      <li><a href="getstart.html#term-atom-algorithm-mc-md-gmc"><strong>atom_algorithm=[MC | MD | GMC]</strong></a>, <a href="ns_run.html#term-atom-algorithm-mc-md-gmc"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-atom-momentum-retain-fraction-float"><strong>atom_momentum_retain_fraction=float</strong></a>, <a href="ns_run.html#term-atom-momentum-retain-fraction-float"><strong>[1]</strong></a>
 </li>
@@ -152,13 +158,15 @@
 </li>
       <li><a href="ns_run.html#ns_run.check_eners_consistency">check_eners_consistency() (in module ns_run)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ns_run.html#ns_run.clean_prev_snapshot">clean_prev_snapshot() (in module ns_run)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-config-file-format-str"><strong>config_file_format=str</strong></a>, <a href="ns_run.html#term-config-file-format-str"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-converge-down-to-t-flot"><strong>converge_down_to_T=flot</strong></a>, <a href="ns_run.html#term-converge-down-to-t-flot"><strong>[1]</strong></a>
+</li>
+      <li><a href="ns_run.html#ns_run.create_list">create_list() (in module ns_run)</a>
 </li>
       <li><a href="rngstream.html#rngstream.RngStream.create_stream">create_stream() (rngstream.RngStream method)</a>
 </li>
@@ -180,10 +188,12 @@
 </li>
       <li><a href="ns_run.html#ns_run.do_cell_step">do_cell_step() (in module ns_run)</a>
 </li>
-      <li><a href="ns_run.html#ns_run.do_MC_atom_velo_walk">do_MC_atom_velo_walk() (in module ns_run)</a>
+      <li><a href="getstart.html#term-do-good-load-balance-t-f"><strong>do_good_load_balance=[T | F]</strong></a>, <a href="ns_run.html#term-do-good-load-balance-t-f"><strong>[1]</strong></a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ns_run.html#ns_run.do_MC_atom_velo_walk">do_MC_atom_velo_walk() (in module ns_run)</a>
+</li>
       <li><a href="ns_run.html#ns_run.do_MC_atom_walk">do_MC_atom_walk() (in module ns_run)</a>
 </li>
       <li><a href="ns_run.html#ns_run.do_MC_cell_shear_step">do_MC_cell_shear_step() (in module ns_run)</a>
@@ -242,6 +252,8 @@
 </li>
       <li><a href="getstart.html#term-fortran-model-str"><strong>FORTRAN_model=str</strong></a>, <a href="ns_run.html#term-fortran-model-str"><strong>[1]</strong></a>
 </li>
+      <li><a href="getstart.html#term-fortran-model-params-str"><strong>FORTRAN_model_params=str</strong></a>, <a href="ns_run.html#term-fortran-model-params-str"><strong>[1]</strong></a>
+</li>
       <li><a href="ns_run.html#ns_run.full_auto_set_stepsizes">full_auto_set_stepsizes() (in module ns_run)</a>
 </li>
   </ul></td>
@@ -264,6 +276,8 @@
 </li>
       <li><a href="getstart.html#term-gmc-dir-perturb-angle-during-float"><strong>GMC_dir_perturb_angle_during=float</strong></a>, <a href="ns_run.html#term-gmc-dir-perturb-angle-during-float"><strong>[1]</strong></a>
 </li>
+      <li><a href="getstart.html#term-gmc-no-reverse-t-f"><strong>GMC_no_reverse=[T | F]</strong></a>, <a href="ns_run.html#term-gmc-no-reverse-t-f"><strong>[1]</strong></a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -279,6 +293,8 @@
       <li><a href="getstart.html#term-initial-walk-emax-offset-per-atom-float"><strong>initial_walk_Emax_offset_per_atom=float</strong></a>, <a href="ns_run.html#term-initial-walk-emax-offset-per-atom-float"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-initial-walk-n-walks-int"><strong>initial_walk_N_walks=int</strong></a>, <a href="ns_run.html#term-initial-walk-n-walks-int"><strong>[1]</strong></a>
+</li>
+      <li><a href="getstart.html#term-initial-walk-only-t-f"><strong>initial_walk_only=[T | F]</strong></a>, <a href="ns_run.html#term-initial-walk-only-t-f"><strong>[1]</strong></a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -352,8 +368,6 @@
 </li>
       <li><a href="getstart.html#term-mc-atom-galilean-t-f"><strong>MC_atom_Galilean=[T | F]</strong></a>, <a href="ns_run.html#term-mc-atom-galilean-t-f"><strong>[1]</strong></a>
 </li>
-      <li><a href="getstart.html#term-mc-atom-galilean-no-reverse-t-f"><strong>MC_atom_Galilean_no_reverse=[T | F]</strong></a>, <a href="ns_run.html#term-mc-atom-galilean-no-reverse-t-f"><strong>[1]</strong></a>
-</li>
       <li><a href="getstart.html#term-mc-atom-step-size-float"><strong>MC_atom_step_size=float</strong></a>, <a href="ns_run.html#term-mc-atom-step-size-float"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-mc-atom-step-size-max-float"><strong>MC_atom_step_size_max=float</strong></a>, <a href="ns_run.html#term-mc-atom-step-size-max-float"><strong>[1]</strong></a>
@@ -378,10 +392,10 @@
 </li>
       <li><a href="getstart.html#term-mc-cell-shear-step-size-float"><strong>MC_cell_shear_step_size=float</strong></a>, <a href="ns_run.html#term-mc-cell-shear-step-size-float"><strong>[1]</strong></a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-mc-cell-shear-step-size-max-float"><strong>MC_cell_shear_step_size_max=float</strong></a>, <a href="ns_run.html#term-mc-cell-shear-step-size-max-float"><strong>[1]</strong></a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-mc-cell-stretch-prob-float"><strong>MC_cell_stretch_prob=float</strong></a>, <a href="ns_run.html#term-mc-cell-stretch-prob-float"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-mc-cell-stretch-step-size-float"><strong>MC_cell_stretch_step_size=float</strong></a>, <a href="ns_run.html#term-mc-cell-stretch-step-size-float"><strong>[1]</strong></a>
@@ -508,15 +522,17 @@
 </li>
       <li><a href="ns_run.html#ns_run.propagate_lammps">propagate_lammps() (in module ns_run)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ns_run.html#ns_run.propagate_NVE_quippy">propagate_NVE_quippy() (in module ns_run)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ns_run.html#ns_run.propose_shear_step">propose_shear_step() (in module ns_run)</a>
 </li>
       <li><a href="ns_run.html#ns_run.propose_stretch_step">propose_stretch_step() (in module ns_run)</a>
 </li>
       <li><a href="ns_run.html#ns_run.propose_volume_step">propose_volume_step() (in module ns_run)</a>
+</li>
+      <li><a href="getstart.html#term-python-md-t-f"><strong>python_MD=[ T | F ]</strong></a>, <a href="ns_run.html#term-python-md-t-f"><strong>[1]</strong></a>
 </li>
   </ul></td>
 </tr></table>
@@ -602,10 +618,14 @@
 </li>
       <li><a href="getstart.html#term-snapshot-interval-int"><strong>snapshot_interval=int</strong></a>, <a href="ns_run.html#term-snapshot-interval-int"><strong>[1]</strong></a>
 </li>
-      <li><a href="stacktrace.html#module-stacktrace">stacktrace (module)</a>
+      <li><a href="getstart.html#term-snapshot-per-parallel-task-t-f"><strong>snapshot_per_parallel_task=[ T | F ]</strong></a>, <a href="ns_run.html#term-snapshot-per-parallel-task-t-f"><strong>[1]</strong></a>
+</li>
+      <li><a href="getstart.html#term-snapshot-time-int"><strong>snapshot_time=int</strong></a>, <a href="ns_run.html#term-snapshot-time-int"><strong>[1]</strong></a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="stacktrace.html#module-stacktrace">stacktrace (module)</a>
+</li>
       <li><a href="getstart.html#term-start-config-file-str"><strong>start_config_file=str</strong></a>, <a href="ns_run.html#term-start-config-file-str"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-start-energy-ceiling-float"><strong>start_energy_ceiling=float</strong></a>, <a href="ns_run.html#term-start-energy-ceiling-float"><strong>[1]</strong></a>
@@ -648,9 +668,11 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-t-estimate-finite-diff-lag-int"><strong>T_estimate_finite_diff_lag=int</strong></a>, <a href="ns_run.html#term-t-estimate-finite-diff-lag-int"><strong>[1]</strong></a>
 </li>
+      <li><a href="getstart.html#term-track-configs-t-f"><strong>track_configs=[ T | F ]</strong></a>, <a href="ns_run.html#term-track-configs-t-f"><strong>[1]</strong></a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="getstart.html#term-track-configs-t-f"><strong>track_configs=[ T | F ]</strong></a>, <a href="ns_run.html#term-track-configs-t-f"><strong>[1]</strong></a>
+      <li><a href="getstart.html#term-track-configs-write-t-f"><strong>track_configs_write=[ T | F ]</strong></a>, <a href="ns_run.html#term-track-configs-write-t-f"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-traj-interval-int"><strong>traj_interval=int</strong></a>, <a href="ns_run.html#term-traj-interval-int"><strong>[1]</strong></a>
 </li>
@@ -716,7 +738,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.1.
     </div>
   </body>
 </html>

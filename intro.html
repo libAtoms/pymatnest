@@ -1,6 +1,6 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -29,7 +29,7 @@
     <link rel="next" title="Installation and quick start guide" href="install.html" />
     <link rel="prev" title="pymatnest documentation" href="index.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -158,8 +158,8 @@ Phys. Rev. B (2016), 93, 174108, <a class="reference external" href="http://jour
 </div>
 <div class="section" id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
-<p>Nested sampling is an iterative method...
-Top-down, Size of live set, random walk...etc.</p>
+<p>Nested sampling is an iterative method…
+Top-down, Size of live set, random walk…etc.</p>
 </div>
 <div class="section" id="pymatnest">
 <h2><code class="docutils literal"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this headline">¶</a></h2>
@@ -182,7 +182,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <li><dl class="first docutils">
 <dt>else perturb velocities</dt>
 <dd><ul class="first last">
-<li>if current velocity=0, can&#8217;t rescale, so pick random velocities consistent with Emax</li>
+<li>if current velocity=0, can’t rescale, so pick random velocities consistent with Emax</li>
 <li>else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom_velo_rej_free_perturb_angle</li>
 </ul>
 </dd>
@@ -198,11 +198,11 @@ It can be used with the supplied fortran potential models and it also has interf
 <dd><ul class="first last simple">
 <li>pick random velocities from cannonical distribution with inverse T currentbeta</li>
 <li><dl class="first docutils">
-<dt>If movement_args[&#8216;atom_momentum_retain_fraction&#8217;]&gt;0.0</dt>
+<dt>If movement_args[‘atom_momentum_retain_fraction’]&gt;0.0</dt>
 <dd><ul class="first last">
 <li>Partial momentum update</li>
-<li>$p&#8217; = alpha p + ( 1- alpha^2  )^{frac{1}{2}}n$ www.mcmchandbook.net eq. (5.34)</li>
-<li>Else if &#8220;rescale_only&#8221; rescale velocities to current temperature</li>
+<li>$p’ = alpha p + ( 1- alpha^2  )^{frac{1}{2}}n$ www.mcmchandbook.net eq. (5.34)</li>
+<li>Else if “rescale_only” rescale velocities to current temperature</li>
 <li>Else completely refresh velocities</li>
 </ul>
 </dd>
@@ -265,7 +265,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <dd><ul class="first last">
 <li>do python MC</li>
 <li><dl class="first docutils">
-<dt>is MC_atom_Galilean</dt>
+<dt>if MC_atom_Galilean</dt>
 <dd><ul class="first last">
 <li>go Galilean MC in python</li>
 </ul>
@@ -320,7 +320,8 @@ It can be used with the supplied fortran potential models and it also has interf
 </ul>
 </dd>
 <dt><code class="docutils literal"><span class="pre">walk_single_walker</span></code></dt>
-<dd><ul class="first last simple">
+<dd><blockquote class="first">
+<div><ul class="simple">
 <li><dl class="first docutils">
 <dt>create list</dt>
 <dd><ul class="first last">
@@ -342,6 +343,9 @@ It can be used with the supplied fortran potential models and it also has interf
 </dd>
 </dl>
 </li>
+</ul>
+</div></blockquote>
+<ul class="last simple">
 <li>perturb final energy by random_energy_perturbation</li>
 </ul>
 </dd>
@@ -352,7 +356,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <li><dl class="first docutils">
 <dt>For each (H)MC move type the following is performed</dt>
 <dd><ul class="first last">
-<li>Set &#8216;&#8217;movement_args&#8217;&#8217; parameters so that only one (H)MC call is made at a time</li>
+<li>Set ”movement_args” parameters so that only one (H)MC call is made at a time</li>
 <li>Min and max acceptance rates are copied from parameters MC_adjust_min_rate / MD_adjust_min_rate and MC_adjust_max_rate / MD_adjust_max_rate</li>
 <li><dl class="first docutils">
 <dt>Step size calibration loop:</dt>
@@ -463,7 +467,7 @@ running statistics for the number of accepted/rejected moves on each process are
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.1.
     </div>
   </body>
 </html>

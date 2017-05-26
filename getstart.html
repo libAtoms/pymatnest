@@ -1,6 +1,6 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
@@ -29,7 +29,7 @@
     <link rel="next" title="pymatnest module" href="ns_run.html" />
     <link rel="prev" title="Installation and quick start guide" href="install.html" /> 
   </head>
-  <body role="document">
+  <body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -58,7 +58,7 @@
 <li><a class="reference internal" href="#cluster-with-the-supplied-fortran-code-lennard-jones-potential-using-mc">Cluster with the supplied fortran code Lennard-Jones potential, using MC</a></li>
 <li><a class="reference internal" href="#cluster-with-quip-implemented-lennard-jones-potential-using-md">Cluster with <code class="docutils literal"><span class="pre">QUIP</span></code> implemented Lennard-Jones potential, using MD</a></li>
 <li><a class="reference internal" href="#periodic-lennard-jones-system-with-lammps-using-md">Periodic Lennard-Jones system with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD</a></li>
-<li><a class="reference internal" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">Periodic binary Lennard-Jones system with the supplied fortran code or``LAMMPS``, using MD</a></li>
+<li><a class="reference internal" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">Periodic binary Lennard-Jones system with the supplied fortran code or“LAMMPS“, using MD</a></li>
 <li><a class="reference internal" href="#molecule-with-lammps-using-md">Molecule with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 </ul>
 </li>
@@ -128,7 +128,7 @@
 <dd><div class="first last line-block">
 <div class="line">MANDATORY (or start_species)</div>
 <div class="line">Name of file to read in for atom information</div>
-<div class="line">default: &#8216;&#8217;</div>
+<div class="line">default: ”</div>
 </div>
 </dd>
 <dt id="term-restart-file-path-to-file"><code class="docutils literal"><span class="pre">restart_file=path_to_file</span></code></dt>
@@ -227,7 +227,7 @@
 </dd>
 <dt id="term-n-model-calls-expected-int"><code class="docutils literal"><span class="pre">n_model_calls_expected=int</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword <code class="docutils literal"><span class="pre">n_model_calls</span></code> is mandatory, but the use of this keyword is strongly recommended.</div>
+<div class="line">Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. Either this or the keyword <code class="docutils literal"><span class="pre">n_model_calls</span></code> is mandatory, but the use of this keyword is strongly recommended. If &lt; 0, value will be set to _sum_ of each type of steps (accounting for atom_traj_len), so <code class="docutils literal"><span class="pre">n_*_steps</span></code> will be setting the _number_ of calls, rather than just the ratios.</div>
 <div class="line">default: 0</div>
 </div>
 </dd>
@@ -237,9 +237,15 @@
 <div class="line">default: 0</div>
 </div>
 </dd>
+<dt id="term-do-good-load-balance-t-f"><code class="docutils literal"><span class="pre">do_good_load_balance=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Whether to do steps in groups with good load balance</div>
+<div class="line">default: F</div>
+</div>
+</dd>
 <dt id="term-n-atom-steps-int"><code class="docutils literal"><span class="pre">n_atom_steps=int</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Ratio of atomic trajectoris will be determined by <code class="docutils literal"><span class="pre">n_atom_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
+<div class="line">Ratio of atomic trajectories will be determined by <code class="docutils literal"><span class="pre">n_atom_steps</span></code>/SUM(<code class="docutils literal"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
@@ -320,10 +326,10 @@
 <div class="line">default: 1.0e-12</div>
 </div>
 </dd>
-<dt id="term-atom-algorithm-mc-md"><code class="docutils literal"><span class="pre">atom_algorithm=[MC</span> <span class="pre">|</span> <span class="pre">MD]</span></code></dt>
+<dt id="term-atom-algorithm-mc-md-gmc"><code class="docutils literal"><span class="pre">atom_algorithm=[MC</span> <span class="pre">|</span> <span class="pre">MD</span> <span class="pre">|</span> <span class="pre">GMC]</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">MANDATORY</div>
-<div class="line">Use either Monte Carlo or Molecular dynamics to explore.</div>
+<div class="line">Use either Monte Carlo or Molecular dynamics to explore. GMC is an alias for atom_algorithm=MC, MC_atom_Galilean=True.</div>
 </div>
 </dd>
 <dt id="term-mc-atom-velocities-t-f"><code class="docutils literal"><span class="pre">MC_atom_velocities=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
@@ -360,7 +366,7 @@
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-mc-atom-galilean-no-reverse-t-f"><code class="docutils literal"><span class="pre">MC_atom_Galilean_no_reverse=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
+<dt id="term-gmc-no-reverse-t-f"><code class="docutils literal"><span class="pre">GMC_no_reverse=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
 <dd><div class="first last line-block">
 <div class="line">default: T</div>
 </div>
@@ -404,6 +410,12 @@
 <div class="line">default: F</div>
 </div>
 </dd>
+<dt id="term-python-md-t-f"><code class="docutils literal"><span class="pre">python_MD=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Do MD using python code rather than underlying driver</div>
+<div class="line">default: F</div>
+</div>
+</dd>
 <dt id="term-atom-velo-rej-free-fully-randomize-t-f"><code class="docutils literal"><span class="pre">atom_velo_rej_free_fully_randomize=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">If true, randomize velocities completely rather than just perturbing.</div>
@@ -443,6 +455,13 @@
 <div class="line">eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS</div>
 <div class="line">the lammpslib module will convert the units for lammps to whatever units are set by the potential type) </div>
 <div class="line">default: 0.0 </div>
+</div>
+</dd>
+<dt id="term-mc-cell-flat-v-prior"><a href="#id3"><span class="problematic" id="id4">``</span></a>MC_cell_flat_V_prior”</dt>
+<dd><div class="first last line-block">
+<div class="line">Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)</div>
+<div class="line">POORLY TESTED, DO NOT TRUST (YET).</div>
+<div class="line">default: False</div>
 </div>
 </dd>
 <dt id="term-mc-cell-volume-per-atom-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_step_size=float</span></code></dt>
@@ -502,7 +521,7 @@
 <dd><div class="first line-block">
 <div class="line">default: 1000</div>
 </div>
-<p class="last">full_auto_step_sizes=[T | F]``
+<p class="last">full_auto_step_sizes=[T | F]“
 | If true (T), automatically calibrate all sizes by performing additional short explorations, including at the start of run. If false (F), use initial input step sizes and make small adjustments to these during the run.
 | default: T</p>
 </dd>
@@ -583,6 +602,11 @@
 <div class="line">MANDATORY if energy_calculator=fortran</div>
 </div>
 </dd>
+<dt id="term-fortran-model-params-str"><code class="docutils literal"><span class="pre">FORTRAN_model_params=str</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">parameters (optional) for fortran model</div>
+</div>
+</dd>
 <dt id="term-lammps-fix-gmc-t-f"><code class="docutils literal"><span class="pre">LAMMPS_fix_gmc=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> </dt>
 <dd><div class="first last line-block">
 <div class="line">default: F</div>
@@ -595,7 +619,7 @@
 </dd>
 <dt id="term-lammps-name-str"><code class="docutils literal"><span class="pre">LAMMPS_name=str</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">&#8216;&#8217;, arch name for lammps shared object file</div>
+<div class="line">”, arch name for lammps shared object file</div>
 </div>
 </dd>
 <dt id="term-lammps-header-str"><code class="docutils literal"><span class="pre">LAMMPS_header=str</span></code></dt>
@@ -605,13 +629,13 @@
 </dd>
 <dt id="term-lammps-header-extra-str"><code class="docutils literal"><span class="pre">LAMMPS_header_extra=str</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">&#8216;&#8217;, extra lammpslib.py header commands for energy_calculator=lammps</div>
+<div class="line">”, extra lammpslib.py header commands for energy_calculator=lammps</div>
 </div>
 </dd>
 <dt id="term-lammps-atom-types-str"><code class="docutils literal"><span class="pre">LAMMPS_atom_types=str</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">MANDATORY if energy_calculator=lammps</div>
-<div class="line">atomic_symbol1 lammps_type1 [, atomic_symbol2 lammps_type2, ...]</div>
+<div class="line">atomic_symbol1 lammps_type1 [, atomic_symbol2 lammps_type2, …]</div>
 <div class="line">mapping between atom species and lammps potential types</div>
 </div>
 </dd>
@@ -647,7 +671,19 @@
 <dt id="term-snapshot-interval-int"><code class="docutils literal"><span class="pre">snapshot_interval=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">Iteration interval at which a snapshot is created: every process prints out its current walkers in extended xyz format. If it is set &lt;=0, no snapshots will be printed except the final positions at the end of the nested sampling run. Note that when new snapshots are printed, the previous set is deleted. The snapshot files are convenient source to see how the sampling progresses, but these are also the basis to restart a sampling! When using restart, the walkers will be read from these files.</div>
-<div class="line">default: 1000</div>
+<div class="line">default: 10000</div>
+</div>
+</dd>
+<dt id="term-snapshot-time-int"><code class="docutils literal"><span class="pre">snapshot_time=int</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Max time between snapshots in seconds</div>
+<div class="line">default: 3600</div>
+</div>
+</dd>
+<dt id="term-snapshot-per-parallel-task-t-f"><code class="docutils literal"><span class="pre">snapshot_per_parallel_task=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">Save a separate snapshot file for each parallel task.  Faster I/O (in parallel), but less convenient in some cases.</div>
+<div class="line">default: T</div>
 </div>
 </dd>
 <dt id="term-snapshot-clean-t-f"><code class="docutils literal"><span class="pre">snapshot_clean=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
@@ -677,25 +713,31 @@
 <dt id="term-initial-walk-n-walks-int"><code class="docutils literal"><span class="pre">initial_walk_N_walks=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">number of initial random walks to apply to all walkers</div>
-<div class="line">default: &#8216;&#8217;</div>
+<div class="line">default: ”</div>
 </div>
 </dd>
 <dt id="term-initial-walk-adjust-interval-int"><code class="docutils literal"><span class="pre">initial_walk_adjust_interval=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">in initial walks, interval between walks for adjusting step size </div>
-<div class="line">default: &#8216;&#8217;</div>
+<div class="line">default: ”</div>
 </div>
 </dd>
 <dt id="term-initial-walk-emax-offset-per-atom-float"><code class="docutils literal"><span class="pre">initial_walk_Emax_offset_per_atom=float</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">offset (per atom) to increase Emax during initial random walk applied to all walkers</div>
-<div class="line">default: &#8216;&#8217;</div>
+<div class="line">default: ”</div>
+</div>
+</dd>
+<dt id="term-initial-walk-only-t-f"><code class="docutils literal"><span class="pre">initial_walk_only=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
+<dd><div class="first last line-block">
+<div class="line">do initial walk only, then quit</div>
+<div class="line">default: F</div>
 </div>
 </dd>
 <dt id="term-traj-interval-int"><code class="docutils literal"><span class="pre">traj_interval=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set &lt;=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. </div>
-<div class="line">default: 1 </div>
+<div class="line">default: 100</div>
 </div>
 </dd>
 <dt id="term-delta-random-seed-int"><code class="docutils literal"><span class="pre">delta_random_seed=int</span></code></dt>
@@ -715,11 +757,21 @@
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-separable-mdns-t-f"><code class="docutils literal"><span class="pre">separable_MDNS=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dt id="term-track-configs-write-t-f"><code class="docutils literal"><span class="pre">track_configs_write=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
 <dd><div class="first last line-block">
+<div class="line">Write tracked configrations to a file (if false, tracking info will still be in snapshot and traj files)</div>
+<div class="line">default: F</div>
+</div>
+</dd>
+<dt id="term-separable-mdns-t-f"><code class="docutils literal"><span class="pre">separable_MDNS=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code></dt>
+<dd><div class="first line-block">
 <div class="line">Use separable mdns (rather than MDNS in the total energy).</div>
 <div class="line">default: F</div>
 </div>
+<p class="last"><a href="#id5"><span class="problematic" id="id6">``</span></a>ns_run_analyzers=string
+| Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
+| Positive interval refers to NS loop, negative to initial walks
+| default: ”</p>
 </dd>
 </dl>
 </dd></dl>
@@ -891,7 +943,7 @@ and using MD trajectory for generating a new sample configuration.</p>
 </div>
 </div>
 <div class="section" id="periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">
-<h3>Periodic binary Lennard-Jones system with the supplied fortran code or``LAMMPS``, using MD<a class="headerlink" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md" title="Permalink to this headline">¶</a></h3>
+<h3>Periodic binary Lennard-Jones system with the supplied fortran code or“LAMMPS“, using MD<a class="headerlink" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
 Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.
 The cell is of variable shape and size at the set pressure value.</p>
@@ -1043,7 +1095,7 @@ is done by performing a random walk, modifying the atomic coordinates and the la
 if applicable. This can be done by one of the following different methods: MC, MD or GMC,
 set by the <code class="docutils literal"><span class="pre">atom_algorithm</span></code> keyword. Although infinitely long walks would be the best,
 we can rarely wait that long, thus we have to determine a finite length we allow for the walk.
-The length is determined by &#8220;step&#8221;, i.e. the number of model calls. One MD timestep, one lattice
+The length is determined by “step”, i.e. the number of model calls. One MD timestep, one lattice
 modification, one atom type swap or one MC all-atom sweep is counted as a single model call.
 The number of model calls a user wants to be performed on a walker between its birth (by cloning) and
 discard (having the highest energy among all the walkers) is set by the <code class="docutils literal"><span class="pre">n_model_calls_expected</span></code>
@@ -1057,7 +1109,7 @@ cell, changing the shape of the cell by shear, changing the shape of the cell by
 coordinates of different types of atoms. The ratio of these steps are determined by the keywords
 <code class="docutils literal"><span class="pre">n_atom_steps</span></code>, <code class="docutils literal"><span class="pre">n_cell_volume_steps</span></code>, <code class="docutils literal"><span class="pre">n_cell_shear_steps</span></code>, <code class="docutils literal"><span class="pre">n_cell_stretch_steps</span></code> and <code class="docutils literal"><span class="pre">n_swap_steps</span></code>,
 respectively. E.g. if the values for these keywords are set as 10, 4, 4, 4, 3, respectively, then the probability
-of performing an atomic step will be 10/(10+4+4+4+3)=0.4, the probability of performing a volume change will be 0.16,...etc.
+of performing an atomic step will be 10/(10+4+4+4+3)=0.4, the probability of performing a volume change will be 0.16,…etc.
 If any of these keywords is set to zero, the corresponding step type will never be performed.
 It is important to consider that one <code class="docutils literal"><span class="pre">n_atom_steps</span></code> does not necessarily cover only one model call. To improve efficiency
 several MD time steps or MC sweeps can be (and should be) performed consecutively, set by the parameter <code class="docutils literal"><span class="pre">atom_traj_len</span></code>.
@@ -1126,7 +1178,7 @@ value if the run already reached the number of iterations set previously. (Note:
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.5.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.1.
     </div>
   </body>
 </html>
