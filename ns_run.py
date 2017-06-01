@@ -75,8 +75,8 @@ def usage():
        | default: 0
 
     ``KEmax_max_T=float`` 
-       | Maximum temperature for estimating KEmax if *P* = 0, i.e. fixed V ensemble (will be multiplied by kB)
-       | default: 1.0e5
+       | If > 0, maximum temperature for estimating KEmax.  For constant *P* ensemble 3/2 P Vmax will be used if KEmax_max_T is < 0.
+       | default: -1
 
     ``kB=float`` 
        | Boltzmann constant
@@ -422,7 +422,7 @@ def usage():
 
     ``initial_walk_Emax_offset_per_atom=float``
        | offset (per atom) to increase Emax during initial random walk applied to all walkers
-       | default: ''
+       | default: 1.0
 
     ``initial_walk_only=[T | F]``
        | do initial walk only, then quit
@@ -471,7 +471,7 @@ def usage():
     sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
     sys.stderr.write("ns_run_analyzers=str ('', analyzers to apply during run\n")
     sys.stderr.write("\n")
-    sys.stderr.write("KEmax_max_T=float (1e5, maximum temperature for estimating KEmax if P == 0, i.e. fixed V ensemble (will be multiplied by kB))\n")
+    sys.stderr.write("KEmax_max_T=float (-1, if > 0 maximum temperature for estimating KEmax)\n")
     sys.stderr.write("kB=float (8.6173324e-5, Boltzmann constant)\n")
     sys.stderr.write("start_energy_ceiling_per_atom=float (1.0e9, max potential energy per atom for initial configs.  P*Vmax is added to this automatically)\n")
     sys.stderr.write("start_energy_ceiling=float (DEPRECATED: use start_energy_ceiling_per_atom. 1.0e9, max potential energy for initial configs.  P*Vmax is added to this automatically)\n")
@@ -2310,18 +2310,15 @@ def do_ns_loop():
                 # store culled config in list to be written (when snapshot_interval has passed) every traj_interval steps
                 global_n = i_ns_step*n_cull + global_n_offset
                 if ns_args['traj_interval'] > 0 and global_n % ns_args['traj_interval'] == ns_args['traj_interval']-1:
-                    walkers[i].info['volume'] = walkers[i].get_volume()
-                    walkers[i].info['ns_P'] = movement_args['MC_cell_P']
-                    walkers[i].info['iter'] = i_ns_step
-                    walkers[i].info['config_n_global'] = global_n
-                    if walkers[i].has('masses') and walkers[i].has('momenta'):
-                        walkers[i].info['ns_KE'] = walkers[i].get_kinetic_energy()
-                    #QUIP_IO if have_quippy:
-                        #QUIP_IO walkers[i].write(traj_io)
-                    #QUIP_IO else:
-                        #QUIP_IO ase.io.write(traj_file % i_ns_step, ase.Atoms(walkers[i]))
+                    walker_copy = walkers[i].copy()
+                    walker_copy.info['volume'] = walker_copy.get_volume()
+                    walker_copy.info['ns_P'] = movement_args['MC_cell_P']
+                    walker_copy.info['iter'] = i_ns_step
+                    walker_copy.info['config_n_global'] = global_n
+                    if walker_copy.has('masses') and walker_copy.has('momenta'):
+                        walker_copy.info['ns_KE'] = walker_copy.get_kinetic_energy()
 
-                    traj_walker_list.append(walkers[i].copy())
+                    traj_walker_list.append(walker_copy)
 
                 # if tracking all configs, save this one that has been culled
                 if track_traj_io is not None:
@@ -3011,7 +3008,7 @@ def main():
 
 
 
-        ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', 1.0e5))
+        ns_args['KEmax_max_T'] = float(args.pop('KEmax_max_T', -1))
         ns_args['kB'] = float(args.pop('kB', 8.6173324e-5)) # eV/K
 
         # parse energy_calculator
@@ -3592,10 +3589,12 @@ def main():
 
                 # set KEmax from P and Vmax
             if (movement_args['do_velocities']):
-                if movement_args['MC_cell_P'] > 0.0:
+                if movement_args['KEmax_max_T'] > 0.0:
+                    KEmax = 1.5*len(walkers[0])*ns_args['kB']*ns_args['KEmax_max_T']
+                elif movement_args['MC_cell_P'] > 0.0:
                     KEmax = 1.5*movement_args['MC_cell_P']*len(walkers[0])*ns_args['max_volume_per_atom']
                 else:
-                    KEmax = 1.5*len(walkers[0])*ns_args['kB']*ns_args['KEmax_max_T']
+                    exit_error("do_velocities is set, but neither KEmax_max_T nor MC_cell_P are > 0, so no heuristic for setting KEmax",4)
                 for at in walkers:
                     at.info['KEmax']=KEmax
             else:
