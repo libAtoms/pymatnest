@@ -1,23 +1,49 @@
 #!/usr/bin/env python
 
-import numpy as np, fileinput, itertools
+import numpy as np, fileinput, itertools, sys
 
 def read_inputs(args, line_skip=0, line_end=None, interval=1):
 
     inputs = fileinput.input(files=args)
 
-    (n_walkers, n_cull, n_Extra_DOF) = inputs.readline().split()
+    fields = inputs.readline().split()
+    if len(fields) == 3:
+        (n_walkers, n_cull, n_Extra_DOF) = fields
+        flat_V_prior = "False"
+        N_atoms = "0"
+    elif len(fields) == 5:
+        (n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms) = fields
+    else:
+        raise("unknown number of fields %d (not 3 or 5) in first line of energies file" % len(fields))
     n_walkers = int(n_walkers)
     n_cull = int(n_cull)
     n_Extra_DOF = int(n_Extra_DOF)
+    if flat_V_prior.lower() == "t" or flat_V_prior.lower() == "true":
+        flat_V_prior = True
+    elif flat_V_prior.lower() == "f" or flat_V_prior.lower() == "false":
+        flat_V_prior = False
+    else:
+        sys.stderr.write("Unknown flat_V_prior string '%s'\n" % flat_V_prior)
+        sys.exit(1)
+    N_atoms = int(N_atoms)
 
     Es=[]
+    Vs=[]
     lines = itertools.islice(inputs, line_skip, line_end, interval)
     for line in lines:
-        (n_iter, E) = line.split()
+        fields = line.split()
+        try:
+            (n_iter, E, V) = fields[0:3]
+            Vs.append(float(V))
+        except:
+            (n_iter, E) = fields[0:2]
         Es.append(float(E))
 
-    return (n_walkers, n_cull, n_Extra_DOF, np.array(Es))
+    if len(Vs) == 0:
+        Vs = None
+    else:
+        Vs = np.array(Vs)
+    return (n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms, np.array(Es), Vs)
 
 def calc_log_a(n_Es, n_walkers, n_cull, interval=1):
     # log_a = math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
@@ -39,9 +65,12 @@ def calc_log_a(n_Es, n_walkers, n_cull, interval=1):
     log_a = log_X_n[0::interval] - np.log(n_walkers+1-i_range_plus_1_mod_n_cull[0::interval])
     return log_a
 
-def calc_Z_terms(beta, log_a, Es):
+def calc_Z_terms(beta, log_a, Es, flat_V_prior=False, N_atoms=0, Vs=None):
     #DEBUG for i in range(len(log_a)):
         #DEBUG print "calc_Z_terms log_a ", log_a[i], beta*Es[i]
-    shift = np.amax(log_a[:] - beta*Es[:])
-    Z_term = np.exp(log_a[:] - beta*Es[:] - shift)
+    log_Z_term = log_a[:] - beta*Es[:]
+    if flat_V_prior:
+        log_Z_term += float(N_atoms)*np.log(Vs[:])
+    shift = np.amax(log_Z_term[:])
+    Z_term = np.exp(log_Z_term[:] - shift)
     return (Z_term, shift)

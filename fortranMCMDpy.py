@@ -15,6 +15,8 @@ class fortran_MC_MD:
 
 
         # ll_init_model
+        self.model_lib.ll_init_model_.argtypes = [ctypes.c_void_p, # N_params
+           ndpointer(ctypes.c_double, flags="C_CONTIGUOUS") ] # params
 
         # ll_init_config
         self.model_lib.ll_init_config_.argtypes = [ctypes.c_void_p, # N
@@ -131,8 +133,9 @@ class fortran_MC_MD:
 
 # MODEL ###############################################################################
 
-    def init_model(self):
-        self.model_lib.ll_init_model_()
+    def init_model(self, params):
+        n_params = ctypes.c_int(len(params))
+        self.model_lib.ll_init_model_(ctypes.byref(n_params), params)
 
     def init_config(self, at, Emax):
         n = ctypes.c_int(len(at))

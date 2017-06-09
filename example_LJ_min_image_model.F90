@@ -1,10 +1,11 @@
 ! API documented in example_LJ_model.F90
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-subroutine ll_init_model()
+subroutine ll_init_model(N_params, params)
 use example_LJ_params_mod
 implicit none
+   integer :: N_params
+   double precision :: params(N_params)
+
    epsilon(1,1) = 4.0
    epsilon(2,2) = 4.0
    epsilon(1,2) = 6.0
@@ -22,7 +23,12 @@ implicit none
 
 end subroutine ll_init_model
 
-subroutine ll_init_config()
+subroutine ll_init_config(N, Z, pos, cell, Emax)
+implicit none
+   integer :: N
+   integer :: Z(N)
+   double precision :: pos(3,N), cell(3,3)
+   double precision :: Emax
    return
 end subroutine ll_init_config
 

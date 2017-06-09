@@ -1,7 +1,7 @@
 # starting volume (in this example it is Angstrom^3)
 max_volume_per_atom=108.0
 # 6 atoms with atomic number 1 and mass 1.0
-start_config_filename=test_start_config.xyz
+start_config_file=test_start_config.xyz
 start_energy_ceiling_per_atom=0.17e9
 
 random_initialise_pos=F

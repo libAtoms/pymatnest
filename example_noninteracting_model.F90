@@ -1,16 +1,25 @@
 ! API documented in example_LJ_model.F90
-subroutine ll_init_model()
+
+subroutine ll_init_model(N_params, params)
+   integer :: N_params
+   double precision :: params(N_params)
    return
 end subroutine ll_init_model
 
-subroutine ll_init_config()
+subroutine ll_init_config(N, Z, pos, cell, Emax)
+implicit none
+   integer :: N
+   integer :: Z(N)
+   double precision :: pos(3,N), cell(3,3)
+   double precision :: Emax
    return
 end subroutine ll_init_config
 
-double precision function ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
+double precision function ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
 use example_mat_mod
 implicit none
    integer :: N
+   integer :: Z(N)
    double precision :: pos(3,N), cell(3,3)
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data, N)
@@ -19,10 +28,11 @@ implicit none
 
 end function ll_eval_energy
 
-integer function ll_move_atom_1(N, pos, n_extra_data, extra_data, cell, d_i, d_pos, dEmax, dE)
+integer function ll_move_atom_1(N, Z, pos, n_extra_data, extra_data, cell, d_i, d_pos, dEmax, dE)
 use example_mat_mod
 implicit none
    integer :: N
+   integer :: Z(N)
    double precision :: pos(3,N), cell(3,3)
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data, N)
@@ -35,10 +45,11 @@ implicit none
 
 end function ll_move_atom_1
 
-function ll_eval_forces(N, pos, n_extra_data, extra_data, cell, forces) result(energy)
+function ll_eval_forces(N, Z, pos, n_extra_data, extra_data, cell, forces) result(energy)
 use example_mat_mod
 implicit none
    integer :: N
+   integer :: Z(N)
    double precision :: pos(3,N), cell(3,3), forces(3,N)
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data, N)

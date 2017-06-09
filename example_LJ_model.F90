@@ -1,18 +1,21 @@
 ! publically accessible things required for interface to pymatnest
 !
-! subroutine ll_init_model() 
+! subroutine ll_init_model(N_params, params) 
+!    integer :: N_params ! number of parameters
+!    double precision :: params(N_params) ! list of parameters
 !
 !    initializes potential
 !
-! subroutine ll_init_config(N, pos, cell, Emax) 
+! subroutine ll_init_config(N, Z, pos, cell, Emax) 
 !    integer :: N ! number of atoms
+!    integer :: Z(N) ! atomic numbers of atoms
 !    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
 !    double precision :: Emax ! maximum energy for config acceptance
 !
 !    initializes a configuration with energy < Emax
 !    config will be tested for failure after return
 !
-! double precision function ll_eval_energy(N, pos, n_extra_data, extra_data, cell)
+! double precision function ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
 !    integer :: N ! number of atoms
 !    double precision :: pos(3,N), cell(3,3) ! positions, cell vectors
 !    integer :: n_extra_data ! width of extra data array
@@ -46,9 +49,12 @@
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-subroutine ll_init_model()
+subroutine ll_init_model(N_params, params)
 use example_LJ_params_mod
 implicit none
+   integer :: N_params
+   double precision :: params(N_params)
+
    epsilon(1,1) = 4.0
    epsilon(2,2) = 4.0
    epsilon(1,2) = 6.0
@@ -66,7 +72,12 @@ implicit none
 
 end subroutine ll_init_model
 
-subroutine ll_init_config()
+subroutine ll_init_config(N, Z, pos, cell, Emax)
+implicit none
+   integer :: N
+   integer :: Z(N)
+   double precision :: pos(3,N), cell(3,3)
+   double precision :: Emax
    return
 end subroutine ll_init_config
 
@@ -123,7 +134,7 @@ implicit none
 	 dr_mag_sq = sum(dr*dr)
 	 if (dr_mag_sq < cutoff_sq(Z_i,Z_j)) then
 	    dr_mag = sqrt(dr_mag_sq)
-	    E_term = epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6) - E_offset(Z_i,Z_i))
+	    E_term = epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6) - E_offset(Z_i,Z_j))
 	    if (i == j) E_term = E_term * 0.5
 	    ll_eval_energy = ll_eval_energy + E_term
 
@@ -230,22 +241,22 @@ implicit none
 
 	 if (dr_mag_sq < cutoff_sq(Z_i,Z_j)) then
 	    dr_mag = sqrt(dr_mag_sq)
-	    dE = dE -  epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6) - E_offset(Z_i,Z_i))
+	    dE = dE -  epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6) - E_offset(Z_i,Z_j))
 	    if (n_extra_data == 1) then
 	       new_extra_data(1,i) = new_extra_data(1,i) - 0.5*((sigma(Z_i,Z_j)/dr_mag)**12 - &
-                                     (sigma(Z_i,Z_j)/dr_mag)**6 - E_offset(Z_i,Z_i))
+                                     (sigma(Z_i,Z_j)/dr_mag)**6 - E_offset(Z_i,Z_j))
 	       new_extra_data(1,j) = new_extra_data(1,j) - 0.5*((sigma(Z_i,Z_j)/dr_mag)**12 - &
-                                     (sigma(Z_i,Z_j)/dr_mag)**6 - E_offset(Z_i,Z_i))
+                                     (sigma(Z_i,Z_j)/dr_mag)**6 - E_offset(Z_i,Z_j))
 	    endif
 	 endif
 	 if (drp_mag_sq < cutoff_sq(Z_i,Z_j)) then
 	    drp_mag = sqrt(drp_mag_sq)
-	    dE = dE + epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/drp_mag)**12 - (sigma(Z_i,Z_j)/drp_mag)**6) - E_offset(Z_i,Z_i))
+	    dE = dE + epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/drp_mag)**12 - (sigma(Z_i,Z_j)/drp_mag)**6) - E_offset(Z_i,Z_j))
 	    if (n_extra_data == 1) then
 	       new_extra_data(1,i) = new_extra_data(1,i) + 0.5*epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/drp_mag)**12 - &
-                                     (sigma(Z_i,Z_j)/drp_mag)**6) - E_offset(Z_i,Z_i))
+                                     (sigma(Z_i,Z_j)/drp_mag)**6) - E_offset(Z_i,Z_j))
 	       new_extra_data(1,j) = new_extra_data(1,j) + 0.5*epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/drp_mag)**12 - &
-                                     (sigma(Z_i,Z_j)/drp_mag)**6) - E_offset(Z_i,Z_i))
+                                     (sigma(Z_i,Z_j)/drp_mag)**6) - E_offset(Z_i,Z_j))
 	    endif
 	 endif
 
@@ -323,7 +334,7 @@ implicit none
 	 dr_mag_sq = sum(dr*dr)
 	 if (dr_mag_sq < cutoff_sq(Z_i,Z_j)) then
 	    dr_mag = sqrt(dr_mag_sq)
-	    E_term = epsilon(Z_i,Z_j)*((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6 - E_offset(Z_i,Z_i))
+	    E_term = epsilon(Z_i,Z_j)*((sigma(Z_i,Z_j)/dr_mag)**12 - (sigma(Z_i,Z_j)/dr_mag)**6 - E_offset(Z_i,Z_j))
 	    if (i == j) E_term = E_term * 0.5
 	    energy = energy + E_term
 	    if (n_extra_data == 1) then

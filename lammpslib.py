@@ -9,7 +9,8 @@ from numpy.linalg import norm
 
 from lammps import lammps
 from ase.calculators.calculator import Calculator
-from ase.data import chemical_symbols, atomic_masses
+from ase.data import generalized_chemical_symbols, atomic_masses
+from ase.atoms import symbols2numbers
 import ase.units
 import re
 
@@ -41,7 +42,7 @@ def convert_cell(ase_cell):
     """
     cell = np.matrix.transpose(ase_cell)
 
-    if not is_upper_triangular(cell):
+    if not is_upper_triangular(cell) or cell[0,0] < 0.0 or cell[1,1] < 0.0 or cell[2,2] < 0.0:
         # rotate bases into triangular matrix
         tri_mat = np.zeros((3, 3))
         A = cell[:, 0]
@@ -268,21 +269,59 @@ End LAMMPSlib Interface Documentation
         read_molecular_info=False,
         comm=None)
 
-    def set_bonds(self, atoms):
-
+    def parse_bonds(self, atoms):
+        atoms.bonds = []
+        atoms.max_n_bonds = 0
         for i in range(len(atoms)):
             if atoms.arrays['bonds'][i] != '_':
-                for j in atoms.arrays['bonds'][i].split(','):
-                    m = re.match('(\d+)\((\d+)\)',j)
-                    self.lmp.command('create_bond {} {} {} '.format(int(m.group(2)),i+1,int(m.group(1))+1))
+                n_bonds = 0
+                for bond_list in atoms.arrays['bonds'][i].split(','):
+                    n_bonds += 1
+                    m = re.match('(\d+)\((\d+)\)',bond_list)
+                    atoms.bonds.append((int(m.group(2)),i+1,int(m.group(1))+1))
+                atoms.max_n_bonds = max(atoms.max_n_bonds, n_bonds)
 
-    def set_angles(self, atoms):
+    def set_bonds(self, atoms):
+        for (t, i1, i2) in atoms.bonds:
+            self.lmp.command('create_bond {} {} {} '.format(t, i1, i2))
 
+    def parse_angles(self, atoms):
+        atoms.angles = []
+        atoms.max_n_angles = 0
         for i in range(len(atoms)):
             if atoms.arrays['angles'][i] != '_':
-                for j in atoms.arrays['angles'][i].split(','):
-                    m = re.match('(\d+)\-(\d+)\((\d+)\)',j)
-                    self.lmp.command('create_angle {} {} {} {}'.format(int(m.group(3)),int(m.group(1))+1,i+1,int(m.group(2))+1))
+                n_angles = 0
+                for angle_list in atoms.arrays['angles'][i].split(','):
+                    n_angles += 1
+                    m = re.match('(\d+)\-(\d+)\((\d+)\)',angle_list)
+                    atoms.angles.append((int(m.group(3)),int(m.group(1))+1,i+1,int(m.group(2))+1))
+                atoms.max_n_angles = max(atoms.max_n_angles, n_angles)
+
+    def set_angles(self, atoms):
+        for (t, i1, i2, i3) in atoms.angles:
+            self.lmp.command('create_angle {} {} {} {}'.format(t, i1, i2, i3))
+
+    def parse_dihedrals(self,atoms):
+        atoms.dihedrals = []
+        atoms.max_n_dihedrals = 0
+        for i in range(len(atoms)):
+            if atoms.arrays['dihedrals'][i] != '_':
+                n_dihedrals = 0
+                for dihedral_list in atoms.arrays['dihedrals'][i].split(','):
+                    n_dihedrals += 1
+                    m = re.match('(\d+)\-(\d+)\-(\d+)\((\d+)\)',dihedral_list)
+                    atoms.dihedrals.append((int(m.group(4)),i+1,int(m.group(1))+1,int(m.group(2))+1,int(m.group(3))+1))
+                atoms.max_n_dihedrals = max(atoms.max_n_dihedrals, n_dihedrals)
+
+    def set_dihedrals(self, atoms):
+        for (t, i1, i2, i3, i4) in atoms.dihedrals:
+            self.lmp.command('create_dihedral {} {} {} {} {}'.format(t, i1, i2, i3, i4))
+
+    def set_charges(self, atoms):
+        for i,j in enumerate(atoms.arrays['mmcharge']):
+            self.lmp.command('set atom {} charge {} '.format(i+1,j))
+
+
 
     def set_cell(self, atoms, change=False):
         lammps_cell, self.coord_transform = convert_cell(atoms.get_cell())
@@ -419,6 +458,11 @@ End LAMMPSlib Interface Documentation
                 vel = np.dot(vel, self.coord_transform)
             if velocity_field is None:
                 atoms.set_velocities(vel * unit_convert("velocity", self.units))
+            if velocity_field is not None:
+                nreflects = self.lmp.extract_fix('1',0,1,0)
+                atoms.info['nreflects'] = nreflects
+                nreversals = self.lmp.extract_fix('1',0,1,1)
+                atoms.info['nreversals'] = nreversals
 
         # Extract the forces and energy
 #        if 'energy' in properties:
@@ -503,11 +547,18 @@ End LAMMPSlib Interface Documentation
 
     def redo_atom_types(self,atoms):
 
-       current_types = { (i+1,self.parameters.atom_types[sym]) for i,sym in enumerate( atoms.get_chemical_symbols() ) }
+       if self.parameters.atom_types_equal_atomic_numbers:
+          current_types = { (i+1,Z) for i,Z in enumerate( atoms.get_atomic_numbers() ) }
+       else:
+          current_types = { (i+1,self.parameters.atom_types[Z]) for i,Z in enumerate( atoms.get_atomic_numbers() ) }
 
        try:
-          previous_types = { (i+1,self.parameters.atom_types[ chemical_symbols[Z] ])
-                              for i,Z in enumerate( self.previous_atoms_numbers ) }
+          if self.parameters.atom_types_equal_atomic_numbers:
+             previous_types = { (i+1,Z)
+                                 for i,Z in enumerate( self.previous_atoms_numbers ) }
+          else:
+             previous_types = { (i+1,self.parameters.atom_types[Z])
+                                 for i,Z in enumerate( self.previous_atoms_numbers ) }
        except:
           previous_types = set()
 
@@ -574,8 +625,29 @@ End LAMMPSlib Interface Documentation
         if self.parameters.atom_types  is None:
            raise NameError("atom_types are mandatory.")
 
+        if isinstance(self.parameters.atom_types,basestring):
+           if self.parameters.atom_types == "TYPE_EQUALS_Z":
+              self.parameters.atom_types_equal_atomic_numbers = True
+              self.parameters.atom_types = {}
+              for Z in atoms.get_atomic_numbers():
+                 self.parameters.atom_types[Z] = Z
+           else:
+              raise ValueError('atom_types parameter "%s" is string, but not TYPE_EQUALS_Z' % self.parameters.atom_types)
+        else:
+           # assume atom_types is a dictionary with symbols (or numbers) as keys
+           self.parameters.atom_types_equal_atomic_numbers = False
+           symbol_atom_types = self.parameters.atom_types.copy()
+           self.parameters.atom_types = {}
+           for sym in symbol_atom_types:
+              try:
+                 num = int(sym)
+              except:
+                 num = symbols2numbers(sym)[0]
+              self.parameters.atom_types[num] = symbol_atom_types[sym]
+
         # Collect chemical symbols
         symbols = np.asarray(atoms.get_chemical_symbols())
+        numbers = np.asarray(atoms.get_atomic_numbers())
 
         # Initialize box
         if self.parameters.create_box:
@@ -584,6 +656,7 @@ End LAMMPSlib Interface Documentation
            create_box_command = 'create_box {} cell'.format(n_types)
 
            # count numbers of bonds and angles defined by potential
+           n_dihedral_types = 0
            n_angle_types = 0
            n_bond_types = 0
            for cmd in self.parameters.lmpcmds:
@@ -593,10 +666,21 @@ End LAMMPSlib Interface Documentation
                m = re.match('\s*bond_coeff\s+(\d+)', cmd)
                if m is not None:
                    n_bond_types = max(int(m.group(1)), n_bond_types)
-           if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
-               create_box_command += ' angle/types {} extra/angle/per/atom 1'.format(n_angle_types)
-           if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
-               create_box_command += ' bond/types {} extra/bond/per/atom 1'.format(n_bond_types)
+               m = re.match('\s*dihedral_coeff\s+(\d+)', cmd)
+               if m is not None:
+                   n_dihedral_types = max(int(m.group(1)), n_dihedral_types)
+
+           if self.parameters.read_molecular_info:
+               if 'bonds' in atoms.arrays:
+                   self.parse_bonds(atoms)
+                   create_box_command += ' bond/types {} extra/bond/per/atom {}'.format(n_bond_types,atoms.max_n_bonds)
+               if 'angles' in atoms.arrays:
+                   self.parse_angles(atoms)
+                   create_box_command += ' angle/types {} extra/angle/per/atom {}'.format(n_angle_types,atoms.max_n_angles)
+               if 'dihedrals' in atoms.arrays:
+                   self.parse_dihedrals(atoms)
+                   create_box_command += ' dihedral/types {} extra/dihedral/per/atom {}'.format(n_dihedral_types,atoms.max_n_dihedrals)
+
            self.lmp.command(create_box_command)
 
         # Initialize the atoms with their types
@@ -612,13 +696,17 @@ End LAMMPSlib Interface Documentation
 
         # Set masses after user commands, to override EAM provided masses, e.g.
         masses = atoms.get_masses()
-        for sym in self.parameters.atom_types:
+        for Z in self.parameters.atom_types:
+            in_cur_sys=False
             for i in range(len(atoms)):
-                if symbols[i] == sym:
+                if numbers[i] == Z:
                     # convert from amu (ASE) to lammps mass unit)
-                    self.lmp.command('mass %d %.30f' % (self.parameters.atom_types[sym], masses[i] /
+                    self.lmp.command('mass %d %.30f' % (self.parameters.atom_types[Z], masses[i] /
                                                      unit_convert("mass", self.units) ))
+                    in_cur_sys=True
                     break
+            if not in_cur_sys:
+                self.lmp.command('mass %d %.30f' % (self.parameters.atom_types[Z], 1.0))
 
         # Define force & energy variables for extraction
         self.lmp.command('variable pxx equal pxx')
@@ -631,7 +719,7 @@ End LAMMPSlib Interface Documentation
         # I am not sure why we need this next line but LAMMPS will
         # raise an error if it is not there. Perhaps it is needed to
         # ensure the cell stresses are calculated
-        self.lmp.command('thermo_style custom pe pxx emol')
+        self.lmp.command('thermo_style custom pe pxx emol ecoul')
 
         self.lmp.command('variable fx atom fx')
         self.lmp.command('variable fy atom fy')
@@ -642,14 +730,19 @@ End LAMMPSlib Interface Documentation
 
         self.lmp.command("neigh_modify delay 0 every 1 check yes")
 
-        # read in bonds if there are bonds from the ase-atoms object if the molecular flag is set
-        if self.parameters.read_molecular_info and 'bonds' in atoms.arrays:
-            self.set_bonds(atoms)
+        if self.parameters.read_molecular_info:
+            # read in bonds if there are bonds from the ase-atoms object if the molecular flag is set
+            if 'bonds' in atoms.arrays:
+                self.set_bonds(atoms)
+            # read in angles if there are angles from the ase-atoms object if the molecular flag is set
+            if 'angles' in atoms.arrays:
+                self.set_angles(atoms)
+            # read in dihedrals if there are angles from the ase-atoms object if the molecular flag is set
+            if 'dihedrals' in atoms.arrays:
+                self.set_dihedrals(atoms)
 
-        # read in angles if there are angles from the ase-atoms object if the molecular flag is set
-        if self.parameters.read_molecular_info and 'angles' in atoms.arrays:
-            self.set_angles(atoms)
-
+        if self.parameters.read_molecular_info and 'mmcharge' in atoms.arrays: 
+            self.set_charges(atoms)
 
         self.initialized = True
 
@@ -741,25 +834,26 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
     sym_mass = {}
     masses = atoms.get_masses()
     symbols = atoms.get_chemical_symbols()
-    for sym in atom_types:
+    numbers = atoms.get_atomic_numbers()
+    for Z in atom_types:
         for i in range(len(atoms)):
-            if symbols[i] == sym:
-                sym_mass[sym] = masses[i] / unit_convert("mass", units)
+            if numbers[i] == Z:
+                Z_mass[Z] = masses[i] / unit_convert("mass", units)
                 break
             else:
-                sym_mass[sym] = atomic_masses[chemical_symbols.index(sym)] / unit_convert("mass", units)
+                Z_mass[Z] = atomic_masses[Z] / unit_convert("mass", units)
 
-    for (sym, typ) in sorted(atom_types.items(), key=operator.itemgetter(1)):
-        fh.write('{0} {1}\n'.format(typ, sym_mass[sym]))
+    for (Z, typ) in sorted(atom_types.items(), key=operator.itemgetter(1)):
+        fh.write('{0} {1}\n'.format(typ, Z_mass[Z]))
 
     fh.write('\nAtoms # full\n\n')
     if molecule_ids is None:
         molecule_ids = np.zeros(len(atoms), dtype=int)
     if charges is None:
         charges = atoms.get_initial_charges()
-    for i, (sym, mol, q, pos) in enumerate(zip(symbols, molecule_ids,
+    for i, (Z, mol, q, pos) in enumerate(zip(numbers, molecule_ids,
                                                charges, atoms.get_positions())):
-        typ = atom_types[sym]
+        typ = atom_types[Z]
         fh.write('{0} {1} {2} {3:16.8e} {4:16.8e} {5:16.8e} {6:16.8e}\n'
                  .format(i+1, mol, typ, q, pos[0], pos[1], pos[2]))
 
