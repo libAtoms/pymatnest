@@ -9,7 +9,7 @@ from numpy.linalg import norm
 
 from lammps import lammps
 from ase.calculators.calculator import Calculator
-from ase.data import atomic_masses
+from ase.data import generalized_chemical_symbols, atomic_masses
 from ase.atoms import symbols2numbers
 import ase.units
 import re
