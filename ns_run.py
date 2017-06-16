@@ -3403,8 +3403,13 @@ def main():
                 species_list = comm.bcast(species_list, root=0)
 
         if do_calc_lammps:
-           if not ns_args['LAMMPS_atom_types'] == 'TYPE_EQUALS_Z' and not {ase.atoms.generalized_chemical_symbols(int(species.split()[0])) for species in species_list} == set(ns_args['LAMMPS_atom_types'].keys()):
-              exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
+            if not ns_args['LAMMPS_atom_types'] == 'TYPE_EQUALS_Z':
+                try:
+                    used_chem_symbols = {ase.atoms.generalized_chemical_symbols(int(species.split()[0])) for species in species_list}
+                except:
+                    used_chem_symbols = {ase.atoms.chemical_symbols[int(species.split()[0])] for species in species_list}
+                if not used_chem_symbols == set(ns_args['LAMMPS_atom_types'].keys()):
+                    exit_error("species in start_species must correspond to those in LAMMPS_atom_types\n",1)
         mass_list=[]
         Z_list=[]
         warned_explicit_mass=False
