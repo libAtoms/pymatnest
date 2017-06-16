@@ -406,8 +406,8 @@
 </dd>
 <dt id="term-kemax-max-t-float"><code class="docutils literal"><span class="pre">KEmax_max_T=float</span></code> </dt>
 <dd><div class="first last line-block">
-<div class="line">Maximum temperature for estimating KEmax if <em>P</em> = 0, i.e. fixed V ensemble (will be multiplied by kB)</div>
-<div class="line">default: 1.0e5</div>
+<div class="line">If &gt; 0, maximum temperature for estimating KEmax.  For constant <em>P</em> ensemble 3/2 P Vmax will be used if KEmax_max_T is &lt; 0.</div>
+<div class="line">default: -1</div>
 </div>
 </dd>
 <dt id="term-kb-float"><code class="docutils literal"><span class="pre">kB=float</span></code> </dt>
@@ -934,7 +934,7 @@
 <dt id="term-initial-walk-emax-offset-per-atom-float"><code class="docutils literal"><span class="pre">initial_walk_Emax_offset_per_atom=float</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">offset (per atom) to increase Emax during initial random walk applied to all walkers</div>
-<div class="line">default: ”</div>
+<div class="line">default: 1.0</div>
 </div>
 </dd>
 <dt id="term-initial-walk-only-t-f"><code class="docutils literal"><span class="pre">initial_walk_only=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
