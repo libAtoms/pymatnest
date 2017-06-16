@@ -3764,7 +3764,7 @@ def main():
                 if movement_args['separable_MDNS']: # Set KEmax=-1.0, so that it does not affect dynamics
                     KEmax = -1.0
                 else:
-                    if movement_args['KEmax_max_T'] > 0.0:
+                    if ns_args['KEmax_max_T'] > 0.0:
                         KEmax = 1.5*len(walkers[0])*ns_args['kB']*ns_args['KEmax_max_T']
                     elif movement_args['MC_cell_P'] > 0.0:
                         KEmax = 1.5*movement_args['MC_cell_P']*len(walkers[0])*ns_args['max_volume_per_atom']
