@@ -114,6 +114,10 @@ def usage():
        | Length of atomic trajectory (MD steps or MC sweeps) in each atomic type step.
        | default: 8
 
+    ``atom_traj_len_cost_multiplier=int`` 
+       | Multiplier for cost of an atomic step (set to 1 for MD, TE-HMC, and SP-MC with O(1) cost moves, N for naive SP-MC)
+       | default: 1
+
     ``break_up_atom_traj=[T | F]`` 
        | Whether to intersperse ``n_atom_steps` atomic sub-trajectories with other types of steps.
        | default: F 
@@ -483,6 +487,7 @@ def usage():
     sys.stderr.write("\n")
     sys.stderr.write("n_atom_steps=int (1, number of atomic trajectories \n")
     sys.stderr.write("atom_traj_len=int (8, length of atomic trajectory (MD steps or MC sweeps) in each step\n")
+    sys.stderr.write("atom_traj_len_cost_multiplier=int (1, multiplier for cost of an atomic step (set to 1 for MD, TE-HMC, and SP-MC with O(1) cost moves, N for naive SP-MC)\n")
     sys.stderr.write("break_up_atom_traj=[T | F] (F, whether to intersperse n_atom_steps atomic sub-trajectories with other types of steps\n")
     sys.stderr.write("\n")
     sys.stderr.write("n_cell_volume_steps=int (1, number of cell MC volume steps )\n")
@@ -1452,7 +1457,7 @@ def do_atom_walk(at, movement_args, Emax, KEmax):
         else:
             exit_error("do_atom_walk got unknown 'atom_algorithm' = '%s'\n" % movement_args['atom_algorithm'], 5)
 
-    return (n_reps*movement_args['atom_traj_len'], out)
+    return (n_reps*movement_args['atom_traj_len']*movement_args['atom_traj_len_cost_multiplier'], out)
 
 def rand_perturb_energy(energy, perturbation, Emax=None):
     if Emax is None:
@@ -1536,7 +1541,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
                            movement_args['n_cell_stretch_steps'],
                            movement_args['n_swap_steps'],
                            movement_args['n_semi_grand_steps'] ] )
-        costs = np.array( [ movement_args['atom_traj_len'],
+        costs = np.array( [ movement_args['atom_traj_len']*movement_args['atom_traj_len_cost_multiplier'],
                             1,
                             1,
                             1,
@@ -1732,12 +1737,12 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
             if key == "MC_atom" and not movement_args['MC_atom_Galilean']:
                 exploration_movement_args['atom_traj_len'] = 1 
                 # 1 atom sweep per do_MC_walk call
-                exploration_movement_args['n_model_calls'] = 1
+                exploration_movement_args['n_model_calls'] = 1 * exploration_movement_args['atom_traj_len_cost_multiplier']
                 # The do_atom_walk routine reports that it has performed
                 # #model_calls = the number of complete MC sweeps performed, 
                 # rather than single point evaluations.
             else:
-                exploration_movement_args['n_model_calls'] = exploration_movement_args['atom_traj_len']
+                exploration_movement_args['n_model_calls'] = exploration_movement_args['atom_traj_len']*exploration_movement_args['atom_traj_len_cost_multiplier']
                 # The do_atom_walk routine reports that it has performed 
                 # #model_calls = number of single point evaluations (time steps)
 
@@ -3133,6 +3138,7 @@ def main():
 
         movement_args['n_atom_steps'] = int(args.pop('n_atom_steps', 1))
         movement_args['atom_traj_len'] = int(args.pop('atom_traj_len', 8))
+        movement_args['atom_traj_len_cost_multiplier'] = int(args.pop('atom_traj_len_cost_multiplier', 1))
         movement_args['break_up_atom_traj'] = str_to_logical(args.pop('break_up_atom_traj', "T"))
         if movement_args['n_atom_steps'] == 0:
             movement_args['n_atom_steps_per_call'] = 0
@@ -3171,7 +3177,7 @@ def main():
             movement_args['semi_grand_potentials'] = None
 
         if movement_args['n_model_calls_expected'] < 0:
-            movement_args['n_model_calls_expected'] = (movement_args['n_atom_steps']*movement_args['atom_traj_len'] +
+            movement_args['n_model_calls_expected'] = (movement_args['n_atom_steps']*movement_args['atom_traj_len']*movement_args['atom_traj_len_cost_multiplier'] +
                                                        movement_args['n_cell_volume_steps'] +
                                                        movement_args['n_cell_shear_steps'] +
                                                        movement_args['n_cell_stretch_steps'] +
