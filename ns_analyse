@@ -76,7 +76,7 @@ def analyse(log_a, T, interval=1):
     if debug:
         sys.stderr.write("T %f extra DoF U_offset %f C_offset %f remaining Cvp %f\n" % (T, n_Extra_DOF/(2.0*beta), n_Extra_DOF*k_Boltzmann/2.0, Cvp-n_Extra_DOF*k_Boltzmann/2.0))
 
-    log_Z = math.log(Z)+shift+beta*E_min
+    log_Z = math.log(Z)+shift-beta*E_min
 
     Z_max = np.amax(Z_term)
     low_percentile_config = np.where(Z_term > Z_max/10.0)[0][0]*interval
