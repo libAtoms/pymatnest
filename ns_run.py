@@ -3368,7 +3368,7 @@ def main():
         movement_args['do_velocities'] = (movement_args['atom_algorithm'] == 'MD' or movement_args['MC_atom_velocities'])
         # atom_algorithm == GMC is just an alias for atom_algorithm = MC, MC_atom_Galilean = True
         if movement_args['atom_algorithm'] == 'GMC':
-            movement_args['atom_algorithm'] == 'MC'
+            movement_args['atom_algorithm'] = 'MC'
             movement_args['MC_atom_Galilean'] = True
         movement_args['python_MD'] = str_to_logical(args.pop('python_MD', "F"))
 
