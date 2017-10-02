@@ -63,7 +63,7 @@ else:
     n_data = None
 
 sys.stderr.write("reading energies\n")
-(n_walkers, n_cull, n_Extra_DOF, Es) = ns_analyse.read_inputs([args.energy_file])
+(n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms, Es, Vs) = ns_analyse.read_inputs([args.energy_file])
 if n_data is not None and n_data > 0:
     # clip Es to be as long as necessary to match n_data
     Es = Es[0:n_data*args.interval]
@@ -77,7 +77,7 @@ for T in args.temperatures:
     sys.stderr.write("doing T %f\n" % T)
     beta = 1.0/(kB*T)
     sys.stderr.write("calculating Z terms\n")
-    (Z_terms, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es)
+    (Z_terms, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es, flat_V_prior, N_atoms, Vs)
 
     # create reduced Z terms by summing over relevant steps
     Z_terms_reduced=np.zeros(n_data)
