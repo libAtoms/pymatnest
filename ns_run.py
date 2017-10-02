@@ -1540,7 +1540,8 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
                             1,
                             1,
                             1,
-                            1 ] )
+                            1,
+                            1] )
 
         list = create_list(costs, nums, movement_args['n_model_calls'])
         for move_i in list:
@@ -3485,6 +3486,10 @@ def main():
                             exit_error("Each entry in start_species must include atomic number, multiplicity, and optionally mass", 5)
 
                     init_atoms.set_cell(init_atoms.get_cell()*float(len(init_atoms))**(1.0/3.0), scale_atoms=True)
+
+                    # shrink cell if roundoff caused it to be bigger than max value
+                    while init_atoms.get_volume() >= ns_args['max_volume_per_atom']*len(init_atoms):
+                        init_atoms.set_cell(init_atoms.get_cell()*0.99, True)
 
                 if do_calc_quip:
                     init_atoms = quippy.Atoms(init_atoms)
