@@ -283,7 +283,7 @@ End LAMMPSlib Interface Documentation
 
     def set_bonds(self, atoms):
         for (t, i1, i2) in atoms.bonds:
-            self.lmp.command('create_bond {} {} {} '.format(t, i1, i2))
+            self.lmp.command('create_bonds single/bond {} {} {} '.format(t, i1, i2))
 
     def parse_angles(self, atoms):
         atoms.angles = []
@@ -299,7 +299,7 @@ End LAMMPSlib Interface Documentation
 
     def set_angles(self, atoms):
         for (t, i1, i2, i3) in atoms.angles:
-            self.lmp.command('create_angle {} {} {} {}'.format(t, i1, i2, i3))
+            self.lmp.command('create_bonds single/angle {} {} {} {}'.format(t, i1, i2, i3))
 
     def parse_dihedrals(self,atoms):
         atoms.dihedrals = []
@@ -315,7 +315,7 @@ End LAMMPSlib Interface Documentation
 
     def set_dihedrals(self, atoms):
         for (t, i1, i2, i3, i4) in atoms.dihedrals:
-            self.lmp.command('create_dihedral {} {} {} {} {}'.format(t, i1, i2, i3, i4))
+            self.lmp.command('create_bonds single/dihedral {} {} {} {} {}'.format(t, i1, i2, i3, i4))
 
     def set_charges(self, atoms):
         for i,j in enumerate(atoms.arrays['mmcharge']):
