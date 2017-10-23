@@ -1546,7 +1546,7 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
                             1,
                             1,
                             1,
-                            1] )
+                            1 ] )
 
         list = create_list(costs, nums, movement_args['n_model_calls'])
         for move_i in list:
