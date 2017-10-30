@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>pymatnest module &#8212; ns_doc 1 documentation</title>
-    
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -337,7 +334,7 @@
 <dd><div class="first last line-block">
 <div class="line">MANDATORY (or start_species)</div>
 <div class="line">Name of file to read in for atom information</div>
-<div class="line">default: ”</div>
+<div class="line">default: ‘’</div>
 </div>
 </dd>
 <dt id="term-restart-file-path-to-file"><code class="docutils literal"><span class="pre">restart_file=path_to_file</span></code></dt>
@@ -666,7 +663,7 @@
 <div class="line">default: 0.0 </div>
 </div>
 </dd>
-<dt id="term-mc-cell-flat-v-prior"><a href="#id3"><span class="problematic" id="id4">``</span></a>MC_cell_flat_V_prior”</dt>
+<dt id="term-mc-cell-flat-v-prior"><a href="#id3"><span class="problematic" id="id4">``</span></a>MC_cell_flat_V_prior’‘</dt>
 <dd><div class="first last line-block">
 <div class="line">Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)</div>
 <div class="line">POORLY TESTED, DO NOT TRUST (YET).</div>
@@ -730,7 +727,7 @@
 <dd><div class="first line-block">
 <div class="line">default: 1000</div>
 </div>
-<p class="last">full_auto_step_sizes=[T | F]“
+<p class="last">full_auto_step_sizes=[T | F]``
 | If true (T), automatically calibrate all sizes by performing additional short explorations, including at the start of run. If false (F), use initial input step sizes and make small adjustments to these during the run.
 | default: T</p>
 </dd>
@@ -828,7 +825,7 @@
 </dd>
 <dt id="term-lammps-name-str"><code class="docutils literal"><span class="pre">LAMMPS_name=str</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">”, arch name for lammps shared object file</div>
+<div class="line">‘’, arch name for lammps shared object file</div>
 </div>
 </dd>
 <dt id="term-lammps-header-str"><code class="docutils literal"><span class="pre">LAMMPS_header=str</span></code></dt>
@@ -838,7 +835,7 @@
 </dd>
 <dt id="term-lammps-header-extra-str"><code class="docutils literal"><span class="pre">LAMMPS_header_extra=str</span></code></dt>
 <dd><div class="first last line-block">
-<div class="line">”, extra lammpslib.py header commands for energy_calculator=lammps</div>
+<div class="line">‘’, extra lammpslib.py header commands for energy_calculator=lammps</div>
 </div>
 </dd>
 <dt id="term-lammps-atom-types-str"><code class="docutils literal"><span class="pre">LAMMPS_atom_types=str</span></code></dt>
@@ -922,13 +919,13 @@
 <dt id="term-initial-walk-n-walks-int"><code class="docutils literal"><span class="pre">initial_walk_N_walks=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">number of initial random walks to apply to all walkers</div>
-<div class="line">default: ”</div>
+<div class="line">default: ‘’</div>
 </div>
 </dd>
 <dt id="term-initial-walk-adjust-interval-int"><code class="docutils literal"><span class="pre">initial_walk_adjust_interval=int</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">in initial walks, interval between walks for adjusting step size </div>
-<div class="line">default: ”</div>
+<div class="line">default: ‘’</div>
 </div>
 </dd>
 <dt id="term-initial-walk-emax-offset-per-atom-float"><code class="docutils literal"><span class="pre">initial_walk_Emax_offset_per_atom=float</span></code></dt>
@@ -980,7 +977,7 @@
 <p class="last"><a href="#id5"><span class="problematic" id="id6">``</span></a>ns_run_analyzers=string
 | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
 | Positive interval refers to NS loop, negative to initial walks
-| default: ”</p>
+| default: ‘’</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1034,7 +1031,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
     </div>
   </body>
 </html>

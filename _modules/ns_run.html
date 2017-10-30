@@ -5,12 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    
     <title>ns_run &#8212; ns_doc 1 documentation</title>
-    
     <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -3432,7 +3429,7 @@
         <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_velocities&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MD&#39;</span> <span class="ow">or</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velocities&#39;</span><span class="p">])</span>
         <span class="c1"># atom_algorithm == GMC is just an alias for atom_algorithm = MC, MC_atom_Galilean = True</span>
         <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;GMC&#39;</span><span class="p">:</span>
-            <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MC&#39;</span>
+            <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MC&#39;</span>
             <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_Galilean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;python_MD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;python_MD&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
 
@@ -4114,7 +4111,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
     </div>
   </body>
 </html>
