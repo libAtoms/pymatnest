@@ -447,10 +447,10 @@ def usage():
      | Use separable mdns (rather than MDNS in the total energy).
      | default: F
 
-     ``ns_run_analyzers=string
+     ``ns_run_analyzers=string``
      | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
      | Positive interval refers to NS loop, negative to initial walks
-     | default: ''
+     | default:' ' 
 
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
