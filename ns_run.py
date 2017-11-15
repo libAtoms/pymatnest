@@ -2160,9 +2160,9 @@ def do_ns_loop():
     for at in walkers:
         at.info['KEmax']=KEmax 
         if movement_args['MC_cell_P'] > 0:
-            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " PV ", eval_energy_PV(at), " mu ", eval_energy_mu(at)
+            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " PV ", eval_energy_PV(at), " mu ", eval_energy_mu(at), " vol ", at.get_volume()
         else:
-            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " mu ", eval_energy_mu(at)
+            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " mu ", eval_energy_mu(at), " vol ",at.get_volume()
 
     # stats for purpose of adjusting step size
     walk_stats_adjust={}
@@ -3493,10 +3493,6 @@ def main():
                             exit_error("Each entry in start_species must include atomic number, multiplicity, and optionally mass", 5)
 
                     init_atoms.set_cell(init_atoms.get_cell()*float(len(init_atoms))**(1.0/3.0), scale_atoms=True)
-
-                    # shrink cell if roundoff caused it to be bigger than max value
-                    while init_atoms.get_volume() >= ns_args['max_volume_per_atom']*len(init_atoms):
-                        init_atoms.set_cell(init_atoms.get_cell()*0.99, True)
 
                 if do_calc_quip:
                     init_atoms = quippy.Atoms(init_atoms)
