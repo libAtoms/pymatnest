@@ -23,6 +23,10 @@ def usage():
        | Maximum volume per atom allowed during the run.
        | default: 1.0e3
 
+    ``min_volume_per_atom=float``
+       | Minimum volume per atom allowed during the run.
+       | default: 1.0
+
     ``start_species=int int [ float ] [, int int [ float ] ... ]``
        | MANDATORY (or start_config_file)
        | Atomic number; multiplicity; [ not recommended: mass (amu) ]. Info repeated for each species, separated by commas, mass is optional and not recommended.
@@ -460,6 +464,7 @@ def usage():
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
     sys.stderr.write("input:\n")
     sys.stderr.write("max_volume_per_atom=float (1e3)\n")
+    sys.stderr.write("min_volume_per_atom=float (1)\n")
     sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, this or start_config_file required. atomic_number multiplicity [not recomended: mass (amu)]. Info repeated for each species, separated by commas, mass is optional and not recommended.\n")
     sys.stderr.write("start_config_file=str (MANDATORY, this or start_species required. if set filename to read initial atom information from (instead of creating them)\n")
     sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
@@ -1244,7 +1249,7 @@ def do_cell_step(at, Emax, p_accept, transform):
     new_cell = np.dot(orig_cell,transform)
     new_vol = abs(np.dot(new_cell[0,:],np.cross(new_cell[1,:],new_cell[2,:])))
     # check size and shape constraints
-    if new_vol > ns_args['max_volume_per_atom']*len(at):
+    if new_vol > ns_args['max_volume_per_atom']*len(at) or new_vol < ns_args['min_volume_per_atom']*len(at):
         return False
     if min_aspect_ratio(new_vol, new_cell) < movement_args['MC_cell_min_aspect_ratio']:
         return False
@@ -2968,6 +2973,7 @@ def main():
         ns_args['restart_file'] = args.pop('restart_file', 'AUTO')
 
         ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
+        ns_args['min_volume_per_atom'] = float(args.pop('min_volume_per_atom', 1.0))
 
         ns_args['out_file_prefix'] = args.pop('out_file_prefix', '')
         if ns_args['out_file_prefix'] != '':
