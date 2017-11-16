@@ -307,10 +307,10 @@
 <span class="sd">       | the lammpslib module will convert the units for lammps to whatever units are set by the potential type) </span>
 <span class="sd">       | default: 0.0 </span>
 
-<span class="sd">    ``MC_cell_flat_V_prior&#39;&#39;</span>
+<span class="sd">    ``MC_cell_flat_V_prior=[T | F]``</span>
 <span class="sd">       | Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)</span>
 <span class="sd">       | POORLY TESTED, DO NOT TRUST (YET).</span>
-<span class="sd">       | default: False</span>
+<span class="sd">       | default: F</span>
 
 <span class="sd">    ``MC_cell_volume_per_atom_step_size=float``</span>
 <span class="sd">       | Initial volume stepsize for volume change.</span>
@@ -511,7 +511,7 @@
 <span class="sd">     ``ns_run_analyzers=string``</span>
 <span class="sd">     | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH</span>
 <span class="sd">     | Positive interval refers to NS loop, negative to initial walks</span>
-<span class="sd">     | default:&#39; &#39; </span>
+<span class="sd">     | default:&#39;&#39; </span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Usage: </span><span class="si">%s</span><span class="s2"> [ -no_mpi ] &lt; input</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>

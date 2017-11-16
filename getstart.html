@@ -454,11 +454,11 @@
 <div class="line">default: 0.0 </div>
 </div>
 </dd>
-<dt id="term-mc-cell-flat-v-prior"><a href="#id3"><span class="problematic" id="id4">``</span></a>MC_cell_flat_V_prior’‘</dt>
+<dt id="term-mc-cell-flat-v-prior-t-f"><code class="docutils literal"><span class="pre">MC_cell_flat_V_prior=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code></dt>
 <dd><div class="first last line-block">
 <div class="line">Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)</div>
 <div class="line">POORLY TESTED, DO NOT TRUST (YET).</div>
-<div class="line">default: False</div>
+<div class="line">default: F</div>
 </div>
 </dd>
 <dt id="term-mc-cell-volume-per-atom-step-size-float"><code class="docutils literal"><span class="pre">MC_cell_volume_per_atom_step_size=float</span></code></dt>
@@ -768,7 +768,7 @@
 <p class="last"><code class="docutils literal"><span class="pre">ns_run_analyzers=string</span></code>
 | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
 | Positive interval refers to NS loop, negative to initial walks
-| default:’ ‘</p>
+| default:’‘</p>
 </dd>
 </dl>
 </dd></dl>
