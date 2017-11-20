@@ -2294,7 +2294,7 @@ def do_ns_loop():
         at.info['KEmax']=KEmax 
         at.info['ns_beta']=ns_beta
         if movement_args['MC_cell_P'] > 0:
-            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False, do_PV=False), " KE ", eval_energy(at, do_PE=False, do_PV=False), " PV ", eval_energy(at, do_KE=False, do_PE=False), " vol ",at.get_volume)
+            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False, do_PV=False), " KE ", eval_energy(at, do_PE=False, do_PV=False), " PV ", eval_energy(at, do_KE=False, do_PE=False), " vol ",at.get_volume()
         else:
             print rank, ": initial energy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False), " KE ", eval_energy(at, do_PE=False), " vol ", at.get_volume()
 
