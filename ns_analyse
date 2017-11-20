@@ -76,7 +76,7 @@ def analyse(log_a, T, interval=1):
     if debug:
         sys.stderr.write("T %f extra DoF U_offset %f C_offset %f remaining Cvp %f\n" % (T, n_Extra_DOF/(2.0*beta), n_Extra_DOF*k_Boltzmann/2.0, Cvp-n_Extra_DOF*k_Boltzmann/2.0))
 
-    log_Z = math.log(Z)+shift
+    log_Z = math.log(Z)+shift-beta*E_min
 
     Z_max = np.amax(Z_term)
     low_percentile_config = np.where(Z_term > Z_max/10.0)[0][0]*interval
@@ -86,6 +86,9 @@ def analyse(log_a, T, interval=1):
     Z_fract = np.sum(Z_term[low_percentile_config:high_percentile_config+1])/Z
 
     return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V)
+
+
+
 
 log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=opt.interval)
 
