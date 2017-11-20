@@ -2294,9 +2294,9 @@ def do_ns_loop():
         at.info['KEmax']=KEmax 
         at.info['ns_beta']=ns_beta
         if movement_args['MC_cell_P'] > 0:
-            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False, do_PV=False), " KE ", eval_energy(at, do_PE=False, do_PV=False), " PV ", eval_energy(at, do_KE=False, do_PE=False)
+            print rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False, do_PV=False), " KE ", eval_energy(at, do_PE=False, do_PV=False), " PV ", eval_energy(at, do_KE=False, do_PE=False), " vol ",at.get_volume)
         else:
-            print rank, ": initial energy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False), " KE ", eval_energy(at, do_PE=False)
+            print rank, ": initial energy ", at.info['ns_energy'], " PE ", eval_energy(at, do_KE=False), " KE ", eval_energy(at, do_PE=False), " vol ", at.get_volume()
 
     # stats for purpose of adjusting step size
     walk_stats_adjust={}
@@ -3624,7 +3624,8 @@ def main():
                         init_atoms.set_masses([1.0] * len(init_atoms))
                 else:
                     # create atoms structs from a list of atomic numbers and numbers of atoms
-                    lc = ns_args['max_volume_per_atom']**(1.0/3.0)
+                    # always create it slightly smaller than the max to avoid numerical instability with nearly identical volumes
+                    lc = 0.999*ns_args['max_volume_per_atom']**(1.0/3.0)
                     init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
                     for species in species_list:
                         species_fields = species.split()
