@@ -258,10 +258,10 @@ def usage():
        | the lammpslib module will convert the units for lammps to whatever units are set by the potential type) 
        | default: 0.0 
 
-    ``MC_cell_flat_V_prior''
+    ``MC_cell_flat_V_prior=[T | F]``
        | Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)
        | POORLY TESTED, DO NOT TRUST (YET).
-       | default: False
+       | default: F
 
     ``MC_cell_volume_per_atom_step_size=float``
        | Initial volume stepsize for volume change.
@@ -458,7 +458,7 @@ def usage():
      ``ns_run_analyzers=string
      | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
      | Positive interval refers to NS loop, negative to initial walks
-     | default: ''
+     | default:'' 
 
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
