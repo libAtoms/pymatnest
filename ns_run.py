@@ -3441,32 +3441,35 @@ def main():
                 exit_error("ERROR: Masses are not all equal, and atom_velo_rej_free_fully_randomize is false. Refusing to produce incorrect results\n", 1)
 
 
+        created_temp_restart_file=False
         if ns_args['restart_file'] == "AUTO":
-            # maybe do with less shell escapes
             if rank == 0:
                 print "DOING restart_file=AUTO"
                 import glob
                 sfx=ns_args['config_file_format']
 
+                # try to match .0. or .ALL., but using sloppy regexp
+                print "checking snapshots glob",glob.iglob('%ssnapshot.[0-9]*.[0A]*.%s' % (ns_args['out_file_prefix'],sfx))
                 try:
-                    newest_single_snapshot = max(glob.iglob('%ssnapshot.[0-9]*.ALL.%s' % (ns_args['out_file_prefix'],sfx)), key=os.path.getmtime)
-                    print "restarting from ",newest_single_snapshot
-                    ns_args['restart_file'] = newest_single_snapshot
-                except: # no single snapshot
-                    try:
-                        newest_snapshot = max(glob.iglob('%ssnapshot.[0-9]*.0.%s' % (ns_args['out_file_prefix'],sfx)), key=os.path.getmtime)
-                        print "restarting from ",newest_snapshot
+                    newest_snapshot = max(glob.iglob('%ssnapshot.[0-9]*.[0A]*.%s' % (ns_args['out_file_prefix'],sfx)), key=os.path.getmtime)
+                    print "restarting from ",newest_snapshot
+                    if re.search('\.ALL\.%s$' % sfx, newest_snapshot) is not None: # latest snapshot is a combined one for all nodes
+                        print "snapshot is combined for all nodes"
+                        ns_args['restart_file'] = newest_snapshot
+                    else:
                         snapshot_root=re.sub('\.0\.%s' % sfx,"",newest_snapshot)
                         restart_file=snapshot_root+".ALL."+sfx
-                        print "creating combined file", restart_file
+                        print "creating combined snapshot file", restart_file,"from",[tf for tf in glob.iglob('%s.[0-9]*.%s' % (snapshot_root, sfx))]
+                        created_temp_restart_file=True
                         with open(restart_file, "w") as snapshot_out:
                             for snapshot_file in glob.iglob('%s.[0-9]*.%s' % (snapshot_root, sfx)):
                                 with open(snapshot_file, "r") as snapshot_in:
                                     for line in snapshot_in:
                                         snapshot_out.write(line)
                         ns_args['restart_file'] = restart_file
-                    except: # no snapshot at all
-                        ns_args['restart_file'] = ''
+                except:
+                    print("no snapshot files found")
+                    ns_args['restart_file'] = ''
 
             if comm is not None:
                 ns_args['restart_file'] = comm.bcast(ns_args['restart_file'], root=0)
@@ -3649,6 +3652,9 @@ def main():
 
                     if r > 0:
                         comm.send(at_list, dest=r, tag=1)
+                if created_temp_restart_file:
+                    print("deleting",ns_args['restart_file'])
+                    ### os.unlink(ns_args['restart_file'])
             else: # receive from head task
                 print rank, "waiting for walkers"
                 walkers = comm.recv(source=0, tag=1)
