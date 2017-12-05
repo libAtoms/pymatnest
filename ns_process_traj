@@ -8,6 +8,7 @@ p.add_option('-t','--trajectory', action='store_true', help="""produce combined 
 p.add_option('-i','--interval', action='store', help="""interval to output trajectory""", type='int', default=1)
 p.add_option('-f','--format', action='store', help="""input (and if stdout also output) file format""", type='string', default=None)
 p.add_option('-o','--output', action='store', help="""output file name""", type='string', default='stdout')
+p.add_option('-e','--energies_file', action='store', help="""energies file name for fixing restart-related inconsistencies""", type='string', default=None)
 
 opt, args = p.parse_args()
 
@@ -53,7 +54,7 @@ def process_headers(file):
       data.append([r_iter, r_e, r_volume, r_KE])
    return data
 
-def traj_iter(files, interval=1):
+def traj_iter(files, interval=1, energies_file=None):
     # print "traj_iter files interval Ts ", files, interval, Ts
     n_files=len(files)
     n_done=0
@@ -74,6 +75,11 @@ def traj_iter(files, interval=1):
         energies[i] = configs[i].info['ns_energy']
     sys.stderr.write("\n")
 
+    if energies_file is not None:
+        with open(energies_file,"r") as f:
+            top_line = f.readline()
+            all_energies = np.loadtxt(f)
+
     # print "starting iterator"
     while True:
         # print "n_done ",n_done, "n_files", n_files
@@ -82,21 +88,28 @@ def traj_iter(files, interval=1):
 
         # print "energies ", energies
         highest_E_i = energies.argmax()
-        # print "highest_E_i ",highest_E_i
-        if opt.trajectory:
-            if global_i % interval == interval-1:
-                configs[highest_E_i].info['ns_global_i'] = global_i
-                yield configs[highest_E_i]
-            global_i += 1
-        else:
-            if configs[highest_E_i].has('masses') and configs[highest_E_i].has('momenta'):
-                KE = configs[highest_E_i].get_kinetic_energy()
-            else:
-                KE = None
-            if global_i % interval == interval-1:
-                yield [configs[highest_E_i].info['iter'], configs[highest_E_i].info['ns_energy'], configs[highest_E_i].get_volume(), KE]
-            global_i += 1
+        energy_match=True
+        if opt.energies_file is not None:
+            cur_iter = configs[highest_E_i].info['iter']
+            E_ind = np.argwhere(all_energies[:,0] == cur_iter)[0][0]
+            dE = np.abs(configs[highest_E_i].info['ns_energy']-all_energies[E_ind,1])
+            # print "check match {:20.16g} {:20.16f} {:20.16f}".format(dE,configs[highest_E_i].info['ns_energy'],all_energies[E_ind,1])
+            energy_match = (dE <= 1.0e-10)
 
+        if energy_match:
+            # print "highest_E_i ",highest_E_i
+            if global_i % interval == interval-1:
+                if opt.trajectory:
+                    configs[highest_E_i].info['ns_global_i'] = global_i
+                    yield configs[highest_E_i]
+                else:
+                    if configs[highest_E_i].has('masses') and configs[highest_E_i].has('momenta'):
+                        KE = configs[highest_E_i].get_kinetic_energy()
+                    else:
+                        KE = None
+                    yield [configs[highest_E_i].info['iter'], configs[highest_E_i].info['ns_energy'], configs[highest_E_i].get_volume(), KE]
+
+            global_i += 1
 
         try:
             configs[highest_E_i] = atom_readers[highest_E_i].next()
@@ -121,7 +134,7 @@ if not opt.trajectory and not opt.no_headers:
         print d[0], d[1], d[2], d[3]
 else:
    outfile=quippy.AtomsWriter(opt.output, format=opt.format)
-   for d in traj_iter(args, opt.interval):
+   for d in traj_iter(args, opt.interval, opt.energies_file):
       if opt.trajectory:
          outfile.write(d)
       else:
