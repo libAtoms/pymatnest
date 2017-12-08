@@ -67,7 +67,7 @@ def traj_iter(files, interval=1, energies_file=None):
     # print "files ", files
     for i in range(n_files):
         # print i
-        # print "starting file ",files[i]
+        # sys.stderr.write("starting file {}\n".format(files[i]))
         sys.stderr.write("%d" % (i % 10))
         ar = iter(quippy.AtomsReader(files[i], format=opt.format))
         atom_readers.append(ar)
@@ -76,11 +76,12 @@ def traj_iter(files, interval=1, energies_file=None):
     sys.stderr.write("\n")
 
     if energies_file is not None:
+        sys.stderr.write("starting energies file\n")
         with open(energies_file,"r") as f:
             top_line = f.readline()
             all_energies = np.loadtxt(f)
 
-    # print "starting iterator"
+    sys.stderr.write("starting iterator\n")
     while True:
         # print "n_done ",n_done, "n_files", n_files
         if n_done == n_files:
@@ -91,10 +92,15 @@ def traj_iter(files, interval=1, energies_file=None):
         energy_match=True
         if opt.energies_file is not None:
             cur_iter = configs[highest_E_i].info['iter']
-            E_ind = np.argwhere(all_energies[:,0] == cur_iter)[0][0]
-            dE = np.abs(configs[highest_E_i].info['ns_energy']-all_energies[E_ind,1])
-            # print "check match {:20.16g} {:20.16f} {:20.16f}".format(dE,configs[highest_E_i].info['ns_energy'],all_energies[E_ind,1])
-            energy_match = (dE <= 1.0e-10)
+            E_ind_list = np.where(all_energies[:,0] == cur_iter)[0]
+            ns_E = configs[highest_E_i].info['ns_energy']
+            min_dE = np.min(np.abs(ns_E-all_energies[E_ind_list,1]))
+            # print "check match",
+            # print "cur iter", cur_iter, "E_ind_list",E_ind_list
+            # print "ns_E",ns_E, "all_energies[E_ind_list]",all_energies[E_ind_list,1]
+            # print "min_dE", min_dE, "ratio",min_dE/np.abs(ns_E)
+            energy_match = (min_dE <= 1.0e-11 and np.abs(ns_E) < 1) or (min_dE/np.abs(ns_E) < 1.0e-11)
+            # print "energy_match",energy_match
 
         if energy_match:
             # print "highest_E_i ",highest_E_i
