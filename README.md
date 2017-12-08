@@ -15,6 +15,9 @@ Phys. Rev. E (2014), 89, 022302, http://journals.aps.org/pre/abstract/10.1103/Ph
 R.J.N. Baldock, L.B. Partay, A.P. Bartok, M.C. Payne, G. Csanyi, *Determining pressure-temperature phase diagrams of materials*,
 Phys. Rev. B (2016), 93, 174108, http://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108 
 
+R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*,
+Phys. Rev. E (2017), 96, 043311, http://link.aps.org/doi/10.1103/PhysRevE.96.043311
+
 ******
 
 System requirements

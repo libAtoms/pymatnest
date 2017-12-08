@@ -20,6 +20,10 @@ Copyright 2015-2016.
 
 Most of the publicly available version is in the public
 domain.
+If you use this code please cite the following article:
+R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*,
+Phys. Rev. E (2017), 96, 043311, http://link.aps.org/doi/10.1103/PhysRevE.96.043311
+
 
 Features
 ========
