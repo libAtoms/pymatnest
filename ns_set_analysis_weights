@@ -117,22 +117,27 @@ for T in args.temperatures:
 
     if args.process_analyses:
         E_expectation = sum(Z_terms_reduced[:]*Es_selected[:])/Z
-    for i_analysis in range(len(analyses)):
-        if args.process_analyses:
-            analysis_expectation = sum(Z_terms_reduced[:]*analysis_data[i_analysis][:])/Z
-            analysis_var = sum(Z_terms_reduced[:]*analysis_data[i_analysis][:]**2)/Z - analysis_expectation**2
-            d_analysis_expectation_d_T = (1.0/(kB*T*T))*(sum(Z_terms_reduced[:]*analysis_data[i_analysis][:]*Es_selected[:])/Z - E_expectation*analysis_expectation)
-            analysis_fd[i_analysis].write("{} {} {} {}\n".format(T, analysis_expectation, analysis_var, d_analysis_expectation_d_T) )
-        else:
-            sys.stderr.write("writing analysis %d\n" % i_analysis)
-            outfile=open(args.analysis_files[i_analysis]+".T_%f" % T, "w")
-            outfile.write(comment_lines[i_analysis]+"\n")
-            outfile.write(desc_lines[i_analysis]+" do_weights\n")
-            for i_bin in range(n_bins[i_analysis]):
-                outfile.write(bin_labels[i_analysis][i_bin]+"\n")
-            for i_data in range(n_data):
-                outfile.write("%.10f %s\n" % (Z_terms_reduced[i_data]/Z, analysis_data_lines[i_analysis][i_data]))
-            outfile.close()
+
+    if len(analyses) == 0:
+        for (Z_i,Z_term) in enumerate(Z_terms_reduced):
+            print (Z_i+1)*args.interval-1, Z_term/Z
+    else:
+        for i_analysis in range(len(analyses)):
+            if args.process_analyses:
+                analysis_expectation = sum(Z_terms_reduced[:]*analysis_data[i_analysis][:])/Z
+                analysis_var = sum(Z_terms_reduced[:]*analysis_data[i_analysis][:]**2)/Z - analysis_expectation**2
+                d_analysis_expectation_d_T = (1.0/(kB*T*T))*(sum(Z_terms_reduced[:]*analysis_data[i_analysis][:]*Es_selected[:])/Z - E_expectation*analysis_expectation)
+                analysis_fd[i_analysis].write("{} {} {} {}\n".format(T, analysis_expectation, analysis_var, d_analysis_expectation_d_T) )
+            else:
+                sys.stderr.write("writing analysis %d\n" % i_analysis)
+                outfile=open(args.analysis_files[i_analysis]+".T_%f" % T, "w")
+                outfile.write(comment_lines[i_analysis]+"\n")
+                outfile.write(desc_lines[i_analysis]+" do_weights\n")
+                for i_bin in range(n_bins[i_analysis]):
+                    outfile.write(bin_labels[i_analysis][i_bin]+"\n")
+                for i_data in range(n_data):
+                    outfile.write("%.10f %s\n" % (Z_terms_reduced[i_data]/Z, analysis_data_lines[i_analysis][i_data]))
+                outfile.close()
 
 
 try:
