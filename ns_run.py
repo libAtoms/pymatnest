@@ -3741,7 +3741,13 @@ def main():
 
                 for (i_at, at) in enumerate(walkers):
                     print_prefix="%d initial_walk %d at %d" % (rank, Nloop, i_at)
-                    walk_stats = walk_single_walker(at, movement_args, Emax, KEmax)
+                    if ns_args['profile'] == rank:
+                        import cProfile
+                        pr = cProfile.Profile()
+                        walk_stats = pr.runcall(walk_single_walker, at=at, movement_args=movement_args, Emax=Emax, KEmax=KEmax)
+                        pr.dump_stats(ns_args['out_file_prefix']+'initial_walk.profile.stats')
+                    else:
+                        walk_stats = walk_single_walker(at, movement_args, Emax, KEmax)
                     accumulate_stats(walk_stats_adjust, walk_stats)
 
                 if ns_analyzers is not None:
