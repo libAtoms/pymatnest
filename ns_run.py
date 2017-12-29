@@ -123,7 +123,7 @@ def usage():
        | default: 1
 
     ``break_up_atom_traj=[T | F]`` 
-       | Whether to intersperse ``n_atom_steps` atomic sub-trajectories with other types of steps.
+       | Whether to intersperse ``n_atom_steps`` atomic sub-trajectories with other types of steps.
        | default: F 
 
     ``n_cell_volume_steps=int`` 
@@ -299,7 +299,7 @@ def usage():
     ``cell_shape_equil_steps=int``
        | default: 1000
 
-     ``full_auto_step_sizes=[T | F]``
+    ``full_auto_step_sizes=[T | F]``
        | If true (T), automatically calibrate all sizes by performing additional short explorations, including at the start of run. If false (F), use initial input step sizes and make small adjustments to these during the run.
        | default: T
 
