@@ -1633,7 +1633,9 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
     global print_prefix
 
     orig_prefix = print_prefix
-    print_prefix = "%d full_auto" % comm.rank
+    print_prefix = "full_auto"
+    if comm is not None:
+        print_prefix = "%d %s" % (comm.rank, print_prefix)
 
     full_auto_start_time = time.time()
     n_samples_per_move_type=200 # total number of (H)MC moves used to set each step length
