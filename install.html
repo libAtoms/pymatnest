@@ -135,8 +135,8 @@ flag, which allows lammps crashes to be handled gracefully within python.  Add i
 <p>### Support for GMC within LAMMPS</p>
 <p>Copy the two GMC-related files <code class="docutils literal"><span class="pre">ns_run_dir/lammps_patches/fix_gmc.*</span></code> to the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory <code class="docutils literal"><span class="pre">lammps_top_dir/src/</span></code>
 before compiling, and set <code class="docutils literal"><span class="pre">LAMMPS_fix_gmc=T</span></code> in the input file.</p>
-<p>### Support for polymers</p>
-<p>Copy the four bond and angle related files <code class="docutils literal"><span class="pre">ns_run_dir/lammps_patches/create_*</span></code> to the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory <code class="docutils literal"><span class="pre">lammps_top_dir/src/</span></code>
+<p>### Support for molecules</p>
+<p>Copy the eight bond, angle, dihedral and improper related files <code class="docutils literal"><span class="pre">ns_run_dir/lammps_patches/create_*</span></code> to the <code class="docutils literal"><span class="pre">LAMMPS</span></code> directory <code class="docutils literal"><span class="pre">lammps_top_dir/src/</span></code>
 before compiling.  See the file <code class="docutils literal"><span class="pre">example_inputs/inputs.test.cluster.MD.lammps.polymer</span></code> for an example.</p>
 <p>### Mixed <code class="docutils literal"><span class="pre">MPI-OpenMP</span></code></p>
 <p>It is possible to use <code class="docutils literal"><span class="pre">OpenMP</span></code> to parallelize each <code class="docutils literal"><span class="pre">LAMMPS</span></code> task.  This has been tested to run, but not for correctness or efficiency.</p>
@@ -278,7 +278,7 @@ Example inputs are located in the folder <code class="docutils literal"><span cl
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.5.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
     </div>
   </body>
 </html>
