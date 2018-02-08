@@ -73,9 +73,9 @@ flag, which allows lammps crashes to be handled gracefully within python.  Add i
 Copy the two GMC-related files ``ns_run_dir/lammps_patches/fix_gmc.*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
 before compiling, and set ``LAMMPS_fix_gmc=T`` in the input file.
 
-### Support for polymers
+### Support for molecules
 
-Copy the four bond and angle related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
+Copy the eight bond, angle, dihedral and improper related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
 before compiling.  See the file ``example_inputs/inputs.test.cluster.MD.lammps.polymer`` for an example.
 
 ### Mixed ``MPI-OpenMP``
