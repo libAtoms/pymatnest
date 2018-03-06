@@ -3720,6 +3720,7 @@ def main():
         if ns_args['initial_walk_N_walks'] > 0 and ns_args['restart_file'] == '':
             if rank == 0:
                 print "doing initial_walk"
+                t0 = time.time()
             (Emax, Vmax, cull_rank, cull_ind) = max_energy(walkers, 1)
             # WARNING: this assumes that all walkers have same numbers of atoms
             Emax = Emax[0] + ns_args['initial_walk_Emax_offset_per_atom']*len(walkers[0])
@@ -3732,7 +3733,7 @@ def main():
             zero_stats(walk_stats_adjust, movement_args)
             for Nloop in range(ns_args['initial_walk_N_walks']):
                 if rank == 0:
-                    print "initial walk iter ", Nloop
+                    print "initial walk iter ", Nloop, time.time()-t0
                 print_prefix="%d initial_walk %d" % (rank, Nloop)
 
                 if Nloop > 0 and (Nloop-1) % ns_args['initial_walk_adjust_interval'] == 0: # first adjust is after first walk

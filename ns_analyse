@@ -145,7 +145,10 @@ for i_T in range(comm_rank, n_T, comm_size):
         cProfile.run('(log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
     else:
         (log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)
-    data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity) )
+    if opt.kolmogorov_smirnov_test:
+        data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity) )
+    else:
+        data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V) )
 
 try:
     data = MPI.COMM_WORLD.gather(data, root = 0)
