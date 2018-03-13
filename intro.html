@@ -4,20 +4,12 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Nested sampling method &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
@@ -25,8 +17,7 @@
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Installation and quick start guide" href="install.html" />
     <link rel="prev" title="pymatnest documentation" href="index.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -53,7 +44,7 @@
 <li><a class="reference internal" href="#overview">Overview</a></li>
 <li><a class="reference internal" href="#publications">Publications</a></li>
 <li><a class="reference internal" href="#algorithm">Algorithm</a></li>
-<li><a class="reference internal" href="#pymatnest"><code class="docutils literal"><span class="pre">pymatnest</span></code></a><ul>
+<li><a class="reference internal" href="#pymatnest"><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code></a><ul>
 <li><a class="reference internal" href="#mc-and-md-step-algorithms">MC and MD step algorithms</a></li>
 </ul>
 </li>
@@ -76,12 +67,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -161,21 +154,21 @@ Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="http://link
 Top-down, Size of live set, random walk…etc.</p>
 </div>
 <div class="section" id="pymatnest">
-<h2><code class="docutils literal"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this headline">¶</a></h2>
-<p>The <code class="docutils literal"><span class="pre">pymatnest</span></code> package is a software
+<h2><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> package is a software
 library written in Fortran 95/python for the purpose of carrying out
 nested sampling calculations with a variety of options suitable for different systems.
 It can be used with the supplied fortran potential models and it also has interfaces with the following packages:</p>
 <blockquote>
 <div><ul class="simple">
-<li><code class="docutils literal"><span class="pre">LAMMPS</span></code></li>
-<li><code class="docutils literal"><span class="pre">QUIP</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">QUIP</span></code></li>
 </ul>
 </div></blockquote>
 <div class="section" id="mc-and-md-step-algorithms">
 <h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Permalink to this headline">¶</a></h3>
 <dl class="docutils">
-<dt><code class="docutils literal"><span class="pre">rej_free_perturb_velo</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">rej_free_perturb_velo</span></code></dt>
 <dd><ul class="first last simple">
 <li>if atom_velo_rej_free_fully_randomize, pick random velocities consistent with Emax</li>
 <li><dl class="first docutils">
@@ -189,29 +182,8 @@ It can be used with the supplied fortran potential models and it also has interf
 </li>
 </ul>
 </dd>
-</dl>
-<p><code class="docutils literal"><span class="pre">beta\_from\_current\_ns\_pe\_values</span></code>
-<code class="docutils literal"><span class="pre">This</span> <span class="pre">routine</span> <span class="pre">computes</span> <span class="pre">beta</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">NS</span> <span class="pre">estimate</span> <span class="pre">of</span> <span class="pre">$`frac{\Delta</span> <span class="pre">X}{\Delta</span> <span class="pre">E}$.</span> <span class="pre">($E=$potential</span> <span class="pre">energy.)</span></code></p>
-<dl class="docutils">
-<dt><code class="docutils literal"><span class="pre">rej\_free\_canonical\_velo</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">do\_MC\_atom\_velo\_walk</span></code></dt>
 <dd><ul class="first last simple">
-<li>pick random velocities from cannonical distribution with inverse T currentbeta</li>
-<li><dl class="first docutils">
-<dt>If movement_args[‘atom_momentum_retain_fraction’]&gt;0.0</dt>
-<dd><ul class="first last">
-<li>Partial momentum update</li>
-<li>$p’ = alpha p + ( 1- alpha^2  )^{frac{1}{2}}n$ www.mcmchandbook.net eq. (5.34)</li>
-<li>Else if “rescale_only” rescale velocities to current temperature</li>
-<li>Else completely refresh velocities</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-<dt><code class="docutils literal"><span class="pre">do\_MC\_atom\_velo\_walk</span></code></dt>
-<dd><ul class="first last simple">
-<li>If separable_MDNS = T , call rej_free_canonical_velo()</li>
 <li><dl class="first docutils">
 <dt>Else if MC_atom_velo_walk_rej_free</dt>
 <dd><ul class="first last">
@@ -223,7 +195,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <li>else do MC pertubation to velocities</li>
 </ul>
 </dd>
-<dt><code class="docutils literal"><span class="pre">do_MD_atom_walk</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">do_MD_atom_walk</span></code></dt>
 <dd><ul class="first last simple">
 <li>if MD_atom_velo_pre_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</li>
 <li>propagate in time atom_traj_len time steps of length MD_atom_timestep</li>
@@ -248,7 +220,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <li>if MD_atom_velo_post_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</li>
 </ul>
 </dd>
-<dt><code class="docutils literal"><span class="pre">do_MC_atom_walk</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">do_MC_atom_walk</span></code></dt>
 <dd><ul class="first last simple">
 <li>if MC_atom_velocities and MC_atom_velocities_pre_perturb, call do_MC_atom_velo_walk() to perturb velocities, magnitude and and rotation</li>
 <li><dl class="first docutils">
@@ -300,7 +272,7 @@ It can be used with the supplied fortran potential models and it also has interf
 </li>
 </ul>
 </dd>
-<dt><code class="docutils literal"><span class="pre">do_MC_swap_step</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">do_MC_swap_step</span></code></dt>
 <dd><ul class="first last simple">
 <li>return if all atomic numbers are identical</li>
 <li>randomly pick a desired cluster size</li>
@@ -309,16 +281,16 @@ It can be used with the supplied fortran potential models and it also has interf
 </ul>
 </dd>
 </dl>
-<p><code class="docutils literal"><span class="pre">do_MC_cell_volume_step</span></code></p>
-<p><code class="docutils literal"><span class="pre">do_MC_cell_shear_step</span></code></p>
-<p><code class="docutils literal"><span class="pre">do_MC_cell_stretch_step</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">do_MC_cell_volume_step</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">do_MC_cell_shear_step</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">do_MC_cell_stretch_step</span></code></p>
 <dl class="docutils">
-<dt><code class="docutils literal"><span class="pre">do_atom_walk</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">do_atom_walk</span></code></dt>
 <dd><ul class="first last simple">
 <li>loop n_atom_steps_per_call times, calling do_MC_atom_walk() or do_MD_atom_walk()</li>
 </ul>
 </dd>
-<dt><code class="docutils literal"><span class="pre">walk_single_walker</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">walk_single_walker</span></code></dt>
 <dd><blockquote class="first">
 <div><ul class="simple">
 <li><dl class="first docutils">
@@ -329,6 +301,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <li>do_cell_shear_step <span class="math">*</span> n_cell_shear_steps</li>
 <li>do_cell_stretch_step <span class="math">*</span> n_cell_stretch_steps</li>
 <li>do_swap_step <span class="math">*</span> n_swap_steps</li>
+<li>do_semi_grand_step <span class="math">*</span> n_semi_grand_steps</li>
 </ul>
 </dd>
 </dl>
@@ -348,7 +321,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <li>perturb final energy by random_energy_perturbation</li>
 </ul>
 </dd>
-<dt><code class="docutils literal"><span class="pre">full_auto_set_stepsizes</span></code></dt>
+<dt><code class="docutils literal notranslate"><span class="pre">full_auto_set_stepsizes</span></code></dt>
 <dd><ul class="first last simple">
 <li>Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.</li>
 <li>The routine is MPI parallelised, so that the wall time goes as 1/num_of_processes</li>
@@ -406,7 +379,7 @@ running statistics for the number of accepted/rejected moves on each process are
 <li>Return step sizes and time taken for routine to run</li>
 </ul>
 </dd>
-<dt><code class="docutils literal"><span class="pre">main</span></code>: parse arguments</dt>
+<dt><code class="docutils literal notranslate"><span class="pre">main</span></code>: parse arguments</dt>
 <dd><ul class="first last simple">
 <li><dl class="first docutils">
 <dt>process n_atom_steps</dt>
@@ -466,7 +439,7 @@ running statistics for the number of accepted/rejected moves on each process are
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

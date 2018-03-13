@@ -5,27 +5,18 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Index &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="#" />
     <link rel="search" title="Search" href="search.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -40,17 +31,16 @@
     </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-
-   
-
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -77,6 +67,7 @@
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
+ | <a href="#mu1 [, Z2"><strong>mu1 [, Z2</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -117,9 +108,9 @@
 </li>
       <li><a href="getstart.html#term-atom-algorithm-mc-md-gmc"><strong>atom_algorithm=[MC | MD | GMC]</strong></a>, <a href="ns_run.html#term-atom-algorithm-mc-md-gmc"><strong>[1]</strong></a>
 </li>
-      <li><a href="getstart.html#term-atom-momentum-retain-fraction-float"><strong>atom_momentum_retain_fraction=float</strong></a>, <a href="ns_run.html#term-atom-momentum-retain-fraction-float"><strong>[1]</strong></a>
-</li>
       <li><a href="getstart.html#term-atom-traj-len-int"><strong>atom_traj_len=int</strong></a>, <a href="ns_run.html#term-atom-traj-len-int"><strong>[1]</strong></a>
+</li>
+      <li><a href="getstart.html#term-atom-traj-len-cost-multiplier-int"><strong>atom_traj_len_cost_multiplier=int</strong></a>, <a href="ns_run.html#term-atom-traj-len-cost-multiplier-int"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-atom-velo-rej-free-fully-randomize-t-f"><strong>atom_velo_rej_free_fully_randomize=[T | F]</strong></a>, <a href="ns_run.html#term-atom-velo-rej-free-fully-randomize-t-f"><strong>[1]</strong></a>
 </li>
@@ -131,12 +122,10 @@
 <h2 id="B">B</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ns_run.html#ns_run.beta_from_ns_pe_values">beta_from_ns_pe_values() (in module ns_run)</a>
+      <li><a href="rngstream.html#rngstream.RngStream_InfoState.Bg">Bg (rngstream.RngStream_InfoState attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="rngstream.html#rngstream.RngStream_InfoState.Bg">Bg (rngstream.RngStream_InfoState attribute)</a>
-</li>
       <li><a href="getstart.html#term-break-up-atom-traj-t-f"><strong>break_up_atom_traj=[T | F]</strong></a>, <a href="ns_run.html#term-break-up-atom-traj-t-f"><strong>[1]</strong></a>
 </li>
   </ul></td>
@@ -148,8 +137,6 @@
       <li><a href="getstart.html#term-cell-shape-equil-steps-int"><strong>cell_shape_equil_steps=int</strong></a>, <a href="ns_run.html#term-cell-shape-equil-steps-int"><strong>[1]</strong></a>
 </li>
       <li><a href="rngstream.html#rngstream.RngStream_InfoState.Cg">Cg (rngstream.RngStream_InfoState attribute)</a>
-</li>
-      <li><a href="ns_run.html#ns_run.check_eners_consistency">check_eners_consistency() (in module ns_run)</a>
 </li>
       <li><a href="ns_run.html#ns_run.clean_prev_snapshot">clean_prev_snapshot() (in module ns_run)</a>
 </li>
@@ -183,10 +170,10 @@
 </li>
       <li><a href="getstart.html#term-do-good-load-balance-t-f"><strong>do_good_load_balance=[T | F]</strong></a>, <a href="ns_run.html#term-do-good-load-balance-t-f"><strong>[1]</strong></a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ns_run.html#ns_run.do_MC_atom_velo_walk">do_MC_atom_velo_walk() (in module ns_run)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ns_run.html#ns_run.do_MC_atom_walk">do_MC_atom_walk() (in module ns_run)</a>
 </li>
       <li><a href="ns_run.html#ns_run.do_MC_cell_shear_step">do_MC_cell_shear_step() (in module ns_run)</a>
@@ -194,6 +181,8 @@
       <li><a href="ns_run.html#ns_run.do_MC_cell_stretch_step">do_MC_cell_stretch_step() (in module ns_run)</a>
 </li>
       <li><a href="ns_run.html#ns_run.do_MC_cell_volume_step">do_MC_cell_volume_step() (in module ns_run)</a>
+</li>
+      <li><a href="ns_run.html#ns_run.do_MC_semi_grand_step">do_MC_semi_grand_step() (in module ns_run)</a>
 </li>
       <li><a href="ns_run.html#ns_run.do_MC_swap_step">do_MC_swap_step() (in module ns_run)</a>
 </li>
@@ -213,9 +202,17 @@
 </li>
       <li><a href="ns_run.html#ns_run.energy_internal_pos">energy_internal_pos() (in module ns_run)</a>
 </li>
+      <li><a href="ns_run.html#ns_run.eval_energy">eval_energy() (in module ns_run)</a>
+</li>
+      <li><a href="ns_run.html#ns_run.eval_energy_KE">eval_energy_KE() (in module ns_run)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ns_run.html#ns_run.eval_energy">eval_energy() (in module ns_run)</a>
+      <li><a href="ns_run.html#ns_run.eval_energy_mu">eval_energy_mu() (in module ns_run)</a>
+</li>
+      <li><a href="ns_run.html#ns_run.eval_energy_PE">eval_energy_PE() (in module ns_run)</a>
+</li>
+      <li><a href="ns_run.html#ns_run.eval_energy_PV">eval_energy_PV() (in module ns_run)</a>
 </li>
       <li><a href="ns_run.html#ns_run.eval_forces">eval_forces() (in module ns_run)</a>
 </li>
@@ -425,13 +422,21 @@
 </li>
       <li><a href="getstart.html#term-md-atom-velo-pre-perturb-t-f"><strong>MD_atom_velo_pre_perturb=[T | F]</strong></a>, <a href="ns_run.html#term-md-atom-velo-pre-perturb-t-f"><strong>[1]</strong></a>
 </li>
-      <li><a href="ns_run.html#ns_run.median_PV">median_PV() (in module ns_run)</a>
-</li>
       <li><a href="ns_run.html#ns_run.min_aspect_ratio">min_aspect_ratio() (in module ns_run)</a>
 </li>
       <li><a href="getstart.html#term-min-emax-float"><strong>min_Emax=float</strong></a>, <a href="ns_run.html#term-min-emax-float"><strong>[1]</strong></a>
 </li>
+      <li><a href="getstart.html#term-min-volume-per-atom-float"><strong>min_volume_per_atom=float</strong></a>, <a href="ns_run.html#term-min-volume-per-atom-float"><strong>[1]</strong></a>
+</li>
       <li><a href="getstart.html#term-monitor-step-interval-times-fraction-killed-float"><strong>monitor_step_interval_times_fraction_killed=float</strong></a>, <a href="ns_run.html#term-monitor-step-interval-times-fraction-killed-float"><strong>[1]</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="mu1 [, Z2">mu1 [, Z2</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="getstart.html#term-semi-grand-potentials-z1"><strong>``semi_grand_potentials=Z1</strong></a>, <a href="ns_run.html#term-semi-grand-potentials-z1"><strong>[1]</strong></a>
 </li>
   </ul></td>
 </tr></table>
@@ -458,6 +463,8 @@
       <li><a href="getstart.html#term-n-model-calls-int"><strong>n_model_calls=int</strong></a>, <a href="ns_run.html#term-n-model-calls-int"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-n-model-calls-expected-int"><strong>n_model_calls_expected=int</strong></a>, <a href="ns_run.html#term-n-model-calls-expected-int"><strong>[1]</strong></a>
+</li>
+      <li><a href="getstart.html#term-n-semi-grand-steps-int"><strong>n_semi_grand_steps=int</strong></a>, <a href="ns_run.html#term-n-semi-grand-steps-int"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-n-swap-steps-int"><strong>n_swap_steps=int</strong></a>, <a href="ns_run.html#term-n-swap-steps-int"><strong>[1]</strong></a>
 </li>
@@ -561,12 +568,10 @@
 </li>
       <li><a href="getstart.html#term-random-initialise-pos-t-f"><strong>random_initialise_pos=[ T | F ]</strong></a>, <a href="ns_run.html#term-random-initialise-pos-t-f"><strong>[1]</strong></a>
 </li>
-      <li><a href="ns_run.html#ns_run.rej_free_canonical_velo">rej_free_canonical_velo() (in module ns_run)</a>
+      <li><a href="ns_run.html#ns_run.rej_free_perturb_velo">rej_free_perturb_velo() (in module ns_run)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ns_run.html#ns_run.rej_free_perturb_velo">rej_free_perturb_velo() (in module ns_run)</a>
-</li>
       <li><a href="getstart.html#term-restart-file-path-to-file"><strong>restart_file=path_to_file</strong></a>, <a href="ns_run.html#term-restart-file-path-to-file"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-rng-numpy-internal-rngstream"><strong>rng=( numpy | internal | rngstream )</strong></a>, <a href="ns_run.html#term-rng-numpy-internal-rngstream"><strong>[1]</strong></a>
@@ -592,8 +597,6 @@
       <li><a href="ns_rng.html#ns_rng.NsRng.seed_init">seed_init() (ns_rng.NsRng method)</a>
 </li>
       <li><a href="ns_rng.html#ns_rng.NsRng.seed_local">seed_local() (ns_rng.NsRng method)</a>
-</li>
-      <li><a href="getstart.html#term-separable-mdns-t-f"><strong>separable_MDNS=[ T | F ]</strong></a>, <a href="ns_run.html#term-separable-mdns-t-f"><strong>[1]</strong></a>
 </li>
       <li><a href="ns_run.html#ns_run.set_n_from_expected">set_n_from_expected() (in module ns_run)</a>
 </li>
@@ -737,7 +740,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>

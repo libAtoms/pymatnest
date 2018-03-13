@@ -4,28 +4,19 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>pymatnest documentation &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript">
-      var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '1',
-        COLLAPSE_INDEX: false,
-        FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true,
-        SOURCELINK_SUFFIX: '.txt'
-      };
-    </script>
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Nested sampling method" href="intro.html" /> 
-  </head>
-  <body>
+  </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -63,12 +54,14 @@
    </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
+    <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <div><input type="text" name="q" /></div>
-      <div><input type="submit" value="Go" /></div>
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
+    </div>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -81,7 +74,7 @@
             
   <div class="section" id="pymatnest-documentation">
 <h1>pymatnest documentation<a class="headerlink" href="#pymatnest-documentation" title="Permalink to this headline">¶</a></h1>
-<p>The <code class="docutils literal"><span class="pre">pymatnest</span></code> package is a software
+<p>The <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> package is a software
 library written by Noam Bernstein in Fortran 95/python for the purpose of carrying out
 nested sampling calculations.</p>
 <dl class="docutils">
@@ -114,8 +107,8 @@ Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="http://link
 <blockquote>
 <div><ul class="simple">
 <li>the supplied fortran models</li>
-<li><code class="docutils literal"><span class="pre">LAMMPS</span></code></li>
-<li><code class="docutils literal"><span class="pre">QUIP</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></li>
+<li><code class="docutils literal notranslate"><span class="pre">QUIP</span></code></li>
 </ul>
 </div></blockquote>
 </li>
@@ -129,7 +122,7 @@ Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="http://link
 <li class="toctree-l2"><a class="reference internal" href="intro.html#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="intro.html#publications">Publications</a></li>
 <li class="toctree-l2"><a class="reference internal" href="intro.html#algorithm">Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intro.html#pymatnest"><code class="docutils literal"><span class="pre">pymatnest</span></code></a><ul>
+<li class="toctree-l2"><a class="reference internal" href="intro.html#pymatnest"><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code></a><ul>
 <li class="toctree-l3"><a class="reference internal" href="intro.html#mc-and-md-step-algorithms">MC and MD step algorithms</a></li>
 </ul>
 </li>
@@ -138,8 +131,8 @@ Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="http://link
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and quick start guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="install.html#system-requirements">System requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">Compilation of the streamlined FORTRAN models and MC/MD walkers.</a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#using-with-quip">Using with <code class="docutils literal"><span class="pre">QUIP</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="install.html#using-with-lammps">Using with <code class="docutils literal"><span class="pre">LAMMPS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#using-with-quip">Using with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="install.html#using-with-lammps">Using with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#running">Running</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#running-on-archer-uk-national-supercomputing-service">Running on ARCHER (UK National Supercomputing Service)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html#analysis">Analysis</a></li>
@@ -151,15 +144,15 @@ Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="http://link
 <li class="toctree-l2"><a class="reference internal" href="getstart.html#module-ns_run">List of input parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="getstart.html#example-input-files">Example input files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="getstart.html#cluster-with-the-supplied-fortran-code-lennard-jones-potential-using-mc">Cluster with the supplied fortran code Lennard-Jones potential, using MC</a></li>
-<li class="toctree-l3"><a class="reference internal" href="getstart.html#cluster-with-quip-implemented-lennard-jones-potential-using-md">Cluster with <code class="docutils literal"><span class="pre">QUIP</span></code> implemented Lennard-Jones potential, using MD</a></li>
-<li class="toctree-l3"><a class="reference internal" href="getstart.html#periodic-lennard-jones-system-with-lammps-using-md">Periodic Lennard-Jones system with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getstart.html#cluster-with-quip-implemented-lennard-jones-potential-using-md">Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code> implemented Lennard-Jones potential, using MD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getstart.html#periodic-lennard-jones-system-with-lammps-using-md">Periodic Lennard-Jones system with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 <li class="toctree-l3"><a class="reference internal" href="getstart.html#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">Periodic binary Lennard-Jones system with the supplied fortran code or``LAMMPS``, using MD</a></li>
-<li class="toctree-l3"><a class="reference internal" href="getstart.html#molecule-with-lammps-using-md">Molecule with <code class="docutils literal"><span class="pre">LAMMPS</span></code>, using MD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="getstart.html#molecule-with-lammps-using-md">Molecule with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="getstart.html#some-tips-on-setting-the-input-parameters">Some tips on setting the input parameters</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="getstart.html#setting-the-random-walk-parameters">Setting the random walk parameters</a></li>
-<li class="toctree-l3"><a class="reference internal" href="getstart.html#minimum-lattice-height-mc-cell-min-aspect-ratio">Minimum lattice height: <code class="docutils literal"><span class="pre">MC_cell_min_aspect_ratio</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="getstart.html#minimum-lattice-height-mc-cell-min-aspect-ratio">Minimum lattice height: <code class="docutils literal notranslate"><span class="pre">MC_cell_min_aspect_ratio</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="getstart.html#restart-a-run">Restart a run</a></li>
@@ -205,7 +198,7 @@ Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="http://link
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.6.7.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
     </div>
   </body>
 </html>
