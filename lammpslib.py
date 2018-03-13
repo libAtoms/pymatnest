@@ -317,6 +317,22 @@ End LAMMPSlib Interface Documentation
         for (t, i1, i2, i3, i4) in atoms.dihedrals:
             self.lmp.command('create_bonds single/dihedral {} {} {} {} {}'.format(t, i1, i2, i3, i4))
 
+    def parse_impropers(self,atoms):
+        atoms.impropers = []
+        atoms.max_n_impropers = 0
+        for i in range(len(atoms)):
+            if atoms.arrays['impropers'][i] != '_':
+                n_impropers = 0
+                for improper_list in atoms.arrays['impropers'][i].split(','):
+                    n_impropers += 1
+                    m = re.match('(\d+)\-(\d+)\-(\d+)\((\d+)\)',improper_list)
+                    atoms.impropers.append((int(m.group(4)),i+1,int(m.group(1))+1,int(m.group(2))+1,int(m.group(3))+1))
+                atoms.max_n_impropers = max(atoms.max_n_impropers, n_impropers)
+
+    def set_impropers(self, atoms):
+        for (t, i1, i2, i3, i4) in atoms.impropers:
+            self.lmp.command('create_improper {} {} {} {} {}'.format(t, i1, i2, i3, i4))
+
     def set_charges(self, atoms):
         for i,j in enumerate(atoms.arrays['mmcharge']):
             self.lmp.command('set atom {} charge {} '.format(i+1,j))
@@ -657,6 +673,7 @@ End LAMMPSlib Interface Documentation
 
            # count numbers of bonds and angles defined by potential
            n_dihedral_types = 0
+           n_improper_types = 0
            n_angle_types = 0
            n_bond_types = 0
            for cmd in self.parameters.lmpcmds:
@@ -669,6 +686,9 @@ End LAMMPSlib Interface Documentation
                m = re.match('\s*dihedral_coeff\s+(\d+)', cmd)
                if m is not None:
                    n_dihedral_types = max(int(m.group(1)), n_dihedral_types)
+               m = re.match('\s*improper_coeff\s+(\d+)', cmd)
+               if m is not None:
+                   n_improper_types = max(int(m.group(1)), n_improper_types)
 
            if self.parameters.read_molecular_info:
                if 'bonds' in atoms.arrays:
@@ -680,6 +700,9 @@ End LAMMPSlib Interface Documentation
                if 'dihedrals' in atoms.arrays:
                    self.parse_dihedrals(atoms)
                    create_box_command += ' dihedral/types {} extra/dihedral/per/atom {}'.format(n_dihedral_types,atoms.max_n_dihedrals)
+               if 'impropers' in atoms.arrays:
+                   self.parse_impropers(atoms)
+                   create_box_command += ' improper/types {} extra/improper/per/atom {}'.format(n_improper_types,atoms.max_n_impropers)
 
            self.lmp.command(create_box_command)
 
@@ -737,9 +760,12 @@ End LAMMPSlib Interface Documentation
             # read in angles if there are angles from the ase-atoms object if the molecular flag is set
             if 'angles' in atoms.arrays:
                 self.set_angles(atoms)
-            # read in dihedrals if there are angles from the ase-atoms object if the molecular flag is set
+            # read in dihedrals if there are dihedrals from the ase-atoms object if the molecular flag is set
             if 'dihedrals' in atoms.arrays:
                 self.set_dihedrals(atoms)
+            # read in impropers if there are impropers from the ase-atoms object if the molecular flag is set
+            if 'impropers' in atoms.arrays:
+                self.set_impropers(atoms)
 
         if self.parameters.read_molecular_info and 'mmcharge' in atoms.arrays: 
             self.set_charges(atoms)
@@ -750,7 +776,8 @@ End LAMMPSlib Interface Documentation
 
 def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
                       molecule_ids=None, charges=None, units='metal',
-                      bond_types=None, angle_types=None, dihedral_types=None):
+                      bond_types=None, angle_types=None, dihedral_types=None,
+		      improper_types=None):
 
     if isinstance(filename, basestring):
         fh = open(filename, 'w')
@@ -823,6 +850,27 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
             fh.write('{0} dihedrals\n'.format(len(dihedrals)))
             fh.write('{0} dihedral types\n'.format(len(dihedral_types)))
 
+    if improper_types:
+        print 'Impropers:'
+        improper_count = { improper : 0 for improper in improper_types }
+        impropers = []
+        for I in range(len(atoms)):
+            for J in j_list[i_list == I]:
+                for K in j_list[i_list == J]:
+                    for L in j_list[i_list == K]:
+                        Zi, Zj, Zk, Zl = atoms.numbers[[I, J, K, L]]
+                        if (Zi, Zj, Zk, Zl) in improper_types:
+                            improper = (improper_types.index((Zi, Zj, Zk, Zl))+1,
+                                        I+1, J+1, K+1, L+1)
+                            improper_count[(Zi, Zj, Zk, Zl)] += 1
+                            impropers.append(improper)
+        for improper in improper_types:
+            print improper, improper_count[improper]
+        print
+        if len(impropers) > 0:
+            fh.write('{0} impropers\n'.format(len(impropers)))
+            fh.write('{0} improper types\n'.format(len(improper_types)))
+
     fh.write('\n')
     cell, coord_transform = convert_cell(atoms.get_cell())
     fh.write('{0:16.8e} {1:16.8e} xlo xhi\n'.format(0.0, cell[0, 0]))
@@ -874,6 +922,12 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
         for idx, dihedral in enumerate(dihedrals):
             fh.write('{0} {1} {2} {3} {4} {5}\n'
                      .format(*[idx+1] + list(dihedral)))
+
+    if improper_types and len(impropers) > 0:
+        fh.write('\nImpropers\n\n')
+        for idx, improper in enumerate(impropers):
+            fh.write('{0} {1} {2} {3} {4} {5}\n'
+                     .format(*[idx+1] + list(improper)))
 
     if isinstance(filename, basestring):
         fh.close()
