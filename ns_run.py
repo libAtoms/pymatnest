@@ -455,7 +455,7 @@ def usage():
      | Write tracked configrations to a file (if false, tracking info will still be in snapshot and traj files)
      | default: F
 
-     ``ns_run_analyzers=string
+    ``ns_run_analyzers=string``
      | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
      | Positive interval refers to NS loop, negative to initial walks
      | default:'' 
@@ -3614,7 +3614,7 @@ def main():
 
                 # set KEmax from P and Vmax
             if (movement_args['do_velocities']):
-                if ns_args['KEmax_max_T'] > 0.0:
+                if movement_args['KEmax_max_T'] > 0.0:
                     KEmax = 1.5*len(walkers[0])*ns_args['kB']*ns_args['KEmax_max_T']
                 elif movement_args['MC_cell_P'] > 0.0:
                     KEmax = 1.5*movement_args['MC_cell_P']*len(walkers[0])*ns_args['max_volume_per_atom']
