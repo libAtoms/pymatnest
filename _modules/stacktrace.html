@@ -67,11 +67,11 @@
     <span class="n">message</span>  <span class="o">=</span> <span class="s2">&quot;Signal received : entering python shell.</span><span class="se">\n</span><span class="s2">Traceback:</span><span class="se">\n</span><span class="s2">&quot;</span>
     <span class="n">message</span> <span class="o">+=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">traceback</span><span class="o">.</span><span class="n">format_stack</span><span class="p">(</span><span class="n">frame</span><span class="p">))</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="c1"># i.interact(message)</span></div>
-    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1"># i.interact(message)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="listen"><a class="viewcode-back" href="../stacktrace.html#stacktrace.listen">[docs]</a><span class="k">def</span> <span class="nf">listen</span><span class="p">():</span></div>
-    <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>  <span class="c1"># Register handler</span>
+<div class="viewcode-block" id="listen"><a class="viewcode-back" href="../stacktrace.html#stacktrace.listen">[docs]</a><span class="k">def</span> <span class="nf">listen</span><span class="p">():</span>
+    <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>  <span class="c1"># Register handler</span></div>
 </pre></div>
 
           </div>
@@ -94,7 +94,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.1.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.2.
     </div>
   </body>
 </html>
