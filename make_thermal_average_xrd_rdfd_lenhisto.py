@@ -1,7 +1,6 @@
 import misc_calc_lib
 import quippy
 import numpy as np
-import math
 import argparse
 
 
@@ -32,7 +31,7 @@ QUIP_path = "$PATH_TO_QUIP/build/linux_x86_64_gfortran_openmp"
 k_B = 8.6173303*10.0**(-5) # [eV/K] https://physics.nist.gov/ (accessed 2017/10/04 16:50)
 
 do_rdfd = False # RDFs in QUIP are not using periodic cells. This makes it very hard to compare different cells of the same structure. Hence, it is turned off!
-               # If on the script uses a 6x6x6 supercell for the comparison structures
+               # If set to "True" the script uses a 6x6x6 supercell for the comparison structures.
 
 # These are the comparison structures whose rdfds (if on) and xrds get automatically calculated. They must be appropriately defined in create_at_accord_struc (see misc_calc_lib.py).  
 comparison_structures = ["hcp_Hennig_MEAM", "omega_Hennig_MEAM", "bcc", "fcc"]
