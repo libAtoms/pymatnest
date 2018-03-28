@@ -207,6 +207,7 @@ Finally, use ``mean_var_correl`` to calculated the weighted mean of each analysi
 **Automatic script using QUIP ``ns_process_traj`` and ``structure_analysis_traj``:**
 
 ``make_thermal_average_xrd_rdfd_lenhisto.py`` is a script for calculating thermally averaged powder spectra ("(...)_xrd"), radial distribution functions ("(...)"_rdfd"), which are currently disabled (see below), and histograms of lattice vector lengths ("(...)_lattice_len_histo").
+RDFDs and XRDs are calculated for reference structures and safed under ``$STRUCTURE_NAME__V_mean_of_testing_traj.T_$T_xrd`` and ``$STRUCTURE_NAME__V_mean_of_testing_traj.T_$T_rdfd``.
 It calculates the weights on its own and can deal with single trajectory files as well as combined trajectory files.
 
 Before using, QUIP and quippy need to be installed and the variable QUIP_path in ``make_thermal_average_xrd_rdfd_lenhisto.py`` line 28 must be set to the QUIP build directory.
@@ -217,14 +218,15 @@ The script is called via:
 
 ``python make_thermal_average_xrd_rdfd_lenhisto.py -fn traj.extxyz -Ts "600 800 1000" -nc 8 -nw 1920``
 
--fn is the file name. traj.extxyz can be a combined or a single trajectory.
--Ts are the different temperatures (which are transformed to integers) in the format "T_1 T_2 ... T_N-1 T_N".
--nc is the number of culled walkers per iteration.
--nw is the number of walkers.
+- fn is the file name. traj.extxyz can be a combined or a single trajectory.
+- Ts are the different temperatures (which are transformed to integers) in the format "T_1 T_2 ... T_N-1 T_N".
+- nc is the number of culled walkers per iteration.
+- nw is the number of walkers.
 
 The following variables set in the script may be intersting:
 
 **comparison_structures**
+
 These are the comparison structures whose rdfds (if on) and xrds get automatically calculated. They must be appropriately defined in create_at_accord_struc (see misc_calc_lib.py).
 
 **significant_part**
