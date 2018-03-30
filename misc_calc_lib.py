@@ -1,326 +1,338 @@
-import misc_calc_lib
-import quippy
+#These creations are in part different from the ones used for the MEAM quasiharmonic calculations.
+import subprocess
 import numpy as np
-import math
-import argparse
 
-# Author: Martin Schlegel - January 11 2018:
-# This is a script to calculate thermally average powder spectra and rdfs as well as 
-# thermally weighted histograms of cell vector length.
-# Please consult the README for further explanations.
+def create_hcp_custom(c_vs_a, V_per_at, z):
+   import quippy
+   import numpy as np
 
+   V = 2.0 * V_per_at
+   a = (2 * V / (3.0**(0.5) * c_vs_a))**(1.0/3.0)
+   c = c_vs_a * a
 
-# IMPORTANT: THIS SCRIPT ONLY WORKS FOR ONE VERSION OF THIS SCRIPT RUNNING IN A FOLDER AT A GIVEN TIME
+   lattice = []
+   lattice.append([3.0**(0.5) /2.0 * a,-a/2.0,0])
+   lattice.append([3.0**(0.5) /2.0 * a, a/2.0,0])
+   lattice.append([0,0,c])
+   lattice = np.transpose(lattice)
+   unitcell = quippy.Atoms(n=0, lattice=lattice)
+
+   pos = []
+   pos.append([3.0**(0.5) /6.0 * a,0,0.0])
+   pos.append([3.0**(0.5) /2.0 * a,0,c/2.0])
+
+   for i in range(0,len(pos)):
+      unitcell.add_atoms(pos[i],z)
+
+   return unitcell
 
-# Referencces:
+
+def create_omega_custom(c_vs_a, V_per_at, z):
+   import quippy
 
-# original formula for weights/remaing phase space volume gamma:
-# S. Martiniani, J. D. Stevenson, D. J. Wales, D. Frenkel,
-# Superposition enhanced nested sampling, Physical Review X 4 (3) (2014) 031034.
-# (I approximated the recorded points to have the same distance in the logarithm of the phase space volume (for one iteration))
+   V = 3.0 * V_per_at
+   a = (2 * V / (3.0**(0.5) * c_vs_a))**(1.0/3.0)
+   c = c_vs_a * a
 
-# principle of integration of the partition function and the average quantities:
-# L. B. Partay, A. P. Bartok, G. Csanyi, 
-# Efficient sampling of atomic configurational spaces, The Journal of Physical Chemistry B 114 (32) (2010) 10502-10512.
+   lattice = []
+   lattice.append([3.0**(0.5) /2.0 * a,-a/2.0,0])
+   lattice.append([3.0**(0.5) /2.0 * a, a/2.0,0])
+   lattice.append([0,0,c])
+   lattice = np.transpose(lattice)
+   unitcell = quippy.Atoms(n=0, lattice=lattice)
 
+   pos = []
+   pos.append([3.0**(0.5) /6.0 * a,0,0.0])
+   pos.append([3.0**(0.5) /2.0 * a,0,c/2.0])
+   pos.append([3.0**(0.5) * 5.0/6.0 * a,0,c/2.0])
 
-# Path to QUIP. Needs to be adjusted on each system
-QUIP_path = "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp"
+   for i in range(0,len(pos)):
+      unitcell.add_atoms(pos[i],z)
+
+   return unitcell
+
+
+def create_beta_V(V_per_at, z):
+   import quippy
+
+   a = (2.0 * V_per_at)**(1.0/3.0)
+
+   unitcell = quippy.structures.bcc1(a, z)
+
+   return unitcell
 
+def create_fcc_V(V_per_at, z):
+   import quippy
 
+   a = (4.0 * V_per_at)**(1.0/3.0)
 
-k_B = 8.6173303*10.0**(-5) # [eV/K] https://physics.nist.gov/ (accessed 2017/10/04 16:50)
+   unitcell = quippy.fcc(a, z)
 
-do_rdfd = True # RDFs in QUIP are not using periodic cells. This makes it very hard to compare different cells of the same structure. Hence, it is turned off!
-               # If on the script uses a 6x6x6 supercell for the comparison structures
+   return unitcell
 
-# These are the comparison structures whose rdfds (if on) and xrds get automatically calculated. They must be appropriately defined in create_at_accord_struc (see misc_calc_lib.py).  
-comparison_structures = ["hcp_Hennig_MEAM", "omega_Hennig_MEAM", "bcc", "fcc"]
+def create_at_accord_struc(V ,z , struc):
+#  c/a ratios from (see structure names): Hennig et al., PHYSICAL REVIEW B 78, 054121 (2008)
+#                                         Trinkle et al., PHYSICAL REVIEW B 73, 094123 (2006)
+   allowed_struc = ["bcc", "fcc", "hcp_Hennig_MEAM", "omega_Hennig_MEAM","hcp_Hennig_DFT", "omega_Hennig_DFT","bcc_Trinkle_TB", "hcp_Trinkle_TB", "omega_Trinkle_TB","bcc_Trinkle_fitting", "hcp_Trinkle_fitting", "omega_Trinkle_fitting"]
+
+   if struc in allowed_struc:
+      print("\nAccepted structure name!\n")
 
-parser = argparse.ArgumentParser()
 
-parser.add_argument("-fn", "--filename", help="Name of '.extxyz'/'.xyz' file to analyse")
-parser.add_argument("-Ts", "--T_array", help='array of T in format "T_1 T_2 ... T_N". Converts to integers at the moment.')
-parser.add_argument("-nc", "--n_cull", help="n_cull of nested sampling run")
-parser.add_argument("-nw", "--n_walkers", help="n_walkers of nested sampling run")
+#   print("IMPORTANT: WARNING! c_vs_a set to 1. Only use bcc!")
 
-args = parser.parse_args()
+   if struc == "bcc":
+      at = create_beta_V(V, z)
+   elif struc == "fcc":
+      at = create_fcc_V(V,z)
+   elif struc == "hcp_Hennig_MEAM":
+      c_vs_a = 1.596
+      at = create_hcp_custom(c_vs_a, V, z)
+   elif struc == "omega_Hennig_MEAM":
+      c_vs_a = 0.611
+      at = create_omega_custom(c_vs_a, V, z)
+   elif struc == "hcp_Hennig_DFT":
+      c_vs_a = 1.583
+      at = create_hcp_custom(c_vs_a, V, z)
+   elif struc == "omega_Hennig_DFT":
+      c_vs_a = 0.619
+      at = create_omega_custom(c_vs_a, V, z)
+   elif struc == "bcc_Trinkle_TB":
+      at = create_beta_custom(V, z)
+   elif struc == "hcp_Trinkle_TB":
+      c_vs_a = 4.71/2.94
+      at = create_hcp_custom(c_vs_a, V, z)
+   elif struc == "omega_Trinkle_TB":
+      c_vs_a = 2.84/4.58
+      at = create_omega_custom(c_vs_a, V, z)
+   elif struc == "bcc_Trinkle_fitting":
+      at = create_beta_custom(V, z)
+   elif struc == "hcp_Trinkle_fitting":
+      c_vs_a = 1.588
+      at = create_hcp_custom(c_vs_a, V, z)
+   elif struc == "omega_Trinkle_fitting":
+      c_vs_a = 0.613
+      at = create_omega_custom(c_vs_a, V, z)
+   else:
+      print("\nERROR: Structure name '" + struc + "' not known!\n\nAllowed names are:")
 
-filename = args.filename
-T_range = []  # Temperatures to be weighted at
-for el in args.T_array.split():
-   T_range.append(int(el))
+      for dummy_struc in allowed_struc:
+         print(dummy_struc)
+      print("")
 
-n_cull = int(args.n_cull)
-n_walker = int(args.n_walkers)
+      quit()
 
-if filename[len(filename) - len(".extxyz") ::].find(".extxyz") == 0:
-   extens = ".extxyz"
-elif filename[len(filename) - len(".xyz") ::].find(".xyz") == 0:
-   extens = ".xyz"
-else:
-   print("ERROR: Filename neither '.extxyz' nor '.xyz' file! Aborting!")
-   quit()
+   return at
 
+# Writes .cell as well as .param files based on templates
+def write_files(at, name_raw, template_name_cell):
 
+   write_file_cell = name_raw + ".cell"
 
-reduced_filename = filename[len(filename) - filename[::-1].find("/"):]
-raw_reduced_filename = reduced_filename[:len(reduced_filename)-len(extens)]
+   write_cell(at, write_file_cell, template_name_cell)
+   write_param(write_file_cell, template_name_cell)
 
+# Write a .cell file based on a template
+def write_cell(at, write_file_cell, template_name_cell):
 
+   with open(write_file_cell, "w") as write_lines:
+      with open(template_name_cell, "r") as template_lines:
+         for line in template_lines:
+            write_lines.write(line)
+            if line.find("%block lattice_cart") >= 0:
+               cell = at.get_cell()
+               for i in xrange(0,3):
+                  write_lines.write("   ".join(map(str, cell[i,:])) + "\n")
 
+            if line.find("%block positions_frac") >= 0:
+               scale_pos = at.get_scaled_positions()
+               print("Writing positions!")
+               for i in xrange(0,at.get_number_of_atoms()):
+                  write_lines.write("Ti " + " ".join(map(str, scale_pos[i,:])) + "\n")
 
-print(reduced_filename)
+def write_param(write_file_cell, template_name_cell):
 
-#quit()
+   with open(write_file_cell[0:-len(".cell")] + ".param", "w") as write_lines:
+      with open(template_name_cell[0:-len(".cell")] + ".param", "r") as template_lines:
+         for line in template_lines:
+#            print("test")
+            write_lines.write(line)
 
-iter_nr = []
-enthalpy = []
-gamma_log = []
-box_volume = []
 
-# rdf range parameters:
+def write_sub_file(submis_com, nr_node_tot, sub_file):
 
-a_0 = 0.0
-a_end = 10.0
-n_a = 100
-r_range = [a_0, a_end]
-# xrd parameters
+   sub_template = "CASTEP_TEMPLATE.sub"
 
-two_theta_range = '"0.0 180.0"'
-n_two_theta = 361
+   with open(sub_file, "w") as write_lines:
+      with open(sub_template, "r") as template_lines:
+         for line in template_lines:
+            write_lines.write(line)
+      write_lines.write(submis_com + "\n")
+      write_lines.write("") 
 
-do_xrd = True
+   command = []
+   command.append("sed -i 's/\$nr_node_tot/" + str(nr_node_tot) + "/g' " + sub_file)
+   submit_commands(command)
+   command = []
 
-#This defines the percentage (according to probabilities of each structure) which we define siginficant enough to calculate xrds on. We only calculate for 'siginficant_part' most likely structures.
-significant_part = 1 - 10.0**(-16)
 
-threshold = (1 - significant_part)/2.0
+def submit_commands(command):
 
+   for i in range(0,len(command)):
+      print(command[i])
+      subprocess.call(command[i],shell=True)
 
-inputs = quippy.AtomsReader(filename)
 
+def calc_aspec_ratio(at):
 
-for at in inputs:
-   iter_nr.append(at.info["iter"])
-   enthalpy.append(at.info["ns_energy"])
-   box_volume.append(at.get_volume())
-    
+   cell = at.get_cell()
 
-print("len(iter_nr) = " + str(len(iter_nr)) + " len(enthalpy) = " + str(len(enthalpy)))
+   V = at.get_volume()
 
+   aspec_ratio_array = []
 
+   for i in range(0,3):
 
-volume_one_iter = 1.0
-for i in range(0,n_cull):
-   volume_one_iter = volume_one_iter * (n_walker - i) / (n_walker + 1 - i)
+      # cell vector not in plane parallel to the cell surfaces whose distance are to measure
+      vec_0 = cell[i,:]
 
-volume_one_iter_log = np.log(volume_one_iter)
-#print "volume_one_iter = " + str(volume_one_iter)
+      # cell vectors defining the plane
+      vec_1 = cell[(i+1)%3,:]
+      vec_2 = cell[(i+2)%3,:]
 
-# we assume that we start counting at iteration 0
-nr_last_iter_change = 0
+      # vector orthogonal to plane 
+      cross = np.cross(vec_1,vec_2)
+      # normalized orthogonal vector
+      cross_norm =  cross/np.sqrt(np.dot(cross,cross))
+      # distance between cell surfaces normalized by cell volume:
+      aspec_ratio_array.append(abs(np.dot(cross_norm,vec_0))/V**(1.0/3))
 
-last_iters = [0,iter_nr[0]]
 
-# Creates gamma_log for weigth calculation including if the trajectory has changing number of iterations between samples
 
-for i in range(0,len(iter_nr)):
-   # detects if iteration number changes
-   if iter_nr[i] > iter_nr[i-1]:
-      for j in range(nr_last_iter_change,i):
-         if j==0:
-            gamma_log.append( ( last_iters[1] - last_iters[0] +  1.0 / (i - nr_last_iter_change) ) * volume_one_iter_log )
-         else:
-            if j==nr_last_iter_change:
-               gamma_log.append(gamma_log[j-1] + ( last_iters[1] - last_iters[0] -1 +  1.0 / (i - nr_last_iter_change) ) * volume_one_iter_log)
-            else:
-               gamma_log.append(gamma_log[j-1] + ( 1.0 / (i - nr_last_iter_change) ) * volume_one_iter_log)
-      nr_last_iter_change = i
-      last_iters[0] = last_iters[1]
-      last_iters[1] = iter_nr[i]
+   return aspec_ratio_array
 
-   # special case for last recoreded iteration
-   if (i == len(iter_nr) -1):
-      for j in range(nr_last_iter_change,len(iter_nr)):
-         if j==nr_last_iter_change:
-            gamma_log.append(gamma_log[j-1] + ( last_iters[1] - last_iters[0] -1 +  1.0 / (len(iter_nr) - nr_last_iter_change) ) * volume_one_iter_log)
-         else:
-            gamma_log.append(gamma_log[j-1] + ( 1.0 / (len(iter_nr) - nr_last_iter_change) ) * volume_one_iter_log)
-      nr_last_iter_change = i
-      last_iters[0] = last_iters[1]
-      last_iters[1] = iter_nr[i]
 
 
-xrd_matrix = []
-rdf_matrix = []
+# Calcualtes powders spectrum via QUIP
+def xrd_QUIP(QUIP_path, at, n_two_theta, two_theta_range):
 
+   xyz_fime = "temp_atom.xyz"
 
-at = inputs[len(inputs)-1]
-z = at.get_atomic_numbers()[0]
+   at.write(xyz_fime)
 
+   xrd_raw_fime = xyz_fime[:len(xyz_fime)-len(".xyz")] + ".xrd.raw"
+   xrd_final_fime = xyz_fime[:len(xyz_fime)-len(".xyz")] + ".xrd"
 
-rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,at,n_a,r_range)
+   command = []
+   command.append( QUIP_path + '/structure_analysis_traj type=xrd xrd_2theta_range=' + two_theta_range + " xrd_n_2theta=" + str(n_two_theta)+ " infile=" + xyz_fime + " outfile=" + xrd_raw_fime)
+   command.append( QUIP_path + "/mean_var_correl infile=" + xrd_raw_fime + " outfile=" + xrd_final_fime + " mean")
 
+   submit_commands(command)
+   command = []
 
-xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at,n_two_theta,two_theta_range)
-angle = xrd_results[0]
-xrd_temp = xrd_results[1]
+   angle, xrd_temp = np.loadtxt( "temp_atom.xrd", skiprows=1, unpack = True)
 
+   submit_commands(["rm " + xyz_fime + "*" ])
+   submit_commands(["rm " + xyz_fime[:len(xyz_fime)-len(".xyz")] + ".xrd*"])
 
-# Making the thermal average
-for T in T_range:
-   beta = 1/(k_B * T)
+   return [angle,xrd_temp]
 
-   weight = []
-   gamma_log_1_beta = []
-   gamma_log_2_beta = []
 
-   for i in range(0,len(iter_nr)-1):
-      gamma_log_1_beta.append(gamma_log[i] - beta * enthalpy[i])
-      gamma_log_2_beta.append(gamma_log[i+1] - beta * enthalpy[i])
 
-   shift = max(max(gamma_log_1_beta),max(gamma_log_2_beta))
+#Calculates radial distribution function via QUIP
+def rdfd_QUIP(QUIP_path, at, n_a, r_range):
 
-   for i in range(0,len(iter_nr)-1):
-      #print str(gamma[i+1])
-      weight.append( np.exp(gamma_log[i] - beta * enthalpy[i] - shift) - np.exp(gamma_log[i+1] - beta * enthalpy[i] - shift) )
-      #print weight
 
-   partion_fct = sum(weight)
+   rdfd_n_bins = int(n_a)
+   rdfd_bin_width = float(r_range[1] - r_range[0])/rdfd_n_bins
 
+   xyz_fime = "temp_atom.xyz"
 
-   rdf_null = 0.0 * rdfd_results[1]
-   xrd_null = 0.0 * xrd_temp
-   V_array = []
-   a_lat_array = []
-   b_lat_array = []
-   c_lat_array = []
+   at.write(xyz_fime)
 
-   xrd_matrix = []
-   rdf_matrix = []
+   rdfd_raw_fime = xyz_fime[:len(xyz_fime)-len(".xyz")] + ".rdfd.raw"
+   rdfd_final_fime = xyz_fime[:len(xyz_fime)-len(".xyz")] + ".rdfd"
 
-   cumulative_weights = 0.0
+   command = []
+   command.append( QUIP_path + '/structure_analysis_traj type=rdfd rdfd_n_bins=' + str(rdfd_n_bins) + " rdfd_bin_width=" + str(rdfd_bin_width)+ " infile=" + xyz_fime + " outfile=" + rdfd_raw_fime)
+   command.append( QUIP_path + "/mean_var_correl infile=" + rdfd_raw_fime + " outfile=" + rdfd_final_fime + " mean")
 
-   part_fct_red = 0.0
+   submit_commands(command)
+   command = []
 
-   for i_at,at in enumerate(inputs):
-      V_array.append(at.get_volume())
-      a_b_c = at.get_cell_lengths_and_angles()[0:3]
-      a_b_c.sort()
-      a_lat_array.append(a_b_c[0])
-      b_lat_array.append(a_b_c[1])
-      c_lat_array.append(a_b_c[2])
+   angle, rdfd_temp = np.loadtxt( "temp_atom.rdfd", skiprows=1, unpack = True)
 
-      if i_at < len(weight):
-         cumulative_weights += weight[i_at]/partion_fct
+   submit_commands(["rm " + xyz_fime + "*" ])
+   submit_commands(["rm " + xyz_fime[:len(xyz_fime)-len(".xyz")] + ".rdfd*"])
 
+   return [angle,rdfd_temp]
 
-      if ((i_at < len(weight)) and (cumulative_weights >= threshold)) and (cumulative_weights <= 1 - threshold): #at.get_volume() < at.get_number_of_atoms()*50:
 
-#         print("cumu_weight = " + str(cumulative_weights))
 
-         if do_xrd == True:
-            rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,at,n_a, r_range)
+"""
+# Returns the x value (usually temperature) of the maximum y of a two column file over x_range = [x_start, x_end].
+# Comments in the file are signfied by "#".
+def find_x_of_max_y_of_file(filename, x_range):
 
-            xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at,n_two_theta,two_theta_range)
-#            angle = xrd_results[0]
-            xrd_temp = xrd_results[1]
-#      misc_calc_lib.submit_commands(["rm temp_atom.xrd.raw temp_atom.xrd temp_atom.xyz"])
+   vals_of_interests = []
+   with open(filename, "r") as flines:
+      for line in flines:
+         if line[0] != "#":
+            line_float_split = map(float, line.split())
+            # If temperature is in the temeprature range of interest, append
+            if line_float_split[0] >= x_range[0] and line_float_split[0] <= x_range[1]:
+               vals_of_interests.append(line_float_split)
 
-            xrd_matrix.append(xrd_temp)
-            rdf_matrix.append(rdfd_results[1])
-            part_fct_red = part_fct_red + weight[i_at] 
-            r = rdfd_results[0]
+   vals_trans = zip(*vals_of_interests)
+   print(vals_trans)
 
-#            print("xrd_temp is:")
-#            print(xrd_temp)
+   max_index = find_max_index(vals_trans[1])
 
-#            print(xrd_matrix)
-#            quit()
-         else:
-            xrd_matrix.append(xrd_null)
-            rdf_matrix.append(rdf_null)
-      else:
-         xrd_matrix.append(xrd_null)
-         rdf_matrix.append(rdf_null)
+   if len(max_index) > 1:
+      print("Error! There should only be one maximum. Either you got more two data points which are the same values and the maximum, which is very unlikely, or there's something wrong with the input file. Aborting!")
+      quit()
 
-#   print(xrd_matrix)
+   return
 
 
-   rdf = rdf_matrix[0]*0.0
-   xrd = xrd_matrix[0]*0.0
-   V = V_array[0]*0.0
+#start for recursive function to find maximum values
+def find_max_index(array):
 
-   print("len(weight) = " + str(len(weight)) + " len(rdf_matrix) = " + str(len(rdf_matrix)) + " len(xrd_matrix) = " + str(len(xrd_matrix)))
-   cumulative_weights = 0
-   for i in range(0,len(xrd_matrix) - 1):
-#      cumulative_weights += weight[i]/partion_fct
+   return find_max_index_recursive(array, [])
 
-#      if (cumulative_weights >= threshold) and (cumulative_weights <= 1 - threshold):
-      print("iteration for calculating averages = " + str(i))
-      print("len(weight) = " + str(len(weight)) + " len(rdf_matrix) = " + str(len(rdf_matrix)) + " len(xrd_matrix) = " + str(len(xrd_matrix)))
-      rdf = rdf + rdf_matrix[i]*weight[i]
-      xrd = xrd + xrd_matrix[i]*weight[i]
-      V = V + V_array[i]*weight[i]
 
-   rdf = rdf/part_fct_red
-   xrd = xrd/part_fct_red
-   V = V/partion_fct
+# Yields a list of the index of the maximum values.
+def find_max_index_recursive(array, index_list):
 
+   max_array = max(array)
+   max_index = array.index(max_array)
+   index_list.append(max_index)
 
-   a_histo, bin_limits = np.histogram(a_lat_array[:-1],bins=n_a,range=(a_0,a_end),weights=weight)
-   b_histo, bin_limits = np.histogram(b_lat_array[:-1],bins=n_a,range=(a_0,a_end),weights=weight)
-   c_histo, bin_limits = np.histogram(c_lat_array[:-1],bins=n_a,range=(a_0,a_end),weights=weight)
+   # array with maximum replaced(hence "repl_" array):
+   repl_array = array[0:max_index] + [max_array - 999] + array[max_index + 1:]
+   if max_array == max(repl_array):
 
-   lat_vec_mean_histo = (a_histo + b_histo + c_histo)/3.0
+      index_list = find_max_index_recursive(repl_array, index_list)
 
-   print(bin_limits)
+   result_list = list(index_list)
+   return result_list
 
-   if do_rdfd:
-#      print("we got this far!")
-   #   quit()
-      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".custom_T_" + str(T) +"_rdfd","w") as rdf_f:
-         for i in range(0,len(r)):
-            rdf_f.write(str(r[i]) + "   " + str(rdf[i]) + "\n")
 
-   if do_xrd:
-      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".custom_T_" + str(T) + "_xrd", "w") as xrd_f:
-         for i in range(0,len(angle)):
-            xrd_f.write(str(angle[i]) + "   " +str(xrd[i]) + "\n") 
+# Automatic calculation of average and standard deviation of maximum position (presumably of the C_P curve) for a number of results of different runs
+# This assumes that the results are however already calculated.
+def find_avg_std_max_pos(filename_raw, run_nr_start, run_nr_end, x_range):
 
-   print "partion_fct at " + str(T) + " K = " + str(partion_fct)
+   pos_list = []
+   for i in xrange(run_nr_start, run_nr_end, 1):
 
+      filename = filename_raw + str(i)
+      pos_list.append(find_x_of_max_y_of_file(filename, x_range))
 
-   with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".custom_T_" + str(T) + "_lattice_len_histo", "w") as histo_f:
-      histo_f.write("#   len lat vec [Angstrom]   a      b     c      mean(a,b,c)\n")
-      for i in range(0,len(a_histo)):
-         d_a = (a_end - a_0)/n_a
-         bin_middle = a_0 + 0.5 * d_a + i * d_a
-         histo_f.write(str(bin_middle) + "   " + str(a_histo[i])  + "   " + str(b_histo[i]) + "   " + str(c_histo[i]) + "   " + str(lat_vec_mean_histo[i]) + "\n")
+   mean = np.mean(pos_list)
+   std = np.std(pos_list, ddof=1)
 
 
-   z = at.get_atomic_numbers()[0]
-   V_aver_per_at = V/len(at)
 
-   for struc in comparison_structures:
 
-      at_average = misc_calc_lib.create_at_accord_struc(V_aver_per_at ,z , struc)
-      comparison_struc_name_raw = struc + "_V_mean_of_" + raw_reduced_filename + ".T_" + str(T)
-      comparison_struc_name = comparison_struc_name_raw + ".xyz"
-
-      comparison_struc_name_rdfd = comparison_struc_name_raw + "_rdfd"
-      comparison_struc_name_xrd = comparison_struc_name_raw + "_xrd"
-
-      at_average.write(comparison_struc_name)
-      rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,quippy.supercell(at_average,6,6,6),n_a,r_range)  # I'm using a supercell to get at least the positions right. 
-      xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at_average,n_two_theta,two_theta_range)
-      if do_rdfd:
-         with open(comparison_struc_name_rdfd, "w") as rdf_f:
-            for i,el in enumerate(rdfd_results[0]):
-               rdf_f.write(str(rdfd_results[0][i]) + "   " + str(rdfd_results[1][i]) + "\n")
-
-      if do_xrd:
-         with open(comparison_struc_name_xrd, "w") as xrd_f:
-            for i,el in enumerate(xrd_results[0]):
-               xrd_f.write(str(xrd_results[0][i]) + "   " + str(xrd_results[1][i]) + "\n")
+   return [mean, std]
+"""
