@@ -23,8 +23,9 @@ import argparse
 # Efficient sampling of atomic configurational spaces, The Journal of Physical Chemistry B 114 (32) (2010) 10502-10512.
 
 
-# Path to QUIP. Needs to be adjusted on each system
-QUIP_path = "$PATH_TO_QUIP/build/linux_x86_64_gfortran_openmp"
+# Path to the QUIP build. Needs to be adjusted on each system.
+# (In my case it's "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp")
+QUIP_path = "$QUIP_path"
 
 
 
