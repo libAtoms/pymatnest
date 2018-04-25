@@ -49,7 +49,7 @@ and using MD trajectory for generating a new sample configuration.
 .. literalinclude:: ../example_inputs/inputs.test.periodic.MD.lammps
     :language: python
 
-Periodic binary Lennard-Jones system with the supplied fortran code or``LAMMPS``, using MD
+Periodic binary Lennard-Jones system with the supplied fortran code or ``LAMMPS``, using MD
 ---------------------------------------------------------------
 
 This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
@@ -79,6 +79,8 @@ still use a single underscore.
 
 Some tips on setting the input parameters
 +++++++++++++++++++++++++++++++++++++++++
+
+.. _rwp_section_reference:
 
 Setting the random walk parameters                  
 ----------------------------------
