@@ -15,7 +15,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="pymatnest module" href="ns_run.html" />
+    <link rel="next" title="Tutorials" href="tutorial.html" />
     <link rel="prev" title="Installation and quick start guide" href="install.html" /> 
   </head><body>
     <div class="related" role="navigation" aria-label="related navigation">
@@ -28,7 +28,7 @@
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ns_run.html" title="pymatnest module"
+          <a href="tutorial.html" title="Tutorials"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="install.html" title="Installation and quick start guide"
@@ -46,7 +46,7 @@
 <li><a class="reference internal" href="#cluster-with-the-supplied-fortran-code-lennard-jones-potential-using-mc">Cluster with the supplied fortran code Lennard-Jones potential, using MC</a></li>
 <li><a class="reference internal" href="#cluster-with-quip-implemented-lennard-jones-potential-using-md">Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code> implemented Lennard-Jones potential, using MD</a></li>
 <li><a class="reference internal" href="#periodic-lennard-jones-system-with-lammps-using-md">Periodic Lennard-Jones system with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
-<li><a class="reference internal" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">Periodic binary Lennard-Jones system with the supplied fortran code or``LAMMPS``, using MD</a></li>
+<li><a class="reference internal" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">Periodic binary Lennard-Jones system with the supplied fortran code or <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 <li><a class="reference internal" href="#molecule-with-lammps-using-md">Molecule with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 </ul>
 </li>
@@ -64,8 +64,8 @@
   <p class="topless"><a href="install.html"
                         title="previous chapter">Installation and quick start guide</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="ns_run.html"
-                        title="next chapter"><cite>pymatnest</cite> module</a></p>
+  <p class="topless"><a href="tutorial.html"
+                        title="next chapter">Tutorials</a></p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -951,7 +951,7 @@ and using MD trajectory for generating a new sample configuration.</p>
 </div>
 </div>
 <div class="section" id="periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">
-<h3>Periodic binary Lennard-Jones system with the supplied fortran code or``LAMMPS``, using MD<a class="headerlink" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md" title="Permalink to this headline">¶</a></h3>
+<h3>Periodic binary Lennard-Jones system with the supplied fortran code or <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
 Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.
 The cell is of variable shape and size at the set pressure value.</p>
@@ -1024,8 +1024,8 @@ The cell is of variable shape and size at the set pressure value.</p>
 <h3>Molecule with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#molecule-with-lammps-using-md" title="Permalink to this headline">¶</a></h3>
 <p>Start a nested sampling simulation with a polymer in a cell with constant volume and shape. Initially the random placement of atoms has to be turned off,
 and a configuration file has to be read. The initial walk is done with a heuristic choice for E_max.
-The <code class="docutils literal notranslate"><span class="pre">atom_style</span> <span class="pre">full</span></code> used in this example is part of the MOLECULE package, you have to include that when compling
-<code class="docutils literal notranslate"><span class="pre">LAMPS</span></code>.</p>
+The <code class="docutils literal notranslate"><span class="pre">atom_style</span> <span class="pre">full</span></code> used in this example is part of the MOLECULE package, you have to include that when compiling
+<code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># starting volume (in this example it is Angstrom^3)</span>
 <span class="n">max_volume_per_atom</span><span class="o">=</span><span class="mf">108.0</span>
 <span class="c1"># read in the initial configuration of the polymer</span>
@@ -1095,7 +1095,7 @@ still use a single underscore.</p>
 <div class="section" id="some-tips-on-setting-the-input-parameters">
 <h2>Some tips on setting the input parameters<a class="headerlink" href="#some-tips-on-setting-the-input-parameters" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="setting-the-random-walk-parameters">
-<h3>Setting the random walk parameters<a class="headerlink" href="#setting-the-random-walk-parameters" title="Permalink to this headline">¶</a></h3>
+<span id="rwp-section-reference"></span><h3>Setting the random walk parameters<a class="headerlink" href="#setting-the-random-walk-parameters" title="Permalink to this headline">¶</a></h3>
 <p>When the walker configuration with the highest energy is chosen and replaced by a clone of
 another randomly picked walker, this clone has to be perturbed in order to satisfy the criteria
 that all walkers should be uniformly distributed in the available phase space. This perturbation
@@ -1176,7 +1176,7 @@ value if the run already reached the number of iterations set previously. (Note:
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="ns_run.html" title="pymatnest module"
+          <a href="tutorial.html" title="Tutorials"
              >next</a> |</li>
         <li class="right" >
           <a href="install.html" title="Installation and quick start guide"
@@ -1186,7 +1186,7 @@ value if the run already reached the number of iterations set previously. (Note:
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
     </div>
   </body>
 </html>
