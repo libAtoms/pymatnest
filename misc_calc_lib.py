@@ -73,7 +73,7 @@ def create_fcc_V(V_per_at, z):
 def create_at_accord_struc(V ,z , struc):
 #  c/a ratios from (see structure names): Hennig et al., PHYSICAL REVIEW B 78, 054121 (2008)
 #                                         Trinkle et al., PHYSICAL REVIEW B 73, 094123 (2006)
-   allowed_struc = ["bcc", "fcc", "hcp_Hennig_MEAM", "omega_Hennig_MEAM","hcp_Hennig_DFT", "omega_Hennig_DFT","bcc_Trinkle_TB", "hcp_Trinkle_TB", "omega_Trinkle_TB","bcc_Trinkle_fitting", "hcp_Trinkle_fitting", "omega_Trinkle_fitting"]
+   allowed_struc = ["bcc", "fcc", "hcp", "hcp_Hennig_MEAM", "omega_Hennig_MEAM","hcp_Hennig_DFT", "omega_Hennig_DFT","bcc_Trinkle_TB", "hcp_Trinkle_TB", "omega_Trinkle_TB","bcc_Trinkle_fitting", "hcp_Trinkle_fitting", "omega_Trinkle_fitting"]
 
    if struc in allowed_struc:
       print("\nAccepted structure name!\n")
@@ -85,6 +85,9 @@ def create_at_accord_struc(V ,z , struc):
       at = create_beta_V(V, z)
    elif struc == "fcc":
       at = create_fcc_V(V,z)
+   elif struc == "hcp":
+      c_vs_a = (8.0/3.0)**(0.5)
+      at = create_hcp_custom(c_vs_a, V, z)
    elif struc == "hcp_Hennig_MEAM":
       c_vs_a = 1.596
       at = create_hcp_custom(c_vs_a, V, z)
