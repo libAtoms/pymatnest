@@ -27,6 +27,10 @@ import argparse
 # (In my case it's "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp")
 QUIP_path = "$QUIP_path"
 
+if QUIP_path == "$QUIP_path":
+   print("Error! QUIP_path needs to be set in make_thermal_average_xrd_rdfd_lenhisto.py. Aborting.")
+   quit()
+
 
 
 k_B = 8.6173303*10.0**(-5) # [eV/K] https://physics.nist.gov/ (accessed 2017/10/04 16:50)
@@ -34,8 +38,6 @@ k_B = 8.6173303*10.0**(-5) # [eV/K] https://physics.nist.gov/ (accessed 2017/10/
 do_rdfd = False # RDFs in QUIP are not using periodic cells. This makes it very hard to compare different cells of the same structure. Hence, it is turned off!
                # If set to "True" the script uses a 6x6x6 supercell for the comparison structures.
 
-# These are the comparison structures whose rdfds (if on) and xrds get automatically calculated. They must be appropriately defined in create_at_accord_struc (see misc_calc_lib.py).  
-comparison_structures = ["hcp_Hennig_MEAM", "omega_Hennig_MEAM", "bcc", "fcc"]
 
 parser = argparse.ArgumentParser()
 
@@ -43,6 +45,7 @@ parser.add_argument("-fn", "--filename", help="Name of '.extxyz'/'.xyz' file to 
 parser.add_argument("-Ts", "--T_array", help='array of T in format "T_1 T_2 ... T_N". Converts to integers at the moment.')
 parser.add_argument("-nc", "--n_cull", help="n_cull of nested sampling run")
 parser.add_argument("-nw", "--n_walkers", help="n_walkers of nested sampling run")
+parser.add_argument("-s", "--comp_strucs", help="Structures for xrd spectrum identification in format \"struc1 struc2 struc3\"")
 
 args = parser.parse_args()
 
@@ -50,6 +53,11 @@ filename = args.filename
 T_range = []  # Temperatures to be weighted at
 for el in args.T_array.split():
    T_range.append(int(el))
+# These are the comparison structures whose rdfds (if on) and xrds get automatically calculated. They must be appropriately defined in create_at_accord_struc (see misc_calc_lib.py). 
+# E.g. ["hcp_Hennig_MEAM", "omega_Hennig_MEAM", "bcc", "fcc"]
+comparison_structures = []
+for el in args.comp_strucs.split():
+   comparison_structures.append(el)
 
 n_cull = int(args.n_cull)
 n_walker = int(args.n_walkers)
@@ -63,8 +71,10 @@ else:
    quit()
 
 
-
-reduced_filename = filename[len(filename) - filename[::-1].find("/"):]
+if filename.find("/") < 0:
+   reduced_filename = filename
+else:
+   reduced_filename = filename[-filename[::-1].find("/"):]
 raw_reduced_filename = reduced_filename[:len(reduced_filename)-len(extens)]
 
 
@@ -93,7 +103,7 @@ n_two_theta = 361
 do_xrd = True
 
 #This defines the percentage (according to probabilities of each structure) which we define siginficant enough to calculate xrds on. We only calculate for 'siginficant_part' most likely structures.
-significant_part = 1 - 10.0**(-16)
+significant_part = 0.95#1 - 10.0**(-16)
 
 threshold = (1 - significant_part)/2.0
 
