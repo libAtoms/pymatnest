@@ -222,18 +222,15 @@ The script is called via:
 - Ts are the different temperatures (which are transformed to integers) in the format "T_1 T_2 ... T_N-1 T_N".
 - nc is the number of culled walkers per iteration.
 - nw is the number of walkers.
+- s are the different comparison structures for rdfds and xrds (names must be defined in misc_calc_lib.py) in the format "struc_1 struc_2 ... struc_N-1 struc_N"
 
 The following variables set in the script may be intersting:
-
-**comparison_structures**
-
-These are the comparison structures whose rdfds (if on) and xrds get automatically calculated. They must be appropriately defined in create_at_accord_struc (see misc_calc_lib.py).
 
 **significant_part**
 
 The parameter "significant_part" controls how much of the sampled structures we actually consider. It follows the name
 "_signifpart_" in the filename. For example, if it was set to 0.25 we would only consider the 25% most likely structures.
-I have set it to 1 - 10^(-16). This ignores irrelevant structures and especially excludes high volume systems when we
+I have set it to 0.95. This ignores irrelevant structures and especially excludes high volume systems when we
 consider the solid phases. (To speed up the calculations one could go lower, but without further experimentation, no clear
 recommendations can be made.)
 
