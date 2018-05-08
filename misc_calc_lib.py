@@ -271,6 +271,25 @@ def rdfd_QUIP(QUIP_path, at, n_a, r_range):
    return [angle,rdfd_temp]
 
 
+def raw_filename_xyz_extxyz(filepath):
+
+
+   if filepath[len(filepath) - len(".extxyz") ::].find(".extxyz") == 0:
+      extens = ".extxyz"
+   elif filepath[len(filepath) - len(".xyz") ::].find(".xyz") == 0:
+      extens = ".xyz"
+   else:
+      print("ERROR: Filename neither '.extxyz' nor '.xyz' file! Aborting!")
+      quit()
+   
+   
+   if filepath.find("/") < 0:
+      reduced_filename = filepath
+   else:
+      reduced_filename = filepath[-filepath[::-1].find("/"):]
+   raw_reduced_filename = reduced_filename[:len(reduced_filename)-len(extens)]
+
+   return raw_reduced_filename
 
 """
 # Returns the x value (usually temperature) of the maximum y of a two column file over x_range = [x_start, x_end].
