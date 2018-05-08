@@ -234,26 +234,24 @@ able to read all the relevant python files.</p>
 <p>Finally, use <code class="docutils literal notranslate"><span class="pre">mean_var_correl</span></code> to calculated the weighted mean of each analysis at each temperature.</p>
 <p><strong>Automatic script using QUIP ``ns_process_traj`` and ``structure_analysis_traj``:</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">make_thermal_average_xrd_rdfd_lenhisto.py</span></code> is a script for calculating thermally averaged powder spectra (“(…)_xrd”), radial distribution functions (“(…)”_rdfd”), which are currently disabled (see below), and histograms of lattice vector lengths (“(…)_lattice_len_histo”).
-RDFDs and XRDs are calculated for reference structures and safed under <code class="docutils literal notranslate"><span class="pre">$STRUCTURE_NAME__V_mean_of_testing_traj.T_$T_xrd</span></code> and <code class="docutils literal notranslate"><span class="pre">$STRUCTURE_NAME__V_mean_of_testing_traj.T_$T_rdfd</span></code>.
+RDFDs and XRDs are calculated for reference structures and safed under <code class="docutils literal notranslate"><span class="pre">$STRUCTURE_NAME_V_mean_of_$TRAJ_signifpart_$SIGNIFICANT_PART.T_$T_xrd</span></code> and <code class="docutils literal notranslate"><span class="pre">$STRUCTURE_NAME_V_mean_of_$TRAJ_signifpart_$SIGNIFICANT_PART.T_$T_rdfd</span></code>.
 It calculates the weights on its own and can deal with single trajectory files as well as combined trajectory files.</p>
 <p>Before using, QUIP and quippy need to be installed and the variable QUIP_path in <code class="docutils literal notranslate"><span class="pre">make_thermal_average_xrd_rdfd_lenhisto.py</span></code> line 28 must be set to the QUIP build directory.</p>
 <p><strong>Important note:</strong> Only one script can be active in a single folder at a given time. Otherwise, temporary files will be overwritten and the results incorrect.</p>
 <p>The script is called via:</p>
-<p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">make_thermal_average_xrd_rdfd_lenhisto.py</span> <span class="pre">-fn</span> <span class="pre">traj.extxyz</span> <span class="pre">-Ts</span> <span class="pre">&quot;600</span> <span class="pre">800</span> <span class="pre">1000&quot;</span> <span class="pre">-nc</span> <span class="pre">8</span> <span class="pre">-nw</span> <span class="pre">1920</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">make_thermal_average_xrd_rdfd_lenhisto.py</span> <span class="pre">-fn</span> <span class="pre">traj.extxyz</span> <span class="pre">-Ts</span> <span class="pre">&quot;600</span> <span class="pre">800</span> <span class="pre">1000&quot;</span> <span class="pre">-nc</span> <span class="pre">8</span> <span class="pre">-nw</span> <span class="pre">1920</span> <span class="pre">-sn</span> <span class="pre">&quot;bcc</span> <span class="pre">fcp</span> <span class="pre">hcp&quot;</span> <span class="pre">-sc</span> <span class="pre">&quot;test_struc_1.xyz</span> <span class="pre">test_struc_2.xyz</span></code></p>
 <ul class="simple">
 <li>fn is the file name. traj.extxyz can be a combined or a single trajectory.</li>
 <li>Ts are the different temperatures (which are transformed to integers) in the format “T_1 T_2 … T_N-1 T_N”.</li>
 <li>nc is the number of culled walkers per iteration.</li>
 <li>nw is the number of walkers.</li>
-<li>s are the different comparison structures for rdfds and xrds (names must be defined in misc_calc_lib.py) in the format “struc_1 struc_2 … struc_N-1 struc_N”</li>
+<li>sn are the names of structures (defined in misc_calc_lib.py) for xrd spectrum identification in format ‘struc_name_1 struc_name_2 … struc_name_N-1 struc_name_N’. Only works for single species configurations.</li>
+<li>sc are the paths to the ‘.extxyz’/’.xyz’ files of reference structures in format ‘path_1 path_2 … path_N-1 path_N’.</li>
 </ul>
 <p>The following variables set in the script may be intersting:</p>
 <p><strong>significant_part</strong></p>
 <p>The parameter “significant_part” controls how much of the sampled structures we actually consider. It follows the name
-“_signifpart_” in the filename. For example, if it was set to 0.25 we would only consider the 25% most likely structures.
-I have set it to 0.95. This ignores irrelevant structures and especially excludes high volume systems when we
-consider the solid phases. (To speed up the calculations one could go lower, but without further experimentation, no clear
-recommendations can be made.)</p>
+“_signifpart_” in the filename. For example, if it was set to 0.25 we would only consider the ca 25% most likely structures. (Due to discrete weight steps, this number is not exact.) The default value of “significant_part” is 0.95. This ignores irrelevant structures and especially excludes high volume systems when we consider the solid phases. (To speed up the calculations one could go lower, but without further experimentation, no clear recommendations can be made with regards to this.)</p>
 <p><strong>do_rdfd</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">do_rdfd</span> <span class="pre">=</span> <span class="pre">False</span></code> controls whether radial density functions are calculated. RDFs in QUIP are not using periodic cells. This makes it very hard to compare different cells of the same structure. Hence, it is turned off. If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the script uses a 6x6x6 supercell for the comparison structures.</p>
 </div>
