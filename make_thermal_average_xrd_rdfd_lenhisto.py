@@ -36,51 +36,44 @@ if QUIP_path == "$QUIP_path":
 k_B = 8.6173303*10.0**(-5) # [eV/K] https://physics.nist.gov/ (accessed 2017/10/04 16:50)
 
 do_rdfd = False # RDFs in QUIP are not using periodic cells. This makes it very hard to compare different cells of the same structure. Hence, it is turned off!
-               # If set to "True" the script uses a 6x6x6 supercell for the comparison structures.
+               # If set to "True" the script uses a 6x6x6 supercell for the reference structures.
+
 
 
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-fn", "--filename", help="Name of '.extxyz'/'.xyz' file to analyse")
+parser.add_argument("-fn", "--filepath", help="Path to '.extxyz'/'.xyz' file to analyse")
 parser.add_argument("-Ts", "--T_array", help='array of T in format "T_1 T_2 ... T_N". Converts to integers at the moment.')
 parser.add_argument("-nc", "--n_cull", help="n_cull of nested sampling run")
 parser.add_argument("-nw", "--n_walkers", help="n_walkers of nested sampling run")
-parser.add_argument("-s", "--comp_strucs", help="Structures for xrd spectrum identification in format \"struc1 struc2 struc3\"")
+parser.add_argument("-sn", "--ref_struc_name_list", nargs='?', default="", help="Names of structures (defined in misc_calc_lib.py) for xrd spectrum identification in format 'struc_name_1 struc_name_2 ... struc_name_N-1 struc_name_N'. Only for single species configurations.")
+parser.add_argument("-sc", "--ref_struc_config_list", nargs='?', default="", help="Paths to '.extxyz'/'.xyz' files of reference structures in format 'path_1 path_2 ... path_N-1 path_N'.")
+
 
 args = parser.parse_args()
 
-filename = args.filename
+filepath = args.filepath
 T_range = []  # Temperatures to be weighted at
 for el in args.T_array.split():
    T_range.append(int(el))
-# These are the comparison structures whose rdfds (if on) and xrds get automatically calculated. They must be appropriately defined in create_at_accord_struc (see misc_calc_lib.py). 
+# These are the reference structures whose rdfds (if on) and xrds get automatically calculated. They must be appropriately defined in create_at_accord_struc (see misc_calc_lib.py). 
 # E.g. ["hcp_Hennig_MEAM", "omega_Hennig_MEAM", "bcc", "fcc"]
-comparison_structures = []
-for el in args.comp_strucs.split():
-   comparison_structures.append(el)
+ref_struc_name_list = []
+for el in args.ref_struc_name_list.split():
+   ref_struc_name_list.append(el)
+
+ref_struc_config_path_list = []
+for el in args.ref_struc_config_list.split():
+   ref_struc_config_path_list.append(el)
 
 n_cull = int(args.n_cull)
 n_walker = int(args.n_walkers)
 
-if filename[len(filename) - len(".extxyz") ::].find(".extxyz") == 0:
-   extens = ".extxyz"
-elif filename[len(filename) - len(".xyz") ::].find(".xyz") == 0:
-   extens = ".xyz"
-else:
-   print("ERROR: Filename neither '.extxyz' nor '.xyz' file! Aborting!")
-   quit()
+
+raw_reduced_filename = misc_calc_lib.raw_filename_xyz_extxyz(filepath)
 
 
-if filename.find("/") < 0:
-   reduced_filename = filename
-else:
-   reduced_filename = filename[-filename[::-1].find("/"):]
-raw_reduced_filename = reduced_filename[:len(reduced_filename)-len(extens)]
-
-
-
-
-print(reduced_filename)
+print(raw_reduced_filename)
 
 #quit()
 
@@ -102,16 +95,24 @@ n_two_theta = 361
 
 do_xrd = True
 
-#This defines the percentage (according to probabilities of each structure) which we define siginficant enough to calculate xrds on. We only calculate for 'siginficant_part' most likely structures.
+#This defines the percentage (according to probabilities of each structure) which we define siginficant enough to calculate xrds on. We only calculate the xrds for ca the 'siginficant_part' most likely structures.
 significant_part = 0.95#1 - 10.0**(-16)
 
 threshold = (1 - significant_part)/2.0
 
 
-inputs = quippy.AtomsReader(filename)
+inputs = quippy.AtomsReader(filepath)
 
-
+z_ref = inputs[0].get_atomic_numbers()[0] # reference z
+z = z_ref
 for at in inputs:
+
+# Test if only a single species. Abort if reference structures defined and multispecies trajectory given.
+   for z_test in at.get_atomic_numbers():
+      if z_ref != z_test and ref_struc_name_list != []:
+         print("ERROR! A list of reference structure names was given. Sadly, this is only possible for single species systems. Reference spectra will not be produced for these names. You can use the option --ref_struc_xyz instead and supply your own example structures. Aborting.")
+         quit()
+
    iter_nr.append(at.info["iter"])
    enthalpy.append(at.info["ns_energy"])
    box_volume.append(at.get_volume())
@@ -150,7 +151,7 @@ for i in range(0,len(iter_nr)):
       last_iters[0] = last_iters[1]
       last_iters[1] = iter_nr[i]
 
-   # special case for last recoreded iteration
+   # special case for last recorded iteration
    if (i == len(iter_nr) -1):
       for j in range(nr_last_iter_change,len(iter_nr)):
          if j==nr_last_iter_change:
@@ -167,8 +168,6 @@ rdf_matrix = []
 
 
 at = inputs[len(inputs)-1]
-z = at.get_atomic_numbers()[0]
-
 
 rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,at,n_a,r_range)
 
@@ -215,6 +214,8 @@ for T in T_range:
    part_fct_red = 0.0
 
    for i_at,at in enumerate(inputs):
+
+
       V_array.append(at.get_volume())
       a_b_c = at.get_cell_lengths_and_angles()[0:3]
       a_b_c.sort()
@@ -260,7 +261,7 @@ for T in T_range:
 
    rdf = rdf_matrix[0]*0.0
    xrd = xrd_matrix[0]*0.0
-   V = V_array[0]*0.0
+   V = 0.0
 
    print("len(weight) = " + str(len(weight)) + " len(rdf_matrix) = " + str(len(rdf_matrix)) + " len(xrd_matrix) = " + str(len(xrd_matrix)))
    cumulative_weights = 0
@@ -276,7 +277,7 @@ for T in T_range:
 
    rdf = rdf/part_fct_red
    xrd = xrd/part_fct_red
-   V = V/partion_fct
+   V = V/part_fct_red
 
 
    a_histo, bin_limits = np.histogram(a_lat_array[:-1],bins=n_a,range=(a_0,a_end),weights=weight)
@@ -290,19 +291,19 @@ for T in T_range:
    if do_rdfd:
 #      print("we got this far!")
    #   quit()
-      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".custom_T_" + str(T) +"_rdfd","w") as rdf_f:
+      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T) +"_rdfd","w") as rdf_f:
          for i in range(0,len(r)):
             rdf_f.write(str(r[i]) + "   " + str(rdf[i]) + "\n")
 
    if do_xrd:
-      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".custom_T_" + str(T) + "_xrd", "w") as xrd_f:
+      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T) + "_xrd", "w") as xrd_f:
          for i in range(0,len(angle)):
             xrd_f.write(str(angle[i]) + "   " +str(xrd[i]) + "\n") 
 
    print "partion_fct at " + str(T) + " K = " + str(partion_fct)
 
 
-   with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".custom_T_" + str(T) + "_lattice_len_histo", "w") as histo_f:
+   with open(raw_reduced_filename + ".T_" + str(T) + "_lattice_len_histo", "w") as histo_f:
       histo_f.write("#   len lat vec [Angstrom]   a      b     c      mean(a,b,c)\n")
       for i in range(0,len(a_histo)):
          d_a = (a_end - a_0)/n_a
@@ -310,27 +311,53 @@ for T in T_range:
          histo_f.write(str(bin_middle) + "   " + str(a_histo[i])  + "   " + str(b_histo[i]) + "   " + str(c_histo[i]) + "   " + str(lat_vec_mean_histo[i]) + "\n")
 
 
-   z = at.get_atomic_numbers()[0]
    V_aver_per_at = V/len(at)
 
-   for struc in comparison_structures:
+   at_name_average_list = [] # list of atom objects and their names
 
-      at_average = misc_calc_lib.create_at_accord_struc(V_aver_per_at ,z , struc)
-      comparison_struc_name_raw = struc + "_V_mean_of_" + raw_reduced_filename + ".T_" + str(T)
-      comparison_struc_name = comparison_struc_name_raw + ".xyz"
+   for struc in ref_struc_name_list:
+   
+      at_name_average_list.append([misc_calc_lib.create_at_accord_struc(V_aver_per_at ,z , struc), struc])
 
-      comparison_struc_name_rdfd = comparison_struc_name_raw + "_rdfd"
-      comparison_struc_name_xrd = comparison_struc_name_raw + "_xrd"
+   for path in ref_struc_config_path_list:
 
-      at_average.write(comparison_struc_name)
+      at_old = quippy.Atoms(path) # load in the reference structure
+
+      V_old_per_at = at_old.get_volume()/len(at_old)
+      f = V_aver_per_at/V_old_per_at # stretch/shrink factor for volume (need third root of this for each dimension)
+
+# Creating a new atoms object with the appropriate volume
+      at_new = quippy.Atoms(n=len(at_old))
+      at_new.set_cell(at_old.get_cell()*f**(1.0/3.0))
+      at_new.set_positions(at_old.get_positions()*f**(1.0/3.0))
+      at_new.set_atomic_numbers(at_old.get_atomic_numbers())
+
+      at_name_average_list.append([at_new, misc_calc_lib.raw_filename_xyz_extxyz(path)])
+
+   for el in at_name_average_list:
+
+      at_average = el[0]
+      struc = el[1]
+
+      reference_struc_name_raw = struc + "_V_mean_of_" + raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T)
+      reference_struc_name = reference_struc_name_raw + ".xyz"
+
+      reference_struc_name_rdfd = reference_struc_name_raw + "_rdfd"
+      reference_struc_name_xrd = reference_struc_name_raw + "_xrd"
+
+      at_average.write(reference_struc_name)
       rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,quippy.supercell(at_average,6,6,6),n_a,r_range)  # I'm using a supercell to get at least the positions right. 
       xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at_average,n_two_theta,two_theta_range)
       if do_rdfd:
-         with open(comparison_struc_name_rdfd, "w") as rdf_f:
+         with open(reference_struc_name_rdfd, "w") as rdf_f:
             for i,el in enumerate(rdfd_results[0]):
                rdf_f.write(str(rdfd_results[0][i]) + "   " + str(rdfd_results[1][i]) + "\n")
 
       if do_xrd:
-         with open(comparison_struc_name_xrd, "w") as xrd_f:
+         with open(reference_struc_name_xrd, "w") as xrd_f:
             for i,el in enumerate(xrd_results[0]):
                xrd_f.write(str(xrd_results[0][i]) + "   " + str(xrd_results[1][i]) + "\n")
+
+
+
+   print(str(part_fct_red/partion_fct))
