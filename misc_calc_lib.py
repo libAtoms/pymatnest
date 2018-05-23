@@ -128,7 +128,7 @@ def create_at_accord_struc(V ,z , struc):
    return at
 
 # Writes .cell as well as .param files based on templates
-def write_files(at, name_raw, template_name_cell):
+def write_cell_and_param(at, name_raw, template_name_cell):
 
    write_file_cell = name_raw + ".cell"
 
@@ -150,8 +150,8 @@ def write_cell(at, write_file_cell, template_name_cell):
             if line.find("%block positions_frac") >= 0:
                scale_pos = at.get_scaled_positions()
                print("Writing positions!")
-               for i in xrange(0,at.get_number_of_atoms()):
-                  write_lines.write("Ti " + " ".join(map(str, scale_pos[i,:])) + "\n")
+               for i in xrange(0,len(at)):
+                  write_lines.write(str(at.get_atomic_numbers()[i]) + " " + " ".join(map(str, scale_pos[i,:])) + "\n")
 
 def write_param(write_file_cell, template_name_cell):
 
