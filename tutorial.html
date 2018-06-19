@@ -163,7 +163,7 @@ units for <code class="docutils literal notranslate"><span class="pre">LAMMPS</s
 </div>
 <div class="section" id="starting-the-run">
 <h3>Starting the run<a class="headerlink" href="#starting-the-run" title="Permalink to this headline">¶</a></h3>
-<p>Now that the input file is ready, we can start the calculation.</p>
+<p>Now that the input file is ready, we can start the calculation by typing</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">ns_run</span> <span class="o">&lt;</span> <span class="n">ns_input_tutorial</span><span class="o">.</span><span class="n">inp</span> <span class="o">&gt;</span> <span class="n">ns_tutorial</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
 </div>
@@ -201,7 +201,7 @@ following command. (<code class="docutils literal notranslate"><span class="pre"
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">ns_analyse</span> <span class="n">MD_lammps_tutorial_100_a</span><span class="o">.</span><span class="n">energies</span> <span class="o">-</span><span class="n">M</span> <span class="mi">1</span> <span class="o">-</span><span class="n">n</span> <span class="mi">200</span> <span class="o">-</span><span class="n">D</span> <span class="mi">5</span>
 </pre></div>
 </div>
-<p>The fourth column is the heat capacity, and the result should look something like the curves below. The larger peak corresponds to
+<p>This will print the output onto the screen. The fourth column is the heat capacity, and the result should look something like the curves below. The graph shows the heat capacity curve for three independent samplings. The larger peak corresponds to
 the “condensation” of the six atoms. (Note that everything is in K, eV,… etc in the output, not in LJ units!)
 (You can start the sampling a few more times to have some parallel results - unless you explicitly set a seed for the random number generator
 all the runs will be independent and different. Do not forget to change the <code class="docutils literal notranslate"><span class="pre">out_file_prefix</span></code> keyword, so new runs do not overwrite previous ones.)</p>
@@ -214,8 +214,8 @@ all the runs will be independent and different. Do not forget to change the <cod
 <p>Though the above heat capacity curves show similar behaviour we should be able to improve convergence further.
 This can be done by increasing the number of walkers (“improving the resolution of the potential energy landscape”)
 and/or increasing the length of the trajectory when generating a new sample.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_model_calls_expected</span><span class="o">=</span><span class="mi">400</span>
-<span class="n">n_walkers</span><span class="o">=</span><span class="mi">300</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n_walkers</span><span class="o">=</span><span class="mi">300</span>
+<span class="n">n_model_calls_expected</span><span class="o">=</span><span class="mi">400</span>
 </pre></div>
 </div>
 <p>If you have larger runs than in the first example it is a good idea to print snapshot files more often, to help restart if a job is e.g. killed,

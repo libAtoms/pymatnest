@@ -94,7 +94,7 @@ units for ``LAMMPS``).
 Starting the run
 ----------------
 
-Now that the input file is ready, we can start the calculation.
+Now that the input file is ready, we can start the calculation by typing
 
 ::
 
@@ -147,7 +147,7 @@ following command. (``./ns_analyse --help`` prints all the possible options)
 
     ./ns_analyse MD_lammps_tutorial_100_a.energies -M 1 -n 200 -D 5
 
-The fourth column is the heat capacity, and the result should look something like the curves below. The larger peak corresponds to 
+This will print the output onto the screen. The fourth column is the heat capacity, and the result should look something like the curves below. The graph shows the heat capacity curve for three independent samplings. The larger peak corresponds to 
 the "condensation" of the six atoms. (Note that everything is in K, eV,... etc in the output, not in LJ units!)
 (You can start the sampling a few more times to have some parallel results - unless you explicitly set a seed for the random number generator
 all the runs will be independent and different. Do not forget to change the ``out_file_prefix`` keyword, so new runs do not overwrite previous ones.)
@@ -166,8 +166,8 @@ and/or increasing the length of the trajectory when generating a new sample.
 
 ::
 
-    n_model_calls_expected=400
     n_walkers=300
+    n_model_calls_expected=400
 
 If you have larger runs than in the first example it is a good idea to print snapshot files more often, to help restart if a job is e.g. killed,
 and we do not necessarily need all the configurations in the trajectory file (these can become huge files otherwise).
