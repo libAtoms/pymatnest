@@ -14,7 +14,7 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
     elif len(fields) == 5:
         (n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms) = fields
     else:
-        raise("unknown number of fields %d (not 3 or 5) in first line of energies file" % len(fields))
+        raise ValueError("unknown number of fields %d (not 3 or 5) in first line of energies file" % len(fields))
     n_walkers = int(n_walkers)
     n_cull = int(n_cull)
     n_Extra_DOF = int(n_Extra_DOF)
