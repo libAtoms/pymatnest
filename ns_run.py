@@ -1594,10 +1594,13 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
 
     return out
 
-def max_energy(walkers, n):
+def max_energy(walkers, n, kinetic_only=False):
     """Collect the current energies of the walkers from all the processes and chooses the right number of highest energies to be culled"""
     # do local max
-    energies_loc = np.array([ at.info['ns_energy'] for at in walkers])
+    if kinetic_only:
+        energies_loc = np.array([eval_energy_KE(at) for at in walkers])
+    else:
+        energies_loc = np.array([ at.info['ns_energy'] for at in walkers])
     volumes_loc = np.array([ at.get_volume() for at in walkers])
     if comm is not None:
         energies = np.zeros( (comm.size*len(energies_loc)) )
@@ -3712,6 +3715,14 @@ def main():
                 if 'GMC_direction' not in at.arrays:
                     at.arrays['GMC_direction'] = np.zeros( (len(at),3) )
 
+        # scale initial MC_atom_step_size by max_vol^(1/3)
+        max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
+        movement_args['MC_atom_step_size'] *= max_lc
+        movement_args['MC_atom_step_size_max'] *= max_lc
+        # scale MC_cell_shear_step_size by max_vol^1.0)
+        movement_args['MC_cell_shear_step_size'] *= max_lc
+        movement_args['MC_cell_shear_step_size_max'] *= max_lc
+
         if ns_analyzers is not None:
             for (ns_analyzer, ns_analyzer_interval) in ns_analyzers:
                 if ns_analyzer_interval < 0:
@@ -3719,7 +3730,7 @@ def main():
         # do initial walks if needed
         if ns_args['initial_walk_N_walks'] > 0 and ns_args['restart_file'] == '':
             if rank == 0:
-                print "doing initial_walk"
+                print "doing initial_walks", ns_args['initial_walk_N_walks'] 
                 t0 = time.time()
             (Emax, Vmax, cull_rank, cull_ind) = max_energy(walkers, 1)
             # WARNING: this assumes that all walkers have same numbers of atoms
@@ -3731,48 +3742,45 @@ def main():
 
             walk_stats_adjust={}
             zero_stats(walk_stats_adjust, movement_args)
-            for Nloop in range(ns_args['initial_walk_N_walks']):
+            for i_initial_walk in range(ns_args['initial_walk_N_walks']):
                 if rank == 0:
-                    print "initial walk iter ", Nloop, time.time()-t0
-                print_prefix="%d initial_walk %d" % (rank, Nloop)
+                    print "initial walk start iter ", i_initial_walk, "time", time.time()-t0
+                print_prefix="%d initial_walk %d" % (rank, i_initial_walk)
 
-                if Nloop > 0 and (Nloop-1) % ns_args['initial_walk_adjust_interval'] == 0: # first adjust is after first walk
+                if i_initial_walk > 0 and (i_initial_walk-1) % ns_args['initial_walk_adjust_interval'] == 0: # first adjust is after first walk
                     # could be done before first walk if full_auto_set_stepsize didn't need walk_stats
-                    full_auto_set_stepsizes(walkers, walk_stats_adjust, movement_args, comm, Emax, KEmax, size)
+                    full_auto_set_stepsizes(walkers, walk_stats_adjust, movement_args, comm, Emax, -1, size)
                     walk_stats_adjust={}
                     zero_stats(walk_stats_adjust, movement_args)
 
                 for (i_at, at) in enumerate(walkers):
-                    print_prefix="%d initial_walk %d at %d" % (rank, Nloop, i_at)
+                    print_prefix="%d initial_walk %d at %d" % (rank, i_initial_walk, i_at)
                     if ns_args['profile'] == rank:
                         import cProfile
                         pr = cProfile.Profile()
-                        walk_stats = pr.runcall(walk_single_walker, at=at, movement_args=movement_args, Emax=Emax, KEmax=KEmax)
+                        walk_stats = pr.runcall(walk_single_walker, at=at, movement_args=movement_args, Emax=Emax, KEmax=-1)
                         pr.dump_stats(ns_args['out_file_prefix']+'initial_walk.profile.stats')
                     else:
-                        walk_stats = walk_single_walker(at, movement_args, Emax, KEmax)
+                        walk_stats = walk_single_walker(at, movement_args, Emax, -1)
                     accumulate_stats(walk_stats_adjust, walk_stats)
 
                 if ns_analyzers is not None:
                     for (ns_analyzer, ns_analyzer_interval) in ns_analyzers:
-                        if ns_analyzer_interval < 0 and (ns_analyzer_interval == -1 or (Nloop+1)%(-ns_analyzer_interval) == 0):
-                            ns_analyzer.analyze(walkers, -1, "initial_walk %d" % Nloop)
+                        if ns_analyzer_interval < 0 and (ns_analyzer_interval == -1 or (i_initial_walk+1)%(-ns_analyzer_interval) == 0):
+                            ns_analyzer.analyze(walkers, -1, "initial_walk %d" % i_initial_walk)
+
+                if ns_args['snapshot_interval'] > 0 and (i_initial_walk+1) % ns_args['snapshot_interval'] == 0:
+                    save_snapshot(i_initial_walk-ns_args['initial_walk_N_walks'])
 
             # restore walk lengths for rest of NS run
             movement_args['n_model_calls'] = save_n_model_calls
+
+            (KEmax, _, _, _) = max_energy(walkers, 1, kinetic_only=True)
 
             if ns_args['initial_walk_only']:
                 if comm is not None:
                     MPI.Finalize()
                 sys.exit(0)
-
-        # scale MC_atom_step_size by max_vol^(1/3)
-        max_lc = (ns_args['max_volume_per_atom']*len(walkers[0]))**(1.0/3.0)
-        movement_args['MC_atom_step_size'] *= max_lc
-        movement_args['MC_atom_step_size_max'] *= max_lc
-        # scale MC_cell_shear_step_size by max_vol^1.0)
-        movement_args['MC_cell_shear_step_size'] *= max_lc
-        movement_args['MC_cell_shear_step_size_max'] *= max_lc
 
         n_atoms = len(walkers[0])
         # do NS
