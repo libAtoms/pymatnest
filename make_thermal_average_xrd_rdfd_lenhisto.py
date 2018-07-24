@@ -269,7 +269,7 @@ for T in T_range:
 
    rdf = rdf/part_fct_red
    xrd = xrd/part_fct_red
-   V = V/part_fct_red
+   V = V/partion_fct
 
 
    a_histo, bin_limits = np.histogram(a_lat_array[:-1],bins=n_a,range=(a_0,a_end),weights=weight)
