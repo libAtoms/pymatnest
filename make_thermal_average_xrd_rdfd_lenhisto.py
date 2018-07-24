@@ -25,7 +25,7 @@ import argparse
 
 # Path to the QUIP build. Needs to be adjusted on each system.
 # (In my case it's "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp")
-QUIP_path = "$QUIP_path"
+QUIP_path = "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp"#"$QUIP_path"
 
 if QUIP_path == "$QUIP_path":
    print("Error! QUIP_path needs to be set in make_thermal_average_xrd_rdfd_lenhisto.py. Aborting.")
@@ -110,8 +110,7 @@ for at in inputs:
 # Test if only a single species. Abort if reference structures defined and multispecies trajectory given.
    for z_test in at.get_atomic_numbers():
       if z_ref != z_test and ref_struc_name_list != []:
-         print("ERROR! A list of reference structure names was given. Sadly, this is only possible for single species systems. Reference spectra will not be produced for these names. You can use the option --ref_struc_xyz instead and supply your own example structures. Aborting.")
-         quit()
+         print("WARNING! A list of reference structure names was given, but this is not a single atomic species system. If you expect an ordered structure the result will be wrong. You can use the option --ref_struc_xyz instead and supply your own example structures. However, this option should yield the right positions for disordered crystal structures. (Not the right intensities, though.)")
 
    iter_nr.append(at.info["iter"])
    enthalpy.append(at.info["ns_energy"])
