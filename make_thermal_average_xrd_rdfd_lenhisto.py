@@ -25,6 +25,27 @@ import argparse
 
 # Path to the QUIP build. Needs to be adjusted on each system.
 # (In my case it's "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp")
+
+def calc_weights(beta, gamma_log, enthalpy):
+
+   weight = []
+   gamma_log_1_beta = []
+   gamma_log_2_beta = []
+
+   for i in range(0,len(iter_nr)-1):
+      gamma_log_1_beta.append(gamma_log[i] - beta * enthalpy[i])
+      gamma_log_2_beta.append(gamma_log[i+1] - beta * enthalpy[i])
+
+   shift = max(max(gamma_log_1_beta),max(gamma_log_2_beta))
+
+   for i in range(0,len(iter_nr)-1):
+      #print str(gamma[i+1])
+      weight.append( np.exp(gamma_log[i] - beta * enthalpy[i] - shift) - np.exp(gamma_log[i+1] - beta * enthalpy[i] - shift) )
+      #print weight
+
+   return weight
+
+
 QUIP_path = "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp"#"$QUIP_path"
 
 if QUIP_path == "$QUIP_path":
@@ -105,12 +126,14 @@ inputs = quippy.AtomsReader(filepath)
 
 z_ref = inputs[0].get_atomic_numbers()[0] # reference z
 z = z_ref
+
+pure = True
 for at in inputs:
 
 # Test if only a single species. Abort if reference structures defined and multispecies trajectory given.
    for z_test in at.get_atomic_numbers():
       if z_ref != z_test and ref_struc_name_list != []:
-         print("WARNING! A list of reference structure names was given, but this is not a single atomic species system. If you expect an ordered structure the result will be wrong. You can use the option --ref_struc_xyz instead and supply your own example structures. However, this option should yield the right positions for disordered crystal structures. (Not the right intensities, though.)")
+         pure = False
 
    iter_nr.append(at.info["iter"])
    enthalpy.append(at.info["ns_energy"])
@@ -175,47 +198,42 @@ xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at,n_two_theta,two_theta_range)
 angle = xrd_results[0]
 xrd_temp = xrd_results[1]
 
+r = rdfd_results[0]
+rdf_null = 0.0 * rdfd_results[1]
+xrd_null = 0.0 * xrd_temp
+
+
 
 # Making the thermal average
 for T in T_range:
    beta = 1/(k_B * T)
 
-   weight = []
-   gamma_log_1_beta = []
-   gamma_log_2_beta = []
-
-   for i in range(0,len(iter_nr)-1):
-      gamma_log_1_beta.append(gamma_log[i] - beta * enthalpy[i])
-      gamma_log_2_beta.append(gamma_log[i+1] - beta * enthalpy[i])
-
-   shift = max(max(gamma_log_1_beta),max(gamma_log_2_beta))
-
-   for i in range(0,len(iter_nr)-1):
-      #print str(gamma[i+1])
-      weight.append( np.exp(gamma_log[i] - beta * enthalpy[i] - shift) - np.exp(gamma_log[i+1] - beta * enthalpy[i] - shift) )
-      #print weight
+   weight = calc_weights(beta, gamma_log, enthalpy)
 
    partion_fct = sum(weight)
 
 
-   rdf_null = 0.0 * rdfd_results[1]
-   xrd_null = 0.0 * xrd_temp
-   V_array = []
    a_lat_array = []
    b_lat_array = []
    c_lat_array = []
 
-   xrd_matrix = []
-   rdf_matrix = []
 
    cumulative_weights = 0.0
 
    part_fct_red = 0.0
 
+   xrd_matrix = [xrd_null for i in range(0, len(weight))]
+   rdf_matrix = [rdf_null for i in range(0, len(weight))]                       
+   relevance_array = [False for i in range(0, len(weight))]
+
+   rdf = rdf_null*0.0
+   xrd = xrd_null*0.0
+   V = 0.0
+
+
    for i_at,at in enumerate(inputs):
 
 
-      V_array.append(at.get_volume())
       a_b_c = at.get_cell_lengths_and_angles()[0:3]
       a_b_c.sort()
       a_lat_array.append(a_b_c[0])
@@ -225,54 +243,29 @@ for T in T_range:
       if i_at < len(weight):
          cumulative_weights += weight[i_at]/partion_fct
 
+# Only take the relevant atoms to improve performance
+         if (cumulative_weights >= threshold) and (cumulative_weights <= 1 - threshold):
+   
+# We check whether this atom configuration has been considered reelvant before. If not, we calculate the spectra
+            if relevance_array[i_at] == False:
+               if do_rdfd == True:
+                  rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,at,n_a, r_range)
+                  rdf_matrix[i_at] = rdfd_results[1]
+               if do_xrd == True:
+                  xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at,n_two_theta,two_theta_range)
+                  xrd_matrix[i_at] = xrd_results[1]
 
-      if ((i_at < len(weight)) and (cumulative_weights >= threshold)) and (cumulative_weights <= 1 - threshold): #at.get_volume() < at.get_number_of_atoms()*50:
+               part_fct_red = part_fct_red + weight[i_at]
+# Noting that the spectrum has been calculated 
+               relevance_array[i_at] = True 
 
-#         print("cumu_weight = " + str(cumulative_weights))
+            rdf = rdf + rdf_matrix[i_at]*weight[i_at]
+            xrd = xrd + xrd_matrix[i_at]*weight[i_at]
 
-         if do_xrd == True:
-            rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,at,n_a, r_range)
-
-            xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at,n_two_theta,two_theta_range)
-#            angle = xrd_results[0]
-            xrd_temp = xrd_results[1]
-#      misc_calc_lib.submit_commands(["rm temp_atom.xrd.raw temp_atom.xrd temp_atom.xyz"])
-
-            xrd_matrix.append(xrd_temp)
-            rdf_matrix.append(rdfd_results[1])
-            part_fct_red = part_fct_red + weight[i_at] 
-            r = rdfd_results[0]
-
-#            print("xrd_temp is:")
-#            print(xrd_temp)
-
-#            print(xrd_matrix)
-#            quit()
-         else:
-            xrd_matrix.append(xrd_null)
-            rdf_matrix.append(rdf_null)
-      else:
-         xrd_matrix.append(xrd_null)
-         rdf_matrix.append(rdf_null)
-
-#   print(xrd_matrix)
-
-
-   rdf = rdf_matrix[0]*0.0
-   xrd = xrd_matrix[0]*0.0
-   V = 0.0
-
-   print("len(weight) = " + str(len(weight)) + " len(rdf_matrix) = " + str(len(rdf_matrix)) + " len(xrd_matrix) = " + str(len(xrd_matrix)))
-   cumulative_weights = 0
-   for i in range(0,len(xrd_matrix) - 1):
-#      cumulative_weights += weight[i]/partion_fct
-
-#      if (cumulative_weights >= threshold) and (cumulative_weights <= 1 - threshold):
-      print("iteration for calculating averages = " + str(i))
-      print("len(weight) = " + str(len(weight)) + " len(rdf_matrix) = " + str(len(rdf_matrix)) + " len(xrd_matrix) = " + str(len(xrd_matrix)))
-      rdf = rdf + rdf_matrix[i]*weight[i]
-      xrd = xrd + xrd_matrix[i]*weight[i]
-      V = V + V_array[i]*weight[i]
+# The volume is always calculated
+         V = V + at.get_volume()*weight[i_at] 
+   
+   
 
    rdf = rdf/part_fct_red
    xrd = xrd/part_fct_red
@@ -311,6 +304,7 @@ for T in T_range:
 
 
    V_aver_per_at = V/len(at)
+
 
    at_name_average_list = [] # list of atom objects and their names
 
@@ -360,3 +354,5 @@ for T in T_range:
 
 
    print(str(part_fct_red/partion_fct))
+   if pure == False:
+      print("WARNING! A list of reference structure names was given, but this is not a single atomic species system. If you expect an ordered structure the result will be wrong. You can use the option --ref_struc_xyz instead and supply your own example structures. However, this option should yield the right positions for disordered crystal structures. (Not the right intensities, though.)")
