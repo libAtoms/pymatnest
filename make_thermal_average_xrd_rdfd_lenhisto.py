@@ -143,16 +143,28 @@ threshold = (1 - significant_part)/2.0
 
 inputs = quippy.AtomsReader(filepath)
 
-z_ref = inputs[0].get_atomic_numbers()[0] # reference z
-z = z_ref
+z_first = inputs[0].get_atomic_numbers()[0] # used for figuring out whether material is pure or not
 
-pure = True
+# used for reference structures
+z_ref = 0
+if substitution_list != "":
+   for pair in substitution_list:
+      if z_ref < pair[1]:
+         z_ref = pair[1] 
+else:
+   z_ref = z_first
+
+
+
+pure = True # for testing whether we only have one species
 for at in inputs:
 
 # Test if only a single species. Abort if reference structures defined and multispecies trajectory given.
-   for z_test in at.get_atomic_numbers():
-      if z_ref != z_test and ref_struc_name_list != []:
-         pure = False
+   if pure == True:
+      for z_test in at.get_atomic_numbers():
+         if z_first != z_test:
+            pure = False
+            break
 
    iter_nr.append(at.info["iter"])
    enthalpy.append(at.info["ns_energy"])
@@ -330,7 +342,7 @@ for T in T_range:
 
    for struc in ref_struc_name_list:
    
-      at_name_average_list.append([misc_calc_lib.create_at_accord_struc(V_aver_per_at ,z , struc), struc])
+      at_name_average_list.append([misc_calc_lib.create_at_accord_struc(V_aver_per_at ,z_ref , struc), struc])
 
    for path in ref_struc_config_path_list:
 
