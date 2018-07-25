@@ -26,6 +26,15 @@ import argparse
 # Path to the QUIP build. Needs to be adjusted on each system.
 # (In my case it's "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp")
 
+
+def change_val(pair_list, val):                                                                                           
+   new_val = val                                                                         
+   for el in pair_list:                                                             
+      if val == el[0]:                                                                                                  
+         new_val = el[1]                                                                                               
+         break                                                                                     
+   return new_val
+
 def calc_weights(beta, gamma_log, enthalpy):
 
    weight = []
@@ -69,7 +78,8 @@ parser.add_argument("-nc", "--n_cull", help="n_cull of nested sampling run")
 parser.add_argument("-nw", "--n_walkers", help="n_walkers of nested sampling run")
 parser.add_argument("-sn", "--ref_struc_name_list", nargs='?', default="", help="Names of structures (defined in misc_calc_lib.py) for xrd spectrum identification in format 'struc_name_1 struc_name_2 ... struc_name_N-1 struc_name_N'. Only for single species configurations.")
 parser.add_argument("-sc", "--ref_struc_config_list", nargs='?', default="", help="Paths to '.extxyz'/'.xyz' files of reference structures in format 'path_1 path_2 ... path_N-1 path_N'.")
-
+parser.add_argument("-sub", "--substitution_list", nargs='?', default="", help="List for elements to be substituted in format \"1, 1; 1, 99; 3, 74\".")
+parser.add_argument("-id", "--identification", nargs='?', default="", help="Identifier in results. E.g. machine name.")
 
 args = parser.parse_args()
 
@@ -89,12 +99,21 @@ for el in args.ref_struc_config_list.split():
 
 n_cull = int(args.n_cull)
 n_walker = int(args.n_walkers)
-
+substitution_list = [map(int, el.split(",")) for el in args.substitution_list.split(";")]
+ident = args.identification
+if ident != "":
+   ident = "_" + ident
 
 raw_reduced_filename = misc_calc_lib.raw_filename_xyz_extxyz(filepath)
 
 
-print(raw_reduced_filename)
+substitution_string = "_species_subs"
+for pair in substitution_list:
+   substitution_string = substitution_string + "_" + str(pair[0]) + "_to_" + str(pair[1])
+
+raw_reduced_filename_w_subs = raw_reduced_filename + substitution_string + ident
+
+print(raw_reduced_filename_w_subs)
 
 #quit()
 
@@ -248,6 +267,7 @@ for T in T_range:
    
 # We check whether this atom configuration has been considered reelvant before. If not, we calculate the spectra
             if relevance_array[i_at] == False:
+               at.set_atomic_numbers([change_val(substitution_list, val) for val in at.get_atomic_numbers()])
                if do_rdfd == True:
                   rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,at,n_a, r_range)
                   rdf_matrix[i_at] = rdfd_results[1]
@@ -283,19 +303,19 @@ for T in T_range:
    if do_rdfd:
 #      print("we got this far!")
    #   quit()
-      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T) +"_rdfd","w") as rdf_f:
+      with open(raw_reduced_filename_w_subs + "_signifpart_" + str(significant_part) + ".T_" + str(T) +"_rdfd","w") as rdf_f:
          for i in range(0,len(r)):
             rdf_f.write(str(r[i]) + "   " + str(rdf[i]) + "\n")
 
    if do_xrd:
-      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T) + "_xrd", "w") as xrd_f:
+      with open(raw_reduced_filename_w_subs + "_signifpart_" + str(significant_part) + ".T_" + str(T) + "_xrd", "w") as xrd_f:
          for i in range(0,len(angle)):
             xrd_f.write(str(angle[i]) + "   " +str(xrd[i]) + "\n") 
 
    print "partion_fct at " + str(T) + " K = " + str(partion_fct)
 
 
-   with open(raw_reduced_filename + ".T_" + str(T) + "_lattice_len_histo", "w") as histo_f:
+   with open(raw_reduced_filename_w_subs + ".T_" + str(T) + "_lattice_len_histo", "w") as histo_f:
       histo_f.write("#   len lat vec [Angstrom]   a      b     c      mean(a,b,c)\n")
       for i in range(0,len(a_histo)):
          d_a = (a_end - a_0)/n_a
@@ -332,7 +352,7 @@ for T in T_range:
       at_average = el[0]
       struc = el[1]
 
-      reference_struc_name_raw = struc + "_V_mean_of_" + raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T)
+      reference_struc_name_raw = struc + "_V_mean_of_" + raw_reduced_filename_w_subs + "_signifpart_" + str(significant_part) + ".T_" + str(T)
       reference_struc_name = reference_struc_name_raw + ".xyz"
 
       reference_struc_name_rdfd = reference_struc_name_raw + "_rdfd"
