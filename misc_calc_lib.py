@@ -429,7 +429,7 @@ def plot_xrd(result_name_list, comp_name_list, x_index, y_index, n_per_average_b
    max_over_runs = get_data_results[1]
 
    if shift_bool == True:
-      shift = max_over_runs * 0.05
+      shift = max_over_runs * 0.1
    elif shift_bool == False:
       shift = 0.0
    else:
