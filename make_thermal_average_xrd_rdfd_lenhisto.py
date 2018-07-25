@@ -107,11 +107,11 @@ if ident != "":
 raw_reduced_filename = misc_calc_lib.raw_filename_xyz_extxyz(filepath)
 
 
-substitution_string = "_species_subs"
+subst_name_part = "_species_subs"
 for pair in substitution_list:
-   substitution_string = substitution_string + "_" + str(pair[0]) + "_to_" + str(pair[1])
+   subst_name_part = subst_name_part + "_" + str(pair[0]) + "_to_" + str(pair[1])
 
-raw_reduced_filename_w_subs = raw_reduced_filename + substitution_string + ident
+raw_reduced_filename_w_subs = raw_reduced_filename + subst_name_part + ident
 
 print(raw_reduced_filename_w_subs)
 
