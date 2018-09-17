@@ -49,7 +49,7 @@ and using MD trajectory for generating a new sample configuration.
 .. literalinclude:: ../example_inputs/inputs.test.periodic.MD.lammps
     :language: python
 
-Periodic binary Lennard-Jones system with the supplied fortran code or``LAMMPS``, using MD
+Periodic binary Lennard-Jones system with the supplied fortran code or ``LAMMPS``, using MD
 ---------------------------------------------------------------
 
 This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
@@ -64,8 +64,8 @@ Molecule with ``LAMMPS``, using MD
 
 Start a nested sampling simulation with a polymer in a cell with constant volume and shape. Initially the random placement of atoms has to be turned off, 
 and a configuration file has to be read. The initial walk is done with a heuristic choice for E_max.
-The ``atom_style full`` used in this example is part of the MOLECULE package, you have to include that when compling
-``LAMPS``.
+The ``atom_style full`` used in this example is part of the MOLECULE package, you have to include that when compiling
+``LAMMPS``.
 
 .. literalinclude:: ../example_inputs/inputs.test.cluster.MD.lammps.polymer
     :language: python
@@ -79,6 +79,8 @@ still use a single underscore.
 
 Some tips on setting the input parameters
 +++++++++++++++++++++++++++++++++++++++++
+
+.. _rwp_section_reference:
 
 Setting the random walk parameters                  
 ----------------------------------
