@@ -501,5 +501,21 @@ def ask_for_check():
          print("Error! Expecting 'yes' or 'no' but got '" + go_on + "'. Asking again!")
 
 
+#returns a list of postions of occurance of a string (word) in another string (orig_string)
+def return_pos_in_string(orig_string, word):
 
+   string_old = ""
+   string = orig_string
+   word_pos_list = []
+#  make a list of the positions of the word
+   while string.find(word) >= 0:
+      word_pos_list.append(string.find(word) + len(string_old))
+      string_old = string_old + string[:string.find(word) + len(word)]
+      string = string[string.find(word) + len(word):]
 
+   return word_pos_list
+
+#returns the last part of a path
+def last_part_path(path):
+
+   return path[return_pos_in_string(path, "/")[-1] + 1:]
