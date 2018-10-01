@@ -23,9 +23,6 @@ import argparse
 # Efficient sampling of atomic configurational spaces, The Journal of Physical Chemistry B 114 (32) (2010) 10502-10512.
 
 
-# Path to the QUIP build. Needs to be adjusted on each system.
-# (In my case it's "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp")
-
 
 def change_val(pair_list, val):                                                                                           
    new_val = val                                                                         
@@ -54,8 +51,10 @@ def calc_weights(beta, gamma_log, enthalpy):
 
    return weight
 
+# Path to the QUIP build. Needs to be adjusted on each system.
+# (In my case it's "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp")
 
-QUIP_path = "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp"#"$QUIP_path"
+QUIP_path = "$QUIP_path"
 
 if QUIP_path == "$QUIP_path":
    print("Error! QUIP_path needs to be set in make_thermal_average_xrd_rdfd_lenhisto.py. Aborting.")
