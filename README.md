@@ -18,6 +18,9 @@ Phys. Rev. B (2016), 93, 174108, http://journals.aps.org/prb/abstract/10.1103/Ph
 R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*,
 Phys. Rev. E (2017), 96, 043311, http://link.aps.org/doi/10.1103/PhysRevE.96.043311
 
+L.B. Partay *On the performance of interatomic potential models of iron: Comparison of the phase diagrams*,
+Comp. Mat. Sci. (2018), 149, 153, https://www.sciencedirect.com/science/article/pii/S0927025618301794
+
 ******
 
 System requirements
@@ -75,7 +78,7 @@ before compiling, and set ``LAMMPS_fix_gmc=T`` in the input file.
 
 ### Support for molecules
 
-Copy the eight bond, angle, dihedral and improper related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
+For using molecules use the latest version of LAMMPS. If you need, copy the improper related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
 before compiling.  See the file ``example_inputs/inputs.test.cluster.MD.lammps.polymer`` for an example.
 
 ### Mixed ``MPI-OpenMP``
