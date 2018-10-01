@@ -396,7 +396,7 @@ def make_name_list(name_raw, prefix, suffix, start_no, end_no):
    return name_list
 
 # plots C_P curves. If ask_for_check == True, it asks the user whether the C_P curve is acceptable
-def plot_C_P(result_name_list, x_index, y_index, T_mean, T_aim, ask_for_check_bool):
+def plot_C_P(result_name_list, labels, x_index, y_index, T_mean, T_aim, ask_for_check_bool):
 
 
    get_data_results = get_data_for_plot(result_name_list, y_index)
@@ -405,10 +405,14 @@ def plot_C_P(result_name_list, x_index, y_index, T_mean, T_aim, ask_for_check_bo
 
    max_over_runs = get_data_results[1]
 
+   if labels == []:
+      labels = result_name_list
+
    for result in result_array:
       plt.plot(result[x_index], result[y_index], '-')
    plt.plot((T_mean, T_mean), (0, 1.2 * max_over_runs), '-')
    plt.plot((T_aim, T_aim), (0, 1.2 * max_over_runs), '--')
+   plt.legend(labels)
    plt.show()
 
    if ask_for_check_bool:
@@ -416,7 +420,16 @@ def plot_C_P(result_name_list, x_index, y_index, T_mean, T_aim, ask_for_check_bo
 
 
 # plots the xrds of result_name_list and comp_name_list (the latter adjusted to fit on screen). It also asks the user whether the plots are okay and quits if the plots are deemed bad.
-def plot_xrd(result_name_list, comp_name_list, x_index, y_index, n_per_average_batch, ask_for_check_bool, shift_bool):
+def plot_xrd(result_name_list, comp_name_list, result_labels, comp_labels, x_index, y_index, n_per_average_batch, ask_for_check_bool, shift_bool):
+
+   if comp_labels == []:
+      comp_labels = comp_name_list
+   if result_labels == []:
+      result_labels = result_name_list
+
+   labels = result_labels + comp_labels
+      
+
 # Data for results
    get_data_results = get_data_for_plot(result_name_list, y_index)
 
@@ -459,6 +472,8 @@ def plot_xrd(result_name_list, comp_name_list, x_index, y_index, n_per_average_b
 #  Adding the plots of the comparison structures, each scaled so that its respective maximum is the same as the overall maximum of the runs. This enables better comparison as we care more about the peak position than absolute height.
    for i, comp in enumerate(comp_array):
       plt.plot(comp[x_index], comp[y_index]/max(comp[y_index]) * max_over_runs + shift * i, '--')
+
+   plt.legend(labels)
 
    plt.show()
 
