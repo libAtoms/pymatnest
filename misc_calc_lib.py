@@ -184,7 +184,7 @@ def submit_commands(command):
 
    for i in range(0,len(command)):
       print(command[i])
-      subprocess.call(command[i],shell=True)
+      subprocess.check_output(command[i],shell=True)
 
 
 def calc_aspec_ratio(at):
