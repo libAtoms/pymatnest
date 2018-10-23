@@ -23,8 +23,37 @@ import argparse
 # Efficient sampling of atomic configurational spaces, The Journal of Physical Chemistry B 114 (32) (2010) 10502-10512.
 
 
+
+def change_val(pair_list, val):                                                                                           
+   new_val = val                                                                         
+   for el in pair_list:                                                             
+      if val == el[0]:                                                                                                  
+         new_val = el[1]                                                                                               
+         break                                                                                     
+   return new_val
+
+def calc_weights(beta, gamma_log, enthalpy):
+
+   weight = []
+   gamma_log_1_beta = []
+   gamma_log_2_beta = []
+
+   for i in range(0,len(iter_nr)-1):
+      gamma_log_1_beta.append(gamma_log[i] - beta * enthalpy[i])
+      gamma_log_2_beta.append(gamma_log[i+1] - beta * enthalpy[i])
+
+   shift = max(max(gamma_log_1_beta),max(gamma_log_2_beta))
+
+   for i in range(0,len(iter_nr)-1):
+      #print str(gamma[i+1])
+      weight.append( np.exp(gamma_log[i] - beta * enthalpy[i] - shift) - np.exp(gamma_log[i+1] - beta * enthalpy[i] - shift) )
+      #print weight
+
+   return weight
+
 # Path to the QUIP build. Needs to be adjusted on each system.
 # (In my case it's "/home/lsc23/QUIP_git_with_GAP/build/linux_x86_64_gfortran_openmp")
+
 QUIP_path = "$QUIP_path"
 
 if QUIP_path == "$QUIP_path":
@@ -48,7 +77,8 @@ parser.add_argument("-nc", "--n_cull", help="n_cull of nested sampling run")
 parser.add_argument("-nw", "--n_walkers", help="n_walkers of nested sampling run")
 parser.add_argument("-sn", "--ref_struc_name_list", nargs='?', default="", help="Names of structures (defined in misc_calc_lib.py) for xrd spectrum identification in format 'struc_name_1 struc_name_2 ... struc_name_N-1 struc_name_N'. Only for single species configurations.")
 parser.add_argument("-sc", "--ref_struc_config_list", nargs='?', default="", help="Paths to '.extxyz'/'.xyz' files of reference structures in format 'path_1 path_2 ... path_N-1 path_N'.")
-
+parser.add_argument("-sub", "--substitution_list", nargs='?', default="", help="List for elements to be substituted in format \"1, 1; 1, 99; 3, 74\".")
+parser.add_argument("-id", "--identification", nargs='?', default="", help="Identifier in results. E.g. machine name.")
 
 args = parser.parse_args()
 
@@ -68,12 +98,21 @@ for el in args.ref_struc_config_list.split():
 
 n_cull = int(args.n_cull)
 n_walker = int(args.n_walkers)
-
+substitution_list = [map(int, el.split(",")) for el in args.substitution_list.split(";")]
+ident = args.identification
+if ident != "":
+   ident = "_" + ident
 
 raw_reduced_filename = misc_calc_lib.raw_filename_xyz_extxyz(filepath)
 
 
-print(raw_reduced_filename)
+subst_name_part = "_species_subs"
+for pair in substitution_list:
+   subst_name_part = subst_name_part + "_" + str(pair[0]) + "_to_" + str(pair[1])
+
+raw_reduced_filename_w_subs = raw_reduced_filename + subst_name_part + ident
+
+print(raw_reduced_filename_w_subs)
 
 #quit()
 
@@ -103,15 +142,28 @@ threshold = (1 - significant_part)/2.0
 
 inputs = quippy.AtomsReader(filepath)
 
-z_ref = inputs[0].get_atomic_numbers()[0] # reference z
-z = z_ref
+z_first = inputs[0].get_atomic_numbers()[0] # used for figuring out whether material is pure or not
+
+# used for reference structures
+z_ref = 0
+if substitution_list != "":
+   for pair in substitution_list:
+      if z_ref < pair[1]:
+         z_ref = pair[1] 
+else:
+   z_ref = z_first
+
+
+
+pure = True # for testing whether we only have one species
 for at in inputs:
 
 # Test if only a single species. Abort if reference structures defined and multispecies trajectory given.
-   for z_test in at.get_atomic_numbers():
-      if z_ref != z_test and ref_struc_name_list != []:
-         print("ERROR! A list of reference structure names was given. Sadly, this is only possible for single species systems. Reference spectra will not be produced for these names. You can use the option --ref_struc_xyz instead and supply your own example structures. Aborting.")
-         quit()
+   if pure == True:
+      for z_test in at.get_atomic_numbers():
+         if z_first != z_test:
+            pure = False
+            break
 
    iter_nr.append(at.info["iter"])
    enthalpy.append(at.info["ns_energy"])
@@ -176,47 +228,42 @@ xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at,n_two_theta,two_theta_range)
 angle = xrd_results[0]
 xrd_temp = xrd_results[1]
 
+r = rdfd_results[0]
+rdf_null = 0.0 * rdfd_results[1]
+xrd_null = 0.0 * xrd_temp
+
+
 
 # Making the thermal average
 for T in T_range:
    beta = 1/(k_B * T)
 
-   weight = []
-   gamma_log_1_beta = []
-   gamma_log_2_beta = []
-
-   for i in range(0,len(iter_nr)-1):
-      gamma_log_1_beta.append(gamma_log[i] - beta * enthalpy[i])
-      gamma_log_2_beta.append(gamma_log[i+1] - beta * enthalpy[i])
-
-   shift = max(max(gamma_log_1_beta),max(gamma_log_2_beta))
-
-   for i in range(0,len(iter_nr)-1):
-      #print str(gamma[i+1])
-      weight.append( np.exp(gamma_log[i] - beta * enthalpy[i] - shift) - np.exp(gamma_log[i+1] - beta * enthalpy[i] - shift) )
-      #print weight
+   weight = calc_weights(beta, gamma_log, enthalpy)
 
    partion_fct = sum(weight)
 
 
-   rdf_null = 0.0 * rdfd_results[1]
-   xrd_null = 0.0 * xrd_temp
-   V_array = []
    a_lat_array = []
    b_lat_array = []
    c_lat_array = []
 
-   xrd_matrix = []
-   rdf_matrix = []
 
    cumulative_weights = 0.0
 
    part_fct_red = 0.0
 
+   xrd_matrix = [xrd_null for i in range(0, len(weight))]
+   rdf_matrix = [rdf_null for i in range(0, len(weight))]                       
+   relevance_array = [False for i in range(0, len(weight))]
+
+   rdf = rdf_null*0.0
+   xrd = xrd_null*0.0
+   V = 0.0
+
+
    for i_at,at in enumerate(inputs):
 
 
-      V_array.append(at.get_volume())
       a_b_c = at.get_cell_lengths_and_angles()[0:3]
       a_b_c.sort()
       a_lat_array.append(a_b_c[0])
@@ -226,58 +273,34 @@ for T in T_range:
       if i_at < len(weight):
          cumulative_weights += weight[i_at]/partion_fct
 
+# Only take the relevant atoms to improve performance
+         if (cumulative_weights >= threshold) and (cumulative_weights <= 1 - threshold):
+   
+# We check whether this atom configuration has been considered reelvant before. If not, we calculate the spectra
+            if relevance_array[i_at] == False:
+               at.set_atomic_numbers([change_val(substitution_list, val) for val in at.get_atomic_numbers()])
+               if do_rdfd == True:
+                  rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,at,n_a, r_range)
+                  rdf_matrix[i_at] = rdfd_results[1]
+               if do_xrd == True:
+                  xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at,n_two_theta,two_theta_range)
+                  xrd_matrix[i_at] = xrd_results[1]
 
-      if ((i_at < len(weight)) and (cumulative_weights >= threshold)) and (cumulative_weights <= 1 - threshold): #at.get_volume() < at.get_number_of_atoms()*50:
+               part_fct_red = part_fct_red + weight[i_at]
+# Noting that the spectrum has been calculated 
+               relevance_array[i_at] = True 
 
-#         print("cumu_weight = " + str(cumulative_weights))
+            rdf = rdf + rdf_matrix[i_at]*weight[i_at]
+            xrd = xrd + xrd_matrix[i_at]*weight[i_at]
 
-         if do_xrd == True:
-            rdfd_results = misc_calc_lib.rdfd_QUIP(QUIP_path,at,n_a, r_range)
-
-            xrd_results = misc_calc_lib.xrd_QUIP(QUIP_path,at,n_two_theta,two_theta_range)
-#            angle = xrd_results[0]
-            xrd_temp = xrd_results[1]
-#      misc_calc_lib.submit_commands(["rm temp_atom.xrd.raw temp_atom.xrd temp_atom.xyz"])
-
-            xrd_matrix.append(xrd_temp)
-            rdf_matrix.append(rdfd_results[1])
-            part_fct_red = part_fct_red + weight[i_at] 
-            r = rdfd_results[0]
-
-#            print("xrd_temp is:")
-#            print(xrd_temp)
-
-#            print(xrd_matrix)
-#            quit()
-         else:
-            xrd_matrix.append(xrd_null)
-            rdf_matrix.append(rdf_null)
-      else:
-         xrd_matrix.append(xrd_null)
-         rdf_matrix.append(rdf_null)
-
-#   print(xrd_matrix)
-
-
-   rdf = rdf_matrix[0]*0.0
-   xrd = xrd_matrix[0]*0.0
-   V = 0.0
-
-   print("len(weight) = " + str(len(weight)) + " len(rdf_matrix) = " + str(len(rdf_matrix)) + " len(xrd_matrix) = " + str(len(xrd_matrix)))
-   cumulative_weights = 0
-   for i in range(0,len(xrd_matrix) - 1):
-#      cumulative_weights += weight[i]/partion_fct
-
-#      if (cumulative_weights >= threshold) and (cumulative_weights <= 1 - threshold):
-      print("iteration for calculating averages = " + str(i))
-      print("len(weight) = " + str(len(weight)) + " len(rdf_matrix) = " + str(len(rdf_matrix)) + " len(xrd_matrix) = " + str(len(xrd_matrix)))
-      rdf = rdf + rdf_matrix[i]*weight[i]
-      xrd = xrd + xrd_matrix[i]*weight[i]
-      V = V + V_array[i]*weight[i]
+# The volume is always calculated
+         V = V + at.get_volume()*weight[i_at] 
+   
+   
 
    rdf = rdf/part_fct_red
    xrd = xrd/part_fct_red
-   V = V/part_fct_red
+   V = V/partion_fct
 
 
    a_histo, bin_limits = np.histogram(a_lat_array[:-1],bins=n_a,range=(a_0,a_end),weights=weight)
@@ -291,19 +314,19 @@ for T in T_range:
    if do_rdfd:
 #      print("we got this far!")
    #   quit()
-      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T) +"_rdfd","w") as rdf_f:
+      with open(raw_reduced_filename_w_subs + "_signifpart_" + str(significant_part) + ".T_" + str(T) +"_rdfd","w") as rdf_f:
          for i in range(0,len(r)):
             rdf_f.write(str(r[i]) + "   " + str(rdf[i]) + "\n")
 
    if do_xrd:
-      with open(raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T) + "_xrd", "w") as xrd_f:
+      with open(raw_reduced_filename_w_subs + "_signifpart_" + str(significant_part) + ".T_" + str(T) + "_xrd", "w") as xrd_f:
          for i in range(0,len(angle)):
             xrd_f.write(str(angle[i]) + "   " +str(xrd[i]) + "\n") 
 
    print "partion_fct at " + str(T) + " K = " + str(partion_fct)
 
 
-   with open(raw_reduced_filename + ".T_" + str(T) + "_lattice_len_histo", "w") as histo_f:
+   with open(raw_reduced_filename_w_subs + ".T_" + str(T) + "_lattice_len_histo", "w") as histo_f:
       histo_f.write("#   len lat vec [Angstrom]   a      b     c      mean(a,b,c)\n")
       for i in range(0,len(a_histo)):
          d_a = (a_end - a_0)/n_a
@@ -313,11 +336,12 @@ for T in T_range:
 
    V_aver_per_at = V/len(at)
 
+
    at_name_average_list = [] # list of atom objects and their names
 
    for struc in ref_struc_name_list:
    
-      at_name_average_list.append([misc_calc_lib.create_at_accord_struc(V_aver_per_at ,z , struc), struc])
+      at_name_average_list.append([misc_calc_lib.create_at_accord_struc(V_aver_per_at ,z_ref , struc), struc])
 
    for path in ref_struc_config_path_list:
 
@@ -339,7 +363,7 @@ for T in T_range:
       at_average = el[0]
       struc = el[1]
 
-      reference_struc_name_raw = struc + "_V_mean_of_" + raw_reduced_filename + "_signifpart_" + str(significant_part) + ".T_" + str(T)
+      reference_struc_name_raw = struc + "_V_mean_of_" + raw_reduced_filename_w_subs + "_signifpart_" + str(significant_part) + ".T_" + str(T)
       reference_struc_name = reference_struc_name_raw + ".xyz"
 
       reference_struc_name_rdfd = reference_struc_name_raw + "_rdfd"
@@ -361,3 +385,5 @@ for T in T_range:
 
 
    print(str(part_fct_red/partion_fct))
+   if pure == False:
+      print("WARNING! A list of reference structure names was given, but this is not a single atomic species system. If you expect an ordered structure the result will be wrong. You can use the option --ref_struc_xyz instead and supply your own example structures. However, this option should yield the right positions for disordered crystal structures. (Not the right intensities, though.)")
