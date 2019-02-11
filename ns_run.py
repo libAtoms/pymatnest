@@ -3788,6 +3788,26 @@ def main():
             else:
                 track_traj_io = None
         else: # restart, so the existing file should be appended
+            # concatenate existing traj file to before restart
+            print rank, "truncating traj file to start_first_iter", start_first_iter
+            with open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']),"r+") as f:
+                prev_pos = None
+                # loop this way with "while True" and "f.readline()" because directly looping over f does not 
+                # set position reported by f.tell() to end of line
+                while True:
+                    l = f.readline()
+                    if not l:
+                        break
+                    m = re.search(r"\biter=(\d+)\b", l)
+                    if m is not None:
+                        iter = int(m.group(1))
+                        if iter >= start_first_iter:
+                            # rewind back to two lines back, before start of this config
+                            f.seek(prev_prev_pos)
+                            f.truncate()
+                            break
+                    prev_prev_pos = prev_pos
+                    prev_pos = f.tell()
             traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
             if ns_args['track_configs'] and ns_args['track_configs_write']:
                 track_traj_io = open(ns_args['out_file_prefix']+'track_traj.%d.%s' % (rank, ns_args['config_file_format']), "a")
