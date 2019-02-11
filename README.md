@@ -18,6 +18,9 @@ Phys. Rev. B (2016), 93, 174108, http://journals.aps.org/prb/abstract/10.1103/Ph
 R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*,
 Phys. Rev. E (2017), 96, 043311, http://link.aps.org/doi/10.1103/PhysRevE.96.043311
 
+L.B. Partay *On the performance of interatomic potential models of iron: Comparison of the phase diagrams*,
+Comp. Mat. Sci. (2018), 149, 153, https://www.sciencedirect.com/science/article/pii/S0927025618301794
+
 ******
 
 System requirements
@@ -73,9 +76,9 @@ flag, which allows lammps crashes to be handled gracefully within python.  Add i
 Copy the two GMC-related files ``ns_run_dir/lammps_patches/fix_gmc.*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
 before compiling, and set ``LAMMPS_fix_gmc=T`` in the input file.
 
-### Support for polymers
+### Support for molecules
 
-Copy the four bond and angle related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
+For using molecules use the latest version of LAMMPS. If you need, copy the improper related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
 before compiling.  See the file ``example_inputs/inputs.test.cluster.MD.lammps.polymer`` for an example.
 
 ### Mixed ``MPI-OpenMP``
@@ -193,6 +196,8 @@ For further help see also
 Temperature averaged analysis workflow
 -------------------------------------------------------------------------------
 
+This assumes that QUIP is installed (``structure_analysis_traj`` and ``mean_var_correl`` are part of QUIP).
+
 Merge configurations using
    ``ns_process_traj -t``
 
@@ -201,6 +206,38 @@ Do analysis on output of ``ns_process_traj`` using ``structure_analysis_traj``.
 Add T-dependent weights to analyses using ``ns_set_analysis_weights``.  This will write new analysis files, one per temperature per analysis, with do_weights set in the header and each data line prepended by the weight.
 
 Finally, use ``mean_var_correl`` to calculated the weighted mean of each analysis at each temperature.
+
+**Automatic script using QUIP ``ns_process_traj`` and ``structure_analysis_traj``:**
+
+``make_thermal_average_xrd_rdfd_lenhisto.py`` is a script for calculating thermally averaged powder spectra ("(...)_xrd"), radial distribution functions ("(...)"_rdfd"), which are currently disabled (see below), and histograms of lattice vector lengths ("(...)_lattice_len_histo").
+RDFDs and XRDs are calculated for reference structures and safed under ``$STRUCTURE_NAME_V_mean_of_$TRAJ_signifpart_$SIGNIFICANT_PART.T_$T_xrd`` and ``$STRUCTURE_NAME_V_mean_of_$TRAJ_signifpart_$SIGNIFICANT_PART.T_$T_rdfd``.
+It calculates the weights on its own and can deal with single trajectory files as well as combined trajectory files.
+
+Before using, QUIP and quippy need to be installed and the variable QUIP_path in ``make_thermal_average_xrd_rdfd_lenhisto.py`` line 28 must be set to the QUIP build directory.
+
+**Important note:** Only one script can be active in a single folder at a given time. Otherwise, temporary files will be overwritten and the results incorrect.
+
+The script is called via:
+
+``python make_thermal_average_xrd_rdfd_lenhisto.py -fn traj.extxyz -Ts "600 800 1000" -nc 8 -nw 1920 -sn "bcc fcp hcp" -sc "test_struc_1.xyz test_struc_2.xyz``
+
+- fn is the file name. traj.extxyz can be a combined or a single trajectory.
+- Ts are the different temperatures (which are transformed to integers) in the format "T_1 T_2 ... T_N-1 T_N".
+- nc is the number of culled walkers per iteration.
+- nw is the number of walkers.
+- sn are the names of structures (defined in misc_calc_lib.py) for xrd spectrum identification in format 'struc_name_1 struc_name_2 ... struc_name_N-1 struc_name_N'. Only works for single species configurations.
+- sc are the paths to the '.extxyz'/'.xyz' files of reference structures in format 'path_1 path_2 ... path_N-1 path_N'.
+The following variables set in the script may be intersting:
+
+**significant_part**
+
+The parameter "significant_part" controls how much of the sampled structures we actually consider. It follows the name
+"_signifpart_" in the filename. For example, if it was set to 0.25 we would only consider the ca 25% most likely structures. (Due to discrete weight steps, this number is not exact.) The default value of "significant_part" is 0.95. This ignores irrelevant structures and especially excludes high volume systems when we consider the solid phases. (To speed up the calculations one could go lower, but without further experimentation, no clear recommendations can be made with regards to this.)
+
+**do_rdfd**
+
+``do_rdfd = False`` controls whether radial density functions are calculated. RDFs in QUIP are not using periodic cells. This makes it very hard to compare different cells of the same structure. Hence, it is turned off. If set to ``True``, the script uses a 6x6x6 supercell for the comparison structures.
+
 
 About the documentation
 ------------------------------------------------------------------------------
