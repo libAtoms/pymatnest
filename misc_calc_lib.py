@@ -519,3 +519,23 @@ def return_pos_in_string(orig_string, word):
 def last_part_path(path):
 
    return path[return_pos_in_string(path, "/")[-1] + 1:]
+
+
+
+def extract_info(filename,file_to_print,start_line,end_line):
+
+   started = False
+
+   print("start_line: " + start_line)
+   with open(filename, "r") as flines:
+      with open(file_to_print, "w") as writeflines:
+         for line in flines:
+            if line.find(end_line)>=0:
+               print("Found end line: " + line + " Finished extracting data.")
+               break
+            if started:
+               writeflines.write(line)
+            if line.find(start_line)>=0:
+               print("Found starting line: " + line + " Starting extracting data.")
+               started = True
+
