@@ -1,3 +1,6 @@
+# Some miscellaneous functions.
+# The function calc_aspec_ratio(at) contains a partial re-implementation of Noam Bernstein's min_aspect_ratio(vol, cell) found in ns_run.py of pymatnest.
+
 #These creations are in part different from the ones used for the MEAM quasiharmonic calculations.
 import subprocess
 import numpy as np
@@ -186,7 +189,7 @@ def submit_commands(command):
       print(command[i])
       subprocess.check_output(command[i],shell=True)
 
-
+# The function calc_aspec_ratio(at) contains a partial re-implementation of Noam Bernsteins's min_aspect_ratio(vol, cell) found in ns_run.py of pymatnest.
 def calc_aspec_ratio(at):
 
    cell = at.get_cell()
