@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import ase.io
 import sys
 import numpy as np
@@ -19,9 +21,9 @@ f_MC_MD.init_model(params)
 
 f0 = np.zeros((len(at),3))
 e0 = f_MC_MD.eval_forces(at, f0)
-print "e0 ", e0
-print "f0 ", f0
-print ""
+print("e0 ", e0)
+print("f0 ", f0)
+print("")
 pos_0 = at.get_positions()
 for i_at in range(len(at)):
     for i_cart in range(3):
@@ -37,5 +39,5 @@ for i_at in range(len(at)):
             pos_pert[i_at, i_cart] = pos_0[i_at, i_cart] - dx
             at.set_positions(pos_pert)
             em = f_MC_MD.eval_energy(at)
-            print i_at, i_cart, dx, (ep-em)/(2.0*dx), f0[i_at,i_cart], (ep-em)/(2.0*dx)+ f0[i_at,i_cart]
-        print ""
+            print(i_at, i_cart, dx, (ep-em)/(2.0*dx), f0[i_at,i_cart], (ep-em)/(2.0*dx)+ f0[i_at,i_cart])
+        print("")

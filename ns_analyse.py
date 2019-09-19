@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 import numpy as np, fileinput, itertools, sys
 
 def read_inputs(args, line_skip=0, line_end=None, interval=1):

@@ -21,13 +21,11 @@ class RngStream():
 
         #uniform [0,1]
         self.lib.RngStream_RandU01.restype = c_double
-        # print RngStream.RngStream_RandU01(g)
 
         #RandInt [20,30]
         self.lib.RngStream_RandInt.restype = c_int
         # i = c_int(20)
         # j = c_int(30)
-        # print RngStream.RngStream_RandInt(g, i, j)
 
         self.lib.RngStream_SetPackageSeed.restype = c_int
         # seed = c_ulong * 6
