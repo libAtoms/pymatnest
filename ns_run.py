@@ -3810,7 +3810,7 @@ def main():
                 track_traj_io = None
         else: # restart, so the existing file should be appended
             # concatenate existing traj file to before restart
-            print rank, "truncating traj file to start_first_iter", start_first_iter
+            print(rank, "truncating traj file to start_first_iter", start_first_iter)
             with open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']),"r+") as f:
                 prev_pos = None
                 # loop this way with "while True" and "f.readline()" because directly looping over f does not 
