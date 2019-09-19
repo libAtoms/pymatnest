@@ -1,5 +1,7 @@
 """ASE LAMMPS Calculator Library Version"""
 
+from __future__ import print_function
+
 import os
 import ctypes
 import operator
@@ -40,7 +42,7 @@ def convert_cell(ase_cell):
     to lower triangular matrix LAMMPS can accept. This
     function transposes cell matrix so the bases are column vectors
     """
-    cell = np.matrix.transpose(ase_cell)
+    cell = np.matrix.transpose(ase_cell[:,:])
 
     if not is_upper_triangular(cell) or cell[0,0] < 0.0 or cell[1,1] < 0.0 or cell[2,2] < 0.0:
         # rotate bases into triangular matrix
@@ -639,16 +641,8 @@ End LAMMPSlib Interface Documentation
         if self.parameters.atom_types  is None:
            raise NameError("atom_types are mandatory.")
 
-        if isinstance(self.parameters.atom_types,basestring):
-           if self.parameters.atom_types == "TYPE_EQUALS_Z":
-              self.parameters.atom_types_equal_atomic_numbers = True
-              self.parameters.atom_types = {}
-              for Z in atoms.get_atomic_numbers():
-                 self.parameters.atom_types[Z] = Z
-           else:
-              raise ValueError('atom_types parameter "%s" is string, but not TYPE_EQUALS_Z' % self.parameters.atom_types)
-        else:
-           # assume atom_types is a dictionary with symbols (or numbers) as keys
+        if isinstance(self.parameters.atom_types,dict):
+           # atom_types is a dictionary with symbols (or numbers) as keys
            self.parameters.atom_types_equal_atomic_numbers = False
            symbol_atom_types = self.parameters.atom_types.copy()
            self.parameters.atom_types = {}
@@ -658,6 +652,14 @@ End LAMMPSlib Interface Documentation
               except:
                  num = symbols2numbers(sym)[0]
               self.parameters.atom_types[num] = symbol_atom_types[sym]
+        else: # not a dict, must be the string TYPE_EQUALS_Z
+           if self.parameters.atom_types == "TYPE_EQUALS_Z":
+              self.parameters.atom_types_equal_atomic_numbers = True
+              self.parameters.atom_types = {}
+              for Z in atoms.get_atomic_numbers():
+                 self.parameters.atom_types[Z] = Z
+           else:
+              raise ValueError('atom_types parameter "%s" is string, but not TYPE_EQUALS_Z' % self.parameters.atom_types)
 
         # Collect chemical symbols
         symbols = np.asarray(atoms.get_chemical_symbols())
@@ -770,8 +772,6 @@ End LAMMPSlib Interface Documentation
 
         self.initialized = True
 
-#print('done loading lammpslib')
-
 def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
                       molecule_ids=None, charges=None, units='metal',
                       bond_types=None, angle_types=None, dihedral_types=None,
@@ -792,22 +792,22 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
     if bond_types:
         from matscipy.neighbours import neighbour_list
         i_list, j_list = neighbour_list('ij', atoms, cutoff)
-        print 'Bonds:'
+        print('Bonds:')
         bonds = []
         for bond_type, (Z1, Z2) in enumerate(bond_types):
             bond_mask = (atoms.numbers[i_list] == Z1) & (atoms.numbers[j_list] == Z2)
-            print (Z1, Z2), bond_mask.sum()
+            print((Z1, Z2), bond_mask.sum())
             for (I, J) in zip(i_list[bond_mask], j_list[bond_mask]):
                 #NB: LAMMPS uses 1-based indices for bond types and particle indices
                 bond = (bond_type+1, I+1, J+1)
                 bonds.append(bond)
-        print
+        print('')
         if len(bonds) > 0:
             fh.write('{0} bonds\n'.format(len(bonds)))
             fh.write('{0} bond types\n'.format(len(bond_types)))
 
     if angle_types:
-        print 'Angles:'
+        print('Angles:')
         angle_count = { angle : 0 for angle in angle_types }
         angles = []
         for I in range(len(atoms)):
@@ -821,14 +821,14 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
                         angle_count[(Zj, Zi, Zk)] += 1
                         angles.append(angle)
         for angle in angle_types:
-            print angle, angle_count[angle]
-        print
+            print(angle, angle_count[angle])
+        print('')
         if len(angles) > 0:
             fh.write('{0} angles\n'.format(len(angles)))
             fh.write('{0} angle types\n'.format(len(angle_types)))
 
     if dihedral_types:
-        print 'Dihedrals:'
+        print('Dihedrals:')
         dihedral_count = { dihedral : 0 for dihedral in dihedral_types }
         dihedrals = []
         for I in range(len(atoms)):
@@ -842,14 +842,14 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
                             dihedral_count[(Zi, Zj, Zk, Zl)] += 1
                             dihedrals.append(dihedral)
         for dihedral in dihedral_types:
-            print dihedral, dihedral_count[dihedral]
-        print
+            print(dihedral, dihedral_count[dihedral])
+        print('')
         if len(dihedrals) > 0:
             fh.write('{0} dihedrals\n'.format(len(dihedrals)))
             fh.write('{0} dihedral types\n'.format(len(dihedral_types)))
 
     if improper_types:
-        print 'Impropers:'
+        print('Impropers:')
         improper_count = { improper : 0 for improper in improper_types }
         impropers = []
         for I in range(len(atoms)):
@@ -863,8 +863,8 @@ def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
                             improper_count[(Zi, Zj, Zk, Zl)] += 1
                             impropers.append(improper)
         for improper in improper_types:
-            print improper, improper_count[improper]
-        print
+            print(improper, improper_count[improper])
+        print('')
         if len(impropers) > 0:
             fh.write('{0} impropers\n'.format(len(impropers)))
             fh.write('{0} improper types\n'.format(len(improper_types)))
