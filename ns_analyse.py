@@ -33,12 +33,20 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
     lines = itertools.islice(inputs, line_skip, line_end, interval)
     for line in lines:
         fields = line.split()
-        try:
-            (n_iter, E, V) = fields[0:3]
-            Vs.append(float(V))
-        except:
-            (n_iter, E) = fields[0:2]
-        Es.append(float(E))
+        if len(fields) == 3:
+            try:
+                Es.append(float(fields[1]))
+                Vs.append(float(fields[2]))
+            except:
+                continue
+        elif len(fields) == 2:
+            try:
+                Es.append(float(fields[1]))
+            except:
+                continue
+        else: # silently skip lines with problems
+            sys.stderr.write("WARNING: input line with problem: number of fields not 2 or 3, or not floats\n")
+            continue
 
     if len(Vs) == 0:
         Vs = None
