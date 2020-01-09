@@ -1,16 +1,14 @@
 
 The ``pymatnest`` package is a software library for carrying out nested sampling calculations. 
-It can be used to explore the energy landscape of different materials, calculate thermodynamic variables at
-arbitrary temperatures, locate phase transitions and calculate the phase diagram. It can be used with LAMMPS,
-QUIP, and the supplied fortran model, and both with MC and MD.
+It can be used to explore the energy landscape of different materials (both clusters and bulk materials), 
+calculate thermodynamic variables at arbitrary temperatures, locate phase transitions and calculate the 
+phase diagram. It can be used with LAMMPS, QUIP, and the supplied fortran models, and both with MC and MD.
 
-Publications:
+If you use pymatnest, please cite the following publications: 
+(references are available in bibtex format in the ``NS_publications.bib`` file)
 
 L.B. Partay, A.P. Bartok, G. Csanyi, *Efficient Sampling of Atomic Configurational Spaces*, 
 J. Phys. Chem. B (2010), 114, 10502–10512, http://pubs.acs.org/doi/abs/10.1021/jp1012973
-
-L.B. Partay, A.P. Bartok, G. Csanyi, *Nested sampling for materials: The case of hard spheres*, 
-Phys. Rev. E (2014), 89, 022302, http://journals.aps.org/pre/abstract/10.1103/PhysRevE.89.022302
 
 R.J.N. Baldock, L.B. Partay, A.P. Bartok, M.C. Payne, G. Csanyi, *Determining pressure-temperature phase diagrams of materials*,
 Phys. Rev. B (2016), 93, 174108, http://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108 
@@ -18,8 +16,13 @@ Phys. Rev. B (2016), 93, 174108, http://journals.aps.org/prb/abstract/10.1103/Ph
 R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*,
 Phys. Rev. E (2017), 96, 043311, http://link.aps.org/doi/10.1103/PhysRevE.96.043311
 
+Further publications using the pymatnest package:
+
 L.B. Partay *On the performance of interatomic potential models of iron: Comparison of the phase diagrams*,
 Comp. Mat. Sci. (2018), 149, 153, https://www.sciencedirect.com/science/article/pii/S0927025618301794
+
+J. Dorrell, L.B. Partay *Thermodynamics and the potential energy landscape: case study of small water clusters*,
+Phys. Chem. Chem. Phys. (2019), 21, 7305 https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b
 
 ******
 
@@ -146,6 +149,10 @@ Running
 To start a nested sampling run type
 
    ``ns_run < input``
+
+When running, it is strongly recommendded you set the ``OMP_NUM_THREADS=1`` environment variable (e.g. in your jobscript) to avoid
+multiple ``OpenMP`` threads starting which can seriosly slow down the calculations (unless you have compiled ``LAMMPS`` to be used
+with mixed ``MPI-OpenMP``). 
 
 Example input files can be found in the folder ``./example_inputs``.
 

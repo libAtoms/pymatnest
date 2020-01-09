@@ -13,8 +13,8 @@ nested sampling calculations.
 Long term support of the package is ensured by:
  - Noam Bernstein (Naval Research Laboratory)
  - Gabor Csanyi (University of Cambridge)
- - Rob Baldock  (University of Cambridge)
- - Livia Bartok-Partay (University of Reading)
+ - Rob Baldock  (EPFL)
+ - Livia Bartok-Partay (University of Warwick)
  
 Copyright 2015-2016.
 

@@ -34,7 +34,7 @@ configuration spaces.
 Publications
 -------------------------------------
 .. include:: ../README.md
-   :start-after: Publications:
+   :start-after: (references are available in bibtex format in the ``NS_publications.bib`` file)
    :end-before: ******
 
 Algorithm
