@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import misc_calc_lib
 import quippy
 import numpy as np
@@ -45,9 +47,7 @@ def calc_weights(beta, gamma_log, enthalpy):
    shift = max(max(gamma_log_1_beta),max(gamma_log_2_beta))
 
    for i in range(0,len(iter_nr)-1):
-      #print str(gamma[i+1])
       weight.append( np.exp(gamma_log[i] - beta * enthalpy[i] - shift) - np.exp(gamma_log[i+1] - beta * enthalpy[i] - shift) )
-      #print weight
 
    return weight
 
@@ -179,7 +179,6 @@ for i in range(0,n_cull):
    volume_one_iter = volume_one_iter * (n_walker - i) / (n_walker + 1 - i)
 
 volume_one_iter_log = np.log(volume_one_iter)
-#print "volume_one_iter = " + str(volume_one_iter)
 
 # we assume that we start counting at iteration 0
 nr_last_iter_change = 0
@@ -312,8 +311,6 @@ for T in T_range:
    print(bin_limits)
 
    if do_rdfd:
-#      print("we got this far!")
-   #   quit()
       with open(raw_reduced_filename_w_subs + "_signifpart_" + str(significant_part) + ".T_" + str(T) +"_rdfd","w") as rdf_f:
          for i in range(0,len(r)):
             rdf_f.write(str(r[i]) + "   " + str(rdf[i]) + "\n")
@@ -323,7 +320,7 @@ for T in T_range:
          for i in range(0,len(angle)):
             xrd_f.write(str(angle[i]) + "   " +str(xrd[i]) + "\n") 
 
-   print "partion_fct at " + str(T) + " K = " + str(partion_fct)
+   print("partion_fct at " + str(T) + " K = " + str(partion_fct))
 
 
    with open(raw_reduced_filename_w_subs + ".T_" + str(T) + "_lattice_len_histo", "w") as histo_f:

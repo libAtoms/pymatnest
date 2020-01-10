@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import sys, math, optparse
 import numpy as np
 import ns_analyse
@@ -72,9 +74,9 @@ def analyse(log_a, T, interval=1):
 
     if debug:
         for i in range(len(Z_term)):
-            print "Z_term ", T, Es[i], Z_term[i]
-        print "Z_term"
-        print "Z_term"
+            print("Z_term ", T, Es[i], Z_term[i])
+        print("Z_term")
+        print("Z_term")
 
     Z = sum(Z_term)
 
@@ -111,13 +113,13 @@ def analyse(log_a, T, interval=1):
     if opt.dump_terms >= 0.0:
         n_Z_terms=0
         Z_terms_fract=0.0
-        print "#Z_term i H V Z_term"
+        print("#Z_term i H V Z_term")
         for i in range(len(Es)):
             if Z_term[i] > Z_max*opt.dump_terms:
                 Z_terms_fract += Z_term[i]
                 n_Z_terms += 1
-                print "Z_term",i, Es[i]+E_min, Vs[i], Z_term[i]
-        print "#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract
+                print("Z_term",i, Es[i]+E_min, Vs[i], Z_term[i])
+        print("#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract)
 
     return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity)
 
@@ -128,13 +130,13 @@ log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=opt.interval)
 
 if comm_rank == 0:
     # check this: a = N_w/(N_w+N_c)
-    print "# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull))
+    print("# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull)))
     line = "# T      log_Z(T)               U(T)          Cvp(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
     if Vs is not None:
         line += " V(T)"
     if opt.kolmogorov_smirnov_test:
         line += " KS_V_gaussian(T)"
-    print line
+    print(line)
 
 data = []
 for i_T in range(comm_rank, n_T, comm_size):
@@ -159,4 +161,4 @@ except:
 if comm_rank == 0:
     data = sorted(data, key = lambda x: x[0])
     for row in data:
-        print ' '.join(map(str,row))
+        print(' '.join(map(str,row)))

@@ -140,7 +140,7 @@ class fortran_MC_MD:
     def init_config(self, at, Emax):
         n = ctypes.c_int(len(at))
         Emax = ctypes.c_double(Emax)
-        self.model_lib.ll_init_config_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), at.get_positions(), at.get_cell(), ctypes.byref(Emax))
+        self.model_lib.ll_init_config_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), at.get_positions(), at.get_cell()[:,:], ctypes.byref(Emax))
 
     def eval_energy(self, at):
         n = ctypes.c_int(len(at))
@@ -150,7 +150,7 @@ class fortran_MC_MD:
         else:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
-        return self.model_lib.ll_eval_energy_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), at.get_positions(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell())
+        return self.model_lib.ll_eval_energy_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), at.get_positions(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell()[:,:])
 
     def move_atom_1(self, at, d_i, d_pos, dEmax):
         n = ctypes.c_int(len(at))
@@ -165,7 +165,7 @@ class fortran_MC_MD:
         dE = np.zeros( (1) )
         pos = at.get_positions()
         accept = self.model_lib.ll_move_atom_1_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, ctypes.byref(n_extra_data_c), extra_data,
-                                               at.get_cell(), ctypes.byref(d_i), d_pos, ctypes.byref(dEmax), dE)
+                                               at.get_cell()[:,:], ctypes.byref(d_i), d_pos, ctypes.byref(dEmax), dE)
         if accept > 0:
             at.set_positions(pos)
             if n_extra_data_c.value > 0:
@@ -180,7 +180,7 @@ class fortran_MC_MD:
         else:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
-        return self.model_lib.ll_eval_forces_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32),  at.get_positions(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell(), forces)
+        return self.model_lib.ll_eval_forces_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32),  at.get_positions(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell()[:,:], forces)
 
 # MC/MD WALK ###############################################################################
 
@@ -232,7 +232,7 @@ class fortran_MC_MD:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
         self.lib.fortran_mc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, velo, at.get_masses(), ctypes.byref(n_extra_data_c),
-           extra_data, at.get_cell(),
+           extra_data, at.get_cell()[:,:],
            ctypes.byref(n_steps), ctypes.byref(step_size_pos), ctypes.byref(step_size_velo_c),
            ctypes.byref(Emax), ctypes.byref(KEmax), final_E, n_try, n_accept_pos, n_accept_velo)
         at.set_positions(pos)
@@ -266,7 +266,7 @@ class fortran_MC_MD:
             n_extra_data_c = ctypes.c_int(0)
             extra_data=np.zeros( (1) )
         self.lib.fortran_gmc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, at.get_masses(), ctypes.byref(n_extra_data_c),
-           extra_data, at.get_cell(), ctypes.byref(n_steps), ctypes.byref(Emax), final_E, n_try, n_accept, d_pos, ctypes.byref(no_reverse), ctypes.byref(pert_ang), ctypes.byref(debug))
+           extra_data, at.get_cell()[:,:], ctypes.byref(n_steps), ctypes.byref(Emax), final_E, n_try, n_accept, d_pos, ctypes.byref(no_reverse), ctypes.byref(pert_ang), ctypes.byref(debug))
         at.set_positions(pos)
         at.arrays['GMC_direction'][:,:] = d_pos / np.linalg.norm(d_pos)
         if n_extra_data_c.value > 0:
@@ -288,7 +288,7 @@ class fortran_MC_MD:
             n_extra_data_c = ctypes.c_int(0)
             extra_data= np.zeros( (1) )
         self.lib.fortran_md_atom_nve_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32),
-           pos, vel, at.get_masses(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell(),
+           pos, vel, at.get_masses(), ctypes.byref(n_extra_data_c), extra_data, at.get_cell()[:,:],
            ctypes.byref(n_steps), ctypes.byref(timestep), final_E, ctypes.byref(debug))
         at.set_positions(pos)
         at.set_velocities(vel)
