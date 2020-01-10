@@ -31,7 +31,7 @@ System requirements
 
 You have to have ``numpy`` and ``ASE`` installed (check that you have a newer ASE
 version otherwise the extended xyz version will not be recognised). 
-You have to have ``mpi4py`` too.
+You have to have ``mpi4py`` and ``psutil`` too.
 
 
 Compilation of the streamlined FORTRAN models and MC/MD walkers.
