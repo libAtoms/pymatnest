@@ -1,5 +1,5 @@
 `rngstream` module
-================
+==================
 
 .. automodule:: rngstream
     :members:

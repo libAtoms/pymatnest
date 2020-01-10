@@ -50,7 +50,7 @@ and using MD trajectory for generating a new sample configuration.
     :language: python
 
 Periodic binary Lennard-Jones system with the supplied fortran code or ``LAMMPS``, using MD
----------------------------------------------------------------
+-------------------------------------------------------------------------------------------
 
 This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
 Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.

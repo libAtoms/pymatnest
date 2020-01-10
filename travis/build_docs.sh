@@ -2,6 +2,7 @@
 
 # packages for building docs
 pip install sphinx 
+pip install sphinxcontrib-fulltoc
 
 # Work from the docs directory
 cd doc

@@ -234,6 +234,7 @@ The script is called via:
 - nw is the number of walkers.
 - sn are the names of structures (defined in misc_calc_lib.py) for xrd spectrum identification in format 'struc_name_1 struc_name_2 ... struc_name_N-1 struc_name_N'. Only works for single species configurations.
 - sc are the paths to the '.extxyz'/'.xyz' files of reference structures in format 'path_1 path_2 ... path_N-1 path_N'.
+
 The following variables set in the script may be intersting:
 
 **significant_part**
