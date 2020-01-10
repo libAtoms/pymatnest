@@ -19,6 +19,13 @@ script:
   #- travis_wait make test
 after_success:
   - if [ "${DOCS}" == "true" ] && [ ${TRAVIS_PYTHON_VERSION} == 3.7 ]; then travis/build_docs.sh; fi
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+  keep_history: true
+  on:
+    branch: gh-pages
 addons:
   apt:
     packages:
