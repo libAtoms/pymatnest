@@ -1,0 +1,147 @@
+#!/usr/bin/env python
+
+import sys
+
+kB=8.6173324e-5
+
+import argparse
+
+parser = argparse.ArgumentParser(description="Set weights of analyses (structure_analysis_traj format) for const T ensemble average from nested sampling energies file")
+parser.add_argument('--temperatures','-T', action='store', type=float, nargs='+', help='temperature to do ensemble average at')
+parser.add_argument('--interval','-i', action='store', type=int, help='interval at which analyses were calculated relative to entries in energy file')
+parser.add_argument('--energy_file','-e', action='store', type=str, help='energies file (ns_run format)')
+parser.add_argument('--analysis_files', '-a', type=str, nargs='*', help='files with unweighted analysis results')
+parser.add_argument('--sparse_traj_file','-t', action='store', type=str, help='if present, sparsified trajectory file, for printing most likely config at each T')
+parser.add_argument('--process_analyses','-p', action='store_true', help='if set, process T dependent expectations of analyses instead of writing weighted analysis files')
+
+args = parser.parse_args()
+
+import quippy, re, numpy as np, ns_analyse, os.path
+
+if args.analysis_files is None:
+    args.analysis_files = []
+
+analyses = []
+comment_lines =[]
+desc_lines =[]
+bin_labels = []
+n_bins = []
+n_data = []
+for i in range(len(args.analysis_files)):
+    sys.stderr.write("reading analysis %d headers\n" % i)
+    analysis = open(args.analysis_files[i], "r")
+    comment_lines.append(analysis.readline().strip())
+    desc_line = analysis.readline().strip()
+
+    analyses.append(analysis)
+    desc_lines.append(desc_line)
+
+    p = re.search(r'\bn_bins=(\d+)\b', desc_line)
+    if p is None:
+        sys.stderr.write("Failed to parse bins from description line '%s'\n" % desc_line)
+        sys.exit(2)
+    n_bins.append(int(p.group(1)))
+    p = re.search(r'\bn_data=(\d+)\b', desc_line)
+    if p is None:
+        sys.stderr.write("Failed to parse data from description line '%s'\n" % desc_line)
+        sys.exit(2)
+    n_data.append(int(p.group(1)))
+    bin_labels.append([])
+    for i_bin in range(n_bins[i]):
+        bin_labels[i].append(analysis.readline().strip())
+
+if len(args.analysis_files) > 0:
+    # check for non-equal n_data, if OK make n_data a scalar
+    if np.sum(np.array(n_data) != n_data[0]) != 0:
+        sys.stderr.write("Found some analysis with n_data not the same %s" % np.array_str(n_data))
+    n_data = n_data[0]
+
+    sys.stderr.write("reading analysis data\n")
+    analysis_data_lines = []
+    for i in range(len(analyses)):
+        analysis_data_lines.append( [ s.strip() for s in analyses[i].readlines() ] )
+else:
+    n_data = None
+
+sys.stderr.write("reading energies\n")
+(n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms, Es, Vs) = ns_analyse.read_inputs([args.energy_file])
+if n_data is not None and n_data > 0:
+    # clip Es to be as long as necessary to match n_data
+    Es = Es[0:n_data*args.interval]
+    Vs = Vs[0:n_data*args.interval]
+sys.stderr.write("got n_walkers %d n_cull %d len(Es) %d\n" % (n_walkers, n_cull, len(Es)))
+sys.stderr.write("calculating log_a\n")
+log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull)
+
+n_data = len(Es) / args.interval
+
+if args.process_analyses:
+    analysis_fd=[]
+    for analysis_file in args.analysis_files:
+        analysis_fd.append(open(analysis_file+".vs_T","w"))
+        analysis_fd[-1].write("# T mean var dmean_dT\n")
+    analysis_data = []
+    for i_analysis in range(len(analyses)):
+        if n_bins[i_analysis] > 1:
+            sys.stderr.write("Can't do '--process_analyses' for more than 1 bin\n")
+            sys.exit(2)
+        analysis_data.append(np.array([float(x) for x in analysis_data_lines[i_analysis]]))
+
+
+for T in args.temperatures:
+    sys.stderr.write("doing T %f\n" % T)
+    beta = 1.0/(kB*T)
+    sys.stderr.write("calculating Z terms\n")
+    (Z_terms, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es, flat_V_prior, N_atoms, Vs)
+
+    # create reduced Z terms by summing over relevant steps
+    Z_terms_reduced=np.zeros(n_data)
+    if args.process_analyses:
+        Es_selected = np.zeros(n_data)
+    for i_data in range(n_data):
+        Z_terms_reduced[i_data]  = np.sum(Z_terms[i_data*args.interval:(i_data+1)*args.interval])
+        if args.process_analyses:
+            Es_selected[i_data] = Es[(i_data+1)*args.interval-1]
+    Z = np.sum(Z_terms_reduced)
+
+    if args.sparse_traj_file is not None:
+        sys.stderr.write("writing most likely configuration\n")
+        i_most_likely_config = np.argmax(Z_terms_reduced)
+        ar = quippy.AtomsReader(args.sparse_traj_file, start=i_most_likely_config)
+        at = iter(ar).next()
+        ar.close()
+        (filebase, ext) = os.path.splitext(args.sparse_traj_file)
+        aw = quippy.AtomsWriter(filebase+(".config_T_%f" % T)+ext)
+        aw.write(at)
+        aw.close()
+
+    if args.process_analyses:
+        E_expectation = sum(Z_terms_reduced[:]*Es_selected[:])/Z
+
+    if len(analyses) == 0:
+        for (Z_i,Z_term) in enumerate(Z_terms_reduced):
+            print (Z_i+1)*args.interval-1, Z_term/Z
+    else:
+        for i_analysis in range(len(analyses)):
+            if args.process_analyses:
+                analysis_expectation = sum(Z_terms_reduced[:]*analysis_data[i_analysis][:])/Z
+                analysis_var = sum(Z_terms_reduced[:]*analysis_data[i_analysis][:]**2)/Z - analysis_expectation**2
+                d_analysis_expectation_d_T = (1.0/(kB*T*T))*(sum(Z_terms_reduced[:]*analysis_data[i_analysis][:]*Es_selected[:])/Z - E_expectation*analysis_expectation)
+                analysis_fd[i_analysis].write("{} {} {} {}\n".format(T, analysis_expectation, analysis_var, d_analysis_expectation_d_T) )
+            else:
+                sys.stderr.write("writing analysis %d\n" % i_analysis)
+                outfile=open(args.analysis_files[i_analysis]+".T_%f" % T, "w")
+                outfile.write(comment_lines[i_analysis]+"\n")
+                outfile.write(desc_lines[i_analysis]+" do_weights\n")
+                for i_bin in range(n_bins[i_analysis]):
+                    outfile.write(bin_labels[i_analysis][i_bin]+"\n")
+                for i_data in range(n_data):
+                    outfile.write("%.10f %s\n" % (Z_terms_reduced[i_data]/Z, analysis_data_lines[i_analysis][i_data]))
+                outfile.close()
+
+
+try:
+    for f in analysis_fd:
+        f.close()
+except:
+    pass

@@ -1,0 +1,44 @@
+# starting volume 8.65^3 (units are epsilon^3)
+max_volume_per_atom=650.0
+
+# 6 atoms with atomic number 1
+start_species=1 6
+
+kB=1.0
+
+# size of live set
+n_walkers=4000
+# at each iteration 1 walker is killed
+n_cull=1
+# 256e3 = 65*4000 iterations
+n_iter_times_fraction_killed=65
+# prefix of all the output files
+out_file_prefix=test.cluster.MC.fortran.converged
+
+# use MC generating a new walker
+atom_algorithm=MC
+# total work to be done for each walker before it is killed (total length of walk if serial, proportionately less if parallel)
+n_model_calls_expected=100
+
+# number and length of atomic trajectories
+n_atom_steps=1
+atom_traj_len=1
+# no cell moves
+n_cell_volume_steps=0
+n_cell_shear_steps=0
+n_cell_stretch_steps=0
+
+# upper and lower bounds for MC move acceptance rates
+# used when adjusting the step size
+MC_adjust_min_rate=0.2
+MC_adjust_max_rate=0.3
+
+# use fortran minimum-image build-in model
+energy_calculator=fortran
+FORTRAN_model=example_LJ_min_image_model.so
+
+# rng, use default
+# rng=numpy
+
+# verbosity level, use default
+# debug=0

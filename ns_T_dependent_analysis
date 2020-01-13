@@ -1,0 +1,37 @@
+#!/bin/bash
+
+if [ $# -lt 3 ]; then
+    echo "Usage: $0 root analysis_commands_file T [ T ... ]" 1>&2
+    exit 1
+fi
+
+root=$1; shift
+analysis_commands_file=$1; shift
+
+traj_root=${root}.traj
+newest_traj=`ls -tr ${traj_root}.[0-9]*xyz | tail -1`
+traj_combined=${traj_root}.combined_every_100
+
+if [ $newest_traj -nt ${traj_combined}.xyz ]; then
+    echo "merging trajectories" 1>&2
+    ../../../ns_process_traj -t -i 100 -f xyz -o ${traj_combined}.xyz ${traj_root}.[0-9]*xyz
+else
+    echo "No need to merge trajectories" 1>&2
+fi
+
+if [[ ${traj_combined}.xyz -nt ${traj_combined}.rdfd_1_1.raw || ${traj_combined}.xyz -nt ${traj_combined}.rdfd_1_2.raw ]]; then
+    echo "Doing RDF analyses with commands:" 1>&2
+    cat $analysis_commands_file 1>&2
+    echo ""
+    structure_analysis_traj commandfile=$analysis_commands_file infile=${traj_combined}.xyz
+else
+    echo "No need to recalculate RDF's" 1>&2
+fi
+
+echo "Setting weights on analyses" 1>&2
+../../../ns_set_analysis_weights -T $* -e ${root}.energies -i 100 -a ${traj_combined}.*.raw  -t ${traj_combined}.xyz
+
+for f in ${traj_combined}.rdfd*.raw.T_*; do
+    echo "Doing weighted mean on $f" 1>&2
+    mean_var_correl infile=$f outfile=${f/.raw/} mean
+done

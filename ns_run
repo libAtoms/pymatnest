@@ -1,0 +1,6 @@
+#!/usr/bin/env python
+
+import ns_run
+
+if __name__ == '__main__':
+   ns_run.main()

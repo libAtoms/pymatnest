@@ -1,0 +1,164 @@
+#!/usr/bin/env python
+
+from __future__ import print_function
+
+import sys, math, optparse
+import numpy as np
+import ns_analyse
+
+p = optparse.OptionParser(usage='%prog [options] <infile> [ <infile> ... ]')
+p.add_option('-M','--T_min', action='store', help="""Minimum temperature""",type='float')
+p.add_option('-D','--dT', action='store', help="""Temperature step""",type='float')
+p.add_option('-n','--n_T', action='store', help="""Number of temperatures""",type='int')
+p.add_option('-k','--kB', action='store', help="""Boltzmann constant (defaults to eV/K)""", type='float', default=8.6173324e-5)
+p.add_option('-a','--accurate_sum', action='store_true', help="""use more accurate sum (math.fsum)""")
+p.add_option('-v','--verbose', action='store_true', help="""Verbose output (for debugging)""")
+p.add_option('-p','--profile', action='store_true', help="""do profiling""")
+p.add_option('-s','--skip', action='store', help="""number of lines to skip""", type='int', default=0)
+p.add_option('-l','--line_end', action='store', help="""line to ened analysis (python std. zero based last line + 1)""", type='int', default=None)
+p.add_option('-i','--interval', action='store', help="""interval between lines to use""", type='int', default=1)
+p.add_option('-P','--delta_pressure', action='store', help="""delta pressure to use for reweighting with flat V prior""", type='float', default=0.0)
+p.add_option('-V','--dump_terms', action='store', help="""dump weight of each sample""", type='float', default=-1.0)
+p.add_option('-K','--kolmogorov_smirnov_test', action='store_true', help="""Do Kolmogorov-Smirnov test for Gaussianity of distribution of Vs (when --delta_pressure is set)""")
+
+opt, args = p.parse_args()
+
+T_min = opt.T_min
+dT = opt.dT
+n_T = opt.n_T
+k_Boltzmann = opt.kB
+debug = opt.verbose
+profile = opt.profile
+reweight_delta_P = opt.delta_pressure
+
+if opt.accurate_sum:
+    sum=math.fsum
+else:
+    sum=np.sum
+
+(n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms, Es, Vs) = ns_analyse.read_inputs(args, line_skip=opt.skip, line_end=opt.line_end, interval=opt.interval)
+
+try:
+    from mpi4py import MPI
+    comm_rank = MPI.COMM_WORLD.Get_rank()
+    comm_size = MPI.COMM_WORLD.Get_size()
+    sys.stderr.write("Using mpi %d/%d\n" % (comm_rank, comm_size))
+except:
+    comm_rank = 0
+    comm_size = 1
+
+
+if reweight_delta_P != 0.0:
+    Es += reweight_delta_P*Vs
+
+E_min = np.amin(Es)
+Es -= E_min
+
+if opt.kolmogorov_smirnov_test:
+    from scipy import stats
+    def ks_test_gaussianity_histogram(histogram):
+        dev_max = 0.0
+        histo_mean =    np.sum(histogram[0] * (histogram[1][1:]-histogram[1][0:-1]) * (histogram[1][1:]+histogram[1][0:-1])/2.0 )
+        histo_2nd_mom = np.sum(histogram[0] * (histogram[1][1:]-histogram[1][0:-1]) * ((histogram[1][1:]+histogram[1][0:-1])/2.0)**2 )
+        histo_std_dev = np.sqrt(histo_2nd_mom - histo_mean**2)
+        for ibin in range(1,len(histogram[0])):
+            numerical_cumul = np.sum(histogram[0][0:ibin] * (histogram[1][1:ibin+1]-histogram[1][0:ibin]))
+            analytical_cumul = stats.norm.cdf(histogram[1][ibin], histo_mean, histo_std_dev)
+            dev_max = max(dev_max, np.abs( numerical_cumul - analytical_cumul))
+        return dev_max
+
+def analyse(log_a, T, interval=1):
+    beta = 1.0/(k_Boltzmann*T)
+
+    (Z_term, shift) = ns_analyse.calc_Z_terms(beta, log_a, Es, flat_V_prior, N_atoms, Vs)
+
+    if debug:
+        for i in range(len(Z_term)):
+            print("Z_term ", T, Es[i], Z_term[i])
+        print("Z_term")
+        print("Z_term")
+
+    Z = sum(Z_term)
+
+    U_pot = sum(Z_term*Es)/Z
+    U = n_Extra_DOF/(2.0*beta) + U_pot + E_min
+
+    Cvp = n_Extra_DOF*k_Boltzmann/2.0 + k_Boltzmann *beta*beta * (sum(Z_term * Es**2)/Z - U_pot**2)
+
+    if Vs is not None:
+        V = sum(Z_term*Vs)/Z
+    else:
+        V = None
+
+    if debug:
+        sys.stderr.write("T %f extra DoF U_offset %f C_offset %f remaining Cvp %f\n" % (T, n_Extra_DOF/(2.0*beta), n_Extra_DOF*k_Boltzmann/2.0, Cvp-n_Extra_DOF*k_Boltzmann/2.0))
+
+    log_Z = math.log(Z)+shift-beta*E_min
+
+    Z_max = np.amax(Z_term)
+    low_percentile_config = np.where(Z_term > Z_max/10.0)[0][0]*interval
+    high_percentile_config = np.where(Z_term > Z_max/10.0)[0][-1]*interval
+    mode_config = np.argmax(Z_term)*interval
+
+    if opt.kolmogorov_smirnov_test and reweight_delta_P != 0.0:
+        very_low_percentile_config = np.where(Z_term > Z_max/100.0)[0][0]*interval
+        very_high_percentile_config = np.where(Z_term > Z_max/100.0)[0][-1]*interval
+        V_histogram = np.histogram(Vs[very_low_percentile_config:very_high_percentile_config], bins=30, weights=Z_term[very_low_percentile_config:very_high_percentile_config], density=True)
+        ks_gaussianity = ks_test_gaussianity_histogram(V_histogram)
+    else:
+        ks_gaussianity = None
+
+    Z_fract = np.sum(Z_term[low_percentile_config:high_percentile_config+1])/Z
+
+    if opt.dump_terms >= 0.0:
+        n_Z_terms=0
+        Z_terms_fract=0.0
+        print("#Z_term i H V Z_term")
+        for i in range(len(Es)):
+            if Z_term[i] > Z_max*opt.dump_terms:
+                Z_terms_fract += Z_term[i]
+                n_Z_terms += 1
+                print("Z_term",i, Es[i]+E_min, Vs[i], Z_term[i])
+        print("#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract)
+
+    return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity)
+
+
+
+
+log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=opt.interval)
+
+if comm_rank == 0:
+    # check this: a = N_w/(N_w+N_c)
+    print("# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull)))
+    line = "# T      log_Z(T)               U(T)          Cvp(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
+    if Vs is not None:
+        line += " V(T)"
+    if opt.kolmogorov_smirnov_test:
+        line += " KS_V_gaussian(T)"
+    print(line)
+
+data = []
+for i_T in range(comm_rank, n_T, comm_size):
+    sys.stderr.write("i_T %d\n" % i_T)
+    T = T_min + i_T * dT
+    if opt.profile and i_T == 0:
+        import cProfile
+        cProfile.run('(log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
+    else:
+        (log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)
+    if opt.kolmogorov_smirnov_test:
+        data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity) )
+    else:
+        data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V) )
+
+try:
+    data = MPI.COMM_WORLD.gather(data, root = 0)
+    data = [item for sublist in data for item in sublist]
+except:
+    pass
+
+if comm_rank == 0:
+    data = sorted(data, key = lambda x: x[0])
+    for row in data:
+        print(' '.join(map(str,row)))

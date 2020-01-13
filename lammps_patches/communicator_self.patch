@@ -1,0 +1,24 @@
+diff --git a/src/library.cpp b/src/library.cpp
+index 545bef4..7fec8c8 100644
+--- a/src/library.cpp
++++ b/src/library.cpp
+@@ -52,6 +52,10 @@ void lammps_open(int argc, char **argv, MPI_Comm communicator, void **ptr)
+    intialize MPI if needed
+ ------------------------------------------------------------------------- */
+ 
++#ifndef LIBRARY_MPI_COMM_WORLD
++#define LIBRARY_MPI_COMM_WORLD MPI_COMM_WORLD
++#endif
++
+ void lammps_open_no_mpi(int argc, char **argv, void **ptr)
+ {
+   int flag;
+@@ -63,7 +67,7 @@ void lammps_open_no_mpi(int argc, char **argv, void **ptr)
+     MPI_Init(&argc,&argv);
+   }
+ 
+-  MPI_Comm communicator = MPI_COMM_WORLD;
++  MPI_Comm communicator = LIBRARY_MPI_COMM_WORLD;
+ 
+   LAMMPS *lmp = new LAMMPS(argc,argv,communicator);
+   *ptr = (void *) lmp;
