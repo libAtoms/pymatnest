@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>rngstream &#8212; ns_doc 1 documentation</title>
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ns_doc 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for rngstream</h1><div class="highlight"><pre>
+<span></span><span class="c1">#load RngStream dll library</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1">#def corresponding structure</span>
+<div class="viewcode-block" id="RngStream_InfoState"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream_InfoState">[docs]</a><span class="k">class</span> <span class="nc">RngStream_InfoState</span><span class="p">(</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span><span class="p">[(</span><span class="s1">&#39;Cg&#39;</span><span class="p">,</span><span class="n">c_double</span><span class="p">),</span>
+               <span class="p">(</span><span class="s1">&#39;Bg&#39;</span><span class="p">,</span><span class="n">c_double</span><span class="p">),</span>
+               <span class="p">(</span><span class="s1">&#39;Ig&#39;</span><span class="p">,</span><span class="n">c_double</span><span class="p">),</span>
+               <span class="p">(</span><span class="s1">&#39;Anti&#39;</span><span class="p">,</span><span class="n">c_int</span><span class="p">),</span>
+               <span class="p">(</span><span class="s1">&#39;IncPrec&#39;</span><span class="p">,</span><span class="n">c_int</span><span class="p">),</span>
+               <span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span><span class="n">c_char_p</span><span class="p">)]</span></div>
+
+<div class="viewcode-block" id="RngStream"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream">[docs]</a><span class="k">class</span> <span class="nc">RngStream</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span> <span class="o">=</span> <span class="n">CDLL</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;/RngStream.so&quot;</span><span class="p">)</span>
+
+        <span class="c1">#initialize with pointer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_CreateStream</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">POINTER</span><span class="p">(</span><span class="n">RngStream_InfoState</span><span class="p">)</span>
+        <span class="c1"># g = RngStream.RngStream_CreateStream()</span>
+
+        <span class="c1">#uniform [0,1]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_RandU01</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">c_double</span>
+
+        <span class="c1">#RandInt [20,30]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_RandInt</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">c_int</span>
+        <span class="c1"># i = c_int(20)</span>
+        <span class="c1"># j = c_int(30)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_SetPackageSeed</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">c_int</span>
+        <span class="c1"># seed = c_ulong * 6</span>
+        <span class="c1"># err = RngStream.RngStream_SetPackageSeed(seed)</span>
+
+<div class="viewcode-block" id="RngStream.set_package_seed"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.set_package_seed">[docs]</a>    <span class="k">def</span> <span class="nf">set_package_seed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">s</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_SetPackageSeed</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+<div class="viewcode-block" id="RngStream.create_stream"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.create_stream">[docs]</a>    <span class="k">def</span> <span class="nf">create_stream</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_CreateStream</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+<div class="viewcode-block" id="RngStream.float_uniform_01"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.float_uniform_01">[docs]</a>    <span class="k">def</span> <span class="nf">float_uniform_01</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">g</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_RandU01</span><span class="p">(</span><span class="n">g</span><span class="p">)</span></div>
+<div class="viewcode-block" id="RngStream.int_uniform"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.int_uniform">[docs]</a>    <span class="k">def</span> <span class="nf">int_uniform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">l</span><span class="p">,</span><span class="n">h</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_RandInt</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span></div>
+<div class="viewcode-block" id="RngStream.get_state"><a class="viewcode-back" href="../rngstream.html#rngstream.RngStream.get_state">[docs]</a>    <span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lib</span><span class="o">.</span><span class="n">RngStream_GetState</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../intro.html">Nested sampling method</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Installation and quick start guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getstart.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorial.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ns_run.html"><cite>pymatnest</cite> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ns_rng.html"><cite>ns_rng</cite> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../rngstream.html"><cite>rngstream</cite> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../lammpslib.html"><cite>lammpslib</cite> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../stacktrace.html"><cite>stacktrace</cite> module</a></li>
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">ns_doc 1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2015, livia.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>
