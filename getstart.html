@@ -5,25 +5,20 @@
   <head>
     <meta charset="utf-8" />
     <title>Getting started &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" href="_static/pyramid.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/language_data.js"></script>
+    
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Tutorials" href="tutorial.html" />
-    <link rel="prev" title="Installation and quick start guide" href="install.html" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Neuton&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nobile:regular,italic,bold,bolditalic&amp;subset=latin" type="text/css" media="screen" charset="utf-8" />
-<!--[if lte IE 6]>
-<link rel="stylesheet" href="_static/ie6.css" type="text/css" media="screen" charset="utf-8" />
-<![endif]-->
-
+    <link rel="prev" title="Installation and quick start guide" href="install.html" /> 
   </head><body>
-
     <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
@@ -623,8 +618,8 @@
 </div>
 <div class="section" id="example-input-files">
 <h2>Example input files<a class="headerlink" href="#example-input-files" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="cluster-with-the-supplied-fortran-code-lennard-jones-potential-using-mc">
-<h3>Cluster with the supplied fortran code Lennard-Jones potential, using MC<a class="headerlink" href="#cluster-with-the-supplied-fortran-code-lennard-jones-potential-using-mc" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="lj-cluster-with-the-supplied-fortran-code-using-mc">
+<h3>LJ Cluster with the supplied fortran code, using MC<a class="headerlink" href="#lj-cluster-with-the-supplied-fortran-code-using-mc" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of 6 Lennard-Jones atoms
 in a cubic cell with volume 648 Angstrom^3, using the potential implemented in the supplied fortran routine,
 and using MC trajectory for generating a new sample configuration. As the shape
@@ -673,8 +668,8 @@ thermodynamic variables will not be necessarily well converged.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="cluster-with-quip-implemented-lennard-jones-potential-using-md">
-<h3>Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code> implemented Lennard-Jones potential, using MD<a class="headerlink" href="#cluster-with-quip-implemented-lennard-jones-potential-using-md" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="lj-cluster-with-quip-using-md">
+<h3>LJ Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>, using MD<a class="headerlink" href="#lj-cluster-with-quip-using-md" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of 6 Lennard-Jones atoms
 in a cubic cell with volume 648 Angstrom^3, using the potential implemented in <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>
 and using MD trajectory for generating a new sample configuration. As the shape
@@ -730,8 +725,8 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
 </pre></div>
 </div>
 </div>
-<div class="section" id="periodic-lennard-jones-system-with-lammps-using-md">
-<h3>Periodic Lennard-Jones system with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-lennard-jones-system-with-lammps-using-md" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="periodic-lj-with-lammps-using-md">
+<h3>Periodic LJ with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-lj-with-lammps-using-md" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of 64 Lennard-Jones atoms
 in a cell with variable shape and size at the set pressure value, using the potential implemented in <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>
 and using MD trajectory for generating a new sample configuration.</p>
@@ -786,8 +781,8 @@ and using MD trajectory for generating a new sample configuration.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">
-<h3>Periodic binary Lennard-Jones system with the supplied fortran code or <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="periodic-binary-lj-with-the-supplied-fortran-code-or-lammps-using-md">
+<h3>Periodic binary LJ with the supplied fortran code or <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-binary-lj-with-the-supplied-fortran-code-or-lammps-using-md" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
 Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.
 The cell is of variable shape and size at the set pressure value.</p>
@@ -1009,10 +1004,10 @@ value if the run already reached the number of iterations set previously. (Note:
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-ns_run">List of input parameters</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-input-files">Example input files</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#cluster-with-the-supplied-fortran-code-lennard-jones-potential-using-mc">Cluster with the supplied fortran code Lennard-Jones potential, using MC</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#cluster-with-quip-implemented-lennard-jones-potential-using-md">Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code> implemented Lennard-Jones potential, using MD</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#periodic-lennard-jones-system-with-lammps-using-md">Periodic Lennard-Jones system with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#periodic-binary-lennard-jones-system-with-the-supplied-fortran-code-or-lammps-using-md">Periodic binary Lennard-Jones system with the supplied fortran code or <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lj-cluster-with-the-supplied-fortran-code-using-mc">LJ Cluster with the supplied fortran code, using MC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#lj-cluster-with-quip-using-md">LJ Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>, using MD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#periodic-lj-with-lammps-using-md">Periodic LJ with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#periodic-binary-lj-with-the-supplied-fortran-code-or-lammps-using-md">Periodic binary LJ with the supplied fortran code or <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#molecule-with-lammps-using-md">Molecule with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 </ul>
 </li>

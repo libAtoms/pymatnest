@@ -9,8 +9,8 @@ List of input parameters
 Example input files
 +++++++++++++++++++++++++++++++
 
-Cluster with the supplied fortran code Lennard-Jones potential, using MC
--------------------------------------------------------------------------
+LJ Cluster with the supplied fortran code, using MC
+---------------------------------------------------
 
 This input file will start a calculation of 6 Lennard-Jones atoms 
 in a cubic cell with volume 648 Angstrom^3, using the potential implemented in the supplied fortran routine,
@@ -24,7 +24,7 @@ thermodynamic variables will not be necessarily well converged.
 .. literalinclude:: ../example_inputs/inputs.test.cluster.MC.fortran
     :language: python
 
-Cluster with ``QUIP`` implemented Lennard-Jones potential, using MD
+LJ Cluster with ``QUIP``, using MD
 --------------------------------------------------------------------
 
 This input file will start a calculation of 6 Lennard-Jones atoms 
@@ -39,7 +39,7 @@ The corresponding ``quip_params.cluster.xml`` file is the following:
 
 .. literalinclude:: ../example_inputs/quip_params.cluster.xml
 
-Periodic Lennard-Jones system with ``LAMMPS``, using MD
+Periodic LJ with ``LAMMPS``, using MD
 --------------------------------------------------------
 
 This input file will start a calculation of 64 Lennard-Jones atoms 
@@ -49,7 +49,7 @@ and using MD trajectory for generating a new sample configuration.
 .. literalinclude:: ../example_inputs/inputs.test.periodic.MD.lammps
     :language: python
 
-Periodic binary Lennard-Jones system with the supplied fortran code or ``LAMMPS``, using MD
+Periodic binary LJ with the supplied fortran code or ``LAMMPS``, using MD
 -------------------------------------------------------------------------------------------
 
 This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
