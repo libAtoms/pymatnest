@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import division      
 import re, math, time, os
 import numpy as np, ase, ase.io
 import ns_rng
@@ -2154,10 +2155,10 @@ def do_ns_loop():
     global print_prefix
     global cur_config_ind
 
+    nD = 3 # dimensionality of the system
+    if movement_args['2D']: # simulate a 2D system only
+        nD = 2
     if rank == 0:
-        nD = 3
-        if movement_args['2D']:
-            nD = 2
         if energy_io.tell() == 0:
             if movement_args['do_velocities']:
                 nExtraDOF = 0
@@ -3387,7 +3388,7 @@ def main():
         if size <= 1:
             n_walkers = ns_args['n_walkers']
         else:
-            n_walkers_per_task = ns_args['n_walkers']/size
+            n_walkers_per_task = ns_args['n_walkers']//size # using // ensures division gives an integer value
             if n_walkers_per_task*size != ns_args['n_walkers']:
                 exit_error("number of walkers %d not divisible by number of MPI processes %d\n" % (ns_args['n_walkers'], size), 5)
             last_walker = 0
