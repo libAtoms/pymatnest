@@ -615,6 +615,7 @@ def excepthook_mpi_abort(exctype, value, tb):
 
 def exit_error(message, stat):
     sys.stderr.write(message)
+    sys.stderr.flush()
     try:
         MPI.COMM_WORLD.Abort(stat)
     except:
@@ -768,7 +769,7 @@ def propagate_lammps(at, dt, n_steps, algo, Emax=None):
 
 def velo_rv_mag(n):
     if movement_args['2D']:
-        unit_rv[:,2] = 0.0
+        #unit_rv[:,2] = 0.0 # commented out from here, as unit_rv is unknown to this function at this point
         nDOF = 2.0
     else:
         nDOF = 3.0
@@ -787,6 +788,8 @@ def velo_unit_rv(n):
 def gen_random_velo(at, KEmax, unit_rv=None):
     if unit_rv is None:
         unit_rv = velo_unit_rv(len(at))
+    if movement_args['2D']:
+        unit_rv[:,2] = 0.0
     rv_mag = velo_rv_mag(len(at))
 
     # from Baldock thesis Eq. 11.10
