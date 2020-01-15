@@ -654,6 +654,7 @@
 
 <div class="viewcode-block" id="exit_error"><a class="viewcode-back" href="../ns_run.html#ns_run.exit_error">[docs]</a><span class="k">def</span> <span class="nf">exit_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">stat</span><span class="p">):</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">MPI</span><span class="o">.</span><span class="n">COMM_WORLD</span><span class="o">.</span><span class="n">Abort</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span>
     <span class="k">except</span><span class="p">:</span>
@@ -807,7 +808,7 @@
 
 <div class="viewcode-block" id="velo_rv_mag"><a class="viewcode-back" href="../ns_run.html#ns_run.velo_rv_mag">[docs]</a><span class="k">def</span> <span class="nf">velo_rv_mag</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
-        <span class="n">unit_rv</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="c1">#unit_rv[:,2] = 0.0 # commented out from here, as unit_rv is unknown to this function at this point</span>
         <span class="n">nDOF</span> <span class="o">=</span> <span class="mf">2.0</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">nDOF</span> <span class="o">=</span> <span class="mf">3.0</span>
@@ -826,6 +827,8 @@
 <div class="viewcode-block" id="gen_random_velo"><a class="viewcode-back" href="../ns_run.html#ns_run.gen_random_velo">[docs]</a><span class="k">def</span> <span class="nf">gen_random_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">unit_rv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">unit_rv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">unit_rv</span> <span class="o">=</span> <span class="n">velo_unit_rv</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
+        <span class="n">unit_rv</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="n">rv_mag</span> <span class="o">=</span> <span class="n">velo_rv_mag</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
 
     <span class="c1"># from Baldock thesis Eq. 11.10</span>
