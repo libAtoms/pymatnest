@@ -824,6 +824,21 @@ def rotate_dir_3N(vec, max_ang):
         vec[ind_1_a,ind_1_c] = v_1
         vec[ind_2_a,ind_2_c] = v_2
 
+def rotate_dir_3N_2D(vec, max_ang):
+    if max_ang <= 0.0:
+        return
+    # apply random rotations
+    indices = [ (int(i/2), i%2) for i in range(2*vec.shape[0]) ]
+    rng.shuffle_in_place(indices)
+    for ((ind_1_a,ind_1_c), (ind_2_a,ind_2_c)) in pairwise(indices):
+        ang = rng.float_uniform(-max_ang,max_ang)
+        c_ang = np.cos(ang)
+        s_ang = np.sin(ang)
+        v_1 =  vec[ind_1_a,ind_1_c] * c_ang + vec[ind_2_a,ind_2_c] * s_ang
+        v_2 = -vec[ind_1_a,ind_1_c] * s_ang + vec[ind_2_a,ind_2_c] * c_ang
+        vec[ind_1_a,ind_1_c] = v_1
+        vec[ind_2_a,ind_2_c] = v_2
+
 def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 #DOC
 #DOC ``rej_free_perturb_velo``
@@ -864,8 +879,11 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
             scaled_vel = gen_random_velo(at, KEmax_use, velo/velo_mag) * sqrt_masses_2D
 
             if rotate:
-                rotate_dir_3N(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
-
+                if movement_args['2D']:
+                    rotate_dir_3N_2D(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
+                else:
+                    rotate_dir_3N(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
+                
             at.set_velocities(scaled_vel / sqrt_masses_2D)
 
     new_KE = at.get_kinetic_energy()
@@ -873,7 +891,7 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
     # rej_free_perturb_velo expects at.info['ns_energy'] to be set correctly initially
     at.info['ns_energy'] += new_KE-orig_KE
 
-def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax):
+def do_MC_atom_velo_walk(at, movement_args, Emax, nD, KEmax):
 #DOC
 #DOC ``do\_MC\_atom\_velo\_walk``
 
@@ -895,7 +913,7 @@ def do_MC_atom_velo_walk(at, movement_args, Emax, KEmax):
         KEmax_use = KEmax
 
     if do_calc_fortran:
-        (n_try, n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, KEmax_use)
+        (n_try, n_accept, final_KE) = f_MC_MD.MC_atom_walk_velo(at, n_steps, step_size, nD, KEmax_use)
         at.info['ns_energy'] += final_KE-initial_KE
     else:
         masses = at.get_masses()
@@ -923,12 +941,16 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 
     """ perform MD walk on the configuration """
     orig_E = at.info['ns_energy']
+    nD=3
+    if movement_args['2D']:
+       nD=2
+
     if orig_E >= Emax:
         print( print_prefix, ": WARNING: orig_E =",orig_E," >= Emax =",Emax)
 
     #DOC \item if MD\_atom\_velo\_pre\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation
     if movement_args['MD_atom_velo_pre_perturb']:
-        do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
+        do_MC_atom_velo_walk(at, movement_args, Emax, nD, KEmax)
 
     pre_MD_pos = at.get_positions()
     pre_MD_velo = at.get_velocities()
@@ -1006,7 +1028,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
 
     #DOC \item if MD\_atom\_velo\_post\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation
     if movement_args['MD_atom_velo_post_perturb']:
-        do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
+        do_MC_atom_velo_walk(at, movement_args, Emax, nD, KEmax)
 
     return {'MD_atom' : (1, n_accept) }
 
@@ -1021,9 +1043,13 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     n_accept=0
     n_accept_velo = None
 
+    nD=3
+    if movement_args['2D']:
+       nD=2
+
     #DOC \item if MC\_atom\_velocities and MC\_atom\_velocities\_pre\_perturb, call do\_MC\_atom\_velo\_walk() to perturb velocities, magnitude and and rotation
     if movement_args['MC_atom_velocities'] and movement_args['MC_atom_velocities_pre_perturb']:
-        do_MC_atom_velo_walk(at, movement_args, Emax, KEmax)
+        do_MC_atom_velo_walk(at, movement_args, Emax, nD, KEmax)
 
     if movement_args['MC_atom_Galilean']:
         if movement_args['GMC_dir_perturb_angle'] < 0.0 or np.linalg.norm(at.arrays['GMC_direction']) == 0.0:
@@ -1037,15 +1063,16 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
         #DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk
-
+ 
         if movement_args['MC_atom_velocities']:
-            (n_try, n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), KEmax, step_size_velo)
+            #if not movement_args['2D']:
+            (n_try, n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), nD, KEmax, step_size_velo)
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
         else:
             if movement_args['MC_atom_Galilean']:
                 (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), no_reverse=movement_args['GMC_no_reverse'], pert_ang=movement_args['GMC_dir_perturb_angle_during'])
             else:
-                (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False))
+                (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), nD)
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
 
     elif (do_calc_lammps and movement_args['MC_atom_Galilean'] and ns_args['LAMMPS_fix_gmc']):
@@ -1157,11 +1184,13 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
                     if movement_args['MC_atom_uniform_rv']:
                         dx = rng.float_uniform(-step_size,step_size)
                         dy = rng.float_uniform(-step_size,step_size)
+                        dz = 0.0
                         if not movement_args['2D']:
                             dz = rng.float_uniform(-step_size,step_size)
                     else:
                         dx = rng.normal(step_size)
                         dy = rng.normal(step_size)
+                        dz = 0.0
                         if not movement_args['2D']:
                             dz = rng.normal(step_size)
                     orig_energy = at.info['ns_energy']
@@ -1729,6 +1758,10 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
         exploration_movement_args['n_swap_steps'] = 0
         exploration_movement_args['n_semi_grand_steps'] = 0
         exploration_movement_args['MC_atom_velocities']=False
+  
+        nD=3
+        if exploration_movement_args['2D']:
+           nD=2
 
         # check that the total number of attempts for this key is not zero
         if key in walk_stats:
@@ -1832,7 +1865,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                 if (not key=="MC_atom_velo"):
                     stats = walk_single_walker(buf, exploration_movement_args, Emax, KEmax)
                 else:
-                    stats = do_MC_atom_velo_walk(buf, exploration_movement_args, Emax, KEmax)
+                    stats = do_MC_atom_velo_walk(buf, exploration_movement_args, Emax, nD, KEmax)
 
                   #DOC     running statistics for the number of accepted/rejected moves on each process are recorded 
                 accumulate_stats(stats_cumul, stats)
@@ -2086,6 +2119,10 @@ def additive_init_config(at, Emax):
         for i_try in range(10):
             pos[i_at,:] = np.dot(at_new.get_cell(), rng.float_uniform(0.0, 1.0, (3) ))
             at_new.set_positions(pos[0:i_at+1,:])
+            if movement_args['2D']: # zero the Z coordiates in a 2D simulation
+                 temp_at=at_new.get_positions()
+                 temp_at[:,2]=0.0
+                 at_new.set_positions(temp_at)
             energy = eval_energy(at_new)
             if energy < Emax:
                 success = True
@@ -2165,7 +2202,6 @@ def do_ns_loop():
             else:
                 nExtraDOF = n_atoms*nD
             energy_io.write("%d %d %d %s %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF, movement_args['MC_cell_flat_V_prior'], n_atoms) )
-    print("This is the dimensionality",rank, nD)
 
     ## print(print_prefix, ": random state ", np.random.get_state())
     ## if rank == 0:
@@ -2833,6 +2869,7 @@ def do_ns_loop():
                 if ns_analyzer_interval > 0 and (i_ns_step+1)%ns_analyzer_interval == 0:
                     ns_analyzer.analyze(walkers, i_ns_step, "NS_loop %d" % i_ns_step)
         i_ns_step += 1
+
         ### END OF MAIN LOOP
 
     # flush remaining traj configs
@@ -3598,6 +3635,10 @@ def main():
                     n_try = 0
                     while n_try < ns_args['random_init_max_n_tries'] and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
                         at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
+                        if movement_args['2D']: # zero the Z coordiates in a 2D simulation
+                            temp_at=at.get_positions()
+                            temp_at[:,2]=0.0
+                            at.set_positions(temp_at)
                         energy = eval_energy(at)
                         n_try += 1
                     if math.isnan(energy) or energy > ns_args['start_energy_ceiling']:

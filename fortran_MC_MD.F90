@@ -11,11 +11,11 @@ subroutine fortran_set_seed(n_seed, seed)
 end subroutine fortran_set_seed
 
 
-subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, KEmax, final_KE, n_try, n_accept)
+subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, nD, KEmax, final_KE, n_try, n_accept)
    implicit none
    integer :: N
    double precision :: vel(3,N), mass(N)
-   integer :: n_steps
+   integer :: n_steps, nD
    double precision :: step_size, KEmax, final_KE
    integer :: n_try, n_accept
 
@@ -48,6 +48,7 @@ subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, KEmax, final_K
          d_i = order(i_at)
          call random_number(d_vel)
          d_vel = 2.0*step_size*(d_vel-0.5)
+         if (nD==2) d_vel(3) = 0.0
 
          dKE = 0.5*mass(d_i)*(sum((vel(:,d_i)+d_vel(:))**2) - sum(vel(:,d_i)**2))
          if (KE + dKE < KEmax) then
@@ -63,7 +64,7 @@ subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, KEmax, final_K
 end subroutine fortran_MC_atom_velo
 
 subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, &
-                           step_size_pos, step_size_vel, Emax, KEmax, final_E, n_try, n_accept_pos, n_accept_vel)
+                           step_size_pos, step_size_vel, Emax, nD, KEmax, final_E, n_try, n_accept_pos, n_accept_vel)
    implicit none
    integer :: N
    integer :: Z(N)
@@ -72,7 +73,7 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
    double precision :: extra_data(n_extra_data,N)
    integer :: n_steps
    double precision :: step_size_pos, step_size_vel, Emax, KEmax, final_E
-   integer :: n_try, n_accept_pos, n_accept_vel
+   integer :: n_try, n_accept_pos, n_accept_vel, nD
 
    logical :: do_vel
    integer :: d_i
@@ -115,6 +116,7 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
          if (do_vel) then
             call random_number(d_vel)
             d_vel = 2.0*step_size_vel*(d_vel-0.5)
+            if (nD==2) d_vel(3)=0.0
             call random_number(vel_pos_rv)
          endif
 
@@ -131,6 +133,7 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
 
          call random_number(d_pos)
          d_pos = 2.0*step_size_pos*(d_pos-0.5)
+         if (nD==2) d_pos(3)=0.0
          n_accept_pos = n_accept_pos + ll_move_atom_1(N, Z, pos, n_extra_data, extra_data, cell, d_i, d_pos, Emax-E, dE)
          E = E + dE
 
