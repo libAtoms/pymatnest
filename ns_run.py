@@ -2155,7 +2155,7 @@ def save_snapshot(snapshot_id):
         for at in walkers:
             at.info['volume'] = at.get_volume()
             at.info['iter']=snapshot_id
-            ase.io.write(snapshot_io, at, format=ns_args['config_file_format'])
+            ase.io.write(snapshot_io, at, parallel=False, format=ns_args['config_file_format'])
         print( "root walkers write time ", time.time() - root_walkers_write_t0)
 
     if not ns_args['snapshot_per_parallel_task']:
@@ -2389,7 +2389,7 @@ def do_ns_loop():
                 if track_traj_io is not None:
                     at = walkers[i].copy()
                     at.info['culled'] = True
-                    ase.io.write(track_traj_io, at, format=ns_args['config_file_format'])
+                    ase.io.write(track_traj_io, at, parallel=False, format=ns_args['config_file_format'])
 
         if ns_args['E_dump_interval'] > 0 and i_ns_step % ns_args['E_dump_interval'] == 0: # ns_args['E_dump_interval']-1:
             if walkers[0].has('masses') and walkers[0].has('momenta'):
@@ -2403,7 +2403,7 @@ def do_ns_loop():
             (ns_args['snapshot_seq_pairs'] and i_ns_step > 0 and i_ns_step%ns_args['snapshot_interval'] == 0) ) :
             if ns_args['traj_interval'] > 0:
                 for at in traj_walker_list:
-                    ase.io.write(traj_io, at, format=ns_args['config_file_format'])
+                    ase.io.write(traj_io, at, parallel=False, format=ns_args['config_file_format'])
                 traj_io.flush()
                 traj_walker_list=[]
             if ns_args['E_dump_interval'] > 0:
@@ -2874,7 +2874,7 @@ def do_ns_loop():
 
     # flush remaining traj configs
     for at in traj_walker_list:
-        ase.io.write(traj_io, at, format=ns_args['config_file_format'])
+        ase.io.write(traj_io, at, parallel=False, format=ns_args['config_file_format'])
     traj_io.flush()
     traj_walker_list=[]
 
@@ -2921,6 +2921,7 @@ def main():
         sys.excepthook = excepthook_mpi_abort
 
         stacktrace.listen()
+
 
         if len(sys.argv) != 1 and len(sys.argv) != 2:
             usage()
@@ -3462,7 +3463,7 @@ def main():
         except:
             species_list = []
             if rank == 0:
-                init_atoms = ase.io.read(ns_args['start_config_file'])
+                init_atoms = ase.io.read(ns_args['start_config_file'], parallel=False)
                 atomic_numbers = init_atoms.get_atomic_numbers()
                 for Z in set(atomic_numbers):
                     n_of_Z = sum(atomic_numbers == Z)
@@ -3475,6 +3476,7 @@ def main():
                 species_list = comm.bcast(species_list, root=0)
 
         if do_calc_lammps:
+            #print("LIVIA C",species)
             if not ns_args['LAMMPS_atom_types'] == 'TYPE_EQUALS_Z':
                 used_chem_symbols = { ase.data.chemical_symbols[int(species.split()[0])] for species in species_list }
                 if not used_chem_symbols == set(ns_args['LAMMPS_atom_types'].keys()):
@@ -3491,11 +3493,11 @@ def main():
                     warned_explicit_mass=True
                 type_mass = float(species_fields[2])
                 mass_list.append(type_mass)
+            
         if len(mass_list) > 0:
             mass_list = np.array(mass_list)
             if np.any(mass_list != mass_list[0]) and not movement_args['atom_velo_rej_free_fully_randomize']:
                 exit_error("ERROR: Masses are not all equal, and atom_velo_rej_free_fully_randomize is false. Refusing to produce incorrect results\n", 1)
-
 
         created_temp_restart_file=False
         if ns_args['restart_file'] == "AUTO":
@@ -3537,7 +3539,7 @@ def main():
             # create initial config
             if rank == 0:
                 if ns_args['start_config_file'] is not None:
-                    init_atoms = ase.io.read(ns_args['start_config_file'])
+                    init_atoms = ase.io.read(ns_args['start_config_file'], parallel=False)
                     if not 'masses' in init_atoms.arrays:
                         init_atoms.set_masses([1.0] * len(init_atoms))
                 else:
@@ -3561,7 +3563,8 @@ def main():
 
                 if do_calc_quip:
                     init_atoms = quippy.Atoms(init_atoms)
-                ase.io.write(sys.stdout, init_atoms, format=ns_args['config_file_format'])
+                ase.io.write(sys.stdout, init_atoms, parallel=False, format=ns_args['config_file_format'])
+                #ase.io.write(sys.stdout, init_atoms, format=ns_args['config_file_format'])
             else: # rank != 0
                 init_atoms = None
 
@@ -3694,30 +3697,14 @@ def main():
         else: # set up walkers with a restart
             # swap atomic numbers if doing semi-grand canonical ensemble
             ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0)
-            if rank == 0: # read on head task and send to other tasks
-                for r in range(size):
-                    # read a slice with file@:
-                    if comm is None or r == 0:
-                        print( rank, "local read restart slice %d:%d" % (r*n_walkers, (r+1)*n_walkers))
-                        walkers = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, (r+1)*n_walkers))
-                        for at in walkers:
-                            if np.any(at.get_atomic_numbers() != walkers[0].get_atomic_numbers()):
-                                ns_args['swap_atomic_numbers'] = True
-                    else:
-                        print( rank, "remote read restart slice %d:%d" % (r*n_walkers, (r+1)*n_walkers))
-                        at_list = ase.io.read(ns_args['restart_file']+"@%d:%d" % (r*n_walkers, (r+1)*n_walkers))
-                        for at in at_list:
-                            if np.any(at.get_atomic_numbers() != walkers[0].get_atomic_numbers()):
-                                ns_args['swap_atomic_numbers'] = True
-
-                    if r > 0:
-                        comm.send(at_list, dest=r, tag=1)
-                if created_temp_restart_file:
-                    print("deleting",ns_args['restart_file'])
-                    ### os.unlink(ns_args['restart_file'])
-            else: # receive from head task
-                print( rank, "waiting for walkers")
-                walkers = comm.recv(source=0, tag=1)
+            at_list = ase.io.read(ns_args['restart_file'],index=":") #LIVIA
+            for r in range(size):
+                if rank == r:
+                    walkers=at_list[r*n_walkers:(r+1)*n_walkers]
+                    print(rank, r, walkers)
+            for at in walkers:
+                if np.any(at.get_atomic_numbers() != walkers[0].get_atomic_numbers()):
+                    ns_args['swap_atomic_numbers'] = True
 
             # broadcast swap_atomic_numbers in case it was overriddgen to True by presence of configurations with different atomic number lists
             if comm is not None:
@@ -3937,7 +3924,6 @@ def main():
 
         # cleanup post loop
         save_snapshot(final_iter) # this is the final configuration
-        #clean_prev_snapshot(prev_snapshot_iter) # !!!! This line is commented out as sometimes it deleted the final snapshot - check the prev_snashot_iter vale in case of normal termination!!!!!!!!!!!!
 
         for at in walkers:
             print( rank, ": final energy ", at.info['ns_energy'])
