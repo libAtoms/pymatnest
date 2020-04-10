@@ -87,10 +87,10 @@ def analyse(log_a, T, interval=1):
 
     if Vs is not None:
         V = sum(Z_term*Vs)/Z
-        compressibility = -1.0/V * (sum(Z_term*Vs*Vs)*(-beta)*Z - sum(Z_term*Vs)*sum(Z_term*Vs)*(-beta)) / Z**2
+        thermal_exp = -1.0/V * (sum(Z_term*Vs*Vs)*(-beta)*Z - sum(Z_term*Vs)*sum(Z_term*Vs)*(-beta)) / Z**2
     else:
         V = None
-        compressibility = None
+        thermal_exp = None
 
     if debug:
         sys.stderr.write("T %f extra DoF U_offset %f C_offset %f remaining Cvp %f\n" % (T, n_Extra_DOF/(2.0*beta), n_Extra_DOF*k_Boltzmann/2.0, Cvp-n_Extra_DOF*k_Boltzmann/2.0))
@@ -123,7 +123,7 @@ def analyse(log_a, T, interval=1):
                 print("Z_term",i, Es[i]+E_min, Vs[i], Z_term[i])
         print("#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract)
 
-    return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity,compressibility)
+    return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity,thermal_exp)
 
 
 
@@ -135,7 +135,7 @@ if comm_rank == 0:
     print("# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull)))
     line = "# T      log_Z(T)               U(T)          Cvp(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
     if Vs is not None:
-        line += " V(T)   compressibility(T)"
+        line += " V(T)   thermal_exp(T)"
     if opt.kolmogorov_smirnov_test:
         line += " KS_V_gaussian(T)"
     print(line)
@@ -146,13 +146,13 @@ for i_T in range(comm_rank, n_T, comm_size):
     T = T_min + i_T * dT
     if opt.profile and i_T == 0:
         import cProfile
-        cProfile.run('(log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, compressibility) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
+        cProfile.run('(log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, thermal_exp) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
     else:
-        (log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, compressibility) = analyse(log_a, T, opt.interval)
+        (log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, thermal_exp) = analyse(log_a, T, opt.interval)
     if opt.kolmogorov_smirnov_test:
         data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity) )
     else:
-        data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, compressibility) )
+        data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, thermal_exp) )
 
 try:
     data = MPI.COMM_WORLD.gather(data, root = 0)
