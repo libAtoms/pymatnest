@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-pymatnest documentation
+About ``pymatnest``
 ==================================
 
 The ``pymatnest`` package is a software
@@ -13,8 +13,8 @@ nested sampling calculations.
 Long term support of the package is ensured by:
  - Noam Bernstein (Naval Research Laboratory)
  - Gabor Csanyi (University of Cambridge)
- - Rob Baldock  (University of Cambridge)
- - Livia Bartok-Partay (University of Reading)
+ - Rob Baldock  (EPFL)
+ - Livia Bartok-Partay (University of Warwick)
  
 Copyright 2015-2016.
 

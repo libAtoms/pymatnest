@@ -1,5 +1,5 @@
 `lammpslib` module
-================
+==================
 
 .. automodule:: lammpslib
     :members:

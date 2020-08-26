@@ -8,7 +8,7 @@ implicit none
    if (N_params /= 7) then
       print *, "example_bead_spring_polymer_model.F90 got 7 /= N_params ", N_params
       print *, "Need: chain_length K_bond r0_bond K_angle epsilon sigma cutoff"
-      stop 1
+      call exit(1)
    endif 
 
    chain_length = int(params(1))
@@ -154,7 +154,7 @@ implicit none
    double precision cell_height(3), v_norm_hat(3)
 
    print *, "example_bead_spring_polymer_model does not implement move_atom_1 for MC"
-   stop 1
+   call exit(1)
 
 !    do i=1, 3
 !       v_norm_hat = cell(:,mod(i,3)+1) .cross. cell(:,mod(i+1,3)+1)

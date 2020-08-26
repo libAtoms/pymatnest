@@ -10,7 +10,6 @@ random_initialise_cell=F
 initial_walk_N_walks=20
 #initial_walk_adjust_interval=10
 initial_walk_Emax_offset_per_atom=1.0
-KEmax_max_T = 5000
 
 
 # size of live set

@@ -89,8 +89,10 @@ def analyse(log_a, T, interval=1):
 
     if Vs is not None:
         V = sum(Z_term*Vs)/Z
+        thermal_exp = -1.0/V * (sum(Z_term*Vs*Vs)*(-beta)*Z - sum(Z_term*Vs)*sum(Z_term*Vs)*(-beta)) / Z**2
     else:
         V = None
+        thermal_exp = None
 
     if debug:
         sys.stderr.write("T %f extra DoF U_offset %f C_offset %f remaining Cvp %f\n" % (T, n_Extra_DOF/(2.0*beta), n_Extra_DOF*k_Boltzmann/2.0, Cvp-n_Extra_DOF*k_Boltzmann/2.0))
@@ -129,7 +131,7 @@ def analyse(log_a, T, interval=1):
                 print("Z_term",i, Es[i]+E_min, Vs[i], Z_term[i])
         print("#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract)
 
-    return (log_Z, Helmholtz_F, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity)
+    return (log_Z, Helmholtz_F, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity, thermal_exp)
 
 
 log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=opt.interval)
@@ -141,16 +143,17 @@ if comm_rank == 0:
     if opt.entropy:
         n_therm += 1
     fmt = "{:7g} "+" ".join(["{:11g}"]*n_therm)+" "+" ".join(["{:8d}"]*3)+" "+" ".join(["{:15d}"]*3)+" {:6g}"
-    header_labels=["T","log_Z","F"]
+    header_labels=["T","log_Z(T)","F(T)"]
     if opt.entropy:
         header_labels.append("S")
-    header_labels.extend(["U","Cvp","low_pct_i","mode_i","high_pct_i","low_pct_iter","mode_iter","high_pct_iter","Z_fract"])
+    header_labels.extend(["U(T)","Cvp(T)","low_pct_i(T)","mode_i(T)","high_pct_i(T)","low_pct_iter(T)","mode_iter(T)","high_pct_iter(T)","Z_fract(T)"])
     if Vs is not None:
-        fmt += " {:8g}"
+        fmt += " {:8g} {:8g}"
         header_labels.append("V(T)")
+        header_labels.append("thermal_exp(T)")
     if opt.kolmogorov_smirnov_test:
         fmt += " {:8g}"
-        header_labels.append("KS Gauss.")
+        header_labels.append("KS_Gauss(T)")
     header_fmt = "#"+fmt.replace("f","s").replace("g","s").replace("d","s").replace(":",":^")
     print(header_fmt.format(*header_labels))
 
@@ -162,12 +165,12 @@ for i_T in range(comm_rank, n_T, comm_size):
         import cProfile
         cProfile.run('(log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
     else:
-        (log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)
+        (log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, thermal_exp) = analyse(log_a, T, opt.interval)
     if opt.entropy:
         S = (U - Helmholtz_F)/(k_Boltzmann * T)
     else:
         S = None
-    data.append( (T, log_Z, Helmholtz_F, S, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity) )
+    data.append( (T, log_Z, Helmholtz_F, S, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity, thermal_exp) )
 
 try:
     data = MPI.COMM_WORLD.gather(data, root = 0)
@@ -179,4 +182,3 @@ if comm_rank == 0:
     data = sorted(data, key = lambda x: x[0])
     for row in data:
         print(fmt.format(*[r for r in row if r is not None]))
-        # print(' '.join(map(str,row)))

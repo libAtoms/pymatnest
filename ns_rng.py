@@ -174,13 +174,13 @@ class NsRngStream(NsRng):
          self.rng = self.l_rng
       if comm is None:
          self.r.get_state(self.rng,seed)
-         print("Initialized RngStream rng to ", list(seed))
+         print( "Initialized RngStream rng to ", list(seed))
       else:
          if comm.rank == 0:
             self.r.get_state(self.g_rng,seed)
-            print(comm.rank, "Initialized RngStream g_rng to ", list(seed))
+            print( comm.rank, "Initialized RngStream g_rng to ", list(seed))
          self.r.get_state(self.l_rng,seed)
-         print(comm.rank, "Initialized RngStream l_rng to ", list(seed))
+         print( comm.rank, "Initialized RngStream l_rng to ", list(seed))
       self.saved_normal_rv = None
 
    def switch_to_common(self):

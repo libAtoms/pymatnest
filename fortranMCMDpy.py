@@ -75,6 +75,7 @@ class fortran_MC_MD:
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # masses
            ctypes.c_void_p, # n_steps
            ctypes.c_void_p, # step_size
+           ctypes.c_void_p, # nD        
            ctypes.c_void_p, # KEmax
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # final_KE
            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # n_try
@@ -93,6 +94,7 @@ class fortran_MC_MD:
            ctypes.c_void_p, # step_size_pos
            ctypes.c_void_p, # step_size_velo
            ctypes.c_void_p, # Emax
+           ctypes.c_void_p, # nD
            ctypes.c_void_p, # KEmax
            ndpointer(ctypes.c_double, flags="C_CONTIGUOUS"), # final_E
            ndpointer(ctypes.c_int, flags="C_CONTIGUOUS"), # n_try
@@ -191,10 +193,11 @@ class fortran_MC_MD:
         n_seed = ctypes.c_int(len(seed))
         self.lib.fortran_set_seed_(ctypes.byref(n_seed), seed)
 
-    def MC_atom_walk_velo(self, at, n_steps, step_size, KEmax):
+    def MC_atom_walk_velo(self, at, n_steps, step_size, nD, KEmax):
         n = ctypes.c_int(len(at))
         n_steps = ctypes.c_int(n_steps)
         step_size = ctypes.c_double(step_size)
+        nD = ctypes.c_int(nD)
         KEmax = ctypes.c_double(KEmax)
         velo = at.get_velocities()
         n_try = np.zeros( (1), dtype=np.int32)
@@ -202,11 +205,12 @@ class fortran_MC_MD:
         final_KE = np.zeros( (1), dtype=np.float64)
         self.lib.fortran_mc_atom_velo_(ctypes.byref(n), velo, at.get_masses(),
            ctypes.byref(n_steps), ctypes.byref(step_size),
+           ctypes.byref(nD),
            ctypes.byref(KEmax), final_KE, n_try, n_accept)
         at.set_velocities(velo)
         return (n_try[0], n_accept[0], final_KE[0])
 
-    def MC_atom_walk(self, at, n_steps, step_size_pos, Emax, KEmax=-1.0, step_size_velo=None):
+    def MC_atom_walk(self, at, n_steps, step_size_pos, Emax, nD, KEmax=-1.0, step_size_velo=None):
         n = ctypes.c_int(len(at))
         n_steps = ctypes.c_int(n_steps)
         step_size_pos = ctypes.c_double(step_size_pos)
@@ -216,6 +220,7 @@ class fortran_MC_MD:
             step_size_velo_c = ctypes.c_double(step_size_velo)
         Emax = ctypes.c_double(Emax)
         KEmax = ctypes.c_double(KEmax)
+        nD = ctypes.c_int(nD)
         pos = at.get_positions()
         if step_size_velo is None:
             velo = np.zeros( (1), dtype=np.float64 )
@@ -234,7 +239,7 @@ class fortran_MC_MD:
         self.lib.fortran_mc_atom_(ctypes.byref(n), at.get_atomic_numbers().astype(np.int32), pos, velo, at.get_masses(), ctypes.byref(n_extra_data_c),
            extra_data, at.get_cell()[:,:],
            ctypes.byref(n_steps), ctypes.byref(step_size_pos), ctypes.byref(step_size_velo_c),
-           ctypes.byref(Emax), ctypes.byref(KEmax), final_E, n_try, n_accept_pos, n_accept_velo)
+           ctypes.byref(Emax), ctypes.byref(nD), ctypes.byref(KEmax), final_E, n_try, n_accept_pos, n_accept_velo)
         at.set_positions(pos)
         if n_extra_data_c.value > 0:
             at.arrays['ns_extra_data'][...] = extra_data

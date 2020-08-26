@@ -20,29 +20,38 @@ parameter space - i.e. in the context of materials, the low-energy region of con
 Since its original inception, nested sampling has also been applied to atomistic systems,
 and its several advantages mean it became a powerful method to sample atomic 
 configuration spaces.
-  * calculate the partition function, hence all thermodynamic properties become accessible
-     - calculate the heat capacity and locate the phase transitions
-     - with an order parameter calculate the free energy
-  * the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step
-  * no prior knowledge is needed of the phases or phase transitions
-  * can be used with both constant volume and constant pressure calculations
-  * calculate the entire phase diagram in an automated way
-  * considerable computational gain over parallel tempering
+   * calculate the partition function, hence all thermodynamic properties become accessible
+      - calculate the heat capacity and locate the phase transitions
+      - with an order parameter calculate the free energy
+   * the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step
+   * no prior knowledge is needed of the phases or phase transitions
+   * can be used with both constant volume and constant pressure calculations
+   * calculate the entire phase diagram in an automated way
+   * considerable computational gain over parallel tempering
 
 .. [#f1] J. Skilling, in Nested Sampling, edited by Rainer Fischer, Roland Preuss, and Udo von Toussaint, AIP Conf. Proc. No. 735 (AIP, New York, 2004), p. 395
 
 Publications
 -------------------------------------
 .. include:: ../README.md
-   :start-after: Publications:
+   :start-after: (references are available in bibtex format in the ``NS_publications.bib`` file)
    :end-before: ******
 
 Algorithm
 -------------------------------------
 
-Nested sampling is an iterative method...
-Top-down, Size of live set, random walk...etc.
+Nested sampling is an iterative, "top-down" method, it samples the Potential Energy Landscape (PES) 
+through a series of nested energy levels, starting from the high energy region (gas phase) and going towards the
+global minimum. The sampling is done using a set of walkers - these are randomly generated configurations at the initial step of the sampling,
+and the number of these determine the "resolution" of which the PES is sampled. 
+Then, at every iteration step, the walker with the highest energy (enthalpy in case of constant pressure sampling) 
+is removed, and a new one is generated to keep the number of walkers constant.
+To generate the new configuration, one of the existing walkers is randomly selected and cloned, and this cloned configuration is 
+modified (through an MCMC, a total-enthalpy Hamiltonian MC or a Galilean MC walk), such that its energy (enthalpy) does not exceed 
+the that of the last removed walker.
+The iteration is continued until a satisfactory low energy configuration is reached. 
 
+.. image:: NS_PES_animation.gif
 
 ``pymatnest``
 -------------------------------------
