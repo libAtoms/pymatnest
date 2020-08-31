@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ns_run &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -27,7 +28,8 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">ns_doc 1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">ns_run</a></li> 
       </ul>
     </div>  
 
@@ -2292,7 +2294,7 @@
     <span class="n">log_X_n_term_sum</span> <span class="o">=</span> <span class="n">log_X_n_term_cumsum</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
     <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;converge_down_to_T&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">converge_down_to_beta</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;kB&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;converge_down_to_T&#39;</span><span class="p">])</span>
-        <span class="n">log_Z_term_max</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">log_Z_term_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">NINF</span>
 
     <span class="n">prev_snapshot_iter</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">pprev_snapshot_iter</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2358,10 +2360,7 @@
             <span class="c1">#DEBUG if rank == 0:</span>
                 <span class="c1">#DEBUG for ii in range(len(log_a)):</span>
                     <span class="c1">#DEBUG print i_ns_step, &quot;log_a, beta, Es, beta*Es &quot;, log_a[ii], beta, Emax[ii], beta*Emax[ii]</span>
-            <span class="k">if</span> <span class="n">log_Z_term_max</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="n">log_Z_term_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">log_Z_term_max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">log_a</span><span class="o">-</span><span class="n">converge_down_to_beta</span><span class="o">*</span><span class="n">Emax</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">log_Z_term_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">log_Z_term_max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">log_a</span><span class="o">-</span><span class="n">converge_down_to_beta</span><span class="o">*</span><span class="n">Emax</span><span class="p">))</span>
+            <span class="n">log_Z_term_max</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">log_Z_term_max</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">log_a</span><span class="o">-</span><span class="n">converge_down_to_beta</span><span class="o">*</span><span class="n">Emax</span><span class="p">))</span>
             <span class="n">log_Z_term_last</span> <span class="o">=</span> <span class="n">log_a</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">converge_down_to_beta</span><span class="o">*</span><span class="n">Emax</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="k">if</span> <span class="n">output_this_iter</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;log_Z_term max &quot;</span><span class="p">,</span> <span class="n">log_Z_term_max</span><span class="p">,</span> <span class="s2">&quot;last &quot;</span><span class="p">,</span> <span class="n">log_Z_term_last</span><span class="p">,</span> <span class="s2">&quot;diff &quot;</span><span class="p">,</span> <span class="n">log_Z_term_max</span><span class="o">-</span><span class="n">log_Z_term_last</span><span class="p">)</span>
@@ -3981,6 +3980,7 @@
 
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -4023,12 +4023,13 @@
           <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../index.html">ns_doc 1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">ns_run</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.2.1.
     </div>
   </body>
 </html>
