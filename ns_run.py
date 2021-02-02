@@ -2215,7 +2215,7 @@ def do_ns_loop():
             print( rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " PV ", eval_energy_PV(at), " mu ", eval_energy_mu(at), " vol ", at.get_volume())
         else:
             print( rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " mu ", eval_energy_mu(at), " vol ",at.get_volume())
-    stdout.flush()
+    sys.stdout.flush()
 
     # stats for purpose of adjusting step size
     walk_stats_adjust={}
@@ -2337,7 +2337,7 @@ def do_ns_loop():
                 else:
                     T_estimate = -1
                 print( i_ns_step, "Emax_of_step ", Emax_of_step, "T_estimate ", T_estimate, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration)
-                stdout.flush()
+                sys.stdout.flush()
                 prev_time = cur_time
                 step_size_setting_duration = 0.0
 
@@ -2746,7 +2746,7 @@ def do_ns_loop():
             del(conf_pre)
 
 
-        stdout.flush()
+        sys.stdout.flush()
         # walk clone targets
         if ns_args['debug'] >= 4:
             for i in np.where(status[rank,:] == 'c_s')[0]:
@@ -2766,7 +2766,7 @@ def do_ns_loop():
                 walkers[i_at].info['n_walks'] += movement_args['n_model_calls']
             accumulate_stats(walk_stats_adjust, walk_stats)
             accumulate_stats(walk_stats_monitor, walk_stats)
-        stdout.flush()
+        sys.stdout.flush()
 
         if ns_args['debug'] >= 20:
             print( print_prefix, "%30s" % ": LOOP_TE POST_CLONE_WALK 25 ",i_ns_step, [ "%.10f" % eval_energy(at) for at in walkers ])
