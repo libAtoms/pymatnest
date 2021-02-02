@@ -2250,7 +2250,7 @@ def do_ns_loop():
     log_X_n_term_sum = log_X_n_term_cumsum[-1]
     if ns_args['converge_down_to_T'] > 0:
         converge_down_to_beta = 1.0/(ns_args['kB']*ns_args['converge_down_to_T'])
-        log_Z_term_max = None
+        log_Z_term_max = np.NINF
 
     prev_snapshot_iter = None
     pprev_snapshot_iter = None
@@ -2316,10 +2316,7 @@ def do_ns_loop():
             #DEBUG if rank == 0:
                 #DEBUG for ii in range(len(log_a)):
                     #DEBUG print i_ns_step, "log_a, beta, Es, beta*Es ", log_a[ii], beta, Emax[ii], beta*Emax[ii]
-            if log_Z_term_max is None:
-                log_Z_term_max = np.amax(log_a-converge_down_to_beta*Emax)
-            else:
-                log_Z_term_max = max(log_Z_term_max, np.amax(log_a-converge_down_to_beta*Emax))
+            log_Z_term_max = max(log_Z_term_max, np.amax(log_a-converge_down_to_beta*Emax))
             log_Z_term_last = log_a[-1]-converge_down_to_beta*Emax[-1]
             if output_this_iter:
                 print( "log_Z_term max ", log_Z_term_max, "last ", log_Z_term_last, "diff ", log_Z_term_max-log_Z_term_last)
