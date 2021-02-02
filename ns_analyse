@@ -8,8 +8,8 @@ import ns_analyse
 
 p = optparse.OptionParser(usage='%prog [options] <infile> [ <infile> ... ]')
 p.add_option('-M','--T_min', action='store', help="""Minimum temperature""",type='float')
-p.add_option('-D','--dT', action='store', help="""Temperature step""",type='float')
-p.add_option('-n','--n_T', action='store', help="""Number of temperatures""",type='int')
+p.add_option('-D','--dT', action='store', help="""Temperature step""",type='float',default=0.0)
+p.add_option('-n','--n_T', action='store', help="""Number of temperatures""",type='int',default=1)
 p.add_option('-k','--kB', action='store', help="""Boltzmann constant (defaults to eV/K)""", type='float', default=8.6173324e-5)
 p.add_option('-a','--accurate_sum', action='store_true', help="""use more accurate sum (math.fsum)""")
 p.add_option('-v','--verbose', action='store_true', help="""Verbose output (for debugging)""")
