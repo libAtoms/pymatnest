@@ -605,6 +605,7 @@ def excepthook_mpi_abort(exctype, value, tb):
     # print_tb(tb)
     print_exception(exctype, value, tb)
     print( print_prefix, "Aborting")
+    sys.stdout.flush()
     try:
         MPI.COMM_WORLD.Abort(1)
     except:
