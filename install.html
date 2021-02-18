@@ -70,6 +70,19 @@ You have to have <code class="docutils literal notranslate"><span class="pre">mp
 <p>These instructions assume the latest (git/svn) version of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>.  It is not tested how
 far back older versions would also work.</p>
 <p>### Basic instructions for recent versions of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> and <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> version 2.0.0 or newer</p>
+<p>Create an appropriate <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> <strong>serial</strong> makefile, and compile with</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></p></li>
+</ul>
+<p>For example <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">serial</span> <span class="pre">mode=shlib</span></code>.
+Install the python files supplied with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> :</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">install-python</span></code></p></li>
+</ul>
+<p>Copy <code class="docutils literal notranslate"><span class="pre">lammps_top_dir/src/liblammps_[machine].so</span></code> to the same place where <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> installed the python packages. (Likely to be in the PYTHONAPTH, where a lammps directory is created).</p>
+<p>The input file variable <code class="docutils literal notranslate"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal notranslate"><span class="pre">[machine]</span></code> when installing <code class="docutils literal notranslate"><span class="pre">lammps_[machine].so</span></code>.
+By default it is what you set for <code class="docutils literal notranslate"><span class="pre">machine</span></code> when compiling <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, unless the library was renamed when installing.</p>
+<p>### Basic instructions for <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions Nov 2020 or before:</p>
 <p>Create an appropriate <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> <strong>parallel</strong> makefile, and compile with</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></p></li>
@@ -77,8 +90,9 @@ far back older versions would also work.</p>
 <p>Copy <code class="docutils literal notranslate"><span class="pre">lammps_top_dir/python/lammps.py</span></code> to a directory set in your <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>.</p>
 <p>Copy <code class="docutils literal notranslate"><span class="pre">lammps_top_dir/src/liblammps_[machine].so</span></code> to the same place where you copied <code class="docutils literal notranslate"><span class="pre">lammps.py</span></code>.</p>
 <p>The input file variable <code class="docutils literal notranslate"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal notranslate"><span class="pre">[machine]</span></code> when installing <code class="docutils literal notranslate"><span class="pre">lammps_[machine].so</span></code>.
-By default it is what you set for <code class="docutils literal notranslate"><span class="pre">machine</span></code> when compiling <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, unless the library was renamed when installing.</p>
-<p>### Nearly mandatory compilation flags</p>
+By default it is what you set for <code class="docutils literal notranslate"><span class="pre">machine</span></code> when compiling <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, unless the library was renamed when installing.
+Set the input variable <code class="docutils literal notranslate"><span class="pre">LAMMPS_serial=F</span></code>.</p>
+<p>### Nearly mandatory compilation flags (for all <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions)</p>
 <p>It is extremely useful, essentially required, to take advantage of the (relatively recent) <code class="docutils literal notranslate"><span class="pre">-DLAMMPS_EXCEPTIONS</span></code>
 flag, which allows lammps crashes to be handled gracefully within python.  Add it to the <code class="docutils literal notranslate"><span class="pre">LMP_INC</span></code> variable in the
 <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> makefile before compiling</p>
@@ -308,7 +322,7 @@ Example inputs are located in the folder <code class="docutils literal notransla
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.1.
     </div>
   </body>
 </html>
