@@ -57,6 +57,22 @@ far back older versions would also work.
 
 ### Basic instructions for recent versions of ``LAMMPS`` and ``mpi4py`` version 2.0.0 or newer
 
+Create an appropriate ``LAMMPS`` **serial** makefile, and compile with 
+
+- ``make [machine] mode=shlib``
+
+For example ``make serial mode=shlib``.
+Install the python files supplied with ``LAMMPS`` :                                    
+
+- ``make install-python``
+
+Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where ``LAMMPS`` installed the python packages. (Likely to be in the PYTHONAPTH, where a lammps directory is created). 
+
+The input file variable ``LAMMPS_name`` is what you set for ``[machine]`` when installing ``lammps_[machine].so``.
+By default it is what you set for ``machine`` when compiling ``LAMMPS``, unless the library was renamed when installing.
+
+### Basic instructions for ``LAMMPS`` versions Nov 2020 or before: 
+
 Create an appropriate ``LAMMPS`` **parallel** makefile, and compile with 
 
 - ``make [machine] mode=shlib``
@@ -67,8 +83,9 @@ Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where you c
 
 The input file variable ``LAMMPS_name`` is what you set for ``[machine]`` when installing ``lammps_[machine].so``.
 By default it is what you set for ``machine`` when compiling ``LAMMPS``, unless the library was renamed when installing.
+Set the input variable ``LAMMPS_serial=F``. 
 
-### Nearly mandatory compilation flags
+### Nearly mandatory compilation flags (for all ``LAMMPS`` versions)
 
 It is extremely useful, essentially required, to take advantage of the (relatively recent) ``-DLAMMPS_EXCEPTIONS``
 flag, which allows lammps crashes to be handled gracefully within python.  Add it to the ``LMP_INC`` variable in the
