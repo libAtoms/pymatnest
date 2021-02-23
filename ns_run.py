@@ -364,6 +364,9 @@ def usage():
     ``LAMMPS_name=str``
        |  '', arch name for lammps shared object file
 
+    ``LAMMPS_serial=[T | F]``
+       |  default True, lammps library is serial so do not pass COMM_SELF as a communicator
+
     ``LAMMPS_header=str``
        |  lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps
 
@@ -573,6 +576,7 @@ def usage():
     sys.stderr.write("LAMMPS_fix_gmc=[T | F]\n") 
     sys.stderr.write("LAMMPS_init_cmds=str (MANDATORY if energy_calculator=lammps)\n")
     sys.stderr.write("LAMMPS_name=str ('', arch name for lammps shared object file)\n")
+    sys.stderr.write("LAMMPS_serial=[T | F] (T, is lammps library serial)\n")
     sys.stderr.write("LAMMPS_header=str (lammpslib.py value default, override lammpslib.py header commands for energy_calculator=lammps)\n")
     sys.stderr.write("LAMMPS_header_extra=str ('', extra lammpslib.py header commands for energy_calculator=lammps)\n")
     sys.stderr.write("LAMMPS_atom_types=symbol int [, symbol int ] ... ('', mapping from atomic symbols to type numbers for LAMMPS ASE interface)\n")
@@ -3112,7 +3116,8 @@ def main():
                 ns_args['LAMMPS_init_cmds'] = args.pop('LAMMPS_init_cmds')
             except:
                 exit_error("need LAMMPS initialization commands LAMMPS_init_cmds\n",1)
-            ns_args['LAMMPS_name'] = args.pop('LAMMPS_name', '')
+            ns_args['LAMMPS_name'] = args.pop('LAMMPS_name', os.environ.get('LAMMPS_name', ''))
+            ns_args['LAMMPS_serial'] = str_to_logical(args.pop('LAMMPS_serial', 'T'))
             ns_args['LAMMPS_header'] = args.pop('LAMMPS_header', 'units metal; atom_style atomic; atom_modify map array sort 0 0')
             ns_args['LAMMPS_header_extra'] = args.pop('LAMMPS_header_extra', '')
             ns_args['LAMMPS_atom_types'] = None
@@ -3409,15 +3414,23 @@ def main():
             init_cmds = [s.strip() for s in ns_args['LAMMPS_init_cmds'].split(';')]
             header_cmds = [s.strip() for s in ns_args['LAMMPS_header'].split(';')]
             header_extra_cmds = [s.strip() for s in ns_args['LAMMPS_header_extra'].split(';')]
+            if ns_args['LAMMPS_serial']:
+                lammps_comm = None
+            else:
+                lammps_comm = calculator_comm
             if ns_args['debug'] >= 5:
                 pot = LAMMPSlib(lmpcmds=init_cmds, atom_types=ns_args['LAMMPS_atom_types'], log_file='lammps.%d.log' % rank, keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
-                                lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=calculator_comm, read_molecular_info=ns_args['LAMMPS_molecular_info'])
+                                lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=lammps_comm, read_molecular_info=ns_args['LAMMPS_molecular_info'])
             else:
                 pot = LAMMPSlib(lmpcmds=init_cmds, atom_types=ns_args['LAMMPS_atom_types'], keep_alive=True, lammps_name=ns_args['LAMMPS_name'],
-                                lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=calculator_comm, read_molecular_info=ns_args['LAMMPS_molecular_info'])
-            print( "PRE START_LAMMPS")
+                                lammps_header=header_cmds, lammps_header_extra=header_extra_cmds, comm=lammps_comm, read_molecular_info=ns_args['LAMMPS_molecular_info'])
+            if rank == 0:
+                print( "PRE START_LAMMPS")
+                sys.stdout.flush()
             pot.start_lammps() # so that top level things like units will be set
-            print( "POST START_LAMMPS")
+            if rank == 0:
+                print( "POST START_LAMMPS")
+                sys.stdout.flush()
             pot.first_propagate=True
         else:
             exit_error("Need some way of initializing calculator\n",3)
@@ -3490,7 +3503,8 @@ def main():
             Z_list.append(int(species_fields[0]))
             if len(species_fields) == 3:
                 if not warned_explicit_mass:
-                    sys.stderr.write("WARNING: setting masses explicitly.  Not recommended, do only if you're sure it's necessary\n")
+                    if rank == 0:
+                        sys.stderr.write("WARNING: setting masses explicitly.  Not recommended, do only if you're sure it's necessary\n")
                     warned_explicit_mass=True
                 type_mass = float(species_fields[2])
                 mass_list.append(type_mass)
@@ -3532,6 +3546,7 @@ def main():
 
             if comm is not None:
                 ns_args['restart_file'] = comm.bcast(ns_args['restart_file'], root=0)
+        sys.stdout.flush()
 
         # set up walkers
         walkers=[]
@@ -3751,6 +3766,8 @@ def main():
             if do_calc_quip:
                 walkers = [quippy.Atoms(at) for at in walkers]
 
+        sys.stdout.flush()
+
         # add GMC direction if needed
         movement_args['do_GMC'] = ((movement_args['atom_algorithm'] == 'MC') and (movement_args['MC_atom_Galilean']))
         if movement_args['do_GMC']:
@@ -3825,6 +3842,7 @@ def main():
                     MPI.Finalize()
                 sys.exit(0)
 
+        sys.stdout.flush()
         n_atoms = len(walkers[0])
         # do NS
         #QUIP_IO if have_quippy:
@@ -3879,6 +3897,7 @@ def main():
             #         break
             #    i += 1
 
+        sys.stdout.flush()
         if ns_args['E_dump_interval'] > 0 and rank == 0:
             E_dump_io = open(ns_args['out_file_prefix']+'E_dump', "w")
             E_dump_io.write("n_walkers %d\n" % ns_args['n_walkers'])
@@ -3914,6 +3933,7 @@ def main():
                     print( "WARNING: got restart file, but no corresponding energies file, so creating new one from scratch")
                     energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
 
+        sys.stdout.flush()
 
         if ns_args['profile'] == rank:
             import cProfile
