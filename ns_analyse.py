@@ -31,19 +31,30 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
     Es=[]
     Vs=[]
     lines = itertools.islice(inputs, line_skip, line_end, interval)
+    n_fields = None
     for line in lines:
         fields = line.split()
+        if n_fields is not None and n_fields != len(fields):
+            sys.stderr.write(f'Mismatch field # prev {n_fields} cur {len(fields)}, skipping\n')
+            continue
         if len(fields) == 3:
             try:
-                Es.append(float(fields[1]))
-                Vs.append(float(fields[2]))
+                E = float(fields[1])
+                V = float(fields[2])
             except:
                 continue
+            if n_fields is None:
+                n_fields = 3
+            Es.append(E)
+            Vs.append(V)
         elif len(fields) == 2:
             try:
-                Es.append(float(fields[1]))
+                E = float(fields[1])
             except:
                 continue
+            if n_fields is None:
+                n_fields = 2
+            Es.append(E)
         else: # silently skip lines with problems
             sys.stderr.write("WARNING: input line with problem: number of fields not 2 or 3, or not floats\n")
             continue
