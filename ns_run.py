@@ -1,4 +1,5 @@
 import re, math, time, os
+import pprint
 import numpy as np, ase, ase.io
 import ns_rng
 import stacktrace
@@ -3372,8 +3373,8 @@ def main():
             exit_error(str(args)+"\nUnknown arguments read in\n", 2)
 
         if rank == 0:
-            print( "ns_args ",ns_args)
-            print( "movement_args ",movement_args)
+            print("ns_args ", pprint.pformat(ns_args))
+            print("movement_args ", pprint.pformat(movement_args))
 
 
         # initialize in-situ analyzers
