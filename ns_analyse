@@ -19,6 +19,7 @@ p.add_argument('-l','--line_end', action='store', help="""line to ened analysis 
 p.add_argument('-i','--interval', action='store', help="""interval between lines to use""", type=int, default=1)
 p.add_argument('-P','--delta_pressure', action='store', help="""delta pressure to use for reweighting with flat V prior""", type=float, default=0.0)
 p.add_argument('-V','--dump_terms', action='store', help="""dump weight of each sample""", type=float, default=-1.0)
+p.add_argument('-S','--entropy', action='store_true', help="""compute and print entropy""")
 p.add_argument('-K','--kolmogorov_smirnov_test', action='store_true', help="""Do Kolmogorov-Smirnov test for Gaussianity of distribution of Vs (when --delta_pressure is set)""")
 p.add_argument('files', help="""input energies files""")
 
@@ -52,7 +53,8 @@ except:
 if reweight_delta_P != 0.0:
     Es += reweight_delta_P*Vs
 
-E_min = np.amin(Es)
+E_min_i = np.argmin(Es)
+E_min = Es[E_min_i]
 Es -= E_min
 
 if args.kolmogorov_smirnov_test:
@@ -97,6 +99,12 @@ def analyse(log_a, T, interval=1):
         sys.stderr.write("T %f extra DoF U_offset %f C_offset %f remaining Cvp %f\n" % (T, n_Extra_DOF/(2.0*beta), n_Extra_DOF*k_Boltzmann/2.0, Cvp-n_Extra_DOF*k_Boltzmann/2.0))
 
     log_Z = math.log(Z)+shift-beta*E_min
+    # Z(T=0) contributed entirely by lowest energy, since all others are exponentially suppressed by exp(-beta E_i) term
+    # Z(T=0) = a(E_min) * exp (- beta*E_min)
+    # Helmholtz free energy F = - log_Z / beta
+    # F(T=0) = -log_a(E_min)/beta + E_min
+    # shift F so that it equals lowest internal energy (really E+PV) of all NS samples
+    Helmholtz_F = -log_Z/beta + log_a[E_min_i]/beta
 
     Z_max = np.amax(Z_term)
     low_percentile_config = np.where(Z_term > Z_max/10.0)[0][0]*interval
@@ -124,9 +132,7 @@ def analyse(log_a, T, interval=1):
                 print("Z_term",i, Es[i]+E_min, Vs[i], Z_term[i])
         print("#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract)
 
-    return (log_Z, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity,thermal_exp)
-
-
+    return (log_Z, Helmholtz_F, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity, thermal_exp)
 
 
 log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=args.interval)
@@ -134,12 +140,23 @@ log_a = ns_analyse.calc_log_a(len(Es), n_walkers, n_cull, interval=args.interval
 if comm_rank == 0:
     # check this: a = N_w/(N_w+N_c)
     print("# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull)))
-    line = "# T      log_Z(T)               U(T)          Cvp(T)       low_pct_i(T) mode_i(T)   high_pct_i(T)   low_pct_iter(T) mode_iter(T)   high_pct_iter(T)  Z_fract(T)"
+    n_therm = 4
+    if args.entropy:
+        n_therm += 1
+    fmt = "{:7g} "+" ".join(["{:11g}"]*n_therm)+" "+" ".join(["{:8d}"]*3)+" "+" ".join(["{:15d}"]*3)+" {:6g}"
+    header_labels=["T","log_Z(T)","F(T)"]
+    if args.entropy:
+        header_labels.append("S")
+    header_labels.extend(["U(T)","Cvp(T)","low_pct_i(T)","mode_i(T)","high_pct_i(T)","low_pct_iter(T)","mode_iter(T)","high_pct_iter(T)","Z_fract(T)"])
     if Vs is not None:
-        line += " V(T)   thermal_exp(T)"
+        fmt += " {:8g} {:14g}"
+        header_labels.append("V(T)")
+        header_labels.append("thermal_exp(T)")
     if args.kolmogorov_smirnov_test:
-        line += " KS_V_gaussian(T)"
-    print(line)
+        fmt += " {:13g}"
+        header_labels.append("KS_Gauss_V(T)")
+    header_fmt = "#"+fmt.replace("f","s").replace("g","s").replace("d","s").replace(":",":^")
+    print(header_fmt.format(*header_labels))
 
 data = []
 for i_T in range(comm_rank, n_T, comm_size):
@@ -147,13 +164,14 @@ for i_T in range(comm_rank, n_T, comm_size):
     T = T_min + i_T * dT
     if args.profile and i_T == 0:
         import cProfile
-        cProfile.run('(log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, thermal_exp) = analyse(log_a, T, args.interval)','ns_analyse.stats')
+        cProfile.run('(log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, args.interval)','ns_analyse.stats')
     else:
-        (log_Z, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, thermal_exp) = analyse(log_a, T, args.interval)
-    if args.kolmogorov_smirnov_test:
-        data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity) )
+        (log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, thermal_exp) = analyse(log_a, T, args.interval)
+    if args.entropy:
+        S = (U - Helmholtz_F)/(k_Boltzmann * T)
     else:
-        data.append( (T, log_Z, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, thermal_exp) )
+        S = None
+    data.append( (T, log_Z, Helmholtz_F, S, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity, thermal_exp) )
 
 try:
     data = MPI.COMM_WORLD.gather(data, root = 0)
@@ -164,4 +182,4 @@ except:
 if comm_rank == 0:
     data = sorted(data, key = lambda x: x[0])
     for row in data:
-        print(' '.join(map(str,row)))
+        print(fmt.format(*[r for r in row if r is not None]))

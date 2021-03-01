@@ -1,10 +1,8 @@
-from __future__ import print_function
-from __future__ import division      
 import re, math, time, os
+import pprint
 import numpy as np, ase, ase.io
 import ns_rng
 import stacktrace
-#from itertools import izip
 from copy import deepcopy
 import pick_interconnected_clump
 try:
@@ -612,6 +610,7 @@ def excepthook_mpi_abort(exctype, value, tb):
     # print_tb(tb)
     print_exception(exctype, value, tb)
     print( print_prefix, "Aborting")
+    sys.stdout.flush()
     try:
         MPI.COMM_WORLD.Abort(1)
     except:
@@ -1312,7 +1311,7 @@ def do_cell_step(at, Emax, p_accept, transform):
         if ns_args['debug'] >= 4:
             print( "eval_energy got exception ", err)
         new_energy = 2.0*abs(Emax)
-        #print "error in eval_energy setting new_energy = 2*abs(Emax)=" , new_energy
+        #print("error in eval_energy setting new_energy = 2*abs(Emax)=" , new_energy)
 
     # accept or reject
     if new_energy < Emax: # accept
@@ -2221,6 +2220,7 @@ def do_ns_loop():
             print( rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " PV ", eval_energy_PV(at), " mu ", eval_energy_mu(at), " vol ", at.get_volume())
         else:
             print( rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " mu ", eval_energy_mu(at), " vol ",at.get_volume())
+    sys.stdout.flush()
 
     # stats for purpose of adjusting step size
     walk_stats_adjust={}
@@ -2342,6 +2342,7 @@ def do_ns_loop():
                 else:
                     T_estimate = -1
                 print( i_ns_step, "Emax_of_step ", Emax_of_step, "T_estimate ", T_estimate, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration)
+                sys.stdout.flush()
                 prev_time = cur_time
                 step_size_setting_duration = 0.0
 
@@ -2356,10 +2357,10 @@ def do_ns_loop():
                 energy_io.write("%d %.60f %.60f\n" % (i_ns_step, E, V))
             energy_io.flush()
 
-            ## Save the energies and corresponding iteration numbers in a list then print them out only when printing a snapshot
+            ## Save the energies and corresponding iteration numbers in a list then print(them out only when printing a snapshot)
             #Emax_save.extend(Emax)
             #i_ns_step_save.extend(n_cull*[i_ns_step])
-            ## if it is time to print (i.e. at the same iteration when a snapshot is written, or at every iter if no snapshots - for smooth restarts)
+            ## if it is time to print((i.e. at the same iteration when a snapshot is written, or at every iter if no snapshots - for smooth restarts))
             #if ns_args['snapshot_interval'] < 0 or i_ns_step % ns_args['snapshot_interval'] == ns_args['snapshot_interval']-1:
             #    for istep,E in zip(i_ns_step_save,Emax_save):
             #        energy_io.write("%d %.60f\n" % (istep, E))
@@ -2749,6 +2750,8 @@ def do_ns_loop():
             del(move_args_pre)
             del(conf_pre)
 
+
+        sys.stdout.flush()
         # walk clone targets
         if ns_args['debug'] >= 4:
             for i in np.where(status[rank,:] == 'c_s')[0]:
@@ -2763,11 +2766,12 @@ def do_ns_loop():
             if track_traj_io is not None:
                 walkers[i_at].info['iter'] = i_ns_step
                 ase.io.write(track_traj_io, walkers[i_at], format=ns_args['config_file_format'])
-            #print "WALK on rank ", rank, "at iteration ", i_ns_step, " walker ", i_at 
+            #print("WALK on rank ", rank, "at iteration ", i_ns_step, " walker ", i_at )
             if ns_args['debug'] >= 10 and size <= 1:
                 walkers[i_at].info['n_walks'] += movement_args['n_model_calls']
             accumulate_stats(walk_stats_adjust, walk_stats)
             accumulate_stats(walk_stats_monitor, walk_stats)
+        sys.stdout.flush()
 
         if ns_args['debug'] >= 20:
             print( print_prefix, "%30s" % ": LOOP_TE POST_CLONE_WALK 25 ",i_ns_step, [ "%.10f" % eval_energy(at) for at in walkers ])
@@ -2819,7 +2823,7 @@ def do_ns_loop():
                 if track_traj_io is not None:
                     walkers[i_at].info['iter'] = i_ns_step
                     ase.io.write(track_traj_io, walkers[i_at], format=ns_args['config_file_format'])
-                #print "WALK EXTRA on rank ", rank, "at iteration ", i_ns_step, " walker ", r_i
+                #print("WALK EXTRA on rank ", rank, "at iteration ", i_ns_step, " walker ", r_i)
                 if ns_args['debug'] >= 10 and size <= 1:
                     walkers[r_i].info['n_walks'] += movement_args['n_steps']
                 accumulate_stats(walk_stats_adjust, walk_stats)
@@ -3374,8 +3378,8 @@ def main():
             exit_error(str(args)+"\nUnknown arguments read in\n", 2)
 
         if rank == 0:
-            print( "ns_args ",ns_args)
-            print( "movement_args ",movement_args)
+            print("ns_args ", pprint.pformat(ns_args))
+            print("movement_args ", pprint.pformat(movement_args))
 
 
         # initialize in-situ analyzers
