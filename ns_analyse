@@ -19,6 +19,7 @@ p.add_argument('-l','--line_end', action='store', help="""line to ened analysis 
 p.add_argument('-i','--interval', action='store', help="""interval between lines to use""", type=int, default=1)
 p.add_argument('-P','--delta_pressure', action='store', help="""delta pressure to use for reweighting with flat V prior""", type=float, default=0.0)
 p.add_argument('-V','--dump_terms', action='store', help="""dump weight of each sample""", type=float, default=-1.0)
+p.add_argument('-S','--entropy', action='store_true', help="""compute and print entropy""")
 p.add_argument('-K','--kolmogorov_smirnov_test', action='store_true', help="""Do Kolmogorov-Smirnov test for Gaussianity of distribution of Vs (when --delta_pressure is set)""")
 p.add_argument('files', help="""input energies files""")
 
@@ -140,18 +141,18 @@ if comm_rank == 0:
     # check this: a = N_w/(N_w+N_c)
     print("# n_walkers ",n_walkers," n_cull ",n_cull," simple log(alpha) ",math.log(float(n_walkers)) - math.log(float(n_walkers+n_cull)))
     n_therm = 4
-    if opt.entropy:
+    if args.entropy:
         n_therm += 1
     fmt = "{:7g} "+" ".join(["{:11g}"]*n_therm)+" "+" ".join(["{:8d}"]*3)+" "+" ".join(["{:15d}"]*3)+" {:6g}"
     header_labels=["T","log_Z(T)","F(T)"]
-    if opt.entropy:
+    if args.entropy:
         header_labels.append("S")
     header_labels.extend(["U(T)","Cvp(T)","low_pct_i(T)","mode_i(T)","high_pct_i(T)","low_pct_iter(T)","mode_iter(T)","high_pct_iter(T)","Z_fract(T)"])
     if Vs is not None:
         fmt += " {:8g} {:14g}"
         header_labels.append("V(T)")
         header_labels.append("thermal_exp(T)")
-    if opt.kolmogorov_smirnov_test:
+    if args.kolmogorov_smirnov_test:
         fmt += " {:13g}"
         header_labels.append("KS_Gauss_V(T)")
     header_fmt = "#"+fmt.replace("f","s").replace("g","s").replace("d","s").replace(":",":^")
@@ -163,10 +164,10 @@ for i_T in range(comm_rank, n_T, comm_size):
     T = T_min + i_T * dT
     if args.profile and i_T == 0:
         import cProfile
-        cProfile.run('(log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, opt.interval)','ns_analyse.stats')
+        cProfile.run('(log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity) = analyse(log_a, T, args.interval)','ns_analyse.stats')
     else:
-        (log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, thermal_exp) = analyse(log_a, T, opt.interval)
-    if opt.entropy:
+        (log_Z, Helmholtz_F, U, Cvp, low_pct, mode, high_pct, Z_fract, V, ks_gaussianity, thermal_exp) = analyse(log_a, T, args.interval)
+    if args.entropy:
         S = (U - Helmholtz_F)/(k_Boltzmann * T)
     else:
         S = None
