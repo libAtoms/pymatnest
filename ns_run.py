@@ -3758,7 +3758,7 @@ def main():
                 key_found = False
                 for key in at.info: # check if 'volume=' info is present in the file used for restart
                     if key == 'volume':
-                        movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0/at.get_number_of_atoms()
+                        movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0/len(at)
                         key_found = True
                 if not key_found:
                     print( "WARNING: no volume information was found in the restart file. If volume changes will be done, the starting stepsize will be the default")
