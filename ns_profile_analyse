@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import pstats, sys
 
@@ -8,11 +8,11 @@ if len(sys.argv) != 2:
 
 import pstats
 p = pstats.Stats(sys.argv[1])
-print "BASIC STATS"
+print("BASIC STATS")
 p.sort_stats('cumulative').print_stats()
-print ""
-print "CALLERS"
+print("")
+print("CALLERS")
 p.sort_stats('cumulative').print_callers()
-print ""
-print "CALLEES"
+print("")
+print("CALLEES")
 p.sort_stats('cumulative').print_callees()
