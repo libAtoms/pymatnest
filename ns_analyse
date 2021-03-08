@@ -21,6 +21,7 @@ p.add_argument('-P','--delta_pressure', action='store', help="""delta pressure t
 p.add_argument('-V','--dump_terms', action='store', help="""dump weight of each sample""", type=float, default=-1.0)
 p.add_argument('-S','--entropy', action='store_true', help="""compute and print entropy""")
 p.add_argument('-K','--kolmogorov_smirnov_test', action='store_true', help="""Do Kolmogorov-Smirnov test for Gaussianity of distribution of Vs (when --delta_pressure is set)""")
+p.add_argument('-q','--quiet', action='store_true', help="""No progress output""")
 p.add_argument('files', help="""input energies files""")
 
 args = p.parse_args()
@@ -160,7 +161,13 @@ if comm_rank == 0:
 
 data = []
 for i_T in range(comm_rank, n_T, comm_size):
-    sys.stderr.write("i_T %d\n" % i_T)
+    if not args.quiet:
+        if (i_T + 1) % 10 == 0:
+            if (i_T + 1) % 100 == 0:
+                sys.stderr.write(f'{(i_T+1)//100 % 10}')
+            else:
+                sys.stderr.write('.')
+            sys.stderr.flush()
     T = T_min + i_T * dT
     if args.profile and i_T == 0:
         import cProfile
@@ -172,6 +179,8 @@ for i_T in range(comm_rank, n_T, comm_size):
     else:
         S = None
     data.append( (T, log_Z, Helmholtz_F, S, U, Cvp, low_pct, mode, high_pct, int(low_pct/n_cull), int(mode/n_cull), int(high_pct/n_cull), Z_fract, V, ks_gaussianity, thermal_exp) )
+if not args.quiet:
+    sys.stderr.write('\n')
 
 try:
     data = MPI.COMM_WORLD.gather(data, root = 0)
