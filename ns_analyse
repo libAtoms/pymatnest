@@ -91,7 +91,8 @@ def analyse(log_a, T, interval=1):
 
     if Vs is not None:
         V = sum(Z_term*Vs)/Z
-        thermal_exp = -1.0/V * (sum(Z_term*Vs*Vs)*(-beta)*Z - sum(Z_term*Vs)*sum(Z_term*Vs)*(-beta)) / Z**2
+        #thermal_exp = -1.0/V * (sum(Z_term*Vs*Vs)*(-beta)*Z - sum(Z_term*Vs)*sum(Z_term*Vs)*(-beta)) / Z**2
+        thermal_exp = -1.0/V * k_Boltzmann *beta*beta * (sum(Z_term*Vs)*sum(Z_term*Es)/Z - sum(Z_term*Vs*Es)) / Z
     else:
         V = None
         thermal_exp = None
