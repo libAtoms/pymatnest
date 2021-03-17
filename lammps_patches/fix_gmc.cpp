@@ -41,8 +41,8 @@ FixGMC::FixGMC(LAMMPS *lmp, int narg, char **arg) :
   dynamic_group_allow = 1;
   time_integrate = 1;
 
-  seed = force->inumeric(FLERR,arg[3]);
-  Emax = force->numeric(FLERR,arg[4]);
+  seed = utils::inumeric(FLERR,arg[3],true,lmp);
+  Emax = utils::numeric(FLERR,arg[4],true,lmp);
 
   random = new RanMars(lmp,seed + comm->me);
   memory->create(dx,atom->nmax,3,"gmc:dx");
