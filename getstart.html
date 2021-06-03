@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Getting started &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -44,13 +45,13 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="getting-started">
+  <section id="getting-started">
 <h1>Getting started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-ns_run">
+<section id="module-ns_run">
 <span id="list-of-input-parameters"></span><h2>List of input parameters<a class="headerlink" href="#module-ns_run" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt id="ns_run.usage">
-<code class="sig-prename descclassname"><span class="pre">ns_run.</span></code><code class="sig-name descname"><span class="pre">usage</span></code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ns_run.usage" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="ns_run.usage">
+<span class="sig-prename descclassname"><span class="pre">ns_run.</span></span><span class="sig-name descname"><span class="pre">usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ns_run.html#usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ns_run.usage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:</p>
 <dl class="glossary">
 <dt id="term-max_volume_per_atom-float"><code class="docutils literal notranslate"><span class="pre">max_volume_per_atom=float</span></code><a class="headerlink" href="#term-max_volume_per_atom-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
@@ -620,10 +621,10 @@
 </dl>
 </dd></dl>
 
-</div>
-<div class="section" id="example-input-files">
+</section>
+<section id="example-input-files">
 <h2>Example input files<a class="headerlink" href="#example-input-files" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="lj-cluster-with-the-supplied-fortran-code-using-mc">
+<section id="lj-cluster-with-the-supplied-fortran-code-using-mc">
 <h3>LJ Cluster with the supplied fortran code, using MC<a class="headerlink" href="#lj-cluster-with-the-supplied-fortran-code-using-mc" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of 6 Lennard-Jones atoms
 in a cubic cell with volume 648 Angstrom^3, using the potential implemented in the supplied fortran routine,
@@ -672,8 +673,8 @@ thermodynamic variables will not be necessarily well converged.</p>
 <span class="n">debug</span><span class="o">=</span><span class="mi">0</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="lj-cluster-with-quip-using-md">
+</section>
+<section id="lj-cluster-with-quip-using-md">
 <h3>LJ Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>, using MD<a class="headerlink" href="#lj-cluster-with-quip-using-md" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of 6 Lennard-Jones atoms
 in a cubic cell with volume 648 Angstrom^3, using the potential implemented in <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>
@@ -729,8 +730,8 @@ and volume of the cell will not be changed, a cluster will be formed by the atom
 &lt;/LJ_params&gt;
 </pre></div>
 </div>
-</div>
-<div class="section" id="periodic-lj-with-lammps-using-md">
+</section>
+<section id="periodic-lj-with-lammps-using-md">
 <h3>Periodic LJ with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-lj-with-lammps-using-md" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of 64 Lennard-Jones atoms
 in a cell with variable shape and size at the set pressure value, using the potential implemented in <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>
@@ -785,8 +786,8 @@ and using MD trajectory for generating a new sample configuration.</p>
 <span class="n">debug</span><span class="o">=</span><span class="mi">0</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="periodic-binary-lj-with-the-supplied-fortran-code-or-lammps-using-md">
+</section>
+<section id="periodic-binary-lj-with-the-supplied-fortran-code-or-lammps-using-md">
 <h3>Periodic binary LJ with the supplied fortran code or <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-binary-lj-with-the-supplied-fortran-code-or-lammps-using-md" title="Permalink to this headline">¶</a></h3>
 <p>This input file will start a calculation of a binary Lennard-Jones system, with 32 A-type atoms and 32 B-type atoms.
 Note that in case of multicomponent systems swap moves have to be introduced, when the coordinates of different atomic types are swapped.
@@ -855,8 +856,8 @@ The cell is of variable shape and size at the set pressure value.</p>
 <span class="n">debug</span><span class="o">=</span><span class="mi">0</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="molecule-with-lammps-using-md">
+</section>
+<section id="molecule-with-lammps-using-md">
 <h3>Molecule with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#molecule-with-lammps-using-md" title="Permalink to this headline">¶</a></h3>
 <p>Start a nested sampling simulation with a polymer in a cell with constant volume and shape. Initially the random placement of atoms has to be turned off,
 and a configuration file has to be read. The initial walk is done with a heuristic choice for E_max.
@@ -926,11 +927,11 @@ The <code class="docutils literal notranslate"><span class="pre">atom_style</spa
 </div>
 <p>If multiple bonds or angles have to be defined per atom, use a comma to separate the entries without spaces, and if no entries are needed for an atom
 still use a single underscore.</p>
-</div>
-</div>
-<div class="section" id="some-tips-on-setting-the-input-parameters">
+</section>
+</section>
+<section id="some-tips-on-setting-the-input-parameters">
 <h2>Some tips on setting the input parameters<a class="headerlink" href="#some-tips-on-setting-the-input-parameters" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="setting-the-random-walk-parameters">
+<section id="setting-the-random-walk-parameters">
 <span id="rwp-section-reference"></span><h3>Setting the random walk parameters<a class="headerlink" href="#setting-the-random-walk-parameters" title="Permalink to this headline">¶</a></h3>
 <p>When the walker configuration with the highest energy is chosen and replaced by a clone of
 another randomly picked walker, this clone has to be perturbed in order to satisfy the criteria
@@ -959,8 +960,8 @@ It is important to consider that one <code class="docutils literal notranslate">
 several MD time steps or MC sweeps can be (and should be) performed consecutively, set by the parameter <code class="docutils literal notranslate"><span class="pre">atom_traj_len</span></code>.
 If <code class="docutils literal notranslate"><span class="pre">atom_traj_len=8</span></code> and an atomic step is chosen, then 8 model calls will be performed out of the
 total <code class="docutils literal notranslate"><span class="pre">n_model_calls_expected</span></code>.</p>
-</div>
-<div class="section" id="minimum-lattice-height-mc-cell-min-aspect-ratio">
+</section>
+<section id="minimum-lattice-height-mc-cell-min-aspect-ratio">
 <h3>Minimum lattice height: <code class="docutils literal notranslate"><span class="pre">MC_cell_min_aspect_ratio</span></code><a class="headerlink" href="#minimum-lattice-height-mc-cell-min-aspect-ratio" title="Permalink to this headline">¶</a></h3>
 <p>The fully flexible cell is introduced to remove the finite size effect whereby
 it may not be possible to arrange a fixed number of particles
@@ -978,12 +979,12 @@ a higher <code class="docutils literal notranslate"><span class="pre">MC_cell_mi
 system’s behaviour is dominated by the fictitious periodicity imposed by the boundary
 conditions.
 (source: R. J. N. Baldock, <em>Classical Statistical Mechanics with Nested Sampling</em>, Ph.D. thesis, University of Cambridge (2014).)</p>
-<div class="figure align-center">
+<figure class="align-center">
 <a class="reference internal image-reference" href="_images/doc_figure_mlh.jpg"><img alt="_images/doc_figure_mlh.jpg" src="_images/doc_figure_mlh.jpg" style="width: 500px;" /></a>
-</div>
-</div>
-</div>
-<div class="section" id="restart-a-run">
+</figure>
+</section>
+</section>
+<section id="restart-a-run">
 <h2>Restart a run<a class="headerlink" href="#restart-a-run" title="Permalink to this headline">¶</a></h2>
 <p>If one needs to continue a run, i.e. perform more iteration cycles, the input file has to be modified with adding the following line</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">restart_file</span><span class="o">=</span><span class="n">my_output</span><span class="o">.</span><span class="n">snapshot</span><span class="o">.</span><span class="n">all</span><span class="o">.</span><span class="n">extxyz</span>
@@ -993,8 +994,8 @@ conditions.
 where all the walker configurations can be read from. This file should be produced by
 concatenating the last saved snapshot files of all the processors. You might also need to increase the <code class="docutils literal notranslate"><span class="pre">n_iter_per_walker</span></code>
 value if the run already reached the number of iterations set previously. (Note: you do not have to comment out the <code class="docutils literal notranslate"><span class="pre">start_species</span></code> option.)</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -1081,7 +1082,7 @@ value if the run already reached the number of iterations set previously. (Note:
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>

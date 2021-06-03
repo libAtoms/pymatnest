@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Installation and quick start guide &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -44,28 +45,28 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="installation-and-quick-start-guide">
+  <section id="installation-and-quick-start-guide">
 <h1>Installation and quick start guide<a class="headerlink" href="#installation-and-quick-start-guide" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="system-requirements">
+<section id="system-requirements">
 <h2>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">¶</a></h2>
 <p>You have to have <code class="docutils literal notranslate"><span class="pre">numpy</span></code> and <code class="docutils literal notranslate"><span class="pre">ASE</span></code> installed (check that you have a newer ASE
 version otherwise the extended xyz version will not be recognised).
 You have to have <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> and <code class="docutils literal notranslate"><span class="pre">psutil</span></code> too.</p>
-</div>
-<div class="section" id="compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">
+</section>
+<section id="compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">
 <h2>Compilation of the streamlined FORTRAN models and MC/MD walkers.<a class="headerlink" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers" title="Permalink to this headline">¶</a></h2>
 <ol class="arabic simple">
 <li><p>edit <code class="docutils literal notranslate"><span class="pre">Makefile.arch</span></code> (by default Linux appropriate variables are set)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">make</span></code></p></li>
 </ol>
-</div>
-<div class="section" id="using-with-quip">
+</section>
+<section id="using-with-quip">
 <h2>Using with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code><a class="headerlink" href="#using-with-quip" title="Permalink to this headline">¶</a></h2>
 <p>Make sure your <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> is set correctly to find the <code class="docutils literal notranslate"><span class="pre">quippy</span></code> module.
 (Note: Check the <code class="docutils literal notranslate"><span class="pre">QUIP_ARCH</span></code> with which you build quippy, as some might result in segmentation fault when running
 <code class="docutils literal notranslate"><span class="pre">ns_run</span></code> (e.g. try gfortan_openmpi if gfortran fails)</p>
-</div>
-<div class="section" id="using-with-lammps">
+</section>
+<section id="using-with-lammps">
 <h2>Using with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#using-with-lammps" title="Permalink to this headline">¶</a></h2>
 <p>These instructions assume the latest (git/svn) version of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>.  It is not tested how
 far back older versions would also work.</p>
@@ -148,8 +149,8 @@ as above.</p>
 <p><strong>Important note:</strong> Check the <code class="docutils literal notranslate"><span class="pre">lammps.py</span></code> file as the path definition used to have a bug in the line:</p>
 <p><code class="docutils literal notranslate"><span class="pre">else:</span> <span class="pre">self.lib</span> <span class="pre">=</span> <span class="pre">CDLL(join(modpath,&quot;/liblammps_%s.so&quot;</span> <span class="pre">%</span> <span class="pre">name),RTLD_GLOBAL)</span></code></p>
 <p>You HAVE TO delete the <code class="docutils literal notranslate"><span class="pre">/</span></code> before <code class="docutils literal notranslate"><span class="pre">liblammps</span></code> otherwise it is interpreted as an absolute path!!!</p>
-</div>
-<div class="section" id="running">
+</section>
+<section id="running">
 <h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
 <p>To start a nested sampling run type</p>
 <blockquote>
@@ -172,8 +173,8 @@ This appears to be necessary on some HPC machines where mpirun copies the execut
 because <code class="docutils literal notranslate"><span class="pre">ns_run</span></code> by default looks for modules in the same directory as the top level
 python script itself. If it is still not sufficient, you might have to copy the entire <code class="docutils literal notranslate"><span class="pre">ns_run_dir</span></code>
 to the directory where the jobs are submitted from.</p>
-</div>
-<div class="section" id="running-on-archer-uk-national-supercomputing-service">
+</section>
+<section id="running-on-archer-uk-national-supercomputing-service">
 <h2>Running on ARCHER (UK National Supercomputing Service)<a class="headerlink" href="#running-on-archer-uk-national-supercomputing-service" title="Permalink to this headline">¶</a></h2>
 <p>Install the latest <code class="docutils literal notranslate"><span class="pre">ASE</span></code> (3.9 or later) version and add that directory to your <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>, as the
 default version on ARCHER is just 3.8.</p>
@@ -185,8 +186,8 @@ able to read all the relevant python files.</p>
 <p><code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span> <span class="pre">pc-numpy</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">module</span> <span class="pre">load</span> <span class="pre">gcc</span></code></p>
 </div></blockquote>
-</div>
-<div class="section" id="analysis">
+</section>
+<section id="analysis">
 <h2>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h2>
 <p>To analyse the results you can use</p>
 <blockquote>
@@ -196,8 +197,8 @@ able to read all the relevant python files.</p>
 <blockquote>
 <div><p><code class="docutils literal notranslate"><span class="pre">ns_analyse</span> <span class="pre">--help</span></code></p>
 </div></blockquote>
-</div>
-<div class="section" id="temperature-averaged-analysis-workflow">
+</section>
+<section id="temperature-averaged-analysis-workflow">
 <h2>Temperature averaged analysis workflow<a class="headerlink" href="#temperature-averaged-analysis-workflow" title="Permalink to this headline">¶</a></h2>
 <p>This assumes that QUIP is installed (<code class="docutils literal notranslate"><span class="pre">structure_analysis_traj</span></code> and <code class="docutils literal notranslate"><span class="pre">mean_var_correl</span></code> are part of QUIP).</p>
 <dl class="simple">
@@ -229,8 +230,8 @@ It calculates the weights on its own and can deal with single trajectory files a
 <code class="docutils literal notranslate"><span class="pre">_signifpart_</span></code> in the filename. For example, if it was set to 0.25 we would only consider the ca 25% most likely structures. (Due to discrete weight steps, this number is not exact.) The default value of <code class="docutils literal notranslate"><span class="pre">significant_part</span></code> is 0.95. This ignores irrelevant structures and especially excludes high volume systems when we consider the solid phases. (To speed up the calculations one could go lower, but without further experimentation, no clear recommendations can be made with regards to this.)</p>
 <p><strong>do_rdfd</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">do_rdfd</span> <span class="pre">=</span> <span class="pre">False</span></code> controls whether radial density functions are calculated. RDFs in QUIP are not using periodic cells. This makes it very hard to compare different cells of the same structure. Hence, it is turned off. If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the script uses a 6x6x6 supercell for the comparison structures.</p>
-</div>
-<div class="section" id="about-the-documentation">
+</section>
+<section id="about-the-documentation">
 <h2>About the documentation<a class="headerlink" href="#about-the-documentation" title="Permalink to this headline">¶</a></h2>
 <p>The documentation with example input files and a list of keywords…etc. can be found at
 &lt;<a class="reference external" href="http://libatoms.github.io/pymatnest/">http://libatoms.github.io/pymatnest/</a>&gt;.</p>
@@ -240,8 +241,8 @@ in the python code (i.e. within triple quote) appear.
 The installation and basic usage guidelines in the documentation are shown as the content of the README.md file
 is <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">included:</span></code>-d.
 Example inputs are located in the folder <code class="docutils literal notranslate"><span class="pre">./example_inputs</span></code> and these files are also included in the documentation together with additional comments.</p>
-</div>
-</div>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -322,7 +323,7 @@ Example inputs are located in the folder <code class="docutils literal notransla
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>

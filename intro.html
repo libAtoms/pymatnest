@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Nested sampling method &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -44,7 +45,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="nested-sampling-method">
+  <section id="nested-sampling-method">
 <h1>Nested sampling method<a class="headerlink" href="#nested-sampling-method" title="Permalink to this headline">¶</a></h1>
 <dl class="field-list simple">
 <dt class="field-odd">Authors</dt>
@@ -54,7 +55,7 @@
 <dd class="field-even"><p>2015</p>
 </dd>
 </dl>
-<div class="section" id="overview">
+<section id="overview">
 <h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
 <p>The nested sampling method was first introduced by John Skilling <a class="footnote-reference brackets" href="#f1" id="id1">1</a>
 in the field of applied probability and inference to efficiently sample
@@ -90,8 +91,8 @@ configuration spaces.</p>
 </ol>
 </dd>
 </dl>
-</div>
-<div class="section" id="publications">
+</section>
+<section id="publications">
 <h2>Publications<a class="headerlink" href="#publications" title="Permalink to this headline">¶</a></h2>
 <p>L.B. Partay, A.P. Bartok, G. Csanyi, <em>Efficient Sampling of Atomic Configurational Spaces</em>,
 J. Phys. Chem. B (2010), 114, 10502–10512, <a class="reference external" href="http://pubs.acs.org/doi/abs/10.1021/jp1012973">http://pubs.acs.org/doi/abs/10.1021/jp1012973</a></p>
@@ -104,8 +105,8 @@ Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="http://link
 Comp. Mat. Sci. (2018), 149, 153, <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0927025618301794">https://www.sciencedirect.com/science/article/pii/S0927025618301794</a></p>
 <p>J. Dorrell, L.B. Partay <em>Thermodynamics and the potential energy landscape: case study of small water clusters</em>,
 Phys. Chem. Chem. Phys. (2019), 21, 7305 <a class="reference external" href="https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b">https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b</a></p>
-</div>
-<div class="section" id="algorithm">
+</section>
+<section id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
 <p>Nested sampling is an iterative, “top-down” method, it samples the Potential Energy Landscape (PES)
 through a series of nested energy levels, starting from the high energy region (gas phase) and going towards the
@@ -118,8 +119,8 @@ modified (through an MCMC, a total-enthalpy Hamiltonian MC or a Galilean MC walk
 the that of the last removed walker.
 The iteration is continued until a satisfactory low energy configuration is reached.</p>
 <img alt="_images/NS_PES_animation.gif" src="_images/NS_PES_animation.gif" />
-</div>
-<div class="section" id="pymatnest">
+</section>
+<section id="pymatnest">
 <h2><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this headline">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> package is a software
 library written in Fortran 95/python for the purpose of carrying out
@@ -131,7 +132,7 @@ It can be used with the supplied fortran potential models and it also has interf
 <li><p><code class="docutils literal notranslate"><span class="pre">QUIP</span></code></p></li>
 </ul>
 </div></blockquote>
-<div class="section" id="mc-and-md-step-algorithms">
+<section id="mc-and-md-step-algorithms">
 <h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Permalink to this headline">¶</a></h3>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">rej_free_perturb_velo</span></code></dt><dd><ul class="simple">
@@ -345,9 +346,9 @@ running statistics for the number of accepted/rejected moves on each process are
 </ul>
 </dd>
 </dl>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -426,7 +427,7 @@ running statistics for the number of accepted/rejected moves on each process are
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>

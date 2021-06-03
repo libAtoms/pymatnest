@@ -4,12 +4,13 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
     <title>Tutorials &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
     <script src="_static/doctools.js"></script>
@@ -44,9 +45,9 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="section" id="tutorials">
+  <section id="tutorials">
 <h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="tutorial-1-6-lennard-jones-atoms-at-fixed-volume">
+<section id="tutorial-1-6-lennard-jones-atoms-at-fixed-volume">
 <h2>Tutorial 1: 6 Lennard-Jones atoms at fixed volume<a class="headerlink" href="#tutorial-1-6-lennard-jones-atoms-at-fixed-volume" title="Permalink to this headline">¶</a></h2>
 <p>Let’s sample the potential energy landscape of six identical Lennard-Jones atoms,
 in a cubic box of fixed volume, then calculate the heat capacity curve and see what
@@ -54,7 +55,7 @@ is the most stable structure found by nested sampling.
 To calculate the potential energy and generate configurations we will use <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>.
 Guidance on package requirements and on how to install <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>
 can be found in the <a class="reference internal" href="install.html"><span class="doc">Installation and quick start guide</span></a>.</p>
-<div class="section" id="create-the-input-file-ns-input-tutorial-inp">
+<section id="create-the-input-file-ns-input-tutorial-inp">
 <h3>Create the input file ns_input_tutorial.inp<a class="headerlink" href="#create-the-input-file-ns-input-tutorial-inp" title="Permalink to this headline">¶</a></h3>
 <p>We want six atoms in our simulation cell, and for the sake of simplicity let’s call them
 hydrogens. The <code class="docutils literal notranslate"><span class="pre">start_species</span></code> keyword defines this, the first integer is the atomic number,
@@ -119,8 +120,8 @@ units for <code class="docutils literal notranslate"><span class="pre">LAMMPS</s
 <span class="n">LAMMPS_atom_types</span><span class="o">=</span><span class="n">H</span> <span class="mi">1</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="starting-the-run">
+</section>
+<section id="starting-the-run">
 <h3>Starting the run<a class="headerlink" href="#starting-the-run" title="Permalink to this headline">¶</a></h3>
 <p>Now that the input file is ready, we can start the calculation by typing</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">ns_run</span> <span class="o">&lt;</span> <span class="n">ns_input_tutorial</span><span class="o">.</span><span class="n">inp</span> <span class="o">&gt;</span> <span class="n">ns_tutorial</span><span class="o">.</span><span class="n">out</span>
@@ -128,8 +129,8 @@ units for <code class="docutils literal notranslate"><span class="pre">LAMMPS</s
 </div>
 <p>It should take about ten minutes to finish, but you can also run it in parallel (do not use more than 10 cores for this
 example as it will be very inefficient).</p>
-</div>
-<div class="section" id="output-files-and-post-processing">
+</section>
+<section id="output-files-and-post-processing">
 <h3>Output files and post-processing<a class="headerlink" href="#output-files-and-post-processing" title="Permalink to this headline">¶</a></h3>
 <p>A set of output files will be generated. The file</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NS_MD_lammps_tutorial_120_a</span><span class="o">.</span><span class="n">energies</span>
@@ -139,20 +140,20 @@ example as it will be very inefficient).</p>
 You should be able to see that the energy was high at the beginning, then gradually decreased, and converged to a value by the end.
 The third column is be unchanged as we kept the volume fixed.</p>
 <p>The culled configurations are saved in the <code class="docutils literal notranslate"><span class="pre">.traj.</span></code> files. If you run the sampling in parallel, every core generates its own trajectory file.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NS_MD_lammps_tutorial_120_a</span><span class="o">.</span><span class="n">traj</span><span class="o">.</span><span class="mf">0.</span><span class="n">extxyz</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NS_MD_lammps_tutorial_120_a</span><span class="o">.</span><span class="n">traj</span><span class="mf">.0</span><span class="o">.</span><span class="n">extxyz</span>
 </pre></div>
 </div>
 <p>At the last iteration, the current live set is saved as well. This snapshot of the run contains all of the current walkers,
 useful for checking the current “state” of the sampling and restarting the run if we later decide to perform more iterations.
 The filename contains the iteration number when the snapshot was saved and if you run the sampling in parallel,
 every core generates its own snapshot file.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NS_MD_lammps_tutorial_120_a</span><span class="o">.</span><span class="n">snapshot</span><span class="o">.</span><span class="mf">119999.0</span><span class="o">.</span><span class="n">extxyz</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NS_MD_lammps_tutorial_120_a</span><span class="o">.</span><span class="n">snapshot</span><span class="mf">.119999.0</span><span class="o">.</span><span class="n">extxyz</span>
 </pre></div>
 </div>
 <p>Look at a configuration in the snapshot file. It should look similar to this, showing an octahedral structure, the global minimum for 6 LJ atoms:</p>
-<div class="figure align-center">
+<figure class="align-center">
 <a class="reference internal image-reference" href="_images/doc_figure_tutorial_LJ6.jpg"><img alt="_images/doc_figure_tutorial_LJ6.jpg" src="_images/doc_figure_tutorial_LJ6.jpg" style="width: 500px;" /></a>
-</div>
+</figure>
 <p>The simplest way to extract thermodynamic information from the run is to use the <code class="docutils literal notranslate"><span class="pre">ns_analyse</span></code> code from the <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> library.
 This script uses the <code class="docutils literal notranslate"><span class="pre">.energies</span></code> file to calculate the partition function, expected value of energy, heat capacity, volume…etc.
 To calculate thermodynamic properties at 200 temperatures starting from 1 K in 5 K increments we need to use the
@@ -164,11 +165,11 @@ following command. (<code class="docutils literal notranslate"><span class="pre"
 the “condensation” of the six atoms. (Note that everything is in K, eV,… etc in the output, not in LJ units!)
 (You can start the sampling a few more times to have some parallel results - unless you explicitly set a seed for the random number generator
 all the runs will be independent and different. Do not forget to change the <code class="docutils literal notranslate"><span class="pre">out_file_prefix</span></code> keyword, so new runs do not overwrite previous ones.)</p>
-<div class="figure align-center">
+<figure class="align-center">
 <a class="reference internal image-reference" href="_images/doc_figure_tutorial_120_cv.jpg"><img alt="_images/doc_figure_tutorial_120_cv.jpg" src="_images/doc_figure_tutorial_120_cv.jpg" style="width: 500px;" /></a>
-</div>
-</div>
-<div class="section" id="improving-convergence">
+</figure>
+</section>
+<section id="improving-convergence">
 <h3>Improving convergence<a class="headerlink" href="#improving-convergence" title="Permalink to this headline">¶</a></h3>
 <p>Though the above heat capacity curves show similar behaviour we should be able to improve convergence further.
 This can be done by increasing the number of walkers (“improving the resolution of the potential energy landscape”)
@@ -183,9 +184,9 @@ and we do not necessarily need all the configurations in the trajectory file (th
 <span class="n">traj_interval</span><span class="o">=</span><span class="mi">100</span> <span class="c1"># print only every 100th configurtion to the trajectory file</span>
 </pre></div>
 </div>
-</div>
-</div>
-</div>
+</section>
+</section>
+</section>
 
 
             <div class="clearer"></div>
@@ -264,7 +265,7 @@ and we do not necessarily need all the configurations in the trajectory file (th
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.5.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
     </div>
   </body>
 </html>
