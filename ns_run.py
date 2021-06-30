@@ -2461,7 +2461,7 @@ def do_ns_loop():
             # CHECK FOR RANDOMNESS ISSUES AND WHICH NODES ARE USED FOR CLONES
             for r in range(size):
                 # maybe remote_r should be chosen completely randomly, rather than close to task of extra culled configs
-                for dr in np.array(zip(np.array(range(1,size)), -np.array(range(1,size)))).flatten():
+                for dr in np.array(list(zip(np.array(range(1,size)), -np.array(range(1,size))))).flatten():
                     if n_cull_of_rank[r] <= max_n_cull_per_task: # not too many that need to be culled on this rank
                         break
                     # this rank has too many to cull, must receive replacement from another node
