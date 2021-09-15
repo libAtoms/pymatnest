@@ -58,12 +58,30 @@ implicit none
    integer :: N_params
    double precision :: params(N_params)
 
-   sigma(1) =  1.0d0
-   d_a(1)   =  1.72d0
-   w_a(1)   = -1.0d0
-   w_r(1)   =  3.5d0
-   cutoff(1)=  3.0d0
-   cutoff_sq = cutoff*cutoff
+   if (N_params==1) then
+
+       write(*,*) "No Jagla parameters found, the default will be used:"
+       sigma(1) =  1.0d0
+       d_a(1)   =  1.72d0
+       w_a(1)   = -1.0d0
+       w_r(1)   =  3.5d0
+       cutoff(1)=  3.0d0
+       cutoff_sq = cutoff*cutoff
+
+   else
+
+       write(*,*) "The following Jagla parameters will be used:"
+       sigma(1) =  1.0d0
+       d_a(1)   =  params(2) !1.72d0
+       w_a(1)   = -1.0d0
+       w_r(1)   =  params(1) !3.5d0
+       cutoff(1)=  params(3) !3.0d0
+       cutoff_sq = cutoff*cutoff
+
+   endif
+   write(*,*) "Hard sphere",sigma(1),"minimum energy",w_a(1)
+   write(*,*) "minimum location",d_a(1),"cutoff",cutoff(1)
+   write(*,*) "repulsive max", w_r(1)
 
 end subroutine ll_init_model
 
