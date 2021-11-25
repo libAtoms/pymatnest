@@ -62,6 +62,7 @@
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  
 </div>
 <h2 id="Symbols">Symbols</h2>
@@ -109,6 +110,8 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.calculate">calculate() (lammpslib.LAMMPSlib method)</a>
+</li>
       <li><a href="getstart.html#term-cell-shape-equil-steps-int"><strong>cell_shape_equil_steps=int</strong></a>, <a href="ns_run.html#term-cell-shape-equil-steps-int"><strong>[1]</strong></a>
 </li>
       <li><a href="rngstream.html#rngstream.RngStream_InfoState.Cg">Cg (rngstream.RngStream_InfoState attribute)</a>
@@ -118,6 +121,8 @@
       <li><a href="getstart.html#term-config-file-format-str"><strong>config_file_format=str</strong></a>, <a href="ns_run.html#term-config-file-format-str"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-converge-down-to-t-flot"><strong>converge_down_to_T=flot</strong></a>, <a href="ns_run.html#term-converge-down-to-t-flot"><strong>[1]</strong></a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.convert_cell">convert_cell() (in module lammpslib)</a>
 </li>
       <li><a href="rngstream.html#rngstream.RngStream.create_stream">create_stream() (rngstream.RngStream method)</a>
 </li>
@@ -133,6 +138,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.default_parameters">default_parameters (lammpslib.LAMMPSlib attribute)</a>
+</li>
       <li><a href="getstart.html#term-delta-random-seed-int"><strong>delta_random_seed=int</strong></a>, <a href="ns_run.html#term-delta-random-seed-int"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-do-good-load-balance-t-f"><strong>do_good_load_balance=[T | F]</strong></a>, <a href="ns_run.html#term-do-good-load-balance-t-f"><strong>[1]</strong></a>
@@ -199,6 +206,8 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="rngstream.html#rngstream.RngStream_InfoState.Ig">Ig (rngstream.RngStream_InfoState attribute)</a>
 </li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.implemented_properties">implemented_properties (lammpslib.LAMMPSlib attribute)</a>
+</li>
       <li><a href="rngstream.html#rngstream.RngStream_InfoState.IncPrec">IncPrec (rngstream.RngStream_InfoState attribute)</a>
 </li>
       <li><a href="getstart.html#term-initial-walk-adjust-interval-int"><strong>initial_walk_adjust_interval=int</strong></a>, <a href="ns_run.html#term-initial-walk-adjust-interval-int"><strong>[1]</strong></a>
@@ -207,9 +216,13 @@
 </li>
       <li><a href="getstart.html#term-initial-walk-n-walks-int"><strong>initial_walk_N_walks=int</strong></a>, <a href="ns_run.html#term-initial-walk-n-walks-int"><strong>[1]</strong></a>
 </li>
+      <li><a href="getstart.html#term-initial-walk-only-t-f"><strong>initial_walk_only=[T | F]</strong></a>, <a href="ns_run.html#term-initial-walk-only-t-f"><strong>[1]</strong></a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="getstart.html#term-initial-walk-only-t-f"><strong>initial_walk_only=[T | F]</strong></a>, <a href="ns_run.html#term-initial-walk-only-t-f"><strong>[1]</strong></a>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.initialise_lammps">initialise_lammps() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.initialized">initialized (lammpslib.LAMMPSlib attribute)</a>
 </li>
       <li><a href="ns_rng.html#ns_rng.NsRng.int_uniform">int_uniform() (ns_rng.NsRng method)</a>
 
@@ -223,6 +236,8 @@
         <li><a href="rngstream.html#rngstream.RngStream.int_uniform">(rngstream.RngStream method)</a>
 </li>
       </ul></li>
+      <li><a href="lammpslib.html#lammpslib.is_upper_triangular">is_upper_triangular() (in module lammpslib)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -249,13 +264,19 @@
 </li>
       <li><a href="getstart.html#term-lammps-header-extra-str"><strong>LAMMPS_header_extra=str</strong></a>, <a href="ns_run.html#term-lammps-header-extra-str"><strong>[1]</strong></a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-lammps-init-cmds-str"><strong>LAMMPS_init_cmds=str</strong></a>, <a href="ns_run.html#term-lammps-init-cmds-str"><strong>[1]</strong></a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-lammps-molecular-info-t-f"><strong>LAMMPS_molecular_info=[ T | F ]</strong></a>, <a href="ns_run.html#term-lammps-molecular-info-t-f"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-lammps-name-str"><strong>LAMMPS_name=str</strong></a>, <a href="ns_run.html#term-lammps-name-str"><strong>[1]</strong></a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.lammpsbc">lammpsbc() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib">LAMMPSlib (class in lammpslib)</a>
+</li>
+      <li><a href="lammpslib.html#module-lammpslib">lammpslib (module)</a>
 </li>
       <li><a href="stacktrace.html#stacktrace.listen">listen() (in module stacktrace)</a>
 </li>
@@ -435,10 +456,20 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="getstart.html#term-profile-rank-to-profile"><strong>profile=rank_to_profile</strong></a>, <a href="ns_run.html#term-profile-rank-to-profile"><strong>[1]</strong></a>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.parse_angles">parse_angles() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.parse_bonds">parse_bonds() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.parse_dihedrals">parse_dihedrals() (lammpslib.LAMMPSlib method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.parse_impropers">parse_impropers() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="getstart.html#term-profile-rank-to-profile"><strong>profile=rank_to_profile</strong></a>, <a href="ns_run.html#term-profile-rank-to-profile"><strong>[1]</strong></a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.propagate">propagate() (lammpslib.LAMMPSlib method)</a>
+</li>
       <li><a href="getstart.html#term-python-md-t-f"><strong>python_MD=[ T | F ]</strong></a>, <a href="ns_run.html#term-python-md-t-f"><strong>[1]</strong></a>
 </li>
   </ul></td>
@@ -467,9 +498,15 @@
 </li>
       <li><a href="getstart.html#term-random-initialise-pos-t-f"><strong>random_initialise_pos=[ T | F ]</strong></a>, <a href="ns_run.html#term-random-initialise-pos-t-f"><strong>[1]</strong></a>
 </li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.rebuild">rebuild() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.redo_atom_types">redo_atom_types() (lammpslib.LAMMPSlib method)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-restart-file-path-to-file"><strong>restart_file=path_to_file</strong></a>, <a href="ns_run.html#term-restart-file-path-to-file"><strong>[1]</strong></a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.restart_lammps">restart_lammps() (lammpslib.LAMMPSlib method)</a>
 </li>
       <li><a href="getstart.html#term-rng-numpy-internal-rngstream"><strong>rng=( numpy | internal | rngstream )</strong></a>, <a href="ns_run.html#term-rng-numpy-internal-rngstream"><strong>[1]</strong></a>
 </li>
@@ -491,6 +528,20 @@
 </li>
       <li><a href="ns_rng.html#ns_rng.NsRng.seed_local">seed_local() (ns_rng.NsRng method)</a>
 </li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.set_angles">set_angles() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.set_bonds">set_bonds() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.set_cell">set_cell() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.set_charges">set_charges() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.set_dihedrals">set_dihedrals() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.set_impropers">set_impropers() (lammpslib.LAMMPSlib method)</a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.set_lammps_pos">set_lammps_pos() (lammpslib.LAMMPSlib method)</a>
+</li>
       <li><a href="ns_rng.html#ns_rng.NsRngStream.set_package_seed">set_package_seed() (ns_rng.NsRngStream method)</a>
 
       <ul>
@@ -511,21 +562,25 @@
 </li>
       <li><a href="getstart.html#term-snapshot-interval-int"><strong>snapshot_interval=int</strong></a>, <a href="ns_run.html#term-snapshot-interval-int"><strong>[1]</strong></a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-snapshot-per-parallel-task-t-f"><strong>snapshot_per_parallel_task=[ T | F ]</strong></a>, <a href="ns_run.html#term-snapshot-per-parallel-task-t-f"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-snapshot-time-int"><strong>snapshot_time=int</strong></a>, <a href="ns_run.html#term-snapshot-time-int"><strong>[1]</strong></a>
 </li>
       <li><a href="stacktrace.html#module-stacktrace">stacktrace (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-start-config-file-str"><strong>start_config_file=str</strong></a>, <a href="ns_run.html#term-start-config-file-str"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-start-energy-ceiling-float"><strong>start_energy_ceiling=float</strong></a>, <a href="ns_run.html#term-start-energy-ceiling-float"><strong>[1]</strong></a>
 </li>
       <li><a href="getstart.html#term-start-energy-ceiling-per-atom-float"><strong>start_energy_ceiling_per_atom=float</strong></a>, <a href="ns_run.html#term-start-energy-ceiling-per-atom-float"><strong>[1]</strong></a>
 </li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.start_lammps">start_lammps() (lammpslib.LAMMPSlib method)</a>
+</li>
       <li><a href="getstart.html#term-start-species-int-int-float-int-int-float"><strong>start_species=int int [ float ] [, int int [ float ] ... ]</strong></a>, <a href="ns_run.html#term-start-species-int-int-float-int-int-float"><strong>[1]</strong></a>
+</li>
+      <li><a href="lammpslib.html#lammpslib.LAMMPSlib.started">started (lammpslib.LAMMPSlib attribute)</a>
 </li>
       <li><a href="getstart.html#term-swap-cluster-probability-increment-float"><strong>swap_cluster_probability_increment=float</strong></a>, <a href="ns_run.html#term-swap-cluster-probability-increment-float"><strong>[1]</strong></a>
 </li>
@@ -573,6 +628,10 @@
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="lammpslib.html#lammpslib.unit_convert">unit_convert() (in module lammpslib)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#ns_run.usage">usage() (in module ns_run)</a>
 </li>
   </ul></td>
@@ -582,6 +641,14 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="getstart.html#term-velo-traj-len-int"><strong>velo_traj_len=int</strong></a>, <a href="ns_run.html#term-velo-traj-len-int"><strong>[1]</strong></a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="lammpslib.html#lammpslib.write_lammps_data">write_lammps_data() (in module lammpslib)</a>
 </li>
   </ul></td>
 </tr></table>
