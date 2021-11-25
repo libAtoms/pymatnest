@@ -390,8 +390,16 @@ def usage():
        | default: -1
 
     ``2D=[ T | F ]``
-       | Perform 2D simulation. This option is unsupported.
+       | Perform 2D simulation. Some functionality may be limited with this option! 
+       | The 2D area is in the xy plane, the z axis stays constant during the simulation (set its value using the keyword ``Z_cell_axis``).
+       | The maximum allowed volume is still defined as volume in this case!
+       | If constant pressure is set, the p*V term is now p*A*Z_cell_axis, thus set the MC_cell_P parameter multiplied by 1/Z_cell_axis.
        | default: F
+
+    ``Z_cell_axis=float``
+       | Only used if 2D=T. Value of the Z cell axis, perpendicular to the area in case of a 2D simulation. 
+       | This stays constant during the simulation. 
+       | default: 10.0
 
     ``debug=int``
        | Verbosity level used in the output file. The larger its value the more info is printed.
@@ -584,7 +592,8 @@ def usage():
     sys.stderr.write("config_file_format=str (extxyz)\n") # julia
     sys.stderr.write("rng=( numpy | internal | rngstream ) (numpy)\n") # julia
     sys.stderr.write("profile=rank_to_profile (-1)\n")
-    sys.stderr.write("2D=[ T | F ] (F, unsupported)\n")
+    sys.stderr.write("2D=[ T | F ] (F)\n")
+    sys.stderr.write("Z_cell_axis=float (10.0)\n")
     sys.stderr.write("debug=debug_level (0, <= 0 for no debugging tests/prints)\n")
     sys.stderr.write("snapshot_interval=int (10000, <=0 for no snapshots except final positions)\n")
     sys.stderr.write("snapshot_time=int (3600, <=0 for no time based snapshots)\n")
@@ -882,6 +891,7 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
             scaled_vel = gen_random_velo(at, KEmax_use, velo/velo_mag) * sqrt_masses_2D
 
             if rotate:
+                rotate_dir_3N(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
                 if movement_args['2D']:
                     rotate_dir_3N_2D(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
                 else:
@@ -1066,6 +1076,10 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
         #DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk
+        at.wrap()
+        pp=at.get_positions()
+        if (pp[1,2]>0.00001): #LIVIA
+            exit_error("Not a 2D system anymore\n",3)
  
         if movement_args['MC_atom_velocities']:
             #if not movement_args['2D']:
@@ -1237,32 +1251,69 @@ def propose_volume_step(at, step_size, flat_V_prior):
         p_accept = min(1.0, (new_V/orig_V)**len(at))
     return (p_accept, transform)
 
-def propose_shear_step(at, step_size):
-    # pick random vector
-    rnd_vec_ind = rng.int_uniform(0, 3)
-    # turn other two into orthonormal pair
-    other_vec_ind = list(range(3))
-    other_vec_ind.remove(rnd_vec_ind)
+def propose_area_step(at, step_size, flat_V_prior):
+    dA = rng.normal(step_size*len(at))
     orig_cell = at.get_cell()
-    v1 = orig_cell[other_vec_ind[0],:].copy()
-    v2 = orig_cell[other_vec_ind[1],:].copy()
-    v1 /= np.sqrt(np.dot(v1,v1))
-    v2 -= v1*np.dot(v1,v2)
-    v2 /= np.sqrt(np.dot(v2,v2))
-    # pick random magnitudes
-    rv1 = rng.normal(step_size)
-    rv2 = rng.normal(step_size)
-    # create new cell and transformation matrix
-    new_cell = orig_cell.copy()
-    new_cell[rnd_vec_ind,:] += rv1*v1 + rv2*v2
-    transform = np.dot(np.linalg.inv(orig_cell), new_cell)
-    return (1.0, transform)
+    orig_A = at.get_volume() / orig_cell[2,2]
+    new_A = orig_A+dA
+    if new_A < 0: # negative number cannot be raised to fractional power, so this is only to avoid fatal error during the run
+        new_A=abs(new_A)
+        # print("Warning, the step_size for volume change might be too big, resulted in negative new volume", step_size, dV, orig_V+dV)
+    #print("TRANSFORM", new_V, orig_V, dV, step_size, len(at))
+    transform = np.identity(3)*np.sqrt(new_A/orig_A)
+    transform[2,2] = 1.0 # no change in the Z direction
+    if flat_V_prior:
+        p_accept = 1.0
+    else:
+        p_accept = min(1.0, (new_A/orig_A)**len(at))
+    return (p_accept, transform)
+
+def propose_shear_step(at, step_size):
+   if movement_args['2D']:
+       # pick random vector
+       rnd_vec_ind = rng.int_uniform(0, 2)
+       # turn other two into orthonormal pair
+       other_vec_ind = list(range(3))
+       other_vec_ind.remove(rnd_vec_ind)
+       orig_cell = at.get_cell()
+       v1 = orig_cell[other_vec_ind[0],:].copy()
+       v1 /= np.sqrt(np.dot(v1,v1))
+       #pick random magnitude
+       rv1 = rng.normal(step_size)
+       # create new cell and transformation matrix
+       new_cell = orig_cell.copy()
+       new_cell[rnd_vec_ind,:] += rv1*v1 
+
+   else:
+       # pick random vector
+       rnd_vec_ind = rng.int_uniform(0, 3)
+       # turn other two into orthonormal pair
+       other_vec_ind = list(range(3))
+       other_vec_ind.remove(rnd_vec_ind)
+       orig_cell = at.get_cell()
+       v1 = orig_cell[other_vec_ind[0],:].copy()
+       v2 = orig_cell[other_vec_ind[1],:].copy()
+       v1 /= np.sqrt(np.dot(v1,v1))
+       v2 -= v1*np.dot(v1,v2)
+       v2 /= np.sqrt(np.dot(v2,v2))
+       # pick random magnitudes
+       rv1 = rng.normal(step_size)
+       rv2 = rng.normal(step_size)
+       # create new cell and transformation matrix
+       new_cell = orig_cell.copy()
+       new_cell[rnd_vec_ind,:] += rv1*v1 + rv2*v2
+   transform = np.dot(np.linalg.inv(orig_cell), new_cell)
+   return (1.0, transform)
 
 def propose_stretch_step(at, step_size):
-    rnd_v1_ind = rng.int_uniform(0, 3)
-    rnd_v2_ind = rng.int_uniform(0, 3)
-    if rnd_v1_ind == rnd_v2_ind:
-        rnd_v2_ind = (rnd_v2_ind+1) % 3
+    if movement_args['2D']:
+        rnd_v1_ind = 0 
+        rnd_v2_ind = 1 
+    else: 
+        rnd_v1_ind = rng.int_uniform(0, 3)
+        rnd_v2_ind = rng.int_uniform(0, 3)
+        if rnd_v1_ind == rnd_v2_ind:
+            rnd_v2_ind = (rnd_v2_ind+1) % 3
 
     rv = rng.normal(step_size)
     transform = np.identity(3)
@@ -1272,12 +1323,23 @@ def propose_stretch_step(at, step_size):
 
 def min_aspect_ratio(vol, cell):
     min_aspect_ratio = sys.float_info.max
-    for i in range(3):
+    nD=3
+    if movement_args['2D']:
+        # in 2D, do not check the Z direction
+        nD=2
+    for i in range(nD):
         vi = cell[i,:]
         vnorm_hat = np.cross(cell[(i+1)%3,:],cell[(i+2)%3,:])
         vnorm_hat /= np.sqrt(np.dot(vnorm_hat,vnorm_hat))
         min_aspect_ratio = min(min_aspect_ratio, abs(np.dot(vnorm_hat,vi)))
-    return min_aspect_ratio/(vol**(1.0/3.0))
+
+    if movement_args['2D']:
+        # in 2D divide by the square root of area 
+        min_aspect_ratio /= (vol/np.sqrt(np.dot(cell[2,:],cell[2,:])))**(1.0/2.0)
+    else:
+        min_aspect_ratio /= vol**(1.0/3.0)
+
+    return min_aspect_ratio
 
 def do_cell_step(at, Emax, p_accept, transform):
     if p_accept < 1.0 and rng.float_uniform(0.0,1.0) > p_accept:
@@ -1287,6 +1349,7 @@ def do_cell_step(at, Emax, p_accept, transform):
     orig_cell = at.get_cell()
     new_cell = np.dot(orig_cell,transform)
     new_vol = abs(np.dot(new_cell[0,:],np.cross(new_cell[1,:],new_cell[2,:])))
+
     # check size and shape constraints
     if new_vol > ns_args['max_volume_per_atom']*len(at) or new_vol < ns_args['min_volume_per_atom']*len(at):
         return False
@@ -1456,7 +1519,11 @@ def do_MC_cell_volume_step(at, movement_args, Emax, KEmax):
     step_rv = rng.float_uniform(0.0, 1.0)
     if step_rv > movement_args['MC_cell_volume_per_atom_prob']:
         return (0, {})
-    (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_per_atom_step_size'], movement_args['MC_cell_flat_V_prior'])
+    if movement_args['2D']:
+        (p_accept, transform) = propose_area_step(at, movement_args['MC_cell_volume_per_atom_step_size'], movement_args['MC_cell_flat_V_prior'])
+    else:
+        (p_accept, transform) = propose_volume_step(at, movement_args['MC_cell_volume_per_atom_step_size'], movement_args['MC_cell_flat_V_prior'])
+
     if do_cell_step(at, Emax, p_accept, transform):
         return (1, {'MC_cell_volume_per_atom' : (1, 1) })
     else:
@@ -3062,6 +3129,7 @@ def main():
         ns_args['n_extra_walk_per_task'] = int(args.pop('n_extra_walk_per_task', 0))
         ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
         ns_args['n_extra_data'] = int(args.pop('n_extra_data', 0))
+        ns_args['Z_cell_axis'] = float(args.pop('Z_cell_axis', 10.0))
 
         # surely there's a cleaner way of doing this?
         try:
@@ -3490,7 +3558,6 @@ def main():
                 species_list = comm.bcast(species_list, root=0)
 
         if do_calc_lammps:
-            #print("LIVIA C",species)
             if not ns_args['LAMMPS_atom_types'] == 'TYPE_EQUALS_Z':
                 used_chem_symbols = { ase.data.chemical_symbols[int(species.split()[0])] for species in species_list }
                 if not used_chem_symbols == set(ns_args['LAMMPS_atom_types'].keys()):
@@ -3561,8 +3628,13 @@ def main():
                 else:
                     # create atoms structs from a list of atomic numbers and numbers of atoms
                     # always create it slightly smaller than the max to avoid numerical instability with nearly identical volumes
-                    lc = 0.999*ns_args['max_volume_per_atom']**(1.0/3.0)
-                    init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
+                    if movement_args['2D']:
+                        lc = 0.999*(ns_args['max_volume_per_atom']/ns_args['Z_cell_axis'])**(1.0/2.0)
+                        init_atoms = ase.Atoms(cell=(lc, lc, ns_args['Z_cell_axis']), pbc=(1,1,1))
+                    else:
+                        lc = 0.999*ns_args['max_volume_per_atom']**(1.0/3.0)
+                        init_atoms = ase.Atoms(cell=(lc, lc, lc), pbc=(1,1,1))
+
                     for species in species_list:
                         species_fields = species.split()
                         type_Z = int(species_fields[0])
@@ -3644,9 +3716,17 @@ def main():
                 if ns_args['random_initialise_cell']:
                     energy = float('nan')
                     if movement_args['MC_cell_P'] > 0.0:
-                        lc = (len(at)*ns_args['max_volume_per_atom']*rng.float_uniform(0.0,1.0)**(1.0/float(len(at)+1)))**(1.0/3.0)
-                        at.set_cell( np.identity(3) * lc )
-                        do_cell_shape_walk(at, movement_args)
+                        if movement_args['2D']:
+                            lc = (len(at)*ns_args['max_volume_per_atom']/ns_args['Z_cell_axis']*rng.float_uniform(0.0,1.0)**(1.0/float(len(at)+1)))**(1.0/2.0)
+                            temp_cell = np.identity(3) * lc
+                            temp_cell[2,2] = ns_args['Z_cell_axis']
+                            at.set_cell( temp_cell )
+                            do_cell_shape_walk(at, movement_args)
+                            
+                        else:
+                            lc = (len(at)*ns_args['max_volume_per_atom']*rng.float_uniform(0.0,1.0)**(1.0/float(len(at)+1)))**(1.0/3.0)
+                            at.set_cell( np.identity(3) * lc )
+                            do_cell_shape_walk(at, movement_args)
 
                 if ns_args['random_initialise_pos']:
                     # random initial positions
