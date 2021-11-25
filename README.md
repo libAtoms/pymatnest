@@ -42,8 +42,11 @@ Compilation of the streamlined FORTRAN models and MC/MD walkers.
 
 
 [//]: # (Using with ``QUIP`` - NO LONGER COMPATIBLE!!!)
+
 [//]: # (Make sure your ``PYTHONPATH`` is set correctly to find the ``quippy`` module.)
+
 [//]: # (Note: Check the ``QUIP_ARCH`` with which you build quippy, as some might result in segmentation fault when running)
+
 [//]: # (``ns_run`` (e.g. try gfortan_openmpi if gfortran fails))
 
 
