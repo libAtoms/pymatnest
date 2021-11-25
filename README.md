@@ -2,7 +2,7 @@
 The ``pymatnest`` package is a software library for carrying out nested sampling calculations. 
 It can be used to explore the energy landscape of different materials (both clusters and bulk materials), 
 calculate thermodynamic variables at arbitrary temperatures, locate phase transitions and calculate the 
-phase diagram. It can be used with LAMMPS, QUIP, and the supplied fortran models, and both with MC and MD.
+phase diagram. It can be used with LAMMPS, and the supplied fortran models, and both with MC and MD.
 
 If you use pymatnest, please cite the following publications: 
 (references are available in bibtex format in the ``NS_publications.bib`` file)
@@ -41,12 +41,10 @@ Compilation of the streamlined FORTRAN models and MC/MD walkers.
 2. ``make``
 
 
-Using with ``QUIP``
-------------------------------------------------------------------------------
-
-Make sure your ``PYTHONPATH`` is set correctly to find the ``quippy`` module.
-(Note: Check the ``QUIP_ARCH`` with which you build quippy, as some might result in segmentation fault when running
-``ns_run`` (e.g. try gfortan_openmpi if gfortran fails)
+[//]: # (Using with ``QUIP`` - NO LONGER COMPATIBLE!!!)
+[//]: # (Make sure your ``PYTHONPATH`` is set correctly to find the ``quippy`` module.)
+[//]: # (Note: Check the ``QUIP_ARCH`` with which you build quippy, as some might result in segmentation fault when running)
+[//]: # (``ns_run`` (e.g. try gfortan_openmpi if gfortran fails))
 
 
 Using with ``LAMMPS``
@@ -54,6 +52,12 @@ Using with ``LAMMPS``
 
 These instructions assume the latest (git/svn) version of ``LAMMPS``.  It is not tested how
 far back older versions would also work.
+
+### Nearly mandatory compilation flags (for all ``LAMMPS`` versions)
+
+It is necessary to take advantage of the ``-DLAMMPS_EXCEPTIONS``
+flag, which allows lammps crashes to be handled gracefully within python.  Add it to the ``LMP_INC`` variable in the
+``LAMMPS`` makefile before compiling.
 
 ### Basic instructions for recent versions of ``LAMMPS`` and ``mpi4py`` version 2.0.0 or newer
 
@@ -85,11 +89,6 @@ The input file variable ``LAMMPS_name`` is what you set for ``[machine]`` when i
 By default it is what you set for ``machine`` when compiling ``LAMMPS``, unless the library was renamed when installing.
 Set the input variable ``LAMMPS_serial=F``. 
 
-### Nearly mandatory compilation flags (for all ``LAMMPS`` versions)
-
-It is extremely useful, essentially required, to take advantage of the (relatively recent) ``-DLAMMPS_EXCEPTIONS``
-flag, which allows lammps crashes to be handled gracefully within python.  Add it to the ``LMP_INC`` variable in the
-``LAMMPS`` makefile before compiling
 
 ### Support for GMC within LAMMPS
 
@@ -126,10 +125,6 @@ When running:
 Note: the ``-np 8`` may not be needed, depending on your queueing system. 
 
 ### Other notes
-
-You **have** to compile a parallel version of ``LAMMPS``.  ``LAMMPS`` "serial" compilation still 
-links to fake ``MPI`` routines, which then conflict in unpredictable ways with 
-the true mpi routines that ``mpi4py`` includes.
 
 The ``LAMMPS ASE`` interface (``ns_run_dir/lammpslib.py``) is a heavily modified version of
 
