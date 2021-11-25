@@ -20,10 +20,13 @@ Copyright 2015-2016.
 
 Most of the publicly available version is in the public
 domain.
-If you use this code please cite the following article:
+If you use this code please cite the following articles:
+
 R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*,
 Phys. Rev. E (2017), 96, 043311, http://link.aps.org/doi/10.1103/PhysRevE.96.043311
 
+L.B. Partay, G. Csanyi, N. Bernstein *Nested sampling for materials*
+Eur. Phys. J. B (2021) 94, 159, https://link.springer.com/article/10.1140/epjb/s10051-021-00172-1
 
 Features
 ========
@@ -31,13 +34,14 @@ Features
 * both constant volume and constant pressure calculations (variable cell shapes)
 * single and multicomponent systems
 * Monte Carlo and Molecular Dynamics exploration
+* 2D systems
 * can be used with
 
    - the supplied fortran models
 
    - ``LAMMPS``
 
-   - ``QUIP``
+   (- ``QUIP`` not currently compatible)
 
 Contents
 ========

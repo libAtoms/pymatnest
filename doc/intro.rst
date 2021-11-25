@@ -63,8 +63,6 @@ It can be used with the supplied fortran potential models and it also has interf
 
    - ``LAMMPS``
 
-   - ``QUIP``
-
 MC and MD step algorithms
 +++++++++++++++++++++++++++++++++++++
 
