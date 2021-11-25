@@ -1,0 +1,52 @@
+# Initial maximum volume. This is the true 3D value, hence in 2D simulations
+# Z_axis is also taken into account. The value below corresponds to 200.0
+# initial area per atom in this input setup. 
+max_volume_per_atom=2000.0
+
+# 120 atoms with atomic number 1 and mass 1.0
+start_species=1 120 1.0
+start_energy_ceiling_per_atom=10000.0
+
+# size of live set
+n_walkers=560
+# at each iteration 1 walker is killed (n_cull=1 is strongly recommended)
+n_cull=1
+# total number of iterations will be n_iter_times_fraction_killed/(n_cull/n_walkers)
+n_iter_times_fraction_killed=1900
+# prefix of all the output files
+out_file_prefix=test.2D_periodic.MC.fortran               
+snapshot_interval=10000
+traj_interval=100 
+
+################################################################################
+
+# use MC generating a new walker
+atom_algorithm=MC
+n_model_calls_expected=1000
+n_atom_steps=1
+atom_traj_len=8
+n_cell_volume_steps=4
+n_cell_shear_steps=2
+n_cell_stretch_steps=2
+n_swap_steps=0
+
+# perform simulation in 2D
+2D = T
+# Z axis lengths which will be kept fixed
+Z_cell_axis = 10.0
+
+################################################################################
+# In 2D the true pressure is MC_cell_P*Z_cell_axis. Set the value accordingly
+MC_cell_P=0.01 
+
+# Maximum distortion of the box, in 2D only meant in the plane. 
+MC_cell_min_aspect_ratio=0.6
+################################################################################
+
+energy_calculator=fortran
+FORTRAN_model = example_Jagla_model.so
+
+rng=numpy
+
+# verbosity level
+debug=0
