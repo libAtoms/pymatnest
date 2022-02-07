@@ -3890,14 +3890,17 @@ def main():
                 prev_pos = None
                 # loop this way with "while True" and "f.readline()" because directly looping over f does not 
                 # set position reported by f.tell() to end of line
+                # make sure there's somplace to truncate to if traj file has only one config and it's already too late
+                prev_pos = 0
+                prev_prev_pos = 0
                 while True:
                     l = f.readline()
                     if not l:
                         break
                     m = re.search(r"\biter=(\d+)\b", l)
                     if m is not None:
-                        iter = int(m.group(1))
-                        if iter >= start_first_iter:
+                        cur_iter = int(m.group(1))
+                        if cur_iter >= start_first_iter:
                             # rewind back to two lines back, before start of this config
                             f.seek(prev_prev_pos)
                             f.truncate()
