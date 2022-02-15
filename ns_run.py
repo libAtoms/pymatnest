@@ -1070,9 +1070,10 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     if do_calc_fortran and not ns_args['reproducible']:
         #DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk
         at.wrap()
-        pp=at.get_positions()
-        if (pp[1,2]>0.00001): #LIVIA
-            exit_error("Not a 2D system anymore\n",3)
+        if movement_args['2D']: 
+            pp=at.get_positions()
+            if (pp[1,2]>0.00001): #LIVIA
+                exit_error("Not a 2D system anymore\n",3)
  
         if movement_args['MC_atom_velocities']:
             #if not movement_args['2D']:
