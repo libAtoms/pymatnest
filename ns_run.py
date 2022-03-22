@@ -38,8 +38,11 @@ def usage():
        | Name of file to read in for atom information
        | default: ''
 
+    ``keep_atoms_fixed=int``
+       | Number of atoms to fix in surface simulation
+
     ``restart_file=path_to_file``
-       | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. 
+       | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files.
 
     ``n_walkers=int``
        | MANDATORY
@@ -69,7 +72,7 @@ def usage():
        | No default.
 
     ``out_file_prefix=str``
-       | String used as prefix for the different output files. 
+       | String used as prefix for the different output files.
        | No default.
 
     ``energy_calculator= ( quip | lammps | internal | fortran)``
@@ -80,20 +83,20 @@ def usage():
        | Amount of extra data per atom to pass around.
        | default: 0
 
-    ``KEmax_max_T=float`` 
+    ``KEmax_max_T=float``
        | If > 0, maximum temperature for estimating KEmax.  For constant *P* ensemble 3/2 P Vmax will be used if KEmax_max_T is < 0.
        | default: -1
 
-    ``kB=float`` 
+    ``kB=float``
        | Boltzmann constant
        | default: 8.6173324e-5 (eV/A)
 
     ``start_energy_ceiling_per_atom=float``
-       | Maximum potential energy per atom for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. 
+       | Maximum potential energy per atom for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.
        | default: 1.0e9
 
     ``start_energy_ceiling=float``
-       | DEPRECATED: use ``start_energy_ceiling_per_atom``. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. 
+       | DEPRECATED: use ``start_energy_ceiling_per_atom``. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.
        | default: 1.0e9
 
     ``random_init_max_n_tries=int``
@@ -101,7 +104,7 @@ def usage():
        | default 100
 
     ``n_model_calls_expected=int``
-       | Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. (It is recommended to use n_model_calls_expected/[number of processors] > 20) Either this or the keyword ``n_model_calls`` is mandatory, but the use of this keyword is strongly recommended. If < 0, value will be set to _sum_ of each type of steps (accounting for atom_traj_len), so ``n_*_steps`` will be setting the _number_ of calls, rather than just the ratios. 
+       | Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. (It is recommended to use n_model_calls_expected/[number of processors] > 20) Either this or the keyword ``n_model_calls`` is mandatory, but the use of this keyword is strongly recommended. If < 0, value will be set to _sum_ of each type of steps (accounting for atom_traj_len), so ``n_*_steps`` will be setting the _number_ of calls, rather than just the ratios.
        | default: 0
 
     ``n_model_calls=int``
@@ -112,55 +115,55 @@ def usage():
        | Whether to do steps in groups with good load balance
        | default: F
 
-    ``n_atom_steps=int`` 
+    ``n_atom_steps=int``
        | Ratio of atomic trajectories will be determined by ``n_atom_steps``/SUM(``n_*_steps``).
        | default: 1
 
-    ``atom_traj_len=int`` 
+    ``atom_traj_len=int``
        | Length of atomic trajectory (MD steps or MC sweeps) in each atomic type step.
        | default: 8
 
-    ``atom_traj_len_cost_multiplier=int`` 
+    ``atom_traj_len_cost_multiplier=int``
        | Multiplier for cost of an atomic step (set to 1 for MD, TE-HMC, and SP-MC with O(1) cost moves, N for naive SP-MC)
        | default: 1
 
-    ``break_up_atom_traj=[T | F]`` 
+    ``break_up_atom_traj=[T | F]``
        | Whether to intersperse ``n_atom_steps`` atomic sub-trajectories with other types of steps.
-       | default: F 
+       | default: F
 
-    ``n_cell_volume_steps=int`` 
+    ``n_cell_volume_steps=int``
        | Ratio of cell volume steps will be determined by ``n_cell_volume_steps``/SUM(``n_*_steps``).
        | default: 1
 
-    ``n_cell_shear_steps=int`` 
+    ``n_cell_shear_steps=int``
        | Ratio of cell shear steps will be determined by ``n_cell_shear_steps``/SUM(``n_*_steps``).
        | default: 1
 
-    ``n_cell_stretch_steps=int`` 
+    ``n_cell_stretch_steps=int``
        | Ratio of cell stretch steps will be determined by ``n_cell_stretch_steps``/SUM(``n_*_steps``).
        | default: 1
 
-    ``n_swap_steps=int`` 
+    ``n_swap_steps=int``
        | Ratio of species swap steps will be determined by ``n_swap_steps``/SUM(``n_*_steps``). It has to be set other than zero for a multicomponent system.
        | default: 0
 
-    ``swap_max_cluster=int`` 
+    ``swap_max_cluster=int``
        | Maximum size of interconnected cluster to try to swap.
        | default: 1
 
-    ``swap_r_cut=float`` 
+    ``swap_r_cut=float``
        | Cutoff radius for defining connected atoms for cluster.
        | default: 2.5
 
-    ``swap_cluster_probability_increment=float`` 
+    ``swap_cluster_probability_increment=float``
        | Factor between prob. of picking increasing larger clusters.
        | default: 0.75
 
-    ``swap_velo=[T | F]`` 
+    ``swap_velo=[T | F]``
        | If true, swap velocities when swapping atoms, breaking coherence a bit.
        | default: F
 
-    ``no_swap_velo_fix_mag_alt=[T | F]`` 
+    ``no_swap_velo_fix_mag_alt=[T | F]``
        | If true, use alternate method for correcting velocity magnitudes when not swapping velocities.
        | default: F
 
@@ -172,57 +175,57 @@ def usage():
        | Chemical potentials for semi-grand canonical species-type transmutations
        | default: ''
 
-    ``velo_traj_len=int`` 
+    ``velo_traj_len=int``
        | Number of MC steps in (optional) explicit velocity MC trajectory.
        | default: 0
 
-    ``random_energy_perturbation=float`` 
+    ``random_energy_perturbation=float``
        | default: 1.0e-12
 
     ``atom_algorithm=[MC | MD | GMC]``
        | MANDATORY
        | Use either Monte Carlo or Molecular dynamics to explore. GMC is an alias for atom_algorithm=MC, MC_atom_Galilean=True.
 
-    ``MC_atom_velocities=[T | F]`` 
+    ``MC_atom_velocities=[T | F]``
        | This keyword is supported only for energy_calculator=fortran.
-       | default: F 
+       | default: F
 
     ``MC_atom_velocities_pre_perturb=[T | F]``
        | Perturb velocities (rejection free) before MC + velocities walk.
-       | default: F 
+       | default: F
 
-    ``MC_atom_step_size=float`` 
+    ``MC_atom_step_size=float``
        | Initial atom move step size in units of (max_volume_per_atom * N_atoms)^(1/3)
        | default: 1.0
 
-    ``MC_atom_step_size_max=float`` 
+    ``MC_atom_step_size_max=float``
        | Maximum atom step size in units of (max_volume_per_atom * N_atoms)^(1/3).
        | default: 1.0
 
-    ``MC_atom_uniform_rv=[T | F]`` 
+    ``MC_atom_uniform_rv=[T | F]``
        | default: F
 
-    ``MC_atom_Galilean=[T | F]`` 
+    ``MC_atom_Galilean=[T | F]``
        | default: F
 
-    ``GMC_no_reverse=[T | F]`` 
+    ``GMC_no_reverse=[T | F]``
        | default: T
 
-    ``MD_atom_velo_pre_perturb=[T | F]`` 
+    ``MD_atom_velo_pre_perturb=[T | F]``
        | Perturb velocities before MD trajectory
        | default: F
 
-    ``MD_atom_velo_post_perturb=[T | F]`` 
+    ``MD_atom_velo_post_perturb=[T | F]``
        | Perturb velocities after MD trajectory
        | default: T
 
-    ``MD_atom_velo_flip_accept=[T | F]`` 
+    ``MD_atom_velo_flip_accept=[T | F]``
        | default: F
 
-    ``MD_atom_timestep=float`` 
+    ``MD_atom_timestep=float``
        | default: 0.1 (ASE time units)
 
-    ``MD_atom_timestep_max=float`` 
+    ``MD_atom_timestep_max=float``
        | default: 2.0 (ASE time units)
 
     ``MD_atom_energy_fuzz=float``
@@ -257,8 +260,8 @@ def usage():
     ``MC_cell_P=float``
        | Pressure value to be used. The unit of pressure depends on both the energy calculator and on the potential model used. Note that ASE uses
        | eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS
-       | the lammpslib module will convert the units for lammps to whatever units are set by the potential type) 
-       | default: 0.0 
+       | the lammpslib module will convert the units for lammps to whatever units are set by the potential type)
+       | default: 0.0
 
     ``MC_cell_flat_V_prior=[T | F]``
        | Flat prior for V (use with MC_cell_P=0 and cell moves, requires reweighting configurations when analyzing)
@@ -305,11 +308,11 @@ def usage():
        | If true (T), automatically calibrate all sizes by performing additional short explorations, including at the start of run. If false (F), use initial input step sizes and make small adjustments to these during the run.
        | default: T
 
-    ``monitor_step_interval_times_fraction_killed=float`` 
+    ``monitor_step_interval_times_fraction_killed=float``
      | Divided by ``n_cull/n_walkers`` to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring
      | default: 1
 
-    ``adjust_step_interval_times_fraction_killed=float`` 
+    ``adjust_step_interval_times_fraction_killed=float``
      | Divided by ``n_cull/n_walkers`` to get actual step adjustment interval in iterations, negative for only using last iteration, 0 for no adjust.
      | default: 1
 
@@ -355,7 +358,7 @@ def usage():
     ``FORTRAN_model_params=str``
        |  parameters (optional) for fortran model
 
-    ``LAMMPS_fix_gmc=[T | F]`` 
+    ``LAMMPS_fix_gmc=[T | F]``
        | default: F
 
     ``LAMMPS_init_cmds=str``
@@ -390,15 +393,15 @@ def usage():
        | default: -1
 
     ``2D=[ T | F ]``
-       | Perform 2D simulation. Some functionality may be limited with this option! 
+       | Perform 2D simulation. Some functionality may be limited with this option!
        | The 2D area is in the xy plane, the z axis stays constant during the simulation (set its value using the keyword ``Z_cell_axis``).
        | The maximum allowed volume is still defined as volume in this case!
        | If constant pressure is set, the p*V term is now p*A*Z_cell_axis, thus set the MC_cell_P parameter multiplied by 1/Z_cell_axis.
        | default: F
 
     ``Z_cell_axis=float``
-       | Only used if 2D=T. Value of the Z cell axis, perpendicular to the area in case of a 2D simulation. 
-       | This stays constant during the simulation. 
+       | Only used if 2D=T. Value of the Z cell axis, perpendicular to the area in case of a 2D simulation.
+       | This stays constant during the simulation.
        | default: 10.0
 
     ``debug=int``
@@ -438,7 +441,7 @@ def usage():
        | default: ''
 
     ``initial_walk_adjust_interval=int``
-       | in initial walks, interval between walks for adjusting step size 
+       | in initial walks, interval between walks for adjusting step size
        | default: ''
 
     ``initial_walk_Emax_offset_per_atom=float``
@@ -450,7 +453,7 @@ def usage():
        | default: F
 
     ``traj_interval=int``
-     |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. 
+     |  Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set <=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge.
      |  default: 100
 
     ``delta_random_seed=int``
@@ -471,7 +474,7 @@ def usage():
     ``ns_run_analyzers=string``
      | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
      | Positive interval refers to NS loop, negative to initial walks
-     | default:'' 
+     | default:''
 
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
@@ -480,6 +483,7 @@ def usage():
     sys.stderr.write("min_volume_per_atom=float (1)\n")
     sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, this or start_config_file required. atomic_number multiplicity [not recomended: mass (amu)]. Info repeated for each species, separated by commas, mass is optional and not recommended.\n")
     sys.stderr.write("start_config_file=str (MANDATORY, this or start_species required. if set filename to read initial atom information from (instead of creating them)\n")
+    sys.stderr.write("keep_atoms_fixed=int")
     sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
@@ -581,7 +585,7 @@ def usage():
     sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=quip)\n")
     sys.stderr.write("FORTRAN_model=str (MANDATORY if energy_calculator=fortran)\n")
     sys.stderr.write("FORTRAN_model_params=str (parameters for energy_calculator=fortran)\n")
-    sys.stderr.write("LAMMPS_fix_gmc=[T | F]\n") 
+    sys.stderr.write("LAMMPS_fix_gmc=[T | F]\n")
     sys.stderr.write("LAMMPS_init_cmds=str (MANDATORY if energy_calculator=lammps)\n")
     sys.stderr.write("LAMMPS_name=str ('', arch name for lammps shared object file)\n")
     sys.stderr.write("LAMMPS_serial=[T | F] (T, is lammps library serial)\n")
@@ -702,12 +706,12 @@ def eval_energy_mu(at):
     return energy
 
 def eval_energy(at, do_KE=True, do_PE=True):
-    """Calls appropriate functions to calculate the potential energy, kinetic energy and the p*V term. 
+    """Calls appropriate functions to calculate the potential energy, kinetic energy and the p*V term.
     """
     energy = eval_energy_PV(at) + eval_energy_mu(at)
 
     if do_PE:
-        energy += eval_energy_PE(at) 
+        energy += eval_energy_PE(at)
 
     if do_KE:
         energy += eval_energy_KE(at)
@@ -746,7 +750,7 @@ def propagate_NVE_quippy(at, dt, n_steps):
 
     at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
 
-def propagate_lammps(at, dt, n_steps, algo, Emax=None):
+def propagate_lammps(at, dt, n_steps, algo, Emax=None):  # TODO: propogate lammps
     if pot.first_propagate:
         pot.first_propagate=False
     else:
@@ -754,7 +758,7 @@ def propagate_lammps(at, dt, n_steps, algo, Emax=None):
 
     # set appropriate fix
     if algo == 'NVE':
-        pot.lmp.command('fix 1 all nve') 
+        pot.lmp.command('fix 1 all nve')
     elif algo == 'GMC':
         # hard coded value needed for LAMMPS.  Let's hope our RNG maximum is at least this large
         pot.lmp.command('fix 1 all gmc {} {} '.format(rng.int_uniform(1,900000000),Emax))
@@ -767,6 +771,7 @@ def propagate_lammps(at, dt, n_steps, algo, Emax=None):
     # do propagation, recover from exception if needed
     try:
         if algo == 'NVE':
+            # TODO: can we specify additional variables here that freeze atoms
             pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt)
         else:
             pot.propagate(at, properties=['energy','forces'],system_changes=['positions'], n_steps=n_steps, dt=dt, dt_not_real_time=True)
@@ -875,6 +880,10 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
     if movement_args['atom_velo_rej_free_fully_randomize']:
         # randomize completely
         at.set_velocities(gen_random_velo(at, KEmax_use))
+        if movement_args['keep_atoms_fixed'] > 0:  # for surface simulations
+            random_velo = at.get_velocities()
+            random_velo[:movement_args['keep_atoms_fixed'], :] = 0
+            at.set_velocities(random_velo)
     #DOC \item else perturb velocities
     else: # perturb
         velo = at.get_velocities()
@@ -882,6 +891,10 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
         #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
         if velo_mag == 0.0:
             at.set_velocities(gen_random_velo(at, KEmax_use))
+            if movement_args['keep_atoms_fixed'] > 0:  # for surface simulations
+                random_velo = at.get_velocities()
+                random_velo[:movement_args['keep_atoms_fixed'], :] = 0
+                at.set_velocities(random_velo)
         #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom\_velo\_rej\_free\_perturb\_angle
         else:
             # pick new random magnitude - count on dimensionality to make change small
@@ -896,8 +909,12 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
                     rotate_dir_3N_2D(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
                 else:
                     rotate_dir_3N(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
-                
+
             at.set_velocities(scaled_vel / sqrt_masses_2D)
+            if movement_args['keep_atoms_fixed'] > 0:  # for surface simulations
+                random_velo = at.get_velocities()
+                random_velo[:movement_args['keep_atoms_fixed'], :] = 0
+                at.set_velocities(random_velo)
 
     new_KE = at.get_kinetic_energy()
 
@@ -937,6 +954,8 @@ def do_MC_atom_velo_walk(at, movement_args, Emax, nD, KEmax):
             at_list = list(range(len(at)))
             rng.shuffle_in_place(at_list)
             d_vel = rng.normal(step_size, (len(at), 3))
+            if movement_args['keep_atoms_fixed'] > 0:  # for surface simulations
+                d_vel[:movement_args['keep_atoms_fixed'], :] = 0
             for i_at in at_list:
                 d_KE = 0.5*masses[i_at]*(np.sum((velocities[i_at,:]+d_vel[i_at,:])**2) - np.sum(velocities[i_at,:]**2))
                 if KE + d_KE < KEmax_use:
@@ -1023,7 +1042,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
         # print(print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " velo perturbed E ", pre_MD_E, " final E ",final_E, " KEmax ", KEmax, " KE ", final_KE)
         at.set_positions(pre_MD_pos)
         if movement_args['MD_atom_velo_flip_accept']:
-            at.set_velocities(pre_MD_velo)
+            at.set_velocities(pre_MD_velo)  # TODO: should we be redundant in zeroing?
         else:
             at.set_velocities(-pre_MD_velo)
         if ns_args['n_extra_data'] > 0:
@@ -1035,6 +1054,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
         #DOC \item flip velocities if MD\_atom\_velo\_flip\_accept
         # remember to reverse velocities on acceptance to preserve detailed balance, since velocity is (sometimes) being perturbed, not completely randomized
         if movement_args['MD_atom_velo_flip_accept']:
+            # TODO: negative of 0 is 0
             at.set_velocities(-at.get_velocities()) # is there a faster way of doing this in ASE?  Can you do at.velocities?
         at.info['ns_energy'] = final_E
         n_accept = 1
@@ -1080,7 +1100,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
         pp=at.get_positions()
         if (pp[1,2]>0.00001): #LIVIA
             exit_error("Not a 2D system anymore\n",3)
- 
+
         if movement_args['MC_atom_velocities']:
             #if not movement_args['2D']:
             (n_try, n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), nD, KEmax, step_size_velo)
@@ -1282,7 +1302,7 @@ def propose_shear_step(at, step_size):
        rv1 = rng.normal(step_size)
        # create new cell and transformation matrix
        new_cell = orig_cell.copy()
-       new_cell[rnd_vec_ind,:] += rv1*v1 
+       new_cell[rnd_vec_ind,:] += rv1*v1
 
    else:
        # pick random vector
@@ -1307,9 +1327,9 @@ def propose_shear_step(at, step_size):
 
 def propose_stretch_step(at, step_size):
     if movement_args['2D']:
-        rnd_v1_ind = 0 
-        rnd_v2_ind = 1 
-    else: 
+        rnd_v1_ind = 0
+        rnd_v2_ind = 1
+    else:
         rnd_v1_ind = rng.int_uniform(0, 3)
         rnd_v2_ind = rng.int_uniform(0, 3)
         if rnd_v1_ind == rnd_v2_ind:
@@ -1334,7 +1354,7 @@ def min_aspect_ratio(vol, cell):
         min_aspect_ratio = min(min_aspect_ratio, abs(np.dot(vnorm_hat,vi)))
 
     if movement_args['2D']:
-        # in 2D divide by the square root of area 
+        # in 2D divide by the square root of area
         min_aspect_ratio /= (vol/np.sqrt(np.dot(cell[2,:],cell[2,:])))**(1.0/2.0)
     else:
         min_aspect_ratio /= vol**(1.0/3.0)
@@ -1456,7 +1476,7 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         if cluster_size < 1:
             cluster_size = 1
 
-    # failed to find appropriate 
+    # failed to find appropriate
     if c1 is None or c2 is None or np.all(Z[c1] == Z[c2]):
         # print(print_prefix, ": do_MC_swap giving up on cluster ",c1,c2)
         # return 1 for number of model calls so walk will finish, even if no clusters are ever found
@@ -1468,6 +1488,7 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
     at.positions[c1,:] = p_2_orig
     at.positions[c2,:] = p_1_orig
     if not movement_args['swap_velo']:
+        # TODO: don't do this for the time being, but we should be able to modify this
         # If we just swap particles by swapping positions, velocities will follow to the new position, and so will effectively be swapped
         # Therefore, if we _don't_ want to actually swap velocities, we have to (apparently) swap them
         velocities = at.get_velocities()
@@ -1572,28 +1593,28 @@ def do_atom_walk(at, movement_args, Emax, KEmax):
 
 def rand_perturb_energy(energy, perturbation, Emax=None):
     if Emax is None:
-        if abs(energy)<= 1.0:
-            energy += rng.float_uniform(-1.0,0.0)*perturbation
+        if abs(energy) <= 1.0:
+            energy += rng.float_uniform(-1.0, 0.0)*perturbation
         else:
-            energy *= (1.0+rng.float_uniform(-1.0,0.0)*perturbation)
+            energy *= (1.0+rng.float_uniform(-1.0, 0.0)*perturbation)
     else:
         if abs(energy) <= 1.0:
-            pert = rng.float_uniform(-1.0,0.0)*perturbation
+            pert = rng.float_uniform(-1.0, 0.0)*perturbation
             n_tries = 0
             while energy+pert >= Emax and n_tries < 100:
-                pert = rng.float_uniform(-1.0,0.0)*perturbation
+                pert = rng.float_uniform(-1.0, 0.0)*perturbation
                 n_tries += 1
             if energy+pert >= Emax:
-                print( print_prefix, "WARNING: failed to do random energy perturbation below Emax ", energy, Emax)
+                print(print_prefix, "WARNING: failed to do random energy perturbation below Emax ", energy, Emax)
             energy += pert
         else:
-            pert = 1.0 + rng.float_uniform(-1.0,0.0)*perturbation
+            pert = 1.0 + rng.float_uniform(-1.0, 0.0)*perturbation
             n_tries = 0
             while energy*pert >= Emax and n_tries < 100:
-                pert = 1.0 + rng.float_uniform(-1.0,0.0)*perturbation
+                pert = 1.0 + rng.float_uniform(-1.0, 0.0)*perturbation
                 n_tries += 1
             if energy*pert >= Emax:
-                print( print_prefix, "WARNING: failed to do random energy perturbation below Emax ", energy, Emax)
+                print(print_prefix, "WARNING: failed to do random energy perturbation below Emax ", energy, Emax)
             energy *= pert
 
     return energy
@@ -1669,11 +1690,11 @@ def walk_single_walker(at, movement_args, Emax, KEmax):
                             #DOC \item do\_atom\_walk :math:`*` n\_atom\_step\_n\_calls
         possible_moves = ( [do_atom_walk] * movement_args['n_atom_steps_n_calls'] +
                             #DOC \item do\_cell\_volume\_step :math:`*` n\_cell\_volume\_steps
-                           [do_MC_cell_volume_step] * movement_args['n_cell_volume_steps'] + 
+                           [do_MC_cell_volume_step] * movement_args['n_cell_volume_steps'] +
                             #DOC \item do\_cell\_shear\_step :math:`*` n\_cell\_shear\_steps
-                           [do_MC_cell_shear_step] * movement_args['n_cell_shear_steps'] + 
+                           [do_MC_cell_shear_step] * movement_args['n_cell_shear_steps'] +
                             #DOC \item do\_cell\_stretch\_step :math:`*` n\_cell\_stretch\_steps
-                           [do_MC_cell_stretch_step] * movement_args['n_cell_stretch_steps'] + 
+                           [do_MC_cell_stretch_step] * movement_args['n_cell_stretch_steps'] +
                             #DOC \item do\_swap\_step :math:`*` n\_swap\_steps
                            [do_MC_swap_step] * movement_args['n_swap_steps'] +
                             #DOC \item do\_semi\_grand\_step :math:`*` n\_semi\_grand\_steps
@@ -1737,7 +1758,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
     """Automatically set all step sizes. Returns the time (in seconds) taken for the routine to run."""
 #DOC
 #DOC ``full_auto_set_stepsizes``
-    #DOC \item Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range. 
+    #DOC \item Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.
 
     global print_prefix
 
@@ -1750,11 +1771,11 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
     n_samples_per_move_type=200 # total number of (H)MC moves used to set each step length
 
     if comm is not None:
-        walk_n_walkers = int(np.ceil(float(n_samples_per_move_type)/size_n_proc)) 
+        walk_n_walkers = int(np.ceil(float(n_samples_per_move_type)/size_n_proc))
         # in each trial we will evolve walk_n_walkers configurations
     else:
         walk_n_walkers = n_samples_per_move_type
-    #DOC \item The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes 
+    #DOC \item The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes
 
     key_list=[]
     for key, value in walk_stats.items():
@@ -1782,7 +1803,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
             else:
                 i = -1
             key_ints.append(i)
-        
+
         key_flags =  1*np.asarray([ i in key_ints for i in range(7)])
 
         totalkeys = np.zeros( (len(key_flags)), dtype=np.int)
@@ -1828,7 +1849,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
         exploration_movement_args['n_swap_steps'] = 0
         exploration_movement_args['n_semi_grand_steps'] = 0
         exploration_movement_args['MC_atom_velocities']=False
-  
+
         nD=3
         if exploration_movement_args['2D']:
            nD=2
@@ -1849,26 +1870,26 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
             continue # skip this key - it is not used
 
         if (key=="MD_atom" or key=="MC_atom"):
-            exploration_movement_args['n_atom_steps_n_calls'] = 1 
+            exploration_movement_args['n_atom_steps_n_calls'] = 1
             # one call to do_atom_walk per walk_single_walker call
-            
-            exploration_movement_args['n_atom_steps_per_call'] = 1 
+
+            exploration_movement_args['n_atom_steps_per_call'] = 1
             # do_atom_walk makes one do_MC_walk/do_MD_walk per call
 
             if key == "MC_atom" and not movement_args['MC_atom_Galilean']:
-                exploration_movement_args['atom_traj_len'] = 1 
+                exploration_movement_args['atom_traj_len'] = 1
                 # 1 atom sweep per do_MC_walk call
                 exploration_movement_args['n_model_calls'] = 1 * exploration_movement_args['atom_traj_len_cost_multiplier']
                 # The do_atom_walk routine reports that it has performed
-                # #model_calls = the number of complete MC sweeps performed, 
+                # #model_calls = the number of complete MC sweeps performed,
                 # rather than single point evaluations.
             else:
                 exploration_movement_args['n_model_calls'] = exploration_movement_args['atom_traj_len']*exploration_movement_args['atom_traj_len_cost_multiplier']
-                # The do_atom_walk routine reports that it has performed 
+                # The do_atom_walk routine reports that it has performed
                 # #model_calls = number of single point evaluations (time steps)
 
         elif (key=="MC_atom_velo"):
-            exploration_movement_args['velo_traj_len']=1 
+            exploration_movement_args['velo_traj_len']=1
             exploration_movement_args['MC_atom_velo_walk_rej_free']=False
             # one velocities sweep
 
@@ -1913,15 +1934,15 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
         first_walker = rng.int_uniform(0, len(walkers)) # random starting point for config selection
         first_time = True # we will make at least two tries. Logical flag ensures this.
 
-        steplength_store = movement_args[key+"_"+suffix] 
+        steplength_store = movement_args[key+"_"+suffix]
         # protects against possible future bugs that would be hard to detect
 
 
         #DOC \item Step size calibration loop:
         dir = None
         while True:
-            stats = {} # clear acceptance / trial stats for new step size 
-            stats_cumul = {} # clear acceptance / trial stats for new step size 
+            stats = {} # clear acceptance / trial stats for new step size
+            stats_cumul = {} # clear acceptance / trial stats for new step size
             #DOC \item Repeat the following 200/num\_of\_MPI\_processes times:
                 #DOC \item Copy a configuration from the live set (each MPI process chooses a different configuration)
             for i in range(first_walker,first_walker + walk_n_walkers):
@@ -1937,7 +1958,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                 else:
                     stats = do_MC_atom_velo_walk(buf, exploration_movement_args, Emax, nD, KEmax)
 
-                  #DOC     running statistics for the number of accepted/rejected moves on each process are recorded 
+                  #DOC     running statistics for the number of accepted/rejected moves on each process are recorded
                 accumulate_stats(stats_cumul, stats)
 
             first_walker = first_walker + walk_n_walkers # cycle through local samples
@@ -1967,7 +1988,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                 break
             else:
                 if( not first_time ): # dodge this the first time round
-                    # Check whether rate and rate_store are on different sides 
+                    # Check whether rate and rate_store are on different sides
                     # of interval
                     if ((min(rate,rate_store) < min_rate) and (max(rate,rate_store)>max_rate)):
                         #DOC \item If this is NOT the first time the loop has been performed for this (H)MC move AND we previously obtained an acceptance rate on one side of the desired range, and now find an acceptance rate on the other side of the desired range
@@ -2255,15 +2276,22 @@ def clean_prev_snapshot(iter):
         except:
             print( print_prefix, ": WARNING: Failed to delete '%s'" % snapshot_file)
 
+
 def do_ns_loop():
-    """ 
+    """
     This is the main nested sampling loop, doing the iterations.
+    # TODO: main nested sampling loop
     """
     global print_prefix
     global cur_config_ind
 
-    nD = 3 # dimensionality of the system
-    if movement_args['2D']: # simulate a 2D system only
+    # cant keep atoms fixed and change the simulation cell at the moment
+    if (movement_args['keep_atoms_fixed'] > 0
+            and movement_args['n_cell_volume_steps'] > 0):
+        exit_error("cant keep atoms fixed and change the simulation cell\n", 11)
+
+    nD = 3  # dimensionality of the system
+    if movement_args['2D']:  # simulate a 2D system only
         nD = 2
     if rank == 0:
         if energy_io.tell() == 0:
@@ -2271,7 +2299,7 @@ def do_ns_loop():
                 nExtraDOF = 0
             else:
                 nExtraDOF = n_atoms*nD
-            energy_io.write("%d %d %d %s %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF, movement_args['MC_cell_flat_V_prior'], n_atoms) )
+            energy_io.write("%d %d %d %s %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF, movement_args['MC_cell_flat_V_prior'], n_atoms))
 
     ## print(print_prefix, ": random state ", np.random.get_state())
     ## if rank == 0:
@@ -2282,17 +2310,17 @@ def do_ns_loop():
             at.info['n_walks'] = 0
 
     for at in walkers:
-        at.info['KEmax']=KEmax 
+        at.info['KEmax'] = KEmax
         if movement_args['MC_cell_P'] > 0:
-            print( rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " PV ", eval_energy_PV(at), " mu ", eval_energy_mu(at), " vol ", at.get_volume())
+            print(rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " PV ", eval_energy_PV(at), " mu ", eval_energy_mu(at), " vol ", at.get_volume())
         else:
-            print( rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " mu ", eval_energy_mu(at), " vol ",at.get_volume())
+            print(rank, ": initial enthalpy ", at.info['ns_energy'], " PE ", eval_energy_PE(at), " KE ", eval_energy_KE(at), " mu ", eval_energy_mu(at), " vol ",at.get_volume())
     sys.stdout.flush()
 
     # stats for purpose of adjusting step size
-    walk_stats_adjust={}
+    walk_stats_adjust = {}
     # stats for purpose of monitoring acceptance rates
-    walk_stats_monitor={}
+    walk_stats_monitor = {}
     zero_stats(walk_stats_adjust, movement_args)
     zero_stats(walk_stats_monitor, movement_args)
 
@@ -2308,12 +2336,12 @@ def do_ns_loop():
     E_dump_list = []
     E_dump_list_times = []
 
-    verbose=False
+    verbose = False
 
     # to avoid errors of unassigned values, if in case of a restart the final number of iter is the same as the satring, stop.
     if start_first_iter == ns_args['n_iter']:
-        print( "WARNING: Increase the n_iter_times_fraction_killed variable in the input if you want NS cycles to be performed.")
-        exit_error("starting iteration and the total number of required iterations are the same,hence no NS cycles will be performed\n",11)
+        print("WARNING: Increase the n_iter_times_fraction_killed variable in the input if you want NS cycles to be performed.")
+        exit_error("starting iteration and the total number of required iterations are the same,hence no NS cycles will be performed\n", 11)
 
     last_log_X_n = 0.0
     i_range_mod_n_cull = np.array(range(ns_args['n_cull']))
@@ -2339,15 +2367,15 @@ def do_ns_loop():
         for (ns_analyzer, ns_analyzer_interval) in ns_analyzers:
             ns_analyzer.analyze(walkers, -1, "NS_loop start")
 
-    # START MAIN LOOP
+    # START MAIN LOOP  # TODO: main loop
     i_ns_step = start_first_iter
     while ns_args['n_iter'] < 0 or i_ns_step < ns_args['n_iter']:
         check_memory.check_memory("start_ns_main_loop")
-        print_prefix="%d NS %d" % (rank, i_ns_step)
+        print_prefix = "%d NS %d" % (rank, i_ns_step)
 
         if ns_args['debug'] >= 4 and ns_args['track_configs']:
             for at in walkers:
-                print( print_prefix, "INFO: 10 config_ind ", at.info['config_ind'], " from ", at.info['from_config_ind'], " at ", at.info['config_ind_time'])
+                print(print_prefix, "INFO: 10 config_ind ", at.info['config_ind'], " from ", at.info['from_config_ind'], " at ", at.info['config_ind_time'])
 
         if movement_args['adjust_step_interval'] < 0:
             zero_stats(walk_stats_adjust, movement_args)
@@ -2355,68 +2383,68 @@ def do_ns_loop():
             zero_stats(walk_stats_monitor, movement_args)
 
         if ns_args['debug'] >= 20:
-            print( print_prefix, "%30s" % ": LOOP_TE START 00 ",i_ns_step, [ "%.10f" % eval_energy(at) for at in walkers ])
-            print( print_prefix, "%30s" % ": LOOP_PE START 01 ",i_ns_step, [ "%.10f" % eval_energy(at, do_KE=False) for at in walkers ])
-            print( print_prefix, "%30s" % ": LOOP_X START 02 ",i_ns_step, [ "%.10f" % at.positions[0,0] for at in walkers ])
+            print(print_prefix, "%30s" % ": LOOP_TE START 00 ", i_ns_step, ["%.10f" % eval_energy(at) for at in walkers])
+            print(print_prefix, "%30s" % ": LOOP_PE START 01 ", i_ns_step, ["%.10f" % eval_energy(at, do_KE=False) for at in walkers])
+            print(print_prefix, "%30s" % ": LOOP_X START 02 ", i_ns_step, ["%.10f" % at.positions[0, 0] for at in walkers])
 
         # get list of highest energy configs
         (Emax, Vmax, cull_rank, cull_ind) = max_energy(walkers, n_cull)
         Emax_next = Emax[-1]
         if rank == 0 and Emax_of_step is not None and Emax[0] > Emax_of_step:
-            print( print_prefix, ": WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step)], cull_rank[np.where(Emax > Emax_of_step)], cull_ind[np.where(Emax > Emax_of_step)])
+            print(print_prefix, ": WARNING: energy above Emax ", Emax_of_step, " bad energies: ", Emax[np.where(Emax > Emax_of_step)], cull_rank[np.where(Emax > Emax_of_step)], cull_ind[np.where(Emax > Emax_of_step)])
             # comm.barrier()
             # exit_error("Energy above Emax\n", 5)
 
         if rank == 0 and (i_ns_step > start_first_iter and Emax_next >= Emax_of_step):
-            print( "WARNING: Emax not decreasing ",Emax_of_step, Emax_next)
-        Emax_of_step=Emax_next
+            print( "WARNING: Emax not decreasing ", Emax_of_step, Emax_next)
+        Emax_of_step = Emax_next
 
         if ns_args['min_Emax'] is not None and Emax_of_step < ns_args['min_Emax']:
             if rank == 0:
                 # if the termination was set by a minimum energy, and it is reached, stop.
-                print( "Leaving loop because Emax=",Emax_of_step," < min_Emax =",ns_args['min_Emax'])
-            i_ns_step += 1 # add one so outside loop when one is subtracted to get real last iteration it's still correct
+                print("Leaving loop because Emax=", Emax_of_step, " < min_Emax =", ns_args['min_Emax'])
+            i_ns_step += 1  # add one so outside loop when one is subtracted to get real last iteration it's still correct
             break
 
         if rank == 0:
-            cur_time=time.time()
-            output_this_iter = (cur_time > prev_time+60 or i_ns_step == 0 or i_ns_step == ns_args['n_iter'] or (ns_args['n_iter'] > 0 and i_ns_step % max(int(ns_args['n_iter']/1000),1) == 0))
+            cur_time = time.time()
+            output_this_iter = (cur_time > prev_time+60 or i_ns_step == 0 or i_ns_step == ns_args['n_iter'] or (ns_args['n_iter'] > 0 and i_ns_step % max(int(ns_args['n_iter']/1000), 1) == 0))
         else:
             output_this_iter = False
 
         if ns_args['converge_down_to_T'] > 0:
             # see ns_analyse.py calc_log_a() for math
             log_a = log_X_n_term_sum*i_ns_step + log_X_n_term_cumsum_modified
-            #DEBUG if rank == 0:
-                #DEBUG for ii in range(len(log_a)):
-                    #DEBUG print i_ns_step, "log_a, beta, Es, beta*Es ", log_a[ii], beta, Emax[ii], beta*Emax[ii]
-            log_Z_term_max = max(log_Z_term_max, np.amax(log_a-converge_down_to_beta*Emax))
+            # DEBUG if rank == 0:
+                # DEBUG for ii in range(len(log_a)):
+                    # DEBUG print i_ns_step, "log_a, beta, Es, beta*Es ", log_a[ii], beta, Emax[ii], beta*Emax[ii]
+            log_Z_term_max = max(log_Z_term_max, np.amax(log_a - converge_down_to_beta * Emax))
             log_Z_term_last = log_a[-1]-converge_down_to_beta*Emax[-1]
             if output_this_iter:
-                print( "log_Z_term max ", log_Z_term_max, "last ", log_Z_term_last, "diff ", log_Z_term_max-log_Z_term_last)
-            if log_Z_term_last <  log_Z_term_max - 10.0:
+                print("log_Z_term max ", log_Z_term_max, "last ", log_Z_term_last, "diff ", log_Z_term_max-log_Z_term_last)
+            if log_Z_term_last < log_Z_term_max - 10.0:
                 if rank == 0:
-                    print( print_prefix, "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T'])
-                i_ns_step += 1 # add one so outside loop when one is subtracted to get real last iteration it's still correct
+                    print(print_prefix, "Leaving loop because Z(%f) is converged" % ns_args['converge_down_to_T'])
+                i_ns_step += 1  # add one so outside loop when one is subtracted to get real last iteration it's still correct
                 break
 
         if ns_args['T_estimate_finite_diff_lag'] > 0:
             Emax_history.append(Emax_of_step)
         if output_this_iter:
-                if ns_args['T_estimate_finite_diff_lag'] > 0 and len(Emax_history) > 1:
-                    beta_estimate = (len(Emax_history)-1)*log_alpha/(Emax_history[-1]-Emax_history[0])
-                    T_estimate = 1.0/(ns_args['kB']*beta_estimate)
-                else:
-                    T_estimate = -1
-                print( i_ns_step, "Emax_of_step ", Emax_of_step, "T_estimate ", T_estimate, " loop time ", cur_time-prev_time-step_size_setting_duration," time spent setting step sizes: ",step_size_setting_duration)
-                sys.stdout.flush()
-                prev_time = cur_time
-                step_size_setting_duration = 0.0
+            if ns_args['T_estimate_finite_diff_lag'] > 0 and len(Emax_history) > 1:
+                beta_estimate = (len(Emax_history)-1)*log_alpha/(Emax_history[-1]-Emax_history[0])
+                T_estimate = 1.0/(ns_args['kB']*beta_estimate)
+            else:
+                T_estimate = -1
+            print(i_ns_step, "Emax_of_step ", Emax_of_step, "T_estimate ", T_estimate, " loop time ", cur_time-prev_time-step_size_setting_duration, " time spent setting step sizes: ", step_size_setting_duration)
+            sys.stdout.flush()
+            prev_time = cur_time
+            step_size_setting_duration = 0.0
 
         entries_for_this_rank = np.where(cull_rank == rank)[0]
         cull_list = cull_ind[entries_for_this_rank]
         if rank == 0 and ns_args['debug'] >= 4 and len(cull_ind[entries_for_this_rank]) > 0:
-            print( print_prefix, "INFO: 20 cull ", cull_ind[entries_for_this_rank], " on ",rank)
+            print(print_prefix, "INFO: 20 cull ", cull_ind[entries_for_this_rank], " on ", rank)
 
         # record Emax walkers energies
         if rank == 0:
@@ -2624,7 +2652,7 @@ def do_ns_loop():
                 walkers[recv_ind[0]].info['ns_energy'] = eval_energy(walkers[recv_ind[0]])
                 if ns_args['debug'] >= 10 and size <= 1:
                     walkers[recv_ind[0]].info['n_walks'] = 0
-            else: # need send/recv
+            else:  # need send/recv
                 n_send = 3*(n_atoms + 3)
                 if movement_args['do_velocities']:
                     n_send += 3*n_atoms
@@ -2633,13 +2661,13 @@ def do_ns_loop():
                 if ns_args['n_extra_data'] > 0:
                     n_send += ns_args['n_extra_data']*n_atoms
                 if ns_args['swap_atomic_numbers']:
-                    n_send += n_atoms # Z
+                    n_send += n_atoms  # Z
                     if movement_args['do_velocities']:
-                        n_send += n_atoms # mass
+                        n_send += n_atoms  # mass
                 if ns_args['track_configs']:
                     n_send += 3
-                buf = np.zeros ( n_send )
-                if send_rank[0] == rank: # only one config is sent/received
+                buf = np.zeros(n_send)
+                if send_rank[0] == rank:  # only one config is sent/received
                     buf_o = 0
                     buf[buf_o:buf_o+3*n_atoms] = walkers[send_ind[0]].get_positions().reshape( (3*n_atoms) ); buf_o += 3*n_atoms
                     buf[buf_o:buf_o+3*3] = walkers[send_ind[0]].get_cell().reshape( (3*3) ); buf_o += 3*3
@@ -2793,7 +2821,7 @@ def do_ns_loop():
             print( print_prefix, "%30s" % ": LOOP_X POST_CLONE 22 ",i_ns_step, [ "%.10f" % at.positions[0,0] for at in walkers ])
 
         if ns_args['track_configs']:
-            # loop over _all_ clone targets and increment cur_config_ind, setting appropriate configs' new config_ind as needed 
+            # loop over _all_ clone targets and increment cur_config_ind, setting appropriate configs' new config_ind as needed
             for r in range(size):
                 clone_walk_ind = np.where(status[r,:] == 'c_t_a')[0]
                 for i_at in clone_walk_ind:
@@ -3428,6 +3456,7 @@ def main():
         movement_args['MD_adjust_max_rate'] = float(args.pop('MD_adjust_max_rate', 0.95))
 
         movement_args['2D'] = str_to_logical(args.pop('2D', "F"))
+        movement_args['keep_atoms_fixed'] = int(args.pop('keep_atoms_fixed', 0))
 
         if 'QUIP_pot_params_file' in ns_args:
             if not have_quippy:
@@ -3473,7 +3502,7 @@ def main():
                 print( "no ns_run_analyzers set")
             ns_analyzers = None
 
-        # initialise potential
+        # initialise potential  # TODO: here's where LAMMPS is set up
         if do_calc_quip:
             pot = quippy.Potential(ns_args['QUIP_pot_args'], param_str=ns_args['QUIP_pot_params'], calculation_always_required=True, cutoff_skin=1.0)
         elif do_calc_internal or do_calc_fortran:
@@ -3575,7 +3604,7 @@ def main():
                     warned_explicit_mass=True
                 type_mass = float(species_fields[2])
                 mass_list.append(type_mass)
-            
+
         if len(mass_list) > 0:
             mass_list = np.array(mass_list)
             if np.any(mass_list != mass_list[0]) and not movement_args['atom_velo_rej_free_fully_randomize']:
@@ -3686,7 +3715,7 @@ def main():
                 else:
                     config_ind = comm.rank*n_walkers
             for at in walkers:
-                at.set_velocities(np.zeros( (len(walkers[0]), 3) ))
+                at.set_velocities(np.zeros((len(walkers[0]), 3)))
                 if ns_args['track_configs']:
                     at.info['config_ind'] = config_ind
                     at.info['from_config_ind'] = -1
@@ -3722,7 +3751,7 @@ def main():
                             temp_cell[2,2] = ns_args['Z_cell_axis']
                             at.set_cell( temp_cell )
                             do_cell_shape_walk(at, movement_args)
-                            
+
                         else:
                             lc = (len(at)*ns_args['max_volume_per_atom']*rng.float_uniform(0.0,1.0)**(1.0/float(len(at)+1)))**(1.0/3.0)
                             at.set_cell( np.identity(3) * lc )
@@ -3734,7 +3763,7 @@ def main():
                     n_try = 0
                     while n_try < ns_args['random_init_max_n_tries'] and (math.isnan(energy) or energy > ns_args['start_energy_ceiling']):
                         at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
-                        if movement_args['2D']: # zero the Z coordiates in a 2D simulation
+                        if movement_args['2D']:  # zero the Z coordiates in a 2D simulation
                             temp_at=at.get_positions()
                             temp_at[:,2]=0.0
                             at.set_positions(temp_at)
@@ -3769,7 +3798,7 @@ def main():
 
             # Done initialising atomic positions. Now initialise momenta
 
-                # set KEmax from P and Vmax
+            # set KEmax from P and Vmax
             if (movement_args['do_velocities']):
                 if ns_args['KEmax_max_T'] > 0.0:
                     KEmax = 1.5*len(walkers[0])*ns_args['kB']*ns_args['KEmax_max_T']
@@ -3789,22 +3818,27 @@ def main():
 
             # swap atomic numbers if doing semi-grand canonical ensemble
             ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0)
-        
-        else: # set up walkers with a restart
+
+        # TODO: start reading the restart file
+        else:  # set up walkers with a restart
             # swap atomic numbers if doing semi-grand canonical ensemble
-            ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0)
-            at_list = ase.io.read(ns_args['restart_file'],index=":") #LIVIA
+            ns_args['swap_atomic_numbers'] = (
+                    movement_args['n_semi_grand_steps'] > 0)
+            at_list = ase.io.read(ns_args['restart_file'], index=":")  # LIVIA
             for r in range(size):
                 if rank == r:
-                    walkers=at_list[r*n_walkers:(r+1)*n_walkers]
+                    walkers = at_list[r*n_walkers:(r+1)*n_walkers]
                     print(rank, r, walkers)
             for at in walkers:
-                if np.any(at.get_atomic_numbers() != walkers[0].get_atomic_numbers()):
+                if np.any(at.get_atomic_numbers()
+                          != walkers[0].get_atomic_numbers()):
                     ns_args['swap_atomic_numbers'] = True
 
-            # broadcast swap_atomic_numbers in case it was overriddgen to True by presence of configurations with different atomic number lists
+            # broadcast swap_atomic_numbers in case it was overridden to True
+            # by presence of configurations with different atomic number lists
             if comm is not None:
-                ns_args['swap_atomic_numbers'] = comm.bcast(ns_args['swap_atomic_numbers'], root=0)
+                ns_args['swap_atomic_numbers'] = comm.bcast(
+                    ns_args['swap_atomic_numbers'], root=0)
 
             if ns_args['track_configs']:
                 if comm is not None:
@@ -3812,37 +3846,65 @@ def main():
                 else:
                     cur_config_ind = n_walkers
                 if 'config_ind' in walkers[0].info:
-                    max_config_ind = max([at.info['config_ind'] for at in walkers])
+                    max_config_ind = max(
+                        [at.info['config_ind'] for at in walkers])
                     if comm is not None:
                         comm.allreduce(max_config_ind, op=MPI.MAX)
                     cur_config_ind = max_config_ind+1
+
+            # Calculate ns_energy for manual surface configurations from restart
+            if movement_args['keep_atoms_fixed'] > 0:
+                print("RBW: calc ns_energy for man surf configs from restart")
+                for (i_at, at) in enumerate(walkers):
+                    at.set_calculator(pot)
+                    energy = eval_energy(at)
+                    at.info['ns_energy'] = rand_perturb_energy(
+                        energy, ns_args['random_energy_perturbation'])
+                    at.info['volume'] = at.get_volume()
 
             if movement_args['do_velocities']:
                 KEmax = walkers[0].info['KEmax']
             else:
                 KEmax = -1.0
 
+            # Set init velocities for manual surface configurations from restart
+            if movement_args['keep_atoms_fixed'] > 0:
+                print("RBW: set init vels for man surf configs from restart")
+                if movement_args['do_velocities']:
+                    for at in walkers:
+                        rej_free_perturb_velo(at, None, KEmax)
+                        # adds KE to at.info['ns_energy']
+
             for at in walkers:
                 if ns_args['n_extra_data'] > 0 and (not 'ns_extra_data' in at.arrays or at.arrays['ns_extra_data'].size/len(at) != ns_args['n_extra_data']):
-                    at.arrays['ns_extra_data'] = np.zeros( (len(at), ns_args['n_extra_data']) )
+                    at.arrays['ns_extra_data'] = np.zeros(
+                        (len(at), ns_args['n_extra_data']))
                 if do_calc_quip or do_calc_lammps:
                     at.set_calculator(pot)
-                at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
+                at.info['ns_energy'] = rand_perturb_energy(
+                    eval_energy(at), ns_args['random_energy_perturbation'])
 
                 if 'iter' in at.info:
                     start_first_iter = at.info['iter'] + 1
                 else:
-                    print( "ERROR: no iteration number information was found in the restart file")
-                    exit_error("no iteration number information was found in the restart file\n",5)
+                    print("ERROR: no iteration number information was found "
+                          "in the restart file")
+                    exit_error("no iteration number information was found in "
+                               "the restart file\n", 5)
 
                 key_found = False
-                for key in at.info: # check if 'volume=' info is present in the file used for restart
+                for key in at.info:
+                    # check if 'volume=' info is present in the file used for
+                    # restart
                     if key == 'volume':
-                        movement_args['MC_cell_volume_per_atom_step_size'] = at.info['volume']/10.0/len(at)
+                        movement_args['MC_cell_volume_per_atom_step_size'] = (
+                                at.info['volume']/10.0/len(at))
                         key_found = True
                 if not key_found:
-                    print( "WARNING: no volume information was found in the restart file. If volume changes will be done, the starting stepsize will be the default")
-                    
+                    print("WARNING: no volume information was found in the "
+                          "restart file. If volume changes will be done, "
+                          "the starting stepsize will be the default")
+
             if do_calc_quip:
                 walkers = [quippy.Atoms(at) for at in walkers]
 
@@ -3925,24 +3987,27 @@ def main():
         sys.stdout.flush()
         n_atoms = len(walkers[0])
         # do NS
-        #QUIP_IO if have_quippy:
-            #QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.extxyz' % rank, action=quippy.OUTPUT)
-        #QUIP_IO else:
-            #QUIP_IO traj_file = ns_args['out_file_prefix']+'traj.%08d.'+('%04d' % rank)+'.extxyz'
+        # QUIP_IO if have_quippy:
+            # QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.extxyz' % rank, action=quippy.OUTPUT)
+        # QUIP_IO else:
+            # QUIP_IO traj_file = ns_args['out_file_prefix']+'traj.%08d.'+('%04d' % rank)+'.extxyz'
 
         # open the file where the trajectory will be printed
-        if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
+        if ns_args['restart_file'] == '':  # start from scratch, so if this file exists, overwrite it
             traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
             if ns_args['track_configs'] and ns_args['track_configs_write']:
                 track_traj_io = open(ns_args['out_file_prefix']+'track_traj.%d.%s' % (rank, ns_args['config_file_format']), "w")
             else:
                 track_traj_io = None
-        else: # restart, so the existing file should be appended
+        else:  # restart, so the existing file should be appended
             # concatenate existing traj file to before restart
             print(rank, "truncating traj file to start_first_iter", start_first_iter)
-            with open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']),"r+") as f:
+            mode = "r+"
+            if movement_args['keep_atoms_fixed'] > 0:
+                mode = "a+"
+            with open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), mode) as f:
                 prev_pos = None
-                # loop this way with "while True" and "f.readline()" because directly looping over f does not 
+                # loop this way with "while True" and "f.readline()" because directly looping over f does not
                 # set position reported by f.tell() to end of line
                 while True:
                     l = f.readline()
@@ -3964,7 +4029,7 @@ def main():
             else:
                 track_traj_io = None
 
-            # Read the existing traj file and look for the point where we restart from. Truncate the rest. 
+            # Read the existing traj file and look for the point where we restart from. Truncate the rest.
             # This part is not used because the ASE.io.read takes soooo long, that it makes a restart impossible.
             #traj_io = open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), "r+")
             #i = 0
@@ -3986,48 +4051,50 @@ def main():
 
         # open the file where the energies will be printed
         if rank == 0:
-            if ns_args['restart_file'] == '': # start from scratch, so if this file exists, overwrite it 
+            if ns_args['restart_file'] == '':  # start from scratch, so if this file exists, overwrite it
                 energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
-            else: # restart, so the existing file should be appended
+            else:  # restart, so the existing file should be appended
                 try:
                     energy_io = open(ns_args['out_file_prefix']+'energies', 'r+')
                     tmp_iter = 0
-                    line = energy_io.readline() # read the first line of nwalker,ncull..etc information
+                    line = energy_io.readline()  # read the first line of nwalker,ncull..etc information
                     i = 0
-                    while True: # we do create an infinite loop here :(
-                        line=energy_io.readline()              # read lines one by one
+                    while True:  # we do create an infinite loop here :(
+                        line = energy_io.readline()            # read lines one by one
                         if not line:                           # something went wrong, exit the infinit loop
-                            print( "WARNING: end of .energies file reached without finding the iteration number", start_first_iter)
+                            print("WARNING: end of .energies file reached without finding the iteration number", start_first_iter)
                             break
-                        i = i+1
-                        if (i%10000 == 0):
-                            print( rank, "reading .energies file line %d" % i)
-                        if i%n_cull==0:                        # if this is n_cull-th line, examine the stored iteration
+                        i = i + 1
+                        if i % 10000 == 0:
+                            print(rank, "reading .energies file line %d" % i)
+                        if i % n_cull == 0:                    # if this is n_cull-th line, examine the stored iteration
                             tmp_split = line.split()
                             tmp_iter = int(tmp_split[0])       # tmp_iter contains the iteration number of the line as an integer number
-                        if tmp_iter == start_first_iter-1:     # if this is the iteration same as in the snapshot, 
-                            print( rank, "truncating energy file at line ", i)
+                        if tmp_iter == start_first_iter - 1:   # if this is the iteration same as in the snapshot,
+                            print(rank, "truncating energy file at line ", i)
                             energy_io.truncate()                #delete the rest of the file, as we are restarting from here
                             break
-                except:
-                    print( "WARNING: got restart file, but no corresponding energies file, so creating new one from scratch")
+                except FileNotFoundError:
+                    print("WARNING: got restart file, but no corresponding energies file, so creating new one from scratch")
                     energy_io = open(ns_args['out_file_prefix']+'energies', 'w')
 
         sys.stdout.flush()
 
         if ns_args['profile'] == rank:
+            print("if")
             import cProfile
             pr = cProfile.Profile()
             final_iter = pr.runcall(do_ns_loop)
             pr.dump_stats(ns_args['out_file_prefix']+'profile.stats')
         else:
+            print("else")
             final_iter = do_ns_loop()
 
         # cleanup post loop
         save_snapshot(final_iter) # this is the final configuration
 
         for at in walkers:
-            print( rank, ": final energy ", at.info['ns_energy'])
+            print(rank, ": final energy ", at.info['ns_energy'])
 
         if rank == 0:
             energy_io.close()

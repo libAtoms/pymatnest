@@ -1,0 +1,2 @@
+Calc Ec = 7.97 eV/atom, Kittel Ec = 4.63 eV/atom
+Calc B = 652.55 GPa

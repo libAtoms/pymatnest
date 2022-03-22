@@ -1,0 +1,1596 @@
+WARNING: no quippy module loaded
+INFO: use_mpi true, importing mpi4py module
+comm  <mpi4py.MPI.Intracomm object at 0x11e7e64b0>  size  1  rank  0
+ns_args  {'E_dump_interval': -1,
+ 'KEmax_max_T': 10000.0,
+ 'LAMMPS_atom_types': {'H': 1},
+ 'LAMMPS_fix_gmc': False,
+ 'LAMMPS_header': 'units metal; atom_style atomic; atom_modify map array sort '
+                  '0 0',
+ 'LAMMPS_header_extra': '',
+ 'LAMMPS_init_cmds': 'pair_style lj/cut 7.50; pair_coeff * * 0.1 2.5; '
+                     'pair_modify shift yes',
+ 'LAMMPS_molecular_info': True,
+ 'LAMMPS_name': 'serial',
+ 'LAMMPS_serial': True,
+ 'T_estimate_finite_diff_lag': 1001,
+ 'Z_cell_axis': 10.0,
+ 'check_memory': False,
+ 'config_file_format': 'extxyz',
+ 'converge_down_to_T': -1.0,
+ 'debug': -1,
+ 'delta_random_seed': 42,
+ 'energy_calculator': 'lammps',
+ 'initial_walk_Emax_offset_per_atom': 1.0,
+ 'initial_walk_N_walks': 0,
+ 'initial_walk_adjust_interval': 1,
+ 'initial_walk_only': False,
+ 'kB': 8.6173324e-05,
+ 'max_volume_per_atom': 562.5,
+ 'min_Emax': None,
+ 'min_volume_per_atom': 1.0,
+ 'n_cull': 1,
+ 'n_extra_data': 0,
+ 'n_extra_walk_per_task': 0,
+ 'n_iter': 12000,
+ 'n_iter_times_fraction_killed': 100.0,
+ 'n_walkers': 120,
+ 'no_extra_walks_at_all': False,
+ 'ns_run_analyzers': '',
+ 'out_file_prefix': 'output.',
+ 'profile': -1,
+ 'random_energy_perturbation': 1e-12,
+ 'random_init_max_n_tries': 100,
+ 'random_initialise_cell': False,
+ 'random_initialise_pos': True,
+ 'reproducible': False,
+ 'restart_file': 'AUTO',
+ 'rng': 'numpy',
+ 'snapshot_clean': True,
+ 'snapshot_interval': -1,
+ 'snapshot_per_parallel_task': True,
+ 'snapshot_seq_pairs': False,
+ 'snapshot_time': 3600,
+ 'start_config_file': None,
+ 'start_energy_ceiling': None,
+ 'start_energy_ceiling_per_atom': 1000000000.0,
+ 'start_species': '1 6',
+ 'track_configs': False,
+ 'track_configs_write': False,
+ 'traj_interval': 100}
+movement_args  {'2D': False,
+ 'GMC_adjust_max_rate': 0.75,
+ 'GMC_adjust_min_rate': 0.25,
+ 'GMC_dir_perturb_angle': -1.0,
+ 'GMC_dir_perturb_angle_during': 0.0,
+ 'GMC_no_reverse': True,
+ 'MC_adjust_max_rate': 0.75,
+ 'MC_adjust_min_rate': 0.25,
+ 'MC_adjust_step_factor': 1.5,
+ 'MC_atom_Galilean': False,
+ 'MC_atom_step_size': 1.0,
+ 'MC_atom_step_size_max': 1.0,
+ 'MC_atom_uniform_rv': False,
+ 'MC_atom_velo_step_size': 50.0,
+ 'MC_atom_velo_step_size_max': 10000.0,
+ 'MC_atom_velo_walk_rej_free': True,
+ 'MC_atom_velocities': False,
+ 'MC_atom_velocities_pre_perturb': False,
+ 'MC_cell_P': 0.0,
+ 'MC_cell_flat_V_prior': False,
+ 'MC_cell_min_aspect_ratio': 0.8,
+ 'MC_cell_shear_prob': 1.0,
+ 'MC_cell_shear_step_size': 0.1,
+ 'MC_cell_shear_step_size_max': 1.0,
+ 'MC_cell_stretch_prob': 1.0,
+ 'MC_cell_stretch_step_size': 0.1,
+ 'MC_cell_stretch_step_size_max': 1.0,
+ 'MC_cell_volume_per_atom_prob': 1.0,
+ 'MC_cell_volume_per_atom_step_size': 28.125,
+ 'MC_cell_volume_per_atom_step_size_max': 281.25,
+ 'MD_adjust_max_rate': 0.95,
+ 'MD_adjust_min_rate': 0.5,
+ 'MD_adjust_step_factor': 1.1,
+ 'MD_atom_energy_fuzz': 0.01,
+ 'MD_atom_reject_energy_violation': False,
+ 'MD_atom_timestep': 0.1,
+ 'MD_atom_timestep_max': 2.0,
+ 'MD_atom_velo_flip_accept': False,
+ 'MD_atom_velo_post_perturb': True,
+ 'MD_atom_velo_pre_perturb': False,
+ 'adjust_step_interval': 120,
+ 'adjust_step_interval_times_fraction_killed': 1.0,
+ 'atom_algorithm': 'MD',
+ 'atom_traj_len': 5,
+ 'atom_traj_len_cost_multiplier': 1,
+ 'atom_velo_rej_free_fully_randomize': False,
+ 'atom_velo_rej_free_perturb_angle': 0.3,
+ 'break_up_atom_traj': True,
+ 'cell_shape_equil_steps': 1000,
+ 'do_good_load_balance': False,
+ 'do_velocities': True,
+ 'full_auto_step_sizes': True,
+ 'keep_atoms_fixed': 0,
+ 'monitor_step_interval': 120,
+ 'monitor_step_interval_times_fraction_killed': 1.0,
+ 'n_atom_steps': 1,
+ 'n_atom_steps_n_calls': 1,
+ 'n_atom_steps_per_call': 1,
+ 'n_cell_shear_steps': 0,
+ 'n_cell_stretch_steps': 0,
+ 'n_cell_volume_steps': 0,
+ 'n_model_calls': 0,
+ 'n_model_calls_expected': 200,
+ 'n_semi_grand_steps': 0,
+ 'n_swap_steps': 0,
+ 'no_swap_velo_fix_mag_alt': False,
+ 'python_MD': False,
+ 'semi_grand_potentials': None,
+ 'swap_cluster_probability_increment': 0.75,
+ 'swap_max_cluster': 1,
+ 'swap_probs': array([1.]),
+ 'swap_r_cut': 2.5,
+ 'swap_velo': False,
+ 'velo_traj_len': 8}
+no ns_run_analyzers set
+PRE START_LAMMPS
+POST START_LAMMPS
+Calculating n_model_calls from n_model_calls_expected=200
+No extra walkers (n_cull mod n_tasks == 0), trivial, so average n_walks at kill is 1, and n_model_calls=n_model_calls_expected
+Final value of n_model_calls=200
+Using n_model_calls =  200
+DOING restart_file=AUTO
+checking snapshots glob <generator object _iglob at 0x12c874740>
+no snapshot files found
+6
+Lattice="14.985 0.0 0.0 0.0 14.985 0.0 0.0 0.0 14.985" Properties=species:S:1:pos:R:3:masses:R:1 pbc="T T T"
+H        0.00000000       0.00000000       0.00000000       1.00000000
+H        0.00000000       0.00000000       0.00000000       1.00000000
+H        0.00000000       0.00000000       0.00000000       1.00000000
+H        0.00000000       0.00000000       0.00000000       1.00000000
+H        0.00000000       0.00000000       0.00000000       1.00000000
+H        0.00000000       0.00000000       0.00000000       1.00000000
+0 : initial enthalpy  6.997770918360461  PE  -0.05154102362094576  KE  7.04931194198233  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.891759113884408  PE  0.13662797879171223  KE  7.755131135093175  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.397975093267651  PE  -0.04458956874640644  KE  7.442564662014387  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  213.79750687365595  PE  206.58172846224147  KE  7.215778411596442  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  15.108245608420866  PE  7.832329983053663  KE  7.2759156253735  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.712823355334967  PE  -0.15211713825786305  KE  6.864940493593002  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.083449114263387  PE  -0.008178049317011628  KE  7.091627163580493  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.390353607035662  PE  -0.09349406398116618  KE  7.483847671017473  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  12.992943927066111  PE  7.14835095020773  KE  5.844592976862056  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.439543047117272  PE  -0.0075348277120848035  KE  6.447077874830185  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  208.11740517690882  PE  200.41049387395668  KE  7.706911303032261  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.666057673193061  PE  -0.04096085727230363  KE  7.707018530465907  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.780171236821021  PE  -0.013154670486776723  KE  5.7933259073079  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.067143534210636  PE  -0.014474438609780505  KE  7.081617972820861  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.568573571827151  PE  -0.038280138807960024  KE  7.606853710635301  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  39.18599408690228  PE  32.55179262977695  KE  6.6342014571472925  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.646544344979874  PE  -0.030975023751506927  KE  7.677519368731401  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.762825534401046  PE  -0.04520544892363444  KE  6.808030983325492  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.253068732579798  PE  -0.08480078591138972  KE  7.337869518491252  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.548645907970848  PE  -0.0945224406998052  KE  7.643168348671017  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  122.38016291777015  PE  115.23102592129659  KE  7.149136996568962  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.122150765958844  PE  -0.11499566517547366  KE  5.237146431134504  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.368859025490332  PE  -0.05402613958575567  KE  6.422885165076252  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.06821411036135  PE  -0.11018079934479229  KE  6.178394909706147  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.359112814379449  PE  -0.10408248232403926  KE  7.463195296704191  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.960269841827416  PE  -0.1536900238041007  KE  7.113959865631941  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  54.05292497229277  PE  46.95092135900176  KE  7.10200361330537  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.697218517353855  PE  0.5612948623015362  KE  7.135923655052559  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.9115987702253  PE  -0.14391883597955857  KE  6.055517606204862  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  11.437714550517622  PE  4.918820191692417  KE  6.51889435882859  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.515762474520674  PE  0.12078771360992076  KE  7.39497476091109  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.655866712774582  PE  -0.025107227061952744  KE  7.680973939837006  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.232223406298891  PE  -0.1342961119786122  KE  7.366519518277926  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.743768659517616  PE  -0.09127923821940812  KE  5.835047897737386  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.260092689190746  PE  -0.2368743546245539  KE  5.496967043815843  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.6303649561226115  PE  -0.018479045388141605  KE  7.64884400151085  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.273772303350613  PE  0.15232899951480589  KE  5.121443303836057  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.478176920919794  PE  -0.07792212738412783  KE  7.5560990483047705  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.511404694980939  PE  -0.15016285747496735  KE  7.661567552456046  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.52882942572215  PE  -0.008085456854309774  KE  7.536914882576589  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.538069869797218  PE  -0.09580992841741409  KE  6.633879798215074  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.156298259420334  PE  -0.007266502855973715  KE  7.163564762277034  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.84966449088923  PE  -0.07598985783704869  KE  6.925654348726855  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.825153486076605  PE  -0.03905366875411742  KE  6.864207154830763  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  17.407120199818284  PE  10.216640671294286  KE  7.19047952852434  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  11.367407007731535  PE  3.788591831248171  KE  7.578815176485323  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.382839153301515  PE  -0.02133050390697453  KE  7.404169657209353  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.434209124772449  PE  -0.023407532396393635  KE  7.457616657169834  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.0960378167436895  PE  0.6286634587589712  KE  5.467374357985299  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  4.292309461516729  PE  -0.13633802697582625  KE  4.428647488492809  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.382364917404314  PE  -0.06648921158128827  KE  6.448854128986204  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.566859888657128  PE  -0.03545734752359275  KE  7.602317236181531  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.1831583303751145  PE  -0.027745239796048336  KE  7.210903570171654  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.267718509292761  PE  -0.05709619843081613  KE  7.3248147077244035  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.812657356025411  PE  -0.031179125183750312  KE  6.843836481209681  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.637434203601123  PE  -0.010664124151092644  KE  7.6480983277531704  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.253855240122284  PE  -0.03168054013828724  KE  6.285535780260965  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.330718269856323  PE  -0.022969245402847803  KE  7.353687515259865  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.153630159326187  PE  -0.03626222410850917  KE  7.189892383435295  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.33494531978158  PE  -0.10421938564567113  KE  6.439164705427949  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.068728529013096  PE  -0.1735084131566453  KE  7.242236942170205  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.397162008251034  PE  0.05234101826793575  KE  7.344820989984058  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.423067288791675  PE  -0.2671911633652295  KE  7.690258452157025  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.413939500215294  PE  -0.017034286565857336  KE  7.430973786781337  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  42.230539260401635  PE  35.53279792028697  KE  6.697741340122187  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.651290868533701  PE  0.7542115661878622  KE  5.89707930234663  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.441481982899381  PE  -0.08513791147268888  KE  7.526619894372566  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.406881559594861  PE  -0.0638419513317882  KE  7.470723510926753  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  4.189653621949916  PE  -0.11461181180539783  KE  4.304265433756242  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.14002686798836  PE  -0.21001023325977755  KE  6.35003710124883  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.930866144711506  PE  -0.12267055160604463  KE  7.053536696317713  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.545413803416747  PE  -0.12701305856354755  KE  6.6724268619807  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.539539640484496  PE  -0.03507961731331127  KE  7.5746192577983225  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.194880713541459  PE  -0.014919881995161467  KE  7.2098005955369695  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.112980301247877  PE  -0.05949037034054716  KE  7.172470671589082  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.801792920434012  PE  -0.04023638291430945  KE  6.842029303349135  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.597080612305617  PE  -0.07208700307447811  KE  7.6691676153807435  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  55057.00925932603  PE  55049.253984175026  KE  7.755275162011898  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.64957896803009  PE  -0.10379050039058277  KE  7.753369468420856  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  3.5821425980740615  PE  -0.0682237130193787  KE  3.650366311094321  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.922147723195005  PE  -0.06212829111889133  KE  6.98427601431478  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.8130615886035395  PE  -0.029450159671469536  KE  6.842511748275719  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.931558460574841  PE  -0.04270098008000047  KE  6.974259440654952  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.999355386794702  PE  -0.12010864388807277  KE  6.119464030683169  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.888970464097624  PE  -0.11322327979554431  KE  7.00219374389336  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.8127241347345056  PE  -0.07070005805331282  KE  6.883424192788326  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.97980443472517  PE  0.26129934049592995  KE  7.718505094229635  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.073975627763399  PE  0.08323804284126847  KE  4.990737584922497  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.630628528515418  PE  -0.025320656909793893  KE  5.655949185425924  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.376279809778979  PE  -0.008991242661695568  KE  7.3852710524412  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.403247920343495  PE  -0.06291514978238989  KE  7.466163070125918  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  10.286737394580683  PE  3.135272067131283  KE  7.151465327451171  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  8.169144056132984  PE  0.5619038240820157  KE  7.607240232051402  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.445180597707792  PE  -0.07574442228496817  KE  7.520925019992946  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.402501729091962  PE  -0.06752311004819746  KE  7.470024839140741  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.5916777379769895  PE  -0.07768607909834403  KE  7.669363817075683  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.191634609392444  PE  1.1238999527896367  KE  6.067734656603763  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.451731281543147  PE  -0.0848848102435068  KE  6.5366160917872005  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.769314397998266  PE  -0.0481638408591192  KE  6.8174782388576425  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.104610668877686  PE  -0.03704279674599632  KE  7.141653465624473  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.660155593949765  PE  -0.19900885406854218  KE  6.859164448018477  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.524487226332576  PE  -0.13676127755582376  KE  6.661248503889374  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.629347344591971  PE  -0.02175297705845899  KE  7.651100321651326  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.5965059298547  PE  -0.05689365126541026  KE  7.6533995811201745  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.880158605079658  PE  -0.04879635698739591  KE  6.928954962067563  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  23.26153963804313  PE  15.605552725284973  KE  7.655986912771375  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  8.532936457589477  PE  0.79878361024581  KE  7.7341528473437435  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  3283.9648288372828  PE  3276.3401099821626  KE  7.624718858130423  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.619226762206895  PE  -0.10428083439476574  KE  7.723507596602525  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.626949232425909  PE  -0.032397527000161186  KE  7.659346759426888  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.929240481378438  PE  -0.22334371917556367  KE  6.152584200554862  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.840295178842026  PE  -0.0499877946868906  KE  6.890282973528929  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.799714459463793  PE  -0.08045182080985828  KE  6.880166280273735  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.481286419947986  PE  -0.1732190324221701  KE  7.654505452370911  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  6.386713049248669  PE  -0.039532519143089126  KE  6.426245568392508  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.573473588589152  PE  -0.010711546136808069  KE  7.584185134726053  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.157902684673833  PE  -0.11114622075979735  KE  7.26904890543419  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.795030758652761  PE  -0.08201440010735561  KE  5.877045158760136  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  5.515771022929221  PE  -0.07240059348383607  KE  5.588171616413851  mu  0.0  vol  3364.885121624996
+0 : initial enthalpy  7.277682900731016  PE  -0.19927457414849814  KE  7.4769574748803995  mu  0.0  vol  3364.885121624996
+0 Emax_of_step  55057.00925932603 T_estimate  -1  loop time  0.000888824462890625  time spent setting step sizes:  0.0
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.100000
+12 Emax_of_step  12.992943927066111 T_estimate  6414171648.05114  loop time  0.16775798797607422  time spent setting step sizes:  0.06600093841552734
+24 Emax_of_step  7.64957896803009 T_estimate  3207397149.963607  loop time  0.1532154083251953  time spent setting step sizes:  0.0
+36 Emax_of_step  7.568573571827151 T_estimate  2138267913.109241  loop time  0.16299962997436523  time spent setting step sizes:  0.0
+48 Emax_of_step  7.47960998919494 T_estimate  1603703526.5200362  loop time  0.1776421070098877  time spent setting step sizes:  0.0
+60 Emax_of_step  7.403247920343495 T_estimate  1282964600.8805587  loop time  0.1822829246520996  time spent setting step sizes:  0.0
+72 Emax_of_step  7.358191026795663 T_estimate  1069138042.465757  loop time  0.19416499137878418  time spent setting step sizes:  0.0
+84 Emax_of_step  7.265506350797562 T_estimate  916405579.308386  loop time  0.20976710319519043  time spent setting step sizes:  0.0
+96 Emax_of_step  7.151773270903707 T_estimate  801856538.531529  loop time  0.17899203300476074  time spent setting step sizes:  0.0
+108 Emax_of_step  7.020906597860806 T_estimate  712763061.9877652  loop time  0.17841792106628418  time spent setting step sizes:  0.0
+0 NS 119 accept rate for MD_atom = 0.971042 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.225000
+120 Emax_of_step  6.928066606082977 T_estimate  641487837.635269  loop time  0.16903162002563477  time spent setting step sizes:  0.1947493553161621
+132 Emax_of_step  6.828406457889736 T_estimate  583171817.232272  loop time  0.16829609870910645  time spent setting step sizes:  0.0
+144 Emax_of_step  6.785017057553409 T_estimate  534574587.13641804  loop time  0.18557000160217285  time spent setting step sizes:  0.0
+156 Emax_of_step  6.704700362860632 T_estimate  493454184.98342204  loop time  0.23747515678405762  time spent setting step sizes:  0.0
+168 Emax_of_step  6.59763018034967 T_estimate  458208348.6759718  loop time  0.17206978797912598  time spent setting step sizes:  0.0
+180 Emax_of_step  6.521375933955741 T_estimate  427661717.81479424  loop time  0.1765592098236084  time spent setting step sizes:  0.0
+192 Emax_of_step  6.4594488933311265 T_estimate  400933311.4661833  loop time  0.18906378746032715  time spent setting step sizes:  0.0
+204 Emax_of_step  6.406810199315596 T_estimate  377349359.84371024  loop time  0.20166611671447754  time spent setting step sizes:  0.0
+216 Emax_of_step  6.316984332181106 T_estimate  356386088.0319902  loop time  0.19974303245544434  time spent setting step sizes:  0.0
+228 Emax_of_step  6.221922623728144 T_estimate  337629508.5226805  loop time  0.1849668025970459  time spent setting step sizes:  0.0
+0 NS 239 accept rate for MD_atom = 0.948125 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.337500
+240 Emax_of_step  6.161571694472784 T_estimate  320748384.7253386  loop time  0.1955721378326416  time spent setting step sizes:  0.17863988876342773
+252 Emax_of_step  6.070741500597786 T_estimate  305475156.1319882  loop time  0.2258460521697998  time spent setting step sizes:  0.0
+264 Emax_of_step  5.999355386794702 T_estimate  291590299.87527645  loop time  0.20206999778747559  time spent setting step sizes:  0.0
+276 Emax_of_step  5.902818195815239 T_estimate  278912949.84983844  loop time  0.19251799583435059  time spent setting step sizes:  0.0
+288 Emax_of_step  5.829298142535959 T_estimate  267291933.90393382  loop time  0.18116092681884766  time spent setting step sizes:  0.0
+300 Emax_of_step  5.777614827579915 T_estimate  256600497.4500039  loop time  0.19373726844787598  time spent setting step sizes:  0.0
+312 Emax_of_step  5.698814182660763 T_estimate  246731600.72058648  loop time  0.20250701904296875  time spent setting step sizes:  0.0
+324 Emax_of_step  5.661921544071287 T_estimate  237593552.50971574  loop time  0.2063748836517334  time spent setting step sizes:  0.0
+336 Emax_of_step  5.5867748239228785 T_estimate  229108381.23081297  loop time  0.20752692222595215  time spent setting step sizes:  0.0
+348 Emax_of_step  5.546865386969421 T_estimate  221208252.58729163  loop time  0.1843249797821045  time spent setting step sizes:  0.0
+0 NS 359 accept rate for MD_atom = 0.867292 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.337500
+360 Emax_of_step  5.497812224862916 T_estimate  213834834.70335236  loop time  0.16524887084960938  time spent setting step sizes:  0.06932210922241211
+372 Emax_of_step  5.435484364172098 T_estimate  206937171.09820548  loop time  0.16129398345947266  time spent setting step sizes:  0.0
+384 Emax_of_step  5.383895244070622 T_estimate  200470572.36324105  loop time  0.16425013542175293  time spent setting step sizes:  0.0
+396 Emax_of_step  5.332643465547136 T_estimate  194395887.51191828  loop time  0.16762089729309082  time spent setting step sizes:  0.0
+408 Emax_of_step  5.273772303350613 T_estimate  188678563.17749354  loop time  0.1933281421661377  time spent setting step sizes:  0.0
+420 Emax_of_step  5.19126676794832 T_estimate  183288021.778388  loop time  0.19838190078735352  time spent setting step sizes:  0.0
+432 Emax_of_step  5.122150765958844 T_estimate  178196911.56100604  loop time  0.24565792083740234  time spent setting step sizes:  0.0
+444 Emax_of_step  5.07806550565272 T_estimate  173380917.6585255  loop time  0.1763911247253418  time spent setting step sizes:  0.0
+456 Emax_of_step  5.027957515463719 T_estimate  168818415.5882004  loop time  0.1880960464477539  time spent setting step sizes:  0.0
+468 Emax_of_step  4.977427760964991 T_estimate  164489889.2432091  loop time  0.18280982971191406  time spent setting step sizes:  0.0
+0 NS 479 accept rate for MD_atom = 0.839167 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.337500
+480 Emax_of_step  4.910063110608524 T_estimate  160377838.25890523  loop time  0.1674942970275879  time spent setting step sizes:  0.07282781600952148
+492 Emax_of_step  4.8588491211937175 T_estimate  156466329.22493437  loop time  0.17466282844543457  time spent setting step sizes:  0.0
+504 Emax_of_step  4.8158408021236685 T_estimate  152741059.75946853  loop time  0.2198162078857422  time spent setting step sizes:  0.0
+516 Emax_of_step  4.760259497078502 T_estimate  149189092.71345422  loop time  0.24627280235290527  time spent setting step sizes:  0.0
+528 Emax_of_step  4.706515203281265 T_estimate  145798573.84991032  loop time  0.23218107223510742  time spent setting step sizes:  0.0
+540 Emax_of_step  4.641604516211559 T_estimate  142558773.62914586  loop time  0.21024513244628906  time spent setting step sizes:  0.0
+552 Emax_of_step  4.563424495156871 T_estimate  139459867.90166584  loop time  0.19519591331481934  time spent setting step sizes:  0.0
+564 Emax_of_step  4.506962881796093 T_estimate  136492776.65612957  loop time  0.6512360572814941  time spent setting step sizes:  0.0
+576 Emax_of_step  4.453222293418147 T_estimate  133649307.60674639  loop time  0.3085927963256836  time spent setting step sizes:  0.0
+588 Emax_of_step  4.4081816608295 T_estimate  130921877.82899427  loop time  0.2763381004333496  time spent setting step sizes:  0.0
+0 NS 599 accept rate for MD_atom = 0.852708 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.337500
+600 Emax_of_step  4.362427053111746 T_estimate  128303546.90631478  loop time  0.25561976432800293  time spent setting step sizes:  0.10518622398376465
+612 Emax_of_step  4.323400654168166 T_estimate  125787880.2546223  loop time  0.28951191902160645  time spent setting step sizes:  0.0
+624 Emax_of_step  4.29012502395712 T_estimate  123368957.1255749  loop time  0.1963670253753662  time spent setting step sizes:  0.0
+636 Emax_of_step  4.259432139776156 T_estimate  121041308.43606989  loop time  0.19317412376403809  time spent setting step sizes:  0.0
+648 Emax_of_step  4.228413677822269 T_estimate  118799869.65986033  loop time  0.2997009754180908  time spent setting step sizes:  0.0
+660 Emax_of_step  4.191948458582009 T_estimate  116639949.28823982  loop time  0.24299287796020508  time spent setting step sizes:  0.0
+672 Emax_of_step  4.156530858494494 T_estimate  114557166.74994482  loop time  0.22403812408447266  time spent setting step sizes:  0.0
+684 Emax_of_step  4.100051986594394 T_estimate  112547507.35735925  loop time  0.3224341869354248  time spent setting step sizes:  0.0
+696 Emax_of_step  4.075838776635623 T_estimate  110607081.73943989  loop time  0.2077319622039795  time spent setting step sizes:  0.0
+708 Emax_of_step  4.035571308708746 T_estimate  108732464.96909924  loop time  0.22905874252319336  time spent setting step sizes:  0.0
+0 NS 719 accept rate for MD_atom = 0.897500 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+720 Emax_of_step  3.994944014825779 T_estimate  106920336.12326688  loop time  0.24668312072753906  time spent setting step sizes:  0.17413806915283203
+732 Emax_of_step  3.9390706113758305 T_estimate  105167650.46253316  loop time  0.21747899055480957  time spent setting step sizes:  0.0
+744 Emax_of_step  3.8722013188150974 T_estimate  103471523.71552423  loop time  0.24486875534057617  time spent setting step sizes:  0.0
+756 Emax_of_step  3.845713983825913 T_estimate  101829167.56952195  loop time  0.26053810119628906  time spent setting step sizes:  0.0
+768 Emax_of_step  3.826253534716333 T_estimate  100238122.25887479  loop time  0.26981616020202637  time spent setting step sizes:  0.0
+780 Emax_of_step  3.788538420423828 T_estimate  98696064.91440842  loop time  0.21670103073120117  time spent setting step sizes:  0.0
+792 Emax_of_step  3.7594308772735068 T_estimate  97200721.38305554  loop time  0.24421072006225586  time spent setting step sizes:  0.0
+804 Emax_of_step  3.707093392069631 T_estimate  95750055.37412736  loop time  0.2708151340484619  time spent setting step sizes:  0.0
+816 Emax_of_step  3.668695004398181 T_estimate  94342032.12581773  loop time  0.2910780906677246  time spent setting step sizes:  0.0
+828 Emax_of_step  3.6312747119926296 T_estimate  92974819.49375577  loop time  0.3020968437194824  time spent setting step sizes:  0.0
+0 NS 839 accept rate for MD_atom = 0.786458 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+840 Emax_of_step  3.5821425980740615 T_estimate  91646689.57626235  loop time  0.3192582130432129  time spent setting step sizes:  0.1322638988494873
+852 Emax_of_step  3.55248284678259 T_estimate  90355939.81029885  loop time  0.3114659786224365  time spent setting step sizes:  0.0
+864 Emax_of_step  3.525824515108756 T_estimate  89101039.3468682  loop time  0.3996250629425049  time spent setting step sizes:  0.0
+876 Emax_of_step  3.469115589529993 T_estimate  87880567.68705179  loop time  0.27718186378479004  time spent setting step sizes:  0.0
+888 Emax_of_step  3.399749284349652 T_estimate  86693101.67938864  loop time  0.26358509063720703  time spent setting step sizes:  0.0
+900 Emax_of_step  3.3812921583061413 T_estimate  85537222.33396782  loop time  0.27811408042907715  time spent setting step sizes:  0.0
+912 Emax_of_step  3.320263464834741 T_estimate  84411826.13949957  loop time  0.28057169914245605  time spent setting step sizes:  0.0
+924 Emax_of_step  3.288494492347391 T_estimate  83315616.73478238  loop time  0.23597121238708496  time spent setting step sizes:  0.0
+936 Emax_of_step  3.2510053990309618 T_estimate  82247523.80909003  loop time  0.22838711738586426  time spent setting step sizes:  0.0
+948 Emax_of_step  3.228848058428759 T_estimate  81206448.59570406  loop time  0.23644089698791504  time spent setting step sizes:  0.0
+0 NS 959 accept rate for MD_atom = 0.778333 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+960 Emax_of_step  3.173768376919535 T_estimate  80191448.21735333  loop time  0.23045587539672852  time spent setting step sizes:  0.09065508842468262
+972 Emax_of_step  3.1448458941174318 T_estimate  79201471.94652669  loop time  0.1830282211303711  time spent setting step sizes:  0.0
+984 Emax_of_step  3.1082736073790853 T_estimate  78235652.30933857  loop time  0.21697378158569336  time spent setting step sizes:  0.0
+996 Emax_of_step  3.050986691836754 T_estimate  77293134.51684427  loop time  0.1871509552001953  time spent setting step sizes:  0.0
+1008 Emax_of_step  3.0225747878218807 T_estimate  50568.63091580507  loop time  0.19207215309143066  time spent setting step sizes:  0.0
+1020 Emax_of_step  2.9794271579271903 T_estimate  6869.093311180124  loop time  0.19062280654907227  time spent setting step sizes:  0.0
+1032 Emax_of_step  2.932015072821392 T_estimate  6523.331643869686  loop time  0.19104409217834473  time spent setting step sizes:  0.0
+1044 Emax_of_step  2.8850157771028506 T_estimate  6461.729881098148  loop time  0.18266606330871582  time spent setting step sizes:  0.0
+1056 Emax_of_step  2.867031936071663 T_estimate  6386.450785320713  loop time  0.19938206672668457  time spent setting step sizes:  0.0
+1068 Emax_of_step  2.840977812335926 T_estimate  6341.878540402381  loop time  0.188187837600708  time spent setting step sizes:  0.0
+0 NS 1079 accept rate for MD_atom = 0.818750 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+1080 Emax_of_step  2.8127704103510807 T_estimate  6255.9894029732795  loop time  0.18641281127929688  time spent setting step sizes:  0.08205413818359375
+1092 Emax_of_step  2.7797480936162167 T_estimate  6122.13357859001  loop time  0.19368505477905273  time spent setting step sizes:  0.0
+1104 Emax_of_step  2.7475456556843314 T_estimate  6032.349392729993  loop time  0.18662810325622559  time spent setting step sizes:  0.0
+1116 Emax_of_step  2.708805350445472 T_estimate  5944.97818191134  loop time  0.19285082817077637  time spent setting step sizes:  0.0
+1128 Emax_of_step  2.6764564351197944 T_estimate  5849.791216234421  loop time  0.17548322677612305  time spent setting step sizes:  0.0
+1140 Emax_of_step  2.6419179715312855 T_estimate  5832.097314588243  loop time  0.1936478614807129  time spent setting step sizes:  0.0
+1152 Emax_of_step  2.604650923656511 T_estimate  5776.917488463203  loop time  0.18936896324157715  time spent setting step sizes:  0.0
+1164 Emax_of_step  2.5804689680772457 T_estimate  5673.11951408443  loop time  0.19542717933654785  time spent setting step sizes:  0.0
+1176 Emax_of_step  2.5560620036146924 T_estimate  5580.959813069936  loop time  0.19098591804504395  time spent setting step sizes:  0.0
+1188 Emax_of_step  2.517260477141801 T_estimate  5536.112896506555  loop time  0.1888589859008789  time spent setting step sizes:  0.0
+0 NS 1199 accept rate for MD_atom = 0.831250 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+1200 Emax_of_step  2.4837477246955304 T_estimate  5521.639650565963  loop time  0.18365097045898438  time spent setting step sizes:  0.07812094688415527
+1212 Emax_of_step  2.446451379684641 T_estimate  5423.882377221294  loop time  0.1900479793548584  time spent setting step sizes:  0.0
+1224 Emax_of_step  2.4165346670652523 T_estimate  5388.39438951397  loop time  0.18309712409973145  time spent setting step sizes:  0.0
+1236 Emax_of_step  2.39696474403073 T_estimate  5297.242902317256  loop time  0.1907968521118164  time spent setting step sizes:  0.0
+1248 Emax_of_step  2.3650392493046337 T_estimate  5209.061667945879  loop time  0.1854231357574463  time spent setting step sizes:  0.0
+1260 Emax_of_step  2.349565042293901 T_estimate  5161.301326745546  loop time  0.1961839199066162  time spent setting step sizes:  0.0
+1272 Emax_of_step  2.3073115350255606 T_estimate  5060.356076264073  loop time  0.187269926071167  time spent setting step sizes:  0.0
+1284 Emax_of_step  2.275352642686745 T_estimate  5041.023857320447  loop time  0.18556809425354004  time spent setting step sizes:  0.0
+1296 Emax_of_step  2.249873023199241 T_estimate  4957.3236308166  loop time  0.1903541088104248  time spent setting step sizes:  0.0
+1308 Emax_of_step  2.231951751191958 T_estimate  4876.283554792216  loop time  0.18643593788146973  time spent setting step sizes:  0.0
+0 NS 1319 accept rate for MD_atom = 0.822917 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+1320 Emax_of_step  2.221029266996432 T_estimate  4822.815241556939  loop time  0.1846609115600586  time spent setting step sizes:  0.0782480239868164
+1332 Emax_of_step  2.188602435070782 T_estimate  4801.810457295307  loop time  0.1832869052886963  time spent setting step sizes:  0.0
+1344 Emax_of_step  2.1738869113848147 T_estimate  4740.578902191325  loop time  0.19421911239624023  time spent setting step sizes:  0.0
+1356 Emax_of_step  2.1484056269116767 T_estimate  4693.074761970909  loop time  0.1861100196838379  time spent setting step sizes:  0.0
+1368 Emax_of_step  2.125455270042826 T_estimate  4670.562021697961  loop time  0.19116997718811035  time spent setting step sizes:  0.0
+1380 Emax_of_step  2.104251872133442 T_estimate  4624.114776803833  loop time  0.1873478889465332  time spent setting step sizes:  0.0
+1392 Emax_of_step  2.084146723512861 T_estimate  4552.3344056502065  loop time  0.1848921775817871  time spent setting step sizes:  0.0
+1404 Emax_of_step  2.062681615679495 T_estimate  4517.04819480367  loop time  0.18913483619689941  time spent setting step sizes:  0.0
+1416 Emax_of_step  2.0443784016898503 T_estimate  4459.12536760129  loop time  0.19791626930236816  time spent setting step sizes:  0.0
+1428 Emax_of_step  2.0236447817588346 T_estimate  4373.447551700329  loop time  0.18449687957763672  time spent setting step sizes:  0.0
+0 NS 1439 accept rate for MD_atom = 0.819167 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+1440 Emax_of_step  2.0059008352446033 T_estimate  4321.871805403193  loop time  0.1835319995880127  time spent setting step sizes:  0.07949590682983398
+1452 Emax_of_step  1.9951041329024728 T_estimate  4267.046360266819  loop time  0.19444608688354492  time spent setting step sizes:  0.0
+1464 Emax_of_step  1.9702338837956568 T_estimate  4217.309751270949  loop time  0.19295692443847656  time spent setting step sizes:  0.0
+1476 Emax_of_step  1.9495743453497414 T_estimate  4164.161485993418  loop time  0.18953800201416016  time spent setting step sizes:  0.0
+1488 Emax_of_step  1.9289962791693216 T_estimate  4145.9703788637735  loop time  0.18178796768188477  time spent setting step sizes:  0.0
+1500 Emax_of_step  1.9124090312080866 T_estimate  4072.286195073896  loop time  0.18998217582702637  time spent setting step sizes:  0.0
+1512 Emax_of_step  1.8916069886741715 T_estimate  4048.872354333941  loop time  0.18268704414367676  time spent setting step sizes:  0.0
+1524 Emax_of_step  1.8731000711203287 T_estimate  3988.3271583620026  loop time  0.23201775550842285  time spent setting step sizes:  0.0
+1536 Emax_of_step  1.8585773287023488 T_estimate  3930.873662847676  loop time  0.20481204986572266  time spent setting step sizes:  0.0
+1548 Emax_of_step  1.8206208584148615 T_estimate  3883.817740082496  loop time  0.24428820610046387  time spent setting step sizes:  0.0
+0 NS 1559 accept rate for MD_atom = 0.835417 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+1560 Emax_of_step  1.7985883011926536 T_estimate  3816.074235816455  loop time  0.21364474296569824  time spent setting step sizes:  0.10600996017456055
+1572 Emax_of_step  1.766889396684 T_estimate  3793.4735993800314  loop time  0.20243406295776367  time spent setting step sizes:  0.0
+1584 Emax_of_step  1.7382640994578433 T_estimate  3751.2745573954367  loop time  0.19354009628295898  time spent setting step sizes:  0.0
+1596 Emax_of_step  1.726206529385224 T_estimate  3712.879728293095  loop time  0.19491004943847656  time spent setting step sizes:  0.0
+1608 Emax_of_step  1.709609376933905 T_estimate  3676.720644606824  loop time  0.18764686584472656  time spent setting step sizes:  0.0
+1620 Emax_of_step  1.6982808049385567 T_estimate  3629.8146638301955  loop time  0.18402600288391113  time spent setting step sizes:  0.0
+1632 Emax_of_step  1.685429711782386 T_estimate  3619.6304890919973  loop time  0.19530320167541504  time spent setting step sizes:  0.0
+1644 Emax_of_step  1.6666657630072375 T_estimate  3591.2490322122617  loop time  0.19097685813903809  time spent setting step sizes:  0.0
+1656 Emax_of_step  1.647012558248133 T_estimate  3574.1704860738123  loop time  0.1908860206604004  time spent setting step sizes:  0.0
+1668 Emax_of_step  1.6149125711764607 T_estimate  3581.2390687249895  loop time  0.18825221061706543  time spent setting step sizes:  0.0
+0 NS 1679 accept rate for MD_atom = 0.844583 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+1680 Emax_of_step  1.5964644720132923 T_estimate  3538.6182262086418  loop time  0.1926729679107666  time spent setting step sizes:  0.08299875259399414
+1692 Emax_of_step  1.5712232098105485 T_estimate  3510.2128745987516  loop time  0.19579529762268066  time spent setting step sizes:  0.0
+1704 Emax_of_step  1.5633942374605696 T_estimate  3476.4123080643476  loop time  0.19510769844055176  time spent setting step sizes:  0.0
+1716 Emax_of_step  1.542280264123217 T_estimate  3439.0775513597223  loop time  0.19347190856933594  time spent setting step sizes:  0.0
+1728 Emax_of_step  1.530387167990151 T_estimate  3384.075754931711  loop time  0.18018722534179688  time spent setting step sizes:  0.0
+1740 Emax_of_step  1.5189890838627012 T_estimate  3332.079099128815  loop time  0.18620800971984863  time spent setting step sizes:  0.0
+1752 Emax_of_step  1.500414021701379 T_estimate  3286.631916887463  loop time  0.17701196670532227  time spent setting step sizes:  0.0
+1764 Emax_of_step  1.487901127212992 T_estimate  3281.9382003281244  loop time  0.18696188926696777  time spent setting step sizes:  0.0
+1776 Emax_of_step  1.4761849389588488 T_estimate  3241.498130393674  loop time  0.3217122554779053  time spent setting step sizes:  0.0
+1788 Emax_of_step  1.462349830429938 T_estimate  3228.449073537389  loop time  0.2051537036895752  time spent setting step sizes:  0.0
+0 NS 1799 accept rate for MD_atom = 0.854167 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+1800 Emax_of_step  1.4456869837954611 T_estimate  3185.82852867188  loop time  0.2019362449645996  time spent setting step sizes:  0.1616959571838379
+1812 Emax_of_step  1.426317063279635 T_estimate  3156.0827961449927  loop time  0.2047867774963379  time spent setting step sizes:  0.0
+1824 Emax_of_step  1.408889826802808 T_estimate  3128.4444101581394  loop time  0.23264312744140625  time spent setting step sizes:  0.0
+1836 Emax_of_step  1.395427147808085 T_estimate  3075.6994146617712  loop time  0.7357041835784912  time spent setting step sizes:  0.0
+1848 Emax_of_step  1.384221224517165 T_estimate  3051.099735818917  loop time  0.26862287521362305  time spent setting step sizes:  0.0
+1860 Emax_of_step  1.3717117082321144 T_estimate  3025.169304367656  loop time  0.25374293327331543  time spent setting step sizes:  0.0
+1872 Emax_of_step  1.348512502409461 T_estimate  2990.2634586971626  loop time  0.2301928997039795  time spent setting step sizes:  0.0
+1884 Emax_of_step  1.3341250639603912 T_estimate  2922.5572965024307  loop time  0.2118511199951172  time spent setting step sizes:  0.0
+1896 Emax_of_step  1.3231289720264494 T_estimate  2886.0232195254507  loop time  0.21277904510498047  time spent setting step sizes:  0.0
+1908 Emax_of_step  1.310825578994006 T_estimate  2832.8241000062403  loop time  0.216094970703125  time spent setting step sizes:  0.0
+0 NS 1919 accept rate for MD_atom = 0.859583 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+1920 Emax_of_step  1.2928258947475724 T_estimate  2812.730015125649  loop time  0.19357967376708984  time spent setting step sizes:  0.07561516761779785
+1932 Emax_of_step  1.2691297861103388 T_estimate  2791.252707117711  loop time  0.18038296699523926  time spent setting step sizes:  0.0
+1944 Emax_of_step  1.254611136915786 T_estimate  2774.8967161981705  loop time  0.18020033836364746  time spent setting step sizes:  0.0
+1956 Emax_of_step  1.2401808296373873 T_estimate  2740.74691302421  loop time  0.18048381805419922  time spent setting step sizes:  0.0
+1968 Emax_of_step  1.2249136370188691 T_estimate  2703.6443614910545  loop time  0.21484589576721191  time spent setting step sizes:  0.0
+1980 Emax_of_step  1.2029656663881252 T_estimate  2680.9646603633105  loop time  0.2088620662689209  time spent setting step sizes:  0.0
+1992 Emax_of_step  1.1902745148116525 T_estimate  2617.196794493157  loop time  0.2074441909790039  time spent setting step sizes:  0.0
+2004 Emax_of_step  1.1784611534876128 T_estimate  2591.45484993754  loop time  0.2075648307800293  time spent setting step sizes:  0.0
+2016 Emax_of_step  1.1611280609661614 T_estimate  2561.7277653343513  loop time  0.2783939838409424  time spent setting step sizes:  0.0
+2028 Emax_of_step  1.1482388618944561 T_estimate  2528.2367330215043  loop time  0.2172858715057373  time spent setting step sizes:  0.0
+0 NS 2039 accept rate for MD_atom = 0.869583 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+2040 Emax_of_step  1.1344902177221428 T_estimate  2463.7829854032366  loop time  0.21601223945617676  time spent setting step sizes:  0.08698105812072754
+2052 Emax_of_step  1.1175748522136324 T_estimate  2452.624884140008  loop time  0.24027180671691895  time spent setting step sizes:  0.0
+2064 Emax_of_step  1.1013515078282878 T_estimate  2435.283433991687  loop time  0.22866106033325195  time spent setting step sizes:  0.0
+2076 Emax_of_step  1.0893969852750822 T_estimate  2429.414907172924  loop time  0.20422911643981934  time spent setting step sizes:  0.0
+2088 Emax_of_step  1.0795138725394613 T_estimate  2395.487144417375  loop time  0.2193279266357422  time spent setting step sizes:  0.0
+2100 Emax_of_step  1.0660198763479596 T_estimate  2364.062116051959  loop time  0.21032500267028809  time spent setting step sizes:  0.0
+2112 Emax_of_step  1.053491753985066 T_estimate  2336.19602929297  loop time  0.2132737636566162  time spent setting step sizes:  0.0
+2124 Emax_of_step  1.0372083567285846 T_estimate  2304.2004749955827  loop time  0.20966219902038574  time spent setting step sizes:  0.0
+2136 Emax_of_step  1.0306319720576569 T_estimate  2269.9643909930596  loop time  0.19547605514526367  time spent setting step sizes:  0.0
+2148 Emax_of_step  1.0215370805369748 T_estimate  2229.4107027045707  loop time  0.2104508876800537  time spent setting step sizes:  0.0
+0 NS 2159 accept rate for MD_atom = 0.869792 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+2160 Emax_of_step  1.00737817701706 T_estimate  2209.0361410376945  loop time  0.190657377243042  time spent setting step sizes:  0.08448386192321777
+2172 Emax_of_step  0.988227949528903 T_estimate  2201.5293451804064  loop time  0.2124159336090088  time spent setting step sizes:  0.0
+2184 Emax_of_step  0.9677829174561839 T_estimate  2184.542446314578  loop time  0.2097318172454834  time spent setting step sizes:  0.0
+2196 Emax_of_step  0.9491792167500372 T_estimate  2158.318189882002  loop time  0.20067405700683594  time spent setting step sizes:  0.0
+2208 Emax_of_step  0.9418258651190986 T_estimate  2120.6605300916444  loop time  0.19413495063781738  time spent setting step sizes:  0.0
+2220 Emax_of_step  0.9320433520716066 T_estimate  2090.457991587657  loop time  0.2139148712158203  time spent setting step sizes:  0.0
+2232 Emax_of_step  0.9240039108930311 T_estimate  2064.743126939989  loop time  0.20566129684448242  time spent setting step sizes:  0.0
+2244 Emax_of_step  0.9082243939631802 T_estimate  2053.3430689259862  loop time  0.21108198165893555  time spent setting step sizes:  0.0
+2256 Emax_of_step  0.8985823297582226 T_estimate  2037.7880304722858  loop time  0.20537185668945312  time spent setting step sizes:  0.0
+2268 Emax_of_step  0.8898331527892368 T_estimate  1988.2501610408249  loop time  0.2014021873474121  time spent setting step sizes:  0.0
+0 NS 2279 accept rate for MD_atom = 0.867708 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+2280 Emax_of_step  0.880759087142631 T_estimate  1964.9821943146437  loop time  0.20400166511535645  time spent setting step sizes:  0.08789515495300293
+2292 Emax_of_step  0.8705672627317956 T_estimate  1937.8918518259395  loop time  0.21118688583374023  time spent setting step sizes:  0.0
+2304 Emax_of_step  0.864580807572224 T_estimate  1921.9218988596976  loop time  0.20315909385681152  time spent setting step sizes:  0.0
+2316 Emax_of_step  0.854748528609902 T_estimate  1913.018235515958  loop time  0.19631004333496094  time spent setting step sizes:  0.0
+2328 Emax_of_step  0.8437512039728188 T_estimate  1898.209405320577  loop time  0.20006299018859863  time spent setting step sizes:  0.0
+2340 Emax_of_step  0.8372460686609483 T_estimate  1873.10170611309  loop time  0.20575308799743652  time spent setting step sizes:  0.0
+2352 Emax_of_step  0.830301503660826 T_estimate  1860.6846718966124  loop time  0.18713688850402832  time spent setting step sizes:  0.0
+2364 Emax_of_step  0.8186774574276571 T_estimate  1832.4827910824483  loop time  0.2066020965576172  time spent setting step sizes:  0.0
+2376 Emax_of_step  0.812122130785984 T_estimate  1819.7246253725707  loop time  0.2409839630126953  time spent setting step sizes:  0.0
+2388 Emax_of_step  0.8022934291221682 T_estimate  1797.887880023077  loop time  0.2113180160522461  time spent setting step sizes:  0.0
+0 NS 2399 accept rate for MD_atom = 0.870208 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+2400 Emax_of_step  0.7959206833714282 T_estimate  1777.8008315408656  loop time  0.18566203117370605  time spent setting step sizes:  0.26273488998413086
+2412 Emax_of_step  0.7896735303324205 T_estimate  1764.5570221365647  loop time  0.2064521312713623  time spent setting step sizes:  0.0
+2424 Emax_of_step  0.7785298499980696 T_estimate  1749.538892411628  loop time  0.21794795989990234  time spent setting step sizes:  0.0
+2436 Emax_of_step  0.7657612233837238 T_estimate  1741.3233215409923  loop time  0.19412708282470703  time spent setting step sizes:  0.0
+2448 Emax_of_step  0.756912325895685 T_estimate  1737.7457282124544  loop time  0.18336272239685059  time spent setting step sizes:  0.0
+2460 Emax_of_step  0.7484895808634112 T_estimate  1717.7590018062892  loop time  0.20391511917114258  time spent setting step sizes:  0.0
+2472 Emax_of_step  0.7383480204191861 T_estimate  1702.6270535024228  loop time  0.187791109085083  time spent setting step sizes:  0.0
+2484 Emax_of_step  0.7332423852932205 T_estimate  1678.7543387541034  loop time  0.20282983779907227  time spent setting step sizes:  0.0
+2496 Emax_of_step  0.7248533929242903 T_estimate  1669.2310114131965  loop time  0.19176912307739258  time spent setting step sizes:  0.0
+2508 Emax_of_step  0.7120665761334558 T_estimate  1658.5050696046083  loop time  0.18761181831359863  time spent setting step sizes:  0.0
+0 NS 2519 accept rate for MD_atom = 0.867292 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+2520 Emax_of_step  0.6998705463550853 T_estimate  1647.392440601988  loop time  0.19642853736877441  time spent setting step sizes:  0.07850480079650879
+2532 Emax_of_step  0.6901490862501755 T_estimate  1639.98390434064  loop time  0.20983505249023438  time spent setting step sizes:  0.0
+2544 Emax_of_step  0.6843041955548788 T_estimate  1609.6758477395922  loop time  0.19046783447265625  time spent setting step sizes:  0.0
+2556 Emax_of_step  0.6782272063441578 T_estimate  1580.5888028610266  loop time  0.1982100009918213  time spent setting step sizes:  0.0
+2568 Emax_of_step  0.6711381063583075 T_estimate  1545.559472760625  loop time  0.21923303604125977  time spent setting step sizes:  0.0
+2580 Emax_of_step  0.6591893134445794 T_estimate  1519.0857507547912  loop time  0.20900678634643555  time spent setting step sizes:  0.0
+2592 Emax_of_step  0.6494170241026747 T_estimate  1510.3031619957426  loop time  0.19585418701171875  time spent setting step sizes:  0.0
+2604 Emax_of_step  0.6355442128984305 T_estimate  1516.8820935853257  loop time  0.18776178359985352  time spent setting step sizes:  0.0
+2616 Emax_of_step  0.6257751952427563 T_estimate  1505.5140090282775  loop time  0.19293904304504395  time spent setting step sizes:  0.0
+2628 Emax_of_step  0.6201349456588905 T_estimate  1494.7596224179201  loop time  0.1783301830291748  time spent setting step sizes:  0.0
+0 NS 2639 accept rate for MD_atom = 0.878542 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+2640 Emax_of_step  0.6117737489823638 T_estimate  1488.9427599552955  loop time  0.19820690155029297  time spent setting step sizes:  0.07954096794128418
+2652 Emax_of_step  0.6008471109331736 T_estimate  1475.453033660497  loop time  0.22315597534179688  time spent setting step sizes:  0.0
+2664 Emax_of_step  0.5931558770739443 T_estimate  1440.8284039529751  loop time  0.2174379825592041  time spent setting step sizes:  0.0
+2676 Emax_of_step  0.5820144970042828 T_estimate  1424.451378052547  loop time  0.18692922592163086  time spent setting step sizes:  0.0
+2688 Emax_of_step  0.5778702733516493 T_estimate  1404.7140628341951  loop time  0.18300580978393555  time spent setting step sizes:  0.0
+2700 Emax_of_step  0.5720778572315817 T_estimate  1389.4911960411448  loop time  0.1878972053527832  time spent setting step sizes:  0.0
+2712 Emax_of_step  0.5613927596151265 T_estimate  1381.483217259466  loop time  0.17947697639465332  time spent setting step sizes:  0.0
+2724 Emax_of_step  0.5552366157790103 T_estimate  1372.2296548763518  loop time  0.1840038299560547  time spent setting step sizes:  0.0
+2736 Emax_of_step  0.5500205475287275 T_estimate  1362.9822155396196  loop time  0.18510198593139648  time spent setting step sizes:  0.0
+2748 Emax_of_step  0.5427549123582192 T_estimate  1351.183972378854  loop time  0.18397116661071777  time spent setting step sizes:  0.0
+0 NS 2759 accept rate for MD_atom = 0.868750 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+2760 Emax_of_step  0.5340195449178977 T_estimate  1338.1504953450349  loop time  0.18835878372192383  time spent setting step sizes:  0.07851815223693848
+2772 Emax_of_step  0.5220111193121998 T_estimate  1342.391660487653  loop time  0.17839574813842773  time spent setting step sizes:  0.0
+2784 Emax_of_step  0.5163546382453673 T_estimate  1332.5868515190941  loop time  0.20185232162475586  time spent setting step sizes:  0.0
+2796 Emax_of_step  0.5117735087349978 T_estimate  1313.6060844839878  loop time  0.1809978485107422  time spent setting step sizes:  0.0
+2808 Emax_of_step  0.5018728956179667 T_estimate  1304.1029828499652  loop time  0.1874830722808838  time spent setting step sizes:  0.0
+2820 Emax_of_step  0.49732224404584235 T_estimate  1285.8493451978206  loop time  0.18029189109802246  time spent setting step sizes:  0.0
+2832 Emax_of_step  0.4907397289315489 T_estimate  1269.4350321210095  loop time  0.18508219718933105  time spent setting step sizes:  0.0
+2844 Emax_of_step  0.4860503211747691 T_estimate  1259.681267283522  loop time  0.1779468059539795  time spent setting step sizes:  0.0
+2856 Emax_of_step  0.48006210430160856 T_estimate  1251.5226378380708  loop time  0.19071197509765625  time spent setting step sizes:  0.0
+2868 Emax_of_step  0.47430299417541244 T_estimate  1236.363503930286  loop time  0.17748618125915527  time spent setting step sizes:  0.0
+0 NS 2879 accept rate for MD_atom = 0.872708 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+2880 Emax_of_step  0.46935221442344494 T_estimate  1216.0155160762972  loop time  0.18344998359680176  time spent setting step sizes:  0.07702994346618652
+2892 Emax_of_step  0.4619725019022606 T_estimate  1210.2728801122055  loop time  0.19841599464416504  time spent setting step sizes:  0.0
+2904 Emax_of_step  0.45563459052382016 T_estimate  1200.2499786547808  loop time  0.19521713256835938  time spent setting step sizes:  0.0
+2916 Emax_of_step  0.4482085545635779 T_estimate  1187.638516990985  loop time  0.2179567813873291  time spent setting step sizes:  0.0
+2928 Emax_of_step  0.44034132134899906 T_estimate  1166.072022241518  loop time  0.186784029006958  time spent setting step sizes:  0.0
+2940 Emax_of_step  0.4318940824220037 T_estimate  1157.140245147653  loop time  0.200944185256958  time spent setting step sizes:  0.0
+2952 Emax_of_step  0.422388574534677 T_estimate  1151.4294479411008  loop time  0.19492197036743164  time spent setting step sizes:  0.0
+2964 Emax_of_step  0.4115786761956772 T_estimate  1142.6450929259572  loop time  0.18462681770324707  time spent setting step sizes:  0.0
+2976 Emax_of_step  0.406724053030487 T_estimate  1129.936405383936  loop time  0.18179607391357422  time spent setting step sizes:  0.0
+2988 Emax_of_step  0.40277637889420714 T_estimate  1104.7781239642588  loop time  0.22268390655517578  time spent setting step sizes:  0.0
+0 NS 2999 accept rate for MD_atom = 0.873750 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3000 Emax_of_step  0.3981876463968819 T_estimate  1096.1460166580664  loop time  0.20202898979187012  time spent setting step sizes:  0.0856781005859375
+3012 Emax_of_step  0.39168318172004324 T_estimate  1086.054523975856  loop time  0.1966240406036377  time spent setting step sizes:  0.0
+3024 Emax_of_step  0.38776717207589206 T_estimate  1074.7094302632806  loop time  0.21455097198486328  time spent setting step sizes:  0.0
+3036 Emax_of_step  0.3818683163198111 T_estimate  1057.8782478566445  loop time  0.19922804832458496  time spent setting step sizes:  0.0
+3048 Emax_of_step  0.37705097795162656 T_estimate  1043.543801951989  loop time  0.19827985763549805  time spent setting step sizes:  0.0
+3060 Emax_of_step  0.3746054884185443 T_estimate  1025.5249110492475  loop time  0.2603728771209717  time spent setting step sizes:  0.0
+3072 Emax_of_step  0.36631257351007135 T_estimate  1015.4896916750008  loop time  0.20558428764343262  time spent setting step sizes:  0.0
+3084 Emax_of_step  0.36179126492533914 T_estimate  1008.0849485213977  loop time  0.21774005889892578  time spent setting step sizes:  0.0
+3096 Emax_of_step  0.3541343890247771 T_estimate  1006.5872186167312  loop time  0.2240760326385498  time spent setting step sizes:  0.0
+3108 Emax_of_step  0.34821719337985746 T_estimate  995.4842039753767  loop time  0.22521686553955078  time spent setting step sizes:  0.0
+0 NS 3119 accept rate for MD_atom = 0.871250 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3120 Emax_of_step  0.3461145372132301 T_estimate  969.5032516597149  loop time  0.24463415145874023  time spent setting step sizes:  0.08882975578308105
+3132 Emax_of_step  0.34046632779454233 T_estimate  967.9543194326839  loop time  0.20112395286560059  time spent setting step sizes:  0.0
+3144 Emax_of_step  0.3358682945643647 T_estimate  961.0816849930409  loop time  0.19896411895751953  time spent setting step sizes:  0.0
+3156 Emax_of_step  0.33068490880288004 T_estimate  952.7702051678467  loop time  0.18935298919677734  time spent setting step sizes:  0.0
+3168 Emax_of_step  0.32405604420169337 T_estimate  936.7958315812004  loop time  0.22673702239990234  time spent setting step sizes:  0.0
+3180 Emax_of_step  0.3191871605036976 T_estimate  917.6844886996329  loop time  0.2000119686126709  time spent setting step sizes:  0.0
+3192 Emax_of_step  0.31377059570896165 T_estimate  895.5273855931016  loop time  0.20745515823364258  time spent setting step sizes:  0.0
+3204 Emax_of_step  0.3096079694855925 T_estimate  888.3258321967411  loop time  0.20999503135681152  time spent setting step sizes:  0.0
+3216 Emax_of_step  0.3057793751032698 T_estimate  881.8024158614355  loop time  0.20296883583068848  time spent setting step sizes:  0.0
+3228 Emax_of_step  0.30154593897761983 T_estimate  872.924097818071  loop time  0.203840970993042  time spent setting step sizes:  0.0
+0 NS 3239 accept rate for MD_atom = 0.873958 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3240 Emax_of_step  0.2957604813287162 T_estimate  864.932980454513  loop time  0.18881988525390625  time spent setting step sizes:  0.08220124244689941
+3252 Emax_of_step  0.2898753437840761 T_estimate  855.8703855666307  loop time  0.20774602890014648  time spent setting step sizes:  0.0
+3264 Emax_of_step  0.28235997307629324 T_estimate  853.8332659485571  loop time  0.18798184394836426  time spent setting step sizes:  0.0
+3276 Emax_of_step  0.2745034838474952 T_estimate  851.5416956533281  loop time  0.1895451545715332  time spent setting step sizes:  0.0
+3288 Emax_of_step  0.26947810589254084 T_estimate  842.6823953447723  loop time  0.1988086700439453  time spent setting step sizes:  0.0
+3300 Emax_of_step  0.26337855272956495 T_estimate  843.1603450738083  loop time  0.19980430603027344  time spent setting step sizes:  0.0
+3312 Emax_of_step  0.25999985947667575 T_estimate  838.2895992644707  loop time  0.2032017707824707  time spent setting step sizes:  0.0
+3324 Emax_of_step  0.2546146427438908 T_estimate  827.5313355550378  loop time  0.1960611343383789  time spent setting step sizes:  0.0
+3336 Emax_of_step  0.24993724553845242 T_estimate  824.7120361251316  loop time  0.20121097564697266  time spent setting step sizes:  0.0
+3348 Emax_of_step  0.24505282853468413 T_estimate  819.9180743843158  loop time  0.19266104698181152  time spent setting step sizes:  0.0
+0 NS 3359 accept rate for MD_atom = 0.848333 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3360 Emax_of_step  0.2400813563646413 T_estimate  811.0524782516028  loop time  0.18620777130126953  time spent setting step sizes:  0.07661223411560059
+3372 Emax_of_step  0.23481280741927327 T_estimate  809.5064900278107  loop time  0.1886148452758789  time spent setting step sizes:  0.0
+3384 Emax_of_step  0.23128580243083438 T_estimate  803.7430278881952  loop time  0.17670297622680664  time spent setting step sizes:  0.0
+3396 Emax_of_step  0.22619332475282852 T_estimate  798.6075838199853  loop time  0.18231821060180664  time spent setting step sizes:  0.0
+3408 Emax_of_step  0.22212178792839885 T_estimate  795.4587524126913  loop time  0.19998383522033691  time spent setting step sizes:  0.0
+3420 Emax_of_step  0.2152192994971787 T_estimate  795.581315869565  loop time  0.1943039894104004  time spent setting step sizes:  0.0
+3432 Emax_of_step  0.21175050064305243 T_estimate  775.7110388827717  loop time  0.22726011276245117  time spent setting step sizes:  0.0
+3444 Emax_of_step  0.20764732246848358 T_estimate  775.0310365530894  loop time  0.17832303047180176  time spent setting step sizes:  0.0
+3456 Emax_of_step  0.20315265412392008 T_estimate  768.9992212544659  loop time  0.18149709701538086  time spent setting step sizes:  0.0
+3468 Emax_of_step  0.19899450781409433 T_estimate  756.8786467877648  loop time  0.191727876663208  time spent setting step sizes:  0.0
+0 NS 3479 accept rate for MD_atom = 0.859375 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3480 Emax_of_step  0.1955972495976325 T_estimate  753.4648175159161  loop time  0.17828893661499023  time spent setting step sizes:  0.0722808837890625
+3492 Emax_of_step  0.19168146679941317 T_estimate  752.2094256434409  loop time  0.1767711639404297  time spent setting step sizes:  0.0
+3504 Emax_of_step  0.18722787743126704 T_estimate  736.665916392155  loop time  0.20158886909484863  time spent setting step sizes:  0.0
+3516 Emax_of_step  0.18147285826001164 T_estimate  729.9775996896803  loop time  0.2293078899383545  time spent setting step sizes:  0.0
+3528 Emax_of_step  0.17669712828200956 T_estimate  724.2316783874646  loop time  0.23993420600891113  time spent setting step sizes:  0.0
+3540 Emax_of_step  0.17255498656249568 T_estimate  719.1479175214697  loop time  0.23142695426940918  time spent setting step sizes:  0.0
+3552 Emax_of_step  0.16954634990617198 T_estimate  713.4409525084003  loop time  0.21453619003295898  time spent setting step sizes:  0.0
+3564 Emax_of_step  0.16307448659490567 T_estimate  714.0492013586701  loop time  0.2357797622680664  time spent setting step sizes:  0.0
+3576 Emax_of_step  0.1601834418064766 T_estimate  706.5744052957168  loop time  0.21353912353515625  time spent setting step sizes:  0.0
+3588 Emax_of_step  0.1545739965606939 T_estimate  697.7780103541658  loop time  0.19837689399719238  time spent setting step sizes:  0.0
+0 NS 3599 accept rate for MD_atom = 0.836875 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3600 Emax_of_step  0.15197354911978864 T_estimate  685.4056556480004  loop time  0.2082529067993164  time spent setting step sizes:  0.08236217498779297
+3612 Emax_of_step  0.1465801096955627 T_estimate  675.5580372608747  loop time  0.22249698638916016  time spent setting step sizes:  0.0
+3624 Emax_of_step  0.14463363162896747 T_estimate  667.8377924829769  loop time  0.2563769817352295  time spent setting step sizes:  0.0
+3636 Emax_of_step  0.1402949106449761 T_estimate  664.9223308237639  loop time  0.22864603996276855  time spent setting step sizes:  0.0
+3648 Emax_of_step  0.13562023822901467 T_estimate  655.3101421426647  loop time  0.24736499786376953  time spent setting step sizes:  0.0
+3660 Emax_of_step  0.13214594111530323 T_estimate  648.2448513288226  loop time  0.21844100952148438  time spent setting step sizes:  0.0
+3672 Emax_of_step  0.1267144519177503 T_estimate  642.6728412286715  loop time  0.19124794006347656  time spent setting step sizes:  0.0
+3684 Emax_of_step  0.12270155403491986 T_estimate  638.510429016545  loop time  0.2208261489868164  time spent setting step sizes:  0.0
+3696 Emax_of_step  0.12015108845695031 T_estimate  633.1943603320411  loop time  0.21059107780456543  time spent setting step sizes:  0.0
+3708 Emax_of_step  0.11385238441043093 T_estimate  630.3826603260214  loop time  0.30815672874450684  time spent setting step sizes:  0.0
+0 NS 3719 accept rate for MD_atom = 0.804583 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3720 Emax_of_step  0.11034575251661398 T_estimate  623.7306705898853  loop time  0.22561097145080566  time spent setting step sizes:  0.10332703590393066
+3732 Emax_of_step  0.10712690093739878 T_estimate  623.1112360129824  loop time  0.22203612327575684  time spent setting step sizes:  0.0
+3744 Emax_of_step  0.10260469015009985 T_estimate  617.3263804218631  loop time  0.21073698997497559  time spent setting step sizes:  0.0
+3756 Emax_of_step  0.09753684094298831 T_estimate  615.987752159354  loop time  0.17761492729187012  time spent setting step sizes:  0.0
+3768 Emax_of_step  0.09450470582506831 T_estimate  600.6845009417357  loop time  0.17322707176208496  time spent setting step sizes:  0.0
+3780 Emax_of_step  0.09006451687711964 T_estimate  599.94044377  loop time  0.2297229766845703  time spent setting step sizes:  0.0
+3792 Emax_of_step  0.08487952439016434 T_estimate  598.3606952681223  loop time  0.20479607582092285  time spent setting step sizes:  0.0
+3804 Emax_of_step  0.08302380059081337 T_estimate  590.2874187166258  loop time  0.2362990379333496  time spent setting step sizes:  0.0
+3816 Emax_of_step  0.07938730873748234 T_estimate  586.5437505443837  loop time  0.20869708061218262  time spent setting step sizes:  0.0
+3828 Emax_of_step  0.07685474766336918 T_estimate  581.2420745085143  loop time  0.2017819881439209  time spent setting step sizes:  0.0
+0 NS 3839 accept rate for MD_atom = 0.805833 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3840 Emax_of_step  0.07028988041630416 T_estimate  582.8306712969179  loop time  0.20516681671142578  time spent setting step sizes:  0.08712100982666016
+3852 Emax_of_step  0.06683140968608879 T_estimate  580.3963907312858  loop time  0.22223901748657227  time spent setting step sizes:  0.0
+3864 Emax_of_step  0.06394496191229417 T_estimate  579.0146107252958  loop time  0.21546101570129395  time spent setting step sizes:  0.0
+3876 Emax_of_step  0.060623557707595074 T_estimate  575.6685175176599  loop time  0.24474596977233887  time spent setting step sizes:  0.0
+3888 Emax_of_step  0.05795002164699534 T_estimate  569.0723665638931  loop time  0.20376992225646973  time spent setting step sizes:  0.0
+3900 Emax_of_step  0.05187239556466869 T_estimate  565.9868377426353  loop time  0.22102904319763184  time spent setting step sizes:  0.0
+3912 Emax_of_step  0.046679599931271444 T_estimate  563.7917368737933  loop time  0.20728421211242676  time spent setting step sizes:  0.0
+3924 Emax_of_step  0.042058484403943115 T_estimate  559.3520582304299  loop time  0.21521472930908203  time spent setting step sizes:  0.0
+3936 Emax_of_step  0.039035972305852144 T_estimate  553.2452074755466  loop time  0.2239842414855957  time spent setting step sizes:  0.0
+3948 Emax_of_step  0.034740604657423714 T_estimate  548.2207992007842  loop time  0.19560885429382324  time spent setting step sizes:  0.0
+0 NS 3959 accept rate for MD_atom = 0.775833 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+3960 Emax_of_step  0.03086689691289158 T_estimate  538.2999803703726  loop time  0.18845891952514648  time spent setting step sizes:  0.09179997444152832
+3972 Emax_of_step  0.026341569613531714 T_estimate  536.6161842426534  loop time  0.20013117790222168  time spent setting step sizes:  0.0
+3984 Emax_of_step  0.021916113863438183 T_estimate  534.7987291448093  loop time  0.19037294387817383  time spent setting step sizes:  0.0
+3996 Emax_of_step  0.01773094862452198 T_estimate  533.9422834504124  loop time  0.19229412078857422  time spent setting step sizes:  0.0
+4008 Emax_of_step  0.014221470066245108 T_estimate  530.4306660922191  loop time  0.25046396255493164  time spent setting step sizes:  0.0
+4020 Emax_of_step  0.010166933751585908 T_estimate  528.3817514333465  loop time  0.18903589248657227  time spent setting step sizes:  0.0
+4032 Emax_of_step  0.003848253970714698 T_estimate  530.3971625834695  loop time  0.18600201606750488  time spent setting step sizes:  0.0
+4044 Emax_of_step  0.0007078085273039879 T_estimate  529.0429664840184  loop time  0.21775102615356445  time spent setting step sizes:  0.0
+4056 Emax_of_step  -0.0017094584248556666 T_estimate  527.1614694084087  loop time  0.21033287048339844  time spent setting step sizes:  0.0
+4068 Emax_of_step  -0.004533692344183631 T_estimate  526.3954108122156  loop time  0.20831608772277832  time spent setting step sizes:  0.0
+0 NS 4079 accept rate for MD_atom = 0.788750 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+4080 Emax_of_step  -0.00783133216949672 T_estimate  518.3016662012924  loop time  0.2226111888885498  time spent setting step sizes:  0.08682489395141602
+4092 Emax_of_step  -0.010634096249159649 T_estimate  513.1790974487333  loop time  0.22680091857910156  time spent setting step sizes:  0.0
+4104 Emax_of_step  -0.014029411308337007 T_estimate  509.2505519953582  loop time  0.2137148380279541  time spent setting step sizes:  0.0
+4116 Emax_of_step  -0.01596598894389379 T_estimate  507.29457303890104  loop time  0.21485018730163574  time spent setting step sizes:  0.0
+4128 Emax_of_step  -0.01950668710058834 T_estimate  505.71124119996506  loop time  0.25350189208984375  time spent setting step sizes:  0.0
+4140 Emax_of_step  -0.02488089961950881 T_estimate  505.81760800505634  loop time  0.19224309921264648  time spent setting step sizes:  0.0
+4152 Emax_of_step  -0.02898691584348378 T_estimate  505.86625043290167  loop time  0.22021484375  time spent setting step sizes:  0.0
+4164 Emax_of_step  -0.03183035062176961 T_estimate  499.1022043396992  loop time  0.20326805114746094  time spent setting step sizes:  0.0
+4176 Emax_of_step  -0.036745325321512444 T_estimate  500.7282690190151  loop time  0.2024400234222412  time spent setting step sizes:  0.0
+4188 Emax_of_step  -0.03956975444797389 T_estimate  495.9229600941544  loop time  0.22800302505493164  time spent setting step sizes:  0.0
+0 NS 4199 accept rate for MD_atom = 0.774583 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+4200 Emax_of_step  -0.04263502178624298 T_estimate  496.0215674065995  loop time  0.1978321075439453  time spent setting step sizes:  0.08170795440673828
+4212 Emax_of_step  -0.04739523037719542 T_estimate  495.0392629237157  loop time  0.19851374626159668  time spent setting step sizes:  0.0
+4224 Emax_of_step  -0.05138522574124527 T_estimate  495.0519585100763  loop time  0.18717122077941895  time spent setting step sizes:  0.0
+4236 Emax_of_step  -0.05499012426838452 T_estimate  495.00927416244883  loop time  0.17698001861572266  time spent setting step sizes:  0.0
+4248 Emax_of_step  -0.058630898023903956 T_estimate  489.7349600872298  loop time  0.1846010684967041  time spent setting step sizes:  0.0
+4260 Emax_of_step  -0.0617022102593001 T_estimate  482.7855308658256  loop time  0.17538785934448242  time spent setting step sizes:  0.0
+4272 Emax_of_step  -0.06498204731322085 T_estimate  479.25343633276725  loop time  0.23620104789733887  time spent setting step sizes:  0.0
+4284 Emax_of_step  -0.06959549071552486 T_estimate  475.8712010647606  loop time  0.16076087951660156  time spent setting step sizes:  0.0
+4296 Emax_of_step  -0.07484468730453955 T_estimate  474.89260077115034  loop time  0.15241026878356934  time spent setting step sizes:  0.0
+4308 Emax_of_step  -0.07947991567753165 T_estimate  476.61614385113654  loop time  0.1602790355682373  time spent setting step sizes:  0.0
+0 NS 4319 accept rate for MD_atom = 0.750417 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+4320 Emax_of_step  -0.0833572346339 T_estimate  477.1577806790573  loop time  0.1614208221435547  time spent setting step sizes:  0.06551504135131836
+4332 Emax_of_step  -0.08676449559857691 T_estimate  473.5828863523625  loop time  0.15845799446105957  time spent setting step sizes:  0.0
+4344 Emax_of_step  -0.09163245531776044 T_estimate  471.73919254768487  loop time  0.16394901275634766  time spent setting step sizes:  0.0
+4356 Emax_of_step  -0.09713908378253787 T_estimate  472.9745997973488  loop time  0.1841869354248047  time spent setting step sizes:  0.0
+4368 Emax_of_step  -0.1013085631083549 T_estimate  474.16697058032815  loop time  0.15698790550231934  time spent setting step sizes:  0.0
+4380 Emax_of_step  -0.10374119178727874 T_estimate  470.2633277773767  loop time  0.15937519073486328  time spent setting step sizes:  0.0
+4392 Emax_of_step  -0.10861601917288188 T_estimate  470.7996866382773  loop time  0.17992687225341797  time spent setting step sizes:  0.0
+4404 Emax_of_step  -0.112440547042695 T_estimate  469.48145601610526  loop time  0.15569210052490234  time spent setting step sizes:  0.0
+4416 Emax_of_step  -0.11601711183029105 T_estimate  465.6664241882996  loop time  0.17725896835327148  time spent setting step sizes:  0.0
+4428 Emax_of_step  -0.12135323271593286 T_estimate  467.28778550076447  loop time  0.17622089385986328  time spent setting step sizes:  0.0
+0 NS 4439 accept rate for MD_atom = 0.739375 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+4440 Emax_of_step  -0.1276441241597336 T_estimate  469.60950475164753  loop time  0.18179607391357422  time spent setting step sizes:  0.08517599105834961
+4452 Emax_of_step  -0.13337719820456634 T_estimate  474.70879515650796  loop time  0.19290995597839355  time spent setting step sizes:  0.0
+4464 Emax_of_step  -0.13695936259161537 T_estimate  471.42000895810634  loop time  0.20474696159362793  time spent setting step sizes:  0.0
+4476 Emax_of_step  -0.14182124508783026 T_estimate  473.2960876561239  loop time  0.18112421035766602  time spent setting step sizes:  0.0
+4488 Emax_of_step  -0.1457375710332311 T_estimate  474.52402910448495  loop time  0.1634659767150879  time spent setting step sizes:  0.0
+4500 Emax_of_step  -0.14997444445114272 T_estimate  473.68336810324035  loop time  0.16922974586486816  time spent setting step sizes:  0.0
+4512 Emax_of_step  -0.15315967858303428 T_estimate  472.604054778358  loop time  0.1698780059814453  time spent setting step sizes:  0.0
+4524 Emax_of_step  -0.15542898992900578 T_estimate  466.79703790447365  loop time  0.1830592155456543  time spent setting step sizes:  0.0
+4536 Emax_of_step  -0.15856899196743338 T_estimate  464.4642851960543  loop time  0.17128396034240723  time spent setting step sizes:  0.0
+4548 Emax_of_step  -0.1617350753340836 T_estimate  464.77133067790623  loop time  0.1734311580657959  time spent setting step sizes:  0.0
+0 NS 4559 accept rate for MD_atom = 0.723125 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+4560 Emax_of_step  -0.16667897978597412 T_estimate  462.38701321587104  loop time  0.16718769073486328  time spent setting step sizes:  0.07312607765197754
+4572 Emax_of_step  -0.17039173175555594 T_estimate  464.61049581927944  loop time  0.15488696098327637  time spent setting step sizes:  0.0
+4584 Emax_of_step  -0.17318884586043481 T_estimate  461.8513994204746  loop time  0.17963218688964844  time spent setting step sizes:  0.0
+4596 Emax_of_step  -0.17728532972961247 T_estimate  461.89315051775355  loop time  0.17688894271850586  time spent setting step sizes:  0.0
+4608 Emax_of_step  -0.1809390515394067 T_estimate  460.9625519709661  loop time  0.16616201400756836  time spent setting step sizes:  0.0
+4620 Emax_of_step  -0.18368439857981214 T_estimate  460.2439679827544  loop time  0.17164397239685059  time spent setting step sizes:  0.0
+4632 Emax_of_step  -0.18816461007296753 T_estimate  460.7615543973979  loop time  0.16382098197937012  time spent setting step sizes:  0.0
+4644 Emax_of_step  -0.19440459223430384 T_estimate  462.77333463285674  loop time  0.1769120693206787  time spent setting step sizes:  0.0
+4656 Emax_of_step  -0.19775013865767266 T_estimate  461.8919857600754  loop time  0.16649293899536133  time spent setting step sizes:  0.0
+4668 Emax_of_step  -0.1999293617060309 T_estimate  458.77522253764806  loop time  0.1748969554901123  time spent setting step sizes:  0.0
+0 NS 4679 accept rate for MD_atom = 0.697500 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+4680 Emax_of_step  -0.2040220303907185 T_estimate  457.9005564143064  loop time  0.18480300903320312  time spent setting step sizes:  0.08130002021789551
+4692 Emax_of_step  -0.2082085062426742 T_estimate  460.0158324620681  loop time  0.17589712142944336  time spent setting step sizes:  0.0
+4704 Emax_of_step  -0.21224862006548317 T_estimate  459.17080229964046  loop time  0.17463278770446777  time spent setting step sizes:  0.0
+4716 Emax_of_step  -0.21654194060604431 T_estimate  457.44012093279815  loop time  0.17122530937194824  time spent setting step sizes:  0.0
+4728 Emax_of_step  -0.2204624916598758 T_estimate  458.6652236098553  loop time  0.17679882049560547  time spent setting step sizes:  0.0
+4740 Emax_of_step  -0.2222150366569047 T_estimate  457.7132274673407  loop time  0.15752100944519043  time spent setting step sizes:  0.0
+4752 Emax_of_step  -0.22481744407479376 T_estimate  452.79683881389707  loop time  0.15903306007385254  time spent setting step sizes:  0.0
+4764 Emax_of_step  -0.22910464478155373 T_estimate  453.4855088629886  loop time  0.15924501419067383  time spent setting step sizes:  0.0
+4776 Emax_of_step  -0.2337043683306385 T_estimate  456.06051038418553  loop time  0.15775394439697266  time spent setting step sizes:  0.0
+4788 Emax_of_step  -0.23705091323776473 T_estimate  452.9269453647209  loop time  0.1617567539215088  time spent setting step sizes:  0.0
+0 NS 4799 accept rate for MD_atom = 0.722917 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+4800 Emax_of_step  -0.2399517868074554 T_estimate  452.6456468820403  loop time  0.16132616996765137  time spent setting step sizes:  0.06904911994934082
+4812 Emax_of_step  -0.24350341643866166 T_estimate  453.4987267831548  loop time  0.16588497161865234  time spent setting step sizes:  0.0
+4824 Emax_of_step  -0.24655046028943936 T_estimate  454.0354282126616  loop time  0.19747591018676758  time spent setting step sizes:  0.0
+4836 Emax_of_step  -0.25173553646713437 T_estimate  455.13286725532697  loop time  0.16584205627441406  time spent setting step sizes:  0.0
+4848 Emax_of_step  -0.25668638955623874 T_estimate  453.17117388243673  loop time  0.1622600555419922  time spent setting step sizes:  0.0
+4860 Emax_of_step  -0.2600900390742266 T_estimate  454.3966313299145  loop time  0.17473888397216797  time spent setting step sizes:  0.0
+4872 Emax_of_step  -0.2639514025486142 T_estimate  456.4919881593898  loop time  0.1671609878540039  time spent setting step sizes:  0.0
+4884 Emax_of_step  -0.268255754197171 T_estimate  457.3122972313008  loop time  0.16041302680969238  time spent setting step sizes:  0.0
+4896 Emax_of_step  -0.27196974912817856 T_estimate  457.0598877404152  loop time  0.18939495086669922  time spent setting step sizes:  0.0
+4908 Emax_of_step  -0.27635431332447147 T_estimate  453.7642961916048  loop time  0.17940902709960938  time spent setting step sizes:  0.0
+0 NS 4919 accept rate for MD_atom = 0.686667 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+4920 Emax_of_step  -0.27929096477978393 T_estimate  451.8557541323558  loop time  0.178145170211792  time spent setting step sizes:  0.06682491302490234
+4932 Emax_of_step  -0.2823433456708171 T_estimate  449.8189039649143  loop time  0.33787083625793457  time spent setting step sizes:  0.0
+4944 Emax_of_step  -0.2868751818515006 T_estimate  451.19352506404186  loop time  0.18179011344909668  time spent setting step sizes:  0.0
+4956 Emax_of_step  -0.29074485716924053 T_estimate  450.7516030550315  loop time  0.1765909194946289  time spent setting step sizes:  0.0
+4968 Emax_of_step  -0.2943048731551543 T_estimate  449.9992746049123  loop time  0.17696213722229004  time spent setting step sizes:  0.0
+4980 Emax_of_step  -0.2997823147452292 T_estimate  452.38355448234154  loop time  0.17089390754699707  time spent setting step sizes:  0.0
+4992 Emax_of_step  -0.3022747946577051 T_estimate  448.454775230724  loop time  0.16807293891906738  time spent setting step sizes:  0.0
+5004 Emax_of_step  -0.3057432694227737 T_estimate  449.9248951383883  loop time  0.16905617713928223  time spent setting step sizes:  0.0
+5016 Emax_of_step  -0.30961377668604595 T_estimate  448.78083559939995  loop time  0.17281675338745117  time spent setting step sizes:  0.0
+5028 Emax_of_step  -0.3124719347985637 T_estimate  445.2426132762633  loop time  0.17201995849609375  time spent setting step sizes:  0.0
+0 NS 5039 accept rate for MD_atom = 0.649792 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+5040 Emax_of_step  -0.31570604811247094 T_estimate  444.1393204609156  loop time  0.18454718589782715  time spent setting step sizes:  0.07530498504638672
+5052 Emax_of_step  -0.3193614113922716 T_estimate  445.37269889662946  loop time  0.17960596084594727  time spent setting step sizes:  0.0
+5064 Emax_of_step  -0.3237878816904086 T_estimate  447.8200751743842  loop time  0.18778204917907715  time spent setting step sizes:  0.0
+5076 Emax_of_step  -0.3269827521518424 T_estimate  448.4597681138005  loop time  0.17369294166564941  time spent setting step sizes:  0.0
+5088 Emax_of_step  -0.33053721866169694 T_estimate  448.2663860101748  loop time  0.16813206672668457  time spent setting step sizes:  0.0
+5100 Emax_of_step  -0.3336939869010961 T_estimate  448.9810749035973  loop time  0.17534184455871582  time spent setting step sizes:  0.0
+5112 Emax_of_step  -0.3376014720548235 T_estimate  450.0870689159899  loop time  0.17477202415466309  time spent setting step sizes:  0.0
+5124 Emax_of_step  -0.341770455765051 T_estimate  452.06338192985584  loop time  0.16628503799438477  time spent setting step sizes:  0.0
+5136 Emax_of_step  -0.3464961581606113 T_estimate  453.1153177987894  loop time  0.2230231761932373  time spent setting step sizes:  0.0
+5148 Emax_of_step  -0.35065603601215933 T_estimate  451.95262581955484  loop time  0.16248488426208496  time spent setting step sizes:  0.0
+0 NS 5159 accept rate for MD_atom = 0.667292 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+5160 Emax_of_step  -0.3543558269509433 T_estimate  453.4561196593687  loop time  0.18794989585876465  time spent setting step sizes:  0.0757451057434082
+5172 Emax_of_step  -0.35846506707053005 T_estimate  453.7131355596363  loop time  0.1882002353668213  time spent setting step sizes:  0.0
+5184 Emax_of_step  -0.36256571198682186 T_estimate  453.60117002717504  loop time  0.18697476387023926  time spent setting step sizes:  0.0
+5196 Emax_of_step  -0.36579896461747397 T_estimate  453.29582791927555  loop time  0.19047904014587402  time spent setting step sizes:  0.0
+5208 Emax_of_step  -0.3686690558547699 T_estimate  451.20215247877115  loop time  0.1638031005859375  time spent setting step sizes:  0.0
+5220 Emax_of_step  -0.3711725258680584 T_estimate  448.679455082562  loop time  0.2676868438720703  time spent setting step sizes:  0.0
+5232 Emax_of_step  -0.37540592540028644 T_estimate  448.5488039163343  loop time  0.18048787117004395  time spent setting step sizes:  0.0
+5244 Emax_of_step  -0.3786406822165055 T_estimate  448.49627681400017  loop time  0.16612625122070312  time spent setting step sizes:  0.0
+5256 Emax_of_step  -0.3814724470528875 T_estimate  447.7568493224373  loop time  0.17393183708190918  time spent setting step sizes:  0.0
+5268 Emax_of_step  -0.38301344706004026 T_estimate  446.328531693093  loop time  0.165208101272583  time spent setting step sizes:  0.0
+0 NS 5279 accept rate for MD_atom = 0.647083 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+5280 Emax_of_step  -0.38629237407512035 T_estimate  444.38948428938187  loop time  0.16147732734680176  time spent setting step sizes:  0.06877279281616211
+5292 Emax_of_step  -0.39110864744632967 T_estimate  445.3117431818476  loop time  0.17528867721557617  time spent setting step sizes:  0.0
+5304 Emax_of_step  -0.39496262942316895 T_estimate  443.43529220161963  loop time  0.18063020706176758  time spent setting step sizes:  0.0
+5316 Emax_of_step  -0.3968172415723385 T_estimate  438.896746655738  loop time  0.17844176292419434  time spent setting step sizes:  0.0
+5328 Emax_of_step  -0.40059312438175226 T_estimate  440.007538904268  loop time  0.18691611289978027  time spent setting step sizes:  0.0
+5340 Emax_of_step  -0.4034083020013808 T_estimate  438.69538594634116  loop time  0.1790010929107666  time spent setting step sizes:  0.0
+5352 Emax_of_step  -0.4085568262230605 T_estimate  439.09663196930285  loop time  0.16072607040405273  time spent setting step sizes:  0.0
+5364 Emax_of_step  -0.4112591570537405 T_estimate  434.57193850274354  loop time  0.1725142002105713  time spent setting step sizes:  0.0
+5376 Emax_of_step  -0.4148430942877801 T_estimate  436.6540561609621  loop time  0.17131376266479492  time spent setting step sizes:  0.0
+5388 Emax_of_step  -0.4193940423996244 T_estimate  437.08573317610245  loop time  0.16564106941223145  time spent setting step sizes:  0.0
+0 NS 5399 accept rate for MD_atom = 0.654167 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+5400 Emax_of_step  -0.42220146330330033 T_estimate  435.7687675896675  loop time  0.1714181900024414  time spent setting step sizes:  0.06786990165710449
+5412 Emax_of_step  -0.42573553107087275 T_estimate  434.6201496693206  loop time  0.16872692108154297  time spent setting step sizes:  0.0
+5424 Emax_of_step  -0.4292880256527869 T_estimate  431.4187748546005  loop time  0.17311906814575195  time spent setting step sizes:  0.0
+5436 Emax_of_step  -0.4326265442260275 T_estimate  431.5702793491769  loop time  0.17352604866027832  time spent setting step sizes:  0.0
+5448 Emax_of_step  -0.4359374981478169 T_estimate  424.99059629318674  loop time  0.1758558750152588  time spent setting step sizes:  0.0
+5460 Emax_of_step  -0.43927485360962465 T_estimate  424.1045303568205  loop time  0.16962099075317383  time spent setting step sizes:  0.0
+5472 Emax_of_step  -0.4414984028652271 T_estimate  422.50089513725953  loop time  0.17759394645690918  time spent setting step sizes:  0.0
+5484 Emax_of_step  -0.44567578759389753 T_estimate  422.14120895857036  loop time  0.18465113639831543  time spent setting step sizes:  0.0
+5496 Emax_of_step  -0.44933752008557615 T_estimate  420.1563009626956  loop time  0.17234086990356445  time spent setting step sizes:  0.0
+5508 Emax_of_step  -0.45177282069785085 T_estimate  419.48439259889466  loop time  0.17194819450378418  time spent setting step sizes:  0.0
+0 NS 5519 accept rate for MD_atom = 0.638958 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+5520 Emax_of_step  -0.4541719290150825 T_estimate  419.1933415678665  loop time  0.1606578826904297  time spent setting step sizes:  0.07608175277709961
+5532 Emax_of_step  -0.4583173046772647 T_estimate  420.49000288487065  loop time  0.17789697647094727  time spent setting step sizes:  0.0
+5544 Emax_of_step  -0.4620828238083209 T_estimate  421.0440286178637  loop time  0.16881203651428223  time spent setting step sizes:  0.0
+5556 Emax_of_step  -0.4650416714978297 T_estimate  419.19033427105126  loop time  0.16266393661499023  time spent setting step sizes:  0.0
+5568 Emax_of_step  -0.4669710715265648 T_estimate  417.3446464018791  loop time  0.17305707931518555  time spent setting step sizes:  0.0
+5580 Emax_of_step  -0.47010319000390954 T_estimate  416.5872371486464  loop time  0.17735910415649414  time spent setting step sizes:  0.0
+5592 Emax_of_step  -0.4733193425877395 T_estimate  416.18341939463585  loop time  0.15591001510620117  time spent setting step sizes:  0.0
+5604 Emax_of_step  -0.47598128153873426 T_estimate  414.9935094532541  loop time  0.15438294410705566  time spent setting step sizes:  0.0
+5616 Emax_of_step  -0.48196088595319975 T_estimate  419.20500474670376  loop time  0.1575932502746582  time spent setting step sizes:  0.0
+5628 Emax_of_step  -0.48508430195739427 T_estimate  416.96583765000463  loop time  0.18136882781982422  time spent setting step sizes:  0.0
+0 NS 5639 accept rate for MD_atom = 0.639167 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+5640 Emax_of_step  -0.4896685771046257 T_estimate  415.3597612893229  loop time  0.1629030704498291  time spent setting step sizes:  0.07384991645812988
+5652 Emax_of_step  -0.49261023835082046 T_estimate  413.1429379465977  loop time  0.1731400489807129  time spent setting step sizes:  0.0
+5664 Emax_of_step  -0.4969534171221695 T_estimate  416.13593486440135  loop time  0.16650915145874023  time spent setting step sizes:  0.0
+5676 Emax_of_step  -0.49979550371981857 T_estimate  415.17255003409906  loop time  0.15824675559997559  time spent setting step sizes:  0.0
+5688 Emax_of_step  -0.5025719258527912 T_estimate  412.9559228560547  loop time  0.17423486709594727  time spent setting step sizes:  0.0
+5700 Emax_of_step  -0.5052904689448351 T_estimate  410.94009433434104  loop time  0.1622452735900879  time spent setting step sizes:  0.0
+5712 Emax_of_step  -0.5102379368091948 T_estimate  412.34396436225404  loop time  0.16737079620361328  time spent setting step sizes:  0.0
+5724 Emax_of_step  -0.5122122569306902 T_estimate  409.70904897023564  loop time  0.18063712120056152  time spent setting step sizes:  0.0
+5736 Emax_of_step  -0.5146322325265504 T_estimate  410.0202789856375  loop time  0.18488502502441406  time spent setting step sizes:  0.0
+5748 Emax_of_step  -0.5182478373339068 T_estimate  412.12454117511044  loop time  0.17787885665893555  time spent setting step sizes:  0.0
+0 NS 5759 accept rate for MD_atom = 0.629792 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+5760 Emax_of_step  -0.5209381505425196 T_estimate  411.50985469695934  loop time  0.17522621154785156  time spent setting step sizes:  0.06700801849365234
+5772 Emax_of_step  -0.5242090003325918 T_estimate  409.52292671344713  loop time  0.16803288459777832  time spent setting step sizes:  0.0
+5784 Emax_of_step  -0.5291457583086242 T_estimate  410.85424592166027  loop time  0.17125988006591797  time spent setting step sizes:  0.0
+5796 Emax_of_step  -0.5328897415972031 T_estimate  410.54737316943994  loop time  0.16933727264404297  time spent setting step sizes:  0.0
+5808 Emax_of_step  -0.538330440700104 T_estimate  413.3845045503124  loop time  0.16034579277038574  time spent setting step sizes:  0.0
+5820 Emax_of_step  -0.5433584015808557 T_estimate  417.2183896399399  loop time  0.17455625534057617  time spent setting step sizes:  0.0
+5832 Emax_of_step  -0.5463604393610749 T_estimate  412.93628787548244  loop time  0.1694498062133789  time spent setting step sizes:  0.0
+5844 Emax_of_step  -0.5495873295307011 T_estimate  413.2462351035788  loop time  0.16559386253356934  time spent setting step sizes:  0.0
+5856 Emax_of_step  -0.5520716730381574 T_estimate  411.23394264103166  loop time  0.16257214546203613  time spent setting step sizes:  0.0
+5868 Emax_of_step  -0.5540522645083951 T_estimate  407.42178792922806  loop time  0.16378998756408691  time spent setting step sizes:  0.0
+0 NS 5879 accept rate for MD_atom = 0.618542 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+5880 Emax_of_step  -0.557483777813504 T_estimate  405.93055834574693  loop time  0.18510699272155762  time spent setting step sizes:  0.06729912757873535
+5892 Emax_of_step  -0.5600205313329223 T_estimate  403.45588169432835  loop time  0.1673417091369629  time spent setting step sizes:  0.0
+5904 Emax_of_step  -0.5641599094575448 T_estimate  403.07428534828006  loop time  0.1660900115966797  time spent setting step sizes:  0.0
+5916 Emax_of_step  -0.5675171831052365 T_estimate  404.18729700616865  loop time  0.16435718536376953  time spent setting step sizes:  0.0
+5928 Emax_of_step  -0.5710940497629643 T_estimate  404.23229755886956  loop time  0.17245697975158691  time spent setting step sizes:  0.0
+5940 Emax_of_step  -0.5734262977381861 T_estimate  401.98698825457905  loop time  0.16682910919189453  time spent setting step sizes:  0.0
+5952 Emax_of_step  -0.5755537429144277 T_estimate  400.35274868706415  loop time  0.16252994537353516  time spent setting step sizes:  0.0
+5964 Emax_of_step  -0.5787475696866657 T_estimate  400.71883454984044  loop time  0.16601991653442383  time spent setting step sizes:  0.0
+5976 Emax_of_step  -0.5824315902281613 T_estimate  396.4407000251722  loop time  0.16488003730773926  time spent setting step sizes:  0.0
+5988 Emax_of_step  -0.5844390644843931 T_estimate  395.5015856144488  loop time  0.16426396369934082  time spent setting step sizes:  0.0
+0 NS 5999 accept rate for MD_atom = 0.631250 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6000 Emax_of_step  -0.5869501818699272 T_estimate  394.1137454164751  loop time  0.17419004440307617  time spent setting step sizes:  0.07860088348388672
+6012 Emax_of_step  -0.5896325635331106 T_estimate  392.91362593949697  loop time  0.180527925491333  time spent setting step sizes:  0.0
+6024 Emax_of_step  -0.5929414684031306 T_estimate  393.7622288061071  loop time  0.18050098419189453  time spent setting step sizes:  0.0
+6036 Emax_of_step  -0.595347599901906 T_estimate  392.5810283127345  loop time  0.17734503746032715  time spent setting step sizes:  0.0
+6048 Emax_of_step  -0.5985600475129137 T_estimate  391.13124871353875  loop time  0.168471097946167  time spent setting step sizes:  0.0
+6060 Emax_of_step  -0.6014241084060209 T_estimate  388.86215488248104  loop time  0.1662890911102295  time spent setting step sizes:  0.0
+6072 Emax_of_step  -0.6054253412324966 T_estimate  391.05823237505314  loop time  0.1630690097808838  time spent setting step sizes:  0.0
+6084 Emax_of_step  -0.6089865788039595 T_estimate  390.7680653381471  loop time  0.16724085807800293  time spent setting step sizes:  0.0
+6096 Emax_of_step  -0.6111860909322541 T_estimate  389.7291799993754  loop time  0.16303801536560059  time spent setting step sizes:  0.0
+6108 Emax_of_step  -0.6126101634691755 T_estimate  386.06895207811203  loop time  0.16087007522583008  time spent setting step sizes:  0.0
+0 NS 6119 accept rate for MD_atom = 0.656250 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6120 Emax_of_step  -0.6161038933240003 T_estimate  385.128750369092  loop time  0.17247700691223145  time spent setting step sizes:  0.07314515113830566
+6132 Emax_of_step  -0.6196347425704959 T_estimate  384.40175170529807  loop time  0.16872191429138184  time spent setting step sizes:  0.0
+6144 Emax_of_step  -0.622148010995638 T_estimate  380.79256175828726  loop time  0.17273497581481934  time spent setting step sizes:  0.0
+6156 Emax_of_step  -0.624906404941482 T_estimate  379.5172490532829  loop time  0.172745943069458  time spent setting step sizes:  0.0
+6168 Emax_of_step  -0.6276008742014464 T_estimate  378.5139794943701  loop time  0.1564018726348877  time spent setting step sizes:  0.0
+6180 Emax_of_step  -0.6309649735914682 T_estimate  376.92937871232664  loop time  0.18066191673278809  time spent setting step sizes:  0.0
+6192 Emax_of_step  -0.6338803108992399 T_estimate  375.83521786134116  loop time  0.16499614715576172  time spent setting step sizes:  0.0
+6204 Emax_of_step  -0.6356537789268782 T_estimate  375.1388595327679  loop time  0.18182706832885742  time spent setting step sizes:  0.0
+6216 Emax_of_step  -0.6391593286930688 T_estimate  375.8584461002971  loop time  0.19032597541809082  time spent setting step sizes:  0.0
+6228 Emax_of_step  -0.6412834689248059 T_estimate  372.9000789969605  loop time  0.1793060302734375  time spent setting step sizes:  0.0
+0 NS 6239 accept rate for MD_atom = 0.643333 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6240 Emax_of_step  -0.6433016251144865 T_estimate  371.5284593247636  loop time  0.16409969329833984  time spent setting step sizes:  0.06860017776489258
+6252 Emax_of_step  -0.6453558721082376 T_estimate  370.3518137547283  loop time  0.1554100513458252  time spent setting step sizes:  0.0
+6264 Emax_of_step  -0.6483934313778069 T_estimate  372.23437125968  loop time  0.16907310485839844  time spent setting step sizes:  0.0
+6276 Emax_of_step  -0.6517281452665683 T_estimate  373.8183902707318  loop time  0.18173503875732422  time spent setting step sizes:  0.0
+6288 Emax_of_step  -0.6539714519261877 T_estimate  369.93021193953524  loop time  0.16184592247009277  time spent setting step sizes:  0.0
+6300 Emax_of_step  -0.6573147974157938 T_estimate  369.0234447889308  loop time  0.16874194145202637  time spent setting step sizes:  0.0
+6312 Emax_of_step  -0.6593797830407815 T_estimate  368.8200815474675  loop time  0.18063712120056152  time spent setting step sizes:  0.0
+6324 Emax_of_step  -0.661921330451451 T_estimate  366.64262294747334  loop time  0.16562986373901367  time spent setting step sizes:  0.0
+6336 Emax_of_step  -0.6649303315298153 T_estimate  366.53875856096647  loop time  0.16134309768676758  time spent setting step sizes:  0.0
+6348 Emax_of_step  -0.6668391508255674 T_estimate  363.4443439768359  loop time  0.16105294227600098  time spent setting step sizes:  0.0
+0 NS 6359 accept rate for MD_atom = 0.629375 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6360 Emax_of_step  -0.6695612368811049 T_estimate  362.0891901245308  loop time  0.15924310684204102  time spent setting step sizes:  0.06596183776855469
+6372 Emax_of_step  -0.6729794597673233 T_estimate  361.32456595994375  loop time  0.16313695907592773  time spent setting step sizes:  0.0
+6384 Emax_of_step  -0.6770501087593679 T_estimate  364.7685083125519  loop time  0.1741621494293213  time spent setting step sizes:  0.0
+6396 Emax_of_step  -0.6795040572313018 T_estimate  361.1210187190379  loop time  0.15997982025146484  time spent setting step sizes:  0.0
+6408 Emax_of_step  -0.6821450221325756 T_estimate  360.0311028997118  loop time  0.16744709014892578  time spent setting step sizes:  0.0
+6420 Emax_of_step  -0.6850466004584473 T_estimate  359.6017429498098  loop time  0.16983509063720703  time spent setting step sizes:  0.0
+6432 Emax_of_step  -0.6868332398193491 T_estimate  357.81081476320253  loop time  0.17066407203674316  time spent setting step sizes:  0.0
+6444 Emax_of_step  -0.6894008197517302 T_estimate  355.7911326251437  loop time  0.17148876190185547  time spent setting step sizes:  0.0
+6456 Emax_of_step  -0.6921988248268859 T_estimate  355.7598098209091  loop time  0.1658942699432373  time spent setting step sizes:  0.0
+6468 Emax_of_step  -0.6942632277035551 T_estimate  354.4635663373745  loop time  0.16204595565795898  time spent setting step sizes:  0.0
+0 NS 6479 accept rate for MD_atom = 0.639583 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6480 Emax_of_step  -0.6963528372099196 T_estimate  351.75560262184604  loop time  0.17364501953125  time spent setting step sizes:  0.0782468318939209
+6492 Emax_of_step  -0.6991905374425327 T_estimate  350.55409902847913  loop time  0.16987895965576172  time spent setting step sizes:  0.0
+6504 Emax_of_step  -0.7016764402980429 T_estimate  350.4174146660221  loop time  0.15821218490600586  time spent setting step sizes:  0.0
+6516 Emax_of_step  -0.7044021038914265 T_estimate  350.68469473837274  loop time  0.1609821319580078  time spent setting step sizes:  0.0
+6528 Emax_of_step  -0.7070953786188997 T_estimate  348.7646041572338  loop time  0.16385579109191895  time spent setting step sizes:  0.0
+6540 Emax_of_step  -0.710124202111777 T_estimate  349.09117348459597  loop time  0.17390680313110352  time spent setting step sizes:  0.0
+6552 Emax_of_step  -0.7127270941797222 T_estimate  347.68125158641834  loop time  0.16784310340881348  time spent setting step sizes:  0.0
+6564 Emax_of_step  -0.7159605625015705 T_estimate  349.6206040117311  loop time  0.16814804077148438  time spent setting step sizes:  0.0
+6576 Emax_of_step  -0.7195261794087423 T_estimate  350.3518490327223  loop time  0.17130708694458008  time spent setting step sizes:  0.0
+6588 Emax_of_step  -0.7222080631131189 T_estimate  348.92138415694836  loop time  0.16799187660217285  time spent setting step sizes:  0.0
+0 NS 6599 accept rate for MD_atom = 0.636250 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6600 Emax_of_step  -0.7238981646892874 T_estimate  347.5136818975532  loop time  0.16427135467529297  time spent setting step sizes:  0.06853461265563965
+6612 Emax_of_step  -0.7271233766497014 T_estimate  344.5441485085128  loop time  0.1631181240081787  time spent setting step sizes:  0.0
+6624 Emax_of_step  -0.729870684807149 T_estimate  344.424673604729  loop time  0.15513181686401367  time spent setting step sizes:  0.0
+6636 Emax_of_step  -0.7312045504282637 T_estimate  338.82032921812936  loop time  0.16599130630493164  time spent setting step sizes:  0.0
+6648 Emax_of_step  -0.734384352342741 T_estimate  339.48889265788733  loop time  0.16083407402038574  time spent setting step sizes:  0.0
+6660 Emax_of_step  -0.737268762621631 T_estimate  337.4001794631579  loop time  0.16999387741088867  time spent setting step sizes:  0.0
+6672 Emax_of_step  -0.7401502717956977 T_estimate  337.754550280001  loop time  0.16829991340637207  time spent setting step sizes:  0.0
+6684 Emax_of_step  -0.7422566398578871 T_estimate  336.1938638048198  loop time  0.16735291481018066  time spent setting step sizes:  0.0
+6696 Emax_of_step  -0.7454305585570268 T_estimate  337.3564182033969  loop time  0.1628570556640625  time spent setting step sizes:  0.0
+6708 Emax_of_step  -0.7478651681436032 T_estimate  335.93572197472184  loop time  0.16283488273620605  time spent setting step sizes:  0.0
+0 NS 6719 accept rate for MD_atom = 0.646250 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6720 Emax_of_step  -0.7492421070717927 T_estimate  332.7498431377556  loop time  0.164506196975708  time spent setting step sizes:  0.07755804061889648
+6732 Emax_of_step  -0.7517654513191018 T_estimate  333.1876975330699  loop time  0.16938376426696777  time spent setting step sizes:  0.0
+6744 Emax_of_step  -0.75429424935594 T_estimate  330.71447370259216  loop time  0.17778897285461426  time spent setting step sizes:  0.0
+6756 Emax_of_step  -0.7574859503647516 T_estimate  332.5778972606153  loop time  0.16501712799072266  time spent setting step sizes:  0.0
+6768 Emax_of_step  -0.7590281646425954 T_estimate  329.3959022456627  loop time  0.16427397727966309  time spent setting step sizes:  0.0
+6780 Emax_of_step  -0.7622948458632021 T_estimate  328.00552035755476  loop time  0.1776599884033203  time spent setting step sizes:  0.0
+6792 Emax_of_step  -0.7642530314032571 T_estimate  324.5833793117992  loop time  0.17218518257141113  time spent setting step sizes:  0.0
+6804 Emax_of_step  -0.7649857174574038 T_estimate  319.51802159510146  loop time  0.16619181632995605  time spent setting step sizes:  0.0
+6816 Emax_of_step  -0.7665842397077592 T_estimate  313.84534501200307  loop time  0.16638588905334473  time spent setting step sizes:  0.0
+6828 Emax_of_step  -0.7686385759669053 T_estimate  312.2551025140888  loop time  0.17610907554626465  time spent setting step sizes:  0.0
+0 NS 6839 accept rate for MD_atom = 0.642708 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6840 Emax_of_step  -0.7725184777071216 T_estimate  312.64112788006355  loop time  0.1738142967224121  time spent setting step sizes:  0.08103585243225098
+6852 Emax_of_step  -0.7752837992164219 T_estimate  313.287460675268  loop time  0.16791510581970215  time spent setting step sizes:  0.0
+6864 Emax_of_step  -0.7776136576633251 T_estimate  313.86020230040384  loop time  0.1716318130493164  time spent setting step sizes:  0.0
+6876 Emax_of_step  -0.7797054831582064 T_estimate  313.52287968506766  loop time  0.17188024520874023  time spent setting step sizes:  0.0
+6888 Emax_of_step  -0.7820297120567564 T_estimate  310.89514454131387  loop time  0.16582298278808594  time spent setting step sizes:  0.0
+6900 Emax_of_step  -0.784223218843092 T_estimate  308.3668714848815  loop time  0.1623857021331787  time spent setting step sizes:  0.0
+6912 Emax_of_step  -0.7858190430019525 T_estimate  307.0655977843325  loop time  0.16581416130065918  time spent setting step sizes:  0.0
+6924 Emax_of_step  -0.788739811957549 T_estimate  305.7488867915706  loop time  0.17202496528625488  time spent setting step sizes:  0.0
+6936 Emax_of_step  -0.79035988439732 T_estimate  304.720534784168  loop time  0.16933298110961914  time spent setting step sizes:  0.0
+6948 Emax_of_step  -0.79246396234892 T_estimate  304.05065622635277  loop time  0.1557168960571289  time spent setting step sizes:  0.0
+0 NS 6959 accept rate for MD_atom = 0.677708 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+6960 Emax_of_step  -0.7944621284368079 T_estimate  302.8527326046043  loop time  0.16061115264892578  time spent setting step sizes:  0.06716108322143555
+6972 Emax_of_step  -0.7972946500927212 T_estimate  300.9047403261863  loop time  0.1570110321044922  time spent setting step sizes:  0.0
+6984 Emax_of_step  -0.7998512566020676 T_estimate  302.55873185879915  loop time  0.16727495193481445  time spent setting step sizes:  0.0
+6996 Emax_of_step  -0.8019259028226772 T_estimate  302.2173456977494  loop time  0.17615795135498047  time spent setting step sizes:  0.0
+7008 Emax_of_step  -0.8035713560260274 T_estimate  301.4855470876952  loop time  0.17173981666564941  time spent setting step sizes:  0.0
+7020 Emax_of_step  -0.8063251102675868 T_estimate  299.7841546474069  loop time  0.16712594032287598  time spent setting step sizes:  0.0
+7032 Emax_of_step  -0.8086010136405527 T_estimate  299.9637781229784  loop time  0.1713700294494629  time spent setting step sizes:  0.0
+7044 Emax_of_step  -0.8100469574814545 T_estimate  297.0904686102303  loop time  0.1685020923614502  time spent setting step sizes:  0.0
+7056 Emax_of_step  -0.8111250845156178 T_estimate  295.6478890038671  loop time  0.15577316284179688  time spent setting step sizes:  0.0
+7068 Emax_of_step  -0.8133810934522591 T_estimate  292.81058885887  loop time  0.16881084442138672  time spent setting step sizes:  0.0
+0 NS 7079 accept rate for MD_atom = 0.681458 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+7080 Emax_of_step  -0.8145718509910281 T_estimate  287.5374007882681  loop time  0.18746614456176758  time spent setting step sizes:  0.0670480728149414
+7092 Emax_of_step  -0.8168364155706194 T_estimate  288.5013305183513  loop time  0.19207286834716797  time spent setting step sizes:  0.0
+7104 Emax_of_step  -0.8181549325275415 T_estimate  287.9084281625539  loop time  0.1753849983215332  time spent setting step sizes:  0.0
+7116 Emax_of_step  -0.8189801134870811 T_estimate  286.4624779440219  loop time  0.16092181205749512  time spent setting step sizes:  0.0
+7128 Emax_of_step  -0.8215635024501391 T_estimate  283.5762750775479  loop time  0.16908717155456543  time spent setting step sizes:  0.0
+7140 Emax_of_step  -0.8228631390882308 T_estimate  282.1769963014639  loop time  0.216508150100708  time spent setting step sizes:  0.0
+7152 Emax_of_step  -0.824969118690934 T_estimate  282.14247020653687  loop time  0.1637098789215088  time spent setting step sizes:  0.0
+7164 Emax_of_step  -0.8271681175972481 T_estimate  279.9140306754706  loop time  0.17090892791748047  time spent setting step sizes:  0.0
+7176 Emax_of_step  -0.8291653639941832 T_estimate  279.820897113246  loop time  0.17200994491577148  time spent setting step sizes:  0.0
+7188 Emax_of_step  -0.8301096832839463 T_estimate  275.15636961901356  loop time  0.16960716247558594  time spent setting step sizes:  0.0
+0 NS 7199 accept rate for MD_atom = 0.666458 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+7200 Emax_of_step  -0.8315722046869044 T_estimate  274.7922128645727  loop time  0.16577410697937012  time spent setting step sizes:  0.06567788124084473
+7212 Emax_of_step  -0.8335589590239153 T_estimate  273.6604279167541  loop time  0.1781010627746582  time spent setting step sizes:  0.0
+7224 Emax_of_step  -0.8355712857682656 T_estimate  272.52228724017107  loop time  0.17284870147705078  time spent setting step sizes:  0.0
+7236 Emax_of_step  -0.838423256171964 T_estimate  274.42968979925064  loop time  0.17345118522644043  time spent setting step sizes:  0.0
+7248 Emax_of_step  -0.8412167341614749 T_estimate  274.2856615707757  loop time  0.2166299819946289  time spent setting step sizes:  0.0
+7260 Emax_of_step  -0.844881199029649 T_estimate  275.4737356349776  loop time  0.19896388053894043  time spent setting step sizes:  0.0
+7272 Emax_of_step  -0.8462237819031387 T_estimate  273.28547266049003  loop time  0.1595630645751953  time spent setting step sizes:  0.0
+7284 Emax_of_step  -0.8473938581262188 T_estimate  271.603371579365  loop time  0.17067909240722656  time spent setting step sizes:  0.0
+7296 Emax_of_step  -0.8488343365173316 T_estimate  268.4620836566923  loop time  0.17057490348815918  time spent setting step sizes:  0.0
+7308 Emax_of_step  -0.8514420031126386 T_estimate  269.21639197861975  loop time  0.1712322235107422  time spent setting step sizes:  0.0
+0 NS 7319 accept rate for MD_atom = 0.689792 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+7320 Emax_of_step  -0.8527460962857389 T_estimate  268.2355942264658  loop time  0.15517711639404297  time spent setting step sizes:  0.06690573692321777
+7332 Emax_of_step  -0.8549101834037443 T_estimate  267.470733286421  loop time  0.17384099960327148  time spent setting step sizes:  0.0
+7344 Emax_of_step  -0.8574791530380155 T_estimate  267.8596756342936  loop time  0.17021703720092773  time spent setting step sizes:  0.0
+7356 Emax_of_step  -0.8608298635077034 T_estimate  268.6238958863644  loop time  0.16324710845947266  time spent setting step sizes:  0.0
+7368 Emax_of_step  -0.8634263350449868 T_estimate  268.11113597194014  loop time  0.17860984802246094  time spent setting step sizes:  0.0
+7380 Emax_of_step  -0.8656042734254474 T_estimate  265.9685263736438  loop time  0.16350793838500977  time spent setting step sizes:  0.0
+7392 Emax_of_step  -0.8685758214425505 T_estimate  266.24930581304864  loop time  0.1645829677581787  time spent setting step sizes:  0.0
+7404 Emax_of_step  -0.870557660275982 T_estimate  264.00006222795326  loop time  0.16873693466186523  time spent setting step sizes:  0.0
+7416 Emax_of_step  -0.8734202287827582 T_estimate  264.7398883027496  loop time  0.17145705223083496  time spent setting step sizes:  0.0
+7428 Emax_of_step  -0.8758071653827434 T_estimate  265.11784020186775  loop time  0.15620207786560059  time spent setting step sizes:  0.0
+0 NS 7439 accept rate for MD_atom = 0.697708 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+7440 Emax_of_step  -0.8781471932823434 T_estimate  266.33093218735104  loop time  0.16798615455627441  time spent setting step sizes:  0.06988191604614258
+7452 Emax_of_step  -0.8814469712957403 T_estimate  266.5928101929904  loop time  0.17256593704223633  time spent setting step sizes:  0.0
+7464 Emax_of_step  -0.8844125057564741 T_estimate  266.9252605136101  loop time  0.1637890338897705  time spent setting step sizes:  0.0
+7476 Emax_of_step  -0.8867718578688387 T_estimate  266.92022634524363  loop time  0.1679379940032959  time spent setting step sizes:  0.0
+7488 Emax_of_step  -0.889582934391172 T_estimate  267.9421453603906  loop time  0.16508197784423828  time spent setting step sizes:  0.0
+7500 Emax_of_step  -0.8916178100858604 T_estimate  266.6784393773747  loop time  0.17741894721984863  time spent setting step sizes:  0.0
+7512 Emax_of_step  -0.893809957736056 T_estimate  265.80868852950425  loop time  0.1669769287109375  time spent setting step sizes:  0.0
+7524 Emax_of_step  -0.8954489811164468 T_estimate  264.6349949324193  loop time  0.18294715881347656  time spent setting step sizes:  0.0
+7536 Emax_of_step  -0.8967479301952695 T_estimate  262.2135761856686  loop time  0.1545090675354004  time spent setting step sizes:  0.0
+7548 Emax_of_step  -0.898338329780904 T_estimate  260.0731842599547  loop time  0.17061090469360352  time spent setting step sizes:  0.0
+0 NS 7559 accept rate for MD_atom = 0.715833 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+7560 Emax_of_step  -0.901073707550212 T_estimate  259.50759838205465  loop time  0.16029691696166992  time spent setting step sizes:  0.0748751163482666
+7572 Emax_of_step  -0.9041786098474268 T_estimate  260.8299658742078  loop time  0.16161799430847168  time spent setting step sizes:  0.0
+7584 Emax_of_step  -0.9052571420943137 T_estimate  256.819953543705  loop time  0.1703801155090332  time spent setting step sizes:  0.0
+7596 Emax_of_step  -0.9061509751221093 T_estimate  255.84156884120182  loop time  0.15856695175170898  time spent setting step sizes:  0.0
+7608 Emax_of_step  -0.9079229034830434 T_estimate  253.8988222241405  loop time  0.16652297973632812  time spent setting step sizes:  0.0
+7620 Emax_of_step  -0.9094659372616661 T_estimate  252.41463539928915  loop time  0.17835402488708496  time spent setting step sizes:  0.0
+7632 Emax_of_step  -0.9116387699724685 T_estimate  253.0663986531262  loop time  0.16385579109191895  time spent setting step sizes:  0.0
+7644 Emax_of_step  -0.9126864418716674 T_estimate  250.48471639597886  loop time  0.1769721508026123  time spent setting step sizes:  0.0
+7656 Emax_of_step  -0.9153059048636644 T_estimate  249.81010198427919  loop time  0.17426800727844238  time spent setting step sizes:  0.0
+7668 Emax_of_step  -0.9171188991824212 T_estimate  248.5325495596686  loop time  0.17723989486694336  time spent setting step sizes:  0.0
+0 NS 7679 accept rate for MD_atom = 0.715417 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+7680 Emax_of_step  -0.9189987229576911 T_estimate  247.85035514725763  loop time  0.17131400108337402  time spent setting step sizes:  0.0735781192779541
+7692 Emax_of_step  -0.9208258193106323 T_estimate  245.55699107679962  loop time  0.18094086647033691  time spent setting step sizes:  0.0
+7704 Emax_of_step  -0.9224154920312256 T_estimate  244.7791838565235  loop time  0.17200303077697754  time spent setting step sizes:  0.0
+7716 Emax_of_step  -0.9241750117505385 T_estimate  245.50093547399553  loop time  0.1813650131225586  time spent setting step sizes:  0.0
+7728 Emax_of_step  -0.9255930691916205 T_estimate  244.1029507229953  loop time  0.1607210636138916  time spent setting step sizes:  0.0
+7740 Emax_of_step  -0.9277698145954567 T_estimate  243.0637767060944  loop time  0.17562103271484375  time spent setting step sizes:  0.0
+7752 Emax_of_step  -0.9302483433001656 T_estimate  241.93266688441005  loop time  0.17326879501342773  time spent setting step sizes:  0.0
+7764 Emax_of_step  -0.9316129462077705 T_estimate  241.84965261471993  loop time  0.18659424781799316  time spent setting step sizes:  0.0
+7776 Emax_of_step  -0.9333703234013632 T_estimate  241.53138178417666  loop time  0.20142674446105957  time spent setting step sizes:  0.0
+7788 Emax_of_step  -0.934197205090466 T_estimate  238.56587544066147  loop time  0.18302416801452637  time spent setting step sizes:  0.0
+0 NS 7799 accept rate for MD_atom = 0.713125 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+7800 Emax_of_step  -0.935864981324345 T_estimate  239.29035792841006  loop time  0.17315387725830078  time spent setting step sizes:  0.07081913948059082
+7812 Emax_of_step  -0.9371635513340117 T_estimate  238.89085110717542  loop time  0.16405606269836426  time spent setting step sizes:  0.0
+7824 Emax_of_step  -0.9389223133002481 T_estimate  239.84416486736066  loop time  0.16860675811767578  time spent setting step sizes:  0.0
+7836 Emax_of_step  -0.9412342403216902 T_estimate  237.6794465483646  loop time  0.1874101161956787  time spent setting step sizes:  0.0
+7848 Emax_of_step  -0.942192455937783 T_estimate  234.28182742572284  loop time  0.1607069969177246  time spent setting step sizes:  0.0
+7860 Emax_of_step  -0.9440890163248885 T_estimate  233.75698782783473  loop time  0.16065192222595215  time spent setting step sizes:  0.0
+7872 Emax_of_step  -0.9458026617810255 T_estimate  233.06686001438956  loop time  0.15491795539855957  time spent setting step sizes:  0.0
+7884 Emax_of_step  -0.9480840192013015 T_estimate  232.7647821416975  loop time  0.15829706192016602  time spent setting step sizes:  0.0
+7896 Emax_of_step  -0.9498977151348514 T_estimate  232.9492222744772  loop time  0.16360902786254883  time spent setting step sizes:  0.0
+7908 Emax_of_step  -0.951541537609165 T_estimate  231.95728993811483  loop time  0.17212510108947754  time spent setting step sizes:  0.0
+0 NS 7919 accept rate for MD_atom = 0.725208 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+7920 Emax_of_step  -0.9530604695854371 T_estimate  231.8859981565985  loop time  0.15625882148742676  time spent setting step sizes:  0.07024407386779785
+7932 Emax_of_step  -0.95480875728307 T_estimate  230.24622000569204  loop time  0.1742398738861084  time spent setting step sizes:  0.0
+7944 Emax_of_step  -0.9564784959633249 T_estimate  230.41233975445667  loop time  0.16717529296875  time spent setting step sizes:  0.0
+7956 Emax_of_step  -0.9593321105413218 T_estimate  231.35048585774305  loop time  0.1740710735321045  time spent setting step sizes:  0.0
+7968 Emax_of_step  -0.960781494044109 T_estimate  229.33971702816854  loop time  0.17601680755615234  time spent setting step sizes:  0.0
+7980 Emax_of_step  -0.9622563388123067 T_estimate  228.43488709146584  loop time  0.18787097930908203  time spent setting step sizes:  0.0
+7992 Emax_of_step  -0.9639599846765539 T_estimate  227.76451574740165  loop time  0.1902608871459961  time spent setting step sizes:  0.0
+8004 Emax_of_step  -0.965867791331853 T_estimate  227.37393940621894  loop time  0.1714792251586914  time spent setting step sizes:  0.0
+8016 Emax_of_step  -0.967858753503923 T_estimate  227.073669071759  loop time  0.17804598808288574  time spent setting step sizes:  0.0
+8028 Emax_of_step  -0.9693042449987608 T_estimate  225.09498467019333  loop time  0.16698002815246582  time spent setting step sizes:  0.0
+0 NS 8039 accept rate for MD_atom = 0.744375 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+8040 Emax_of_step  -0.9702658131270956 T_estimate  225.24648150387532  loop time  0.17127180099487305  time spent setting step sizes:  0.0751199722290039
+8052 Emax_of_step  -0.9727229413141217 T_estimate  226.79029894743059  loop time  0.19962692260742188  time spent setting step sizes:  0.0
+8064 Emax_of_step  -0.9745603307814346 T_estimate  225.95293588931355  loop time  0.17792105674743652  time spent setting step sizes:  0.0
+8076 Emax_of_step  -0.9763832525927386 T_estimate  226.90691931274844  loop time  0.17706012725830078  time spent setting step sizes:  0.0
+8088 Emax_of_step  -0.9774532412246664 T_estimate  225.41375013010583  loop time  0.1826639175415039  time spent setting step sizes:  0.0
+8100 Emax_of_step  -0.9790389392623524 T_estimate  225.50021619466287  loop time  0.19161009788513184  time spent setting step sizes:  0.0
+8112 Emax_of_step  -0.9807463815197183 T_estimate  226.5125502494526  loop time  0.17963290214538574  time spent setting step sizes:  0.0
+8124 Emax_of_step  -0.9819654793701449 T_estimate  225.62155628016467  loop time  0.17488718032836914  time spent setting step sizes:  0.0
+8136 Emax_of_step  -0.9833812447386825 T_estimate  224.90391022410876  loop time  0.1723799705505371  time spent setting step sizes:  0.0
+8148 Emax_of_step  -0.9850628136878771 T_estimate  224.55661508261178  loop time  0.1862168312072754  time spent setting step sizes:  0.0
+0 NS 8159 accept rate for MD_atom = 0.751458 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+8160 Emax_of_step  -0.9865948891417513 T_estimate  223.43150272683133  loop time  0.16185235977172852  time spent setting step sizes:  0.06842494010925293
+8172 Emax_of_step  -0.9884447362051008 T_estimate  223.75094868701046  loop time  0.19296979904174805  time spent setting step sizes:  0.0
+8184 Emax_of_step  -0.9893072886877571 T_estimate  222.9143207031396  loop time  0.18256711959838867  time spent setting step sizes:  0.0
+8196 Emax_of_step  -0.9906366784445156 T_estimate  222.7599970714207  loop time  0.16742491722106934  time spent setting step sizes:  0.0
+8208 Emax_of_step  -0.9918675029662133 T_estimate  222.38369100056767  loop time  0.17793679237365723  time spent setting step sizes:  0.0
+8220 Emax_of_step  -0.9931065794901779 T_estimate  221.40021535285675  loop time  0.15745306015014648  time spent setting step sizes:  0.0
+8232 Emax_of_step  -0.9941407652367875 T_estimate  219.19073981196647  loop time  0.16811108589172363  time spent setting step sizes:  0.0
+8244 Emax_of_step  -0.9956736102711609 T_estimate  217.58192773896366  loop time  0.1766660213470459  time spent setting step sizes:  0.0
+8256 Emax_of_step  -0.997483446402089 T_estimate  216.36029566873233  loop time  0.16070914268493652  time spent setting step sizes:  0.0
+8268 Emax_of_step  -0.9986159929814398 T_estimate  213.82657239578674  loop time  0.17192792892456055  time spent setting step sizes:  0.0
+0 NS 8279 accept rate for MD_atom = 0.728958 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+8280 Emax_of_step  -1.0001435245336616 T_estimate  214.29401788829537  loop time  0.16925764083862305  time spent setting step sizes:  0.0732421875
+8292 Emax_of_step  -1.002230942424665 T_estimate  214.85871781107866  loop time  0.16330218315124512  time spent setting step sizes:  0.0
+8304 Emax_of_step  -1.0043341162749209 T_estimate  215.07746804688168  loop time  0.16190791130065918  time spent setting step sizes:  0.0
+8316 Emax_of_step  -1.0057908126390684 T_estimate  214.4618486499141  loop time  0.16612696647644043  time spent setting step sizes:  0.0
+8328 Emax_of_step  -1.0072921431067656 T_estimate  214.3820697871879  loop time  0.19019603729248047  time spent setting step sizes:  0.0
+8340 Emax_of_step  -1.0085372899697713 T_estimate  212.66425289500935  loop time  0.18181800842285156  time spent setting step sizes:  0.0
+8352 Emax_of_step  -1.0101952936614882 T_estimate  210.5983121848287  loop time  0.1649761199951172  time spent setting step sizes:  0.0
+8364 Emax_of_step  -1.012016561638803 T_estimate  209.64481871626896  loop time  0.15681076049804688  time spent setting step sizes:  0.0
+8376 Emax_of_step  -1.0134209856421845 T_estimate  207.96359072862276  loop time  0.17007708549499512  time spent setting step sizes:  0.0
+8388 Emax_of_step  -1.0147439695439726 T_estimate  205.68276883396064  loop time  0.18552613258361816  time spent setting step sizes:  0.0
+0 NS 8399 accept rate for MD_atom = 0.761875 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+8400 Emax_of_step  -1.0172220476809515 T_estimate  205.74311374235762  loop time  0.1596977710723877  time spent setting step sizes:  0.07219409942626953
+8412 Emax_of_step  -1.0191465447653363 T_estimate  205.41097647168223  loop time  0.16242694854736328  time spent setting step sizes:  0.0
+8424 Emax_of_step  -1.0201613387476316 T_estimate  202.5296126426094  loop time  0.1761939525604248  time spent setting step sizes:  0.0
+8436 Emax_of_step  -1.0216503869758926 T_estimate  201.12766249224518  loop time  0.1691751480102539  time spent setting step sizes:  0.0
+8448 Emax_of_step  -1.0233399517016664 T_estimate  199.7520825048017  loop time  0.1722860336303711  time spent setting step sizes:  0.0
+8460 Emax_of_step  -1.0239831161258388 T_estimate  195.60794866544532  loop time  0.16945600509643555  time spent setting step sizes:  0.0
+8472 Emax_of_step  -1.0250241668676212 T_estimate  194.50044947048974  loop time  0.15543508529663086  time spent setting step sizes:  0.0
+8484 Emax_of_step  -1.0259482762274332 T_estimate  191.97345746891796  loop time  0.16810989379882812  time spent setting step sizes:  0.0
+8496 Emax_of_step  -1.0278336130547903 T_estimate  191.59298492970166  loop time  0.16762590408325195  time spent setting step sizes:  0.0
+8508 Emax_of_step  -1.0293432629081327 T_estimate  190.89343041473578  loop time  0.1686079502105713  time spent setting step sizes:  0.0
+0 NS 8519 accept rate for MD_atom = 0.764167 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+8520 Emax_of_step  -1.0305536544551313 T_estimate  189.41157843943037  loop time  0.15818333625793457  time spent setting step sizes:  0.06666874885559082
+8532 Emax_of_step  -1.0321055304434767 T_estimate  190.05359556240865  loop time  0.18067407608032227  time spent setting step sizes:  0.0
+8544 Emax_of_step  -1.033526169288063 T_estimate  189.70851383262283  loop time  0.1652078628540039  time spent setting step sizes:  0.0
+8556 Emax_of_step  -1.0347089154937095 T_estimate  188.4457334357593  loop time  0.17572999000549316  time spent setting step sizes:  0.0
+8568 Emax_of_step  -1.036154038038894 T_estimate  185.57532970721138  loop time  0.1699080467224121  time spent setting step sizes:  0.0
+8580 Emax_of_step  -1.0375328617683133 T_estimate  185.3644132853367  loop time  0.1604909896850586  time spent setting step sizes:  0.0
+8592 Emax_of_step  -1.0389181668246175 T_estimate  186.24565092048596  loop time  0.16777324676513672  time spent setting step sizes:  0.0
+8604 Emax_of_step  -1.040229882335439 T_estimate  186.2302345290097  loop time  0.16070079803466797  time spent setting step sizes:  0.0
+8616 Emax_of_step  -1.04177674771339 T_estimate  185.65333889249925  loop time  0.1641530990600586  time spent setting step sizes:  0.0
+8628 Emax_of_step  -1.0424236843072943 T_estimate  184.3884547969886  loop time  0.16808080673217773  time spent setting step sizes:  0.0
+0 NS 8639 accept rate for MD_atom = 0.780625 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+8640 Emax_of_step  -1.043557963998383 T_estimate  183.58987256907574  loop time  0.17778491973876953  time spent setting step sizes:  0.07577109336853027
+8652 Emax_of_step  -1.0445808926728128 T_estimate  182.11888354234037  loop time  0.17743515968322754  time spent setting step sizes:  0.0
+8664 Emax_of_step  -1.045468030873523 T_estimate  179.93275327051217  loop time  0.1783459186553955  time spent setting step sizes:  0.0
+8676 Emax_of_step  -1.0471284686728497 T_estimate  180.03162952866174  loop time  0.17819499969482422  time spent setting step sizes:  0.0
+8688 Emax_of_step  -1.0486104438765569 T_estimate  179.34793162703608  loop time  0.16292786598205566  time spent setting step sizes:  0.0
+8700 Emax_of_step  -1.050024603671463 T_estimate  179.0270621405048  loop time  0.17937612533569336  time spent setting step sizes:  0.0
+8712 Emax_of_step  -1.052043816282925 T_estimate  179.4646558460959  loop time  0.1711890697479248  time spent setting step sizes:  0.0
+8724 Emax_of_step  -1.0529477102611295 T_estimate  178.86137398247385  loop time  0.17269611358642578  time spent setting step sizes:  0.0
+8736 Emax_of_step  -1.0540985006938417 T_estimate  177.71911393216772  loop time  0.18899989128112793  time spent setting step sizes:  0.0
+8748 Emax_of_step  -1.0552519389903798 T_estimate  176.28184100310153  loop time  0.19419002532958984  time spent setting step sizes:  0.0
+0 NS 8759 accept rate for MD_atom = 0.768542 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+8760 Emax_of_step  -1.05679970947133 T_estimate  175.43971338630067  loop time  0.18044400215148926  time spent setting step sizes:  0.06997990608215332
+8772 Emax_of_step  -1.057638653395543 T_estimate  174.29651807903608  loop time  0.16074204444885254  time spent setting step sizes:  0.0
+8784 Emax_of_step  -1.0586455277269733 T_estimate  174.327650961768  loop time  0.1872270107269287  time spent setting step sizes:  0.0
+8796 Emax_of_step  -1.0596886298171426 T_estimate  173.641560706349  loop time  0.1714620590209961  time spent setting step sizes:  0.0
+8808 Emax_of_step  -1.0607422832571274 T_estimate  173.43539230730966  loop time  0.16624689102172852  time spent setting step sizes:  0.0
+8820 Emax_of_step  -1.0621839265724433 T_estimate  173.56550990444  loop time  0.17542099952697754  time spent setting step sizes:  0.0
+8832 Emax_of_step  -1.0636464422045038 T_estimate  172.95050769333605  loop time  0.19016790390014648  time spent setting step sizes:  0.0
+8844 Emax_of_step  -1.0647441785991942 T_estimate  171.75284306056506  loop time  0.17046523094177246  time spent setting step sizes:  0.0
+8856 Emax_of_step  -1.0659393489922757 T_estimate  172.07839227452925  loop time  0.17176389694213867  time spent setting step sizes:  0.0
+8868 Emax_of_step  -1.067017975310991 T_estimate  170.69791604152627  loop time  0.1799778938293457  time spent setting step sizes:  0.0
+0 NS 8879 accept rate for MD_atom = 0.784167 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+8880 Emax_of_step  -1.067807740263794 T_estimate  168.45339166372284  loop time  0.17869114875793457  time spent setting step sizes:  0.07361102104187012
+8892 Emax_of_step  -1.068883621207533 T_estimate  167.0648160737286  loop time  0.16506695747375488  time spent setting step sizes:  0.0
+8904 Emax_of_step  -1.0700173325164861 T_estimate  166.4503377595069  loop time  0.1821460723876953  time spent setting step sizes:  0.0
+8916 Emax_of_step  -1.071536383435196 T_estimate  165.85049162951665  loop time  0.18314886093139648  time spent setting step sizes:  0.0
+8928 Emax_of_step  -1.0724452489485674 T_estimate  165.20619364077584  loop time  0.18064403533935547  time spent setting step sizes:  0.0
+8940 Emax_of_step  -1.073397779255306 T_estimate  164.18548784845834  loop time  0.17167091369628906  time spent setting step sizes:  0.0
+8952 Emax_of_step  -1.074371056854173 T_estimate  161.31346226605783  loop time  0.16366219520568848  time spent setting step sizes:  0.0
+8964 Emax_of_step  -1.0748924677775675 T_estimate  160.2266990863966  loop time  0.17840003967285156  time spent setting step sizes:  0.0
+8976 Emax_of_step  -1.0758704203935217 T_estimate  159.48269359283321  loop time  0.17834091186523438  time spent setting step sizes:  0.0
+8988 Emax_of_step  -1.0771392201503585 T_estimate  159.63267299780813  loop time  0.1744680404663086  time spent setting step sizes:  0.0
+0 NS 8999 accept rate for MD_atom = 0.775000 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9000 Emax_of_step  -1.0783522040302644 T_estimate  157.7626554706938  loop time  0.18062901496887207  time spent setting step sizes:  0.07368969917297363
+9012 Emax_of_step  -1.0793940564424438 T_estimate  156.89430078267245  loop time  0.1699671745300293  time spent setting step sizes:  0.0
+9024 Emax_of_step  -1.0805504336483234 T_estimate  156.3949092733728  loop time  0.17525982856750488  time spent setting step sizes:  0.0
+9036 Emax_of_step  -1.0814175185287007 T_estimate  156.05837566251887  loop time  0.1760711669921875  time spent setting step sizes:  0.0
+9048 Emax_of_step  -1.082575140267101 T_estimate  154.37898315405374  loop time  0.1735670566558838  time spent setting step sizes:  0.0
+9060 Emax_of_step  -1.0837905141846076 T_estimate  154.18067540293868  loop time  0.1868000030517578  time spent setting step sizes:  0.0
+9072 Emax_of_step  -1.0846020569633164 T_estimate  152.07326106106635  loop time  0.1709129810333252  time spent setting step sizes:  0.0
+9084 Emax_of_step  -1.0856351480857263 T_estimate  152.01894292358222  loop time  0.16588521003723145  time spent setting step sizes:  0.0
+9096 Emax_of_step  -1.0860217876156204 T_estimate  150.55580018614734  loop time  0.1768178939819336  time spent setting step sizes:  0.0
+9108 Emax_of_step  -1.0873474093794224 T_estimate  149.51851603708405  loop time  0.1772308349609375  time spent setting step sizes:  0.0
+0 NS 9119 accept rate for MD_atom = 0.790625 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9120 Emax_of_step  -1.088648829254612 T_estimate  149.63167565623849  loop time  0.17273497581481934  time spent setting step sizes:  0.0683131217956543
+9132 Emax_of_step  -1.0897002747379507 T_estimate  149.616496231631  loop time  0.17619085311889648  time spent setting step sizes:  0.0
+9144 Emax_of_step  -1.0903952764624218 T_estimate  148.68989697820888  loop time  0.16321825981140137  time spent setting step sizes:  0.0
+9156 Emax_of_step  -1.0911985920021543 T_estimate  147.16776746811814  loop time  0.16571807861328125  time spent setting step sizes:  0.0
+9168 Emax_of_step  -1.0923019593477596 T_estimate  145.51533097970943  loop time  0.16708087921142578  time spent setting step sizes:  0.0
+9180 Emax_of_step  -1.094041568299363 T_estimate  146.6794050367785  loop time  0.17457985877990723  time spent setting step sizes:  0.0
+9192 Emax_of_step  -1.0954021917203658 T_estimate  147.0223126493109  loop time  0.16838312149047852  time spent setting step sizes:  0.0
+9204 Emax_of_step  -1.0963202996680437 T_estimate  146.6051516987351  loop time  0.17516803741455078  time spent setting step sizes:  0.0
+9216 Emax_of_step  -1.0978520236003153 T_estimate  146.84264707712046  loop time  0.16444683074951172  time spent setting step sizes:  0.0
+9228 Emax_of_step  -1.0992033506383772 T_estimate  147.2055204377586  loop time  0.19134306907653809  time spent setting step sizes:  0.0
+0 NS 9239 accept rate for MD_atom = 0.793542 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9240 Emax_of_step  -1.1002092186932697 T_estimate  146.95664791942127  loop time  0.20086002349853516  time spent setting step sizes:  0.0778360366821289
+9252 Emax_of_step  -1.101176548434227 T_estimate  145.8212919741742  loop time  0.2552199363708496  time spent setting step sizes:  0.0
+9264 Emax_of_step  -1.1024336440267515 T_estimate  145.52640938411122  loop time  0.18095111846923828  time spent setting step sizes:  0.0
+9276 Emax_of_step  -1.1030521796802213 T_estimate  144.8076238979768  loop time  0.16106271743774414  time spent setting step sizes:  0.0
+9288 Emax_of_step  -1.1041530776965014 T_estimate  143.44049211551726  loop time  0.1811809539794922  time spent setting step sizes:  0.0
+9300 Emax_of_step  -1.1047485568527342 T_estimate  140.8487497399092  loop time  0.16347908973693848  time spent setting step sizes:  0.0
+9312 Emax_of_step  -1.1054444264827552 T_estimate  139.72098339710868  loop time  0.16162610054016113  time spent setting step sizes:  0.0
+9324 Emax_of_step  -1.1064389331897806 T_estimate  139.52781853848745  loop time  0.17514920234680176  time spent setting step sizes:  0.0
+9336 Emax_of_step  -1.1072961910733659 T_estimate  139.0811998312336  loop time  0.16346168518066406  time spent setting step sizes:  0.0
+9348 Emax_of_step  -1.1081514722117471 T_estimate  137.5314548380155  loop time  0.17129015922546387  time spent setting step sizes:  0.0
+0 NS 9359 accept rate for MD_atom = 0.794792 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9360 Emax_of_step  -1.109299608312881 T_estimate  137.58921602918497  loop time  0.17195987701416016  time spent setting step sizes:  0.06563401222229004
+9372 Emax_of_step  -1.1101556397977437 T_estimate  135.58230917838495  loop time  0.1729130744934082  time spent setting step sizes:  0.0
+9384 Emax_of_step  -1.1109793672171113 T_estimate  135.0918970955388  loop time  0.17275595664978027  time spent setting step sizes:  0.0
+9396 Emax_of_step  -1.1117824386637138 T_estimate  134.23461534983605  loop time  0.16589093208312988  time spent setting step sizes:  0.0
+9408 Emax_of_step  -1.1127012240207588 T_estimate  131.76872841792132  loop time  0.16338610649108887  time spent setting step sizes:  0.0
+9420 Emax_of_step  -1.1142064871477224 T_estimate  131.91029752603092  loop time  0.18366694450378418  time spent setting step sizes:  0.0
+9432 Emax_of_step  -1.115035959777837 T_estimate  130.9192839874754  loop time  0.18040704727172852  time spent setting step sizes:  0.0
+9444 Emax_of_step  -1.1157427449955046 T_estimate  129.9095113620943  loop time  0.1816089153289795  time spent setting step sizes:  0.0
+9456 Emax_of_step  -1.116774081515397 T_estimate  130.27957319940225  loop time  0.16732215881347656  time spent setting step sizes:  0.0
+9468 Emax_of_step  -1.1179771306899455 T_estimate  130.68637763171918  loop time  0.16611576080322266  time spent setting step sizes:  0.0
+0 NS 9479 accept rate for MD_atom = 0.798125 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9480 Emax_of_step  -1.11869472444954 T_estimate  130.36607753125207  loop time  0.18143749237060547  time spent setting step sizes:  0.06982278823852539
+9492 Emax_of_step  -1.1194108211236729 T_estimate  128.5392594011934  loop time  0.1717228889465332  time spent setting step sizes:  0.0
+9504 Emax_of_step  -1.1201105741682185 T_estimate  127.96086669932292  loop time  0.16904306411743164  time spent setting step sizes:  0.0
+9516 Emax_of_step  -1.1206962022368394 T_estimate  126.63009404126797  loop time  0.19370388984680176  time spent setting step sizes:  0.0
+9528 Emax_of_step  -1.1212672696348889 T_estimate  125.6455061163897  loop time  0.16802191734313965  time spent setting step sizes:  0.0
+9540 Emax_of_step  -1.1215998851191007 T_estimate  123.86419697622513  loop time  0.17163324356079102  time spent setting step sizes:  0.0
+9552 Emax_of_step  -1.1228552639155962 T_estimate  124.10419032519447  loop time  0.17262482643127441  time spent setting step sizes:  0.0
+9564 Emax_of_step  -1.123745079493699 T_estimate  123.19130699669594  loop time  0.17224907875061035  time spent setting step sizes:  0.0
+9576 Emax_of_step  -1.1245374168964213 T_estimate  122.45357192760383  loop time  0.17791080474853516  time spent setting step sizes:  0.0
+9588 Emax_of_step  -1.1252393957832905 T_estimate  121.47414480547239  loop time  0.18147516250610352  time spent setting step sizes:  0.0
+0 NS 9599 accept rate for MD_atom = 0.787708 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9600 Emax_of_step  -1.125811638571407 T_estimate  120.51880190119621  loop time  0.16973280906677246  time spent setting step sizes:  0.07294321060180664
+9612 Emax_of_step  -1.1268087721210625 T_estimate  119.2099716670503  loop time  0.18251299858093262  time spent setting step sizes:  0.0
+9624 Emax_of_step  -1.127944257658979 T_estimate  119.85205374706027  loop time  0.17255091667175293  time spent setting step sizes:  0.0
+9636 Emax_of_step  -1.1283113098088458 T_estimate  118.7817902030355  loop time  0.16600298881530762  time spent setting step sizes:  0.0
+9648 Emax_of_step  -1.1291631414542977 T_estimate  119.07023807557812  loop time  0.17792606353759766  time spent setting step sizes:  0.0
+9660 Emax_of_step  -1.1299159714415563 T_estimate  118.25859784835488  loop time  0.16712498664855957  time spent setting step sizes:  0.0
+9672 Emax_of_step  -1.1308384539248046 T_estimate  117.41541463062848  loop time  0.1648409366607666  time spent setting step sizes:  0.0
+9684 Emax_of_step  -1.131364875909407 T_estimate  116.81199835125605  loop time  0.16920208930969238  time spent setting step sizes:  0.0
+9696 Emax_of_step  -1.1322860518779267 T_estimate  115.79639052580787  loop time  0.1614079475402832  time spent setting step sizes:  0.0
+9708 Emax_of_step  -1.1333027872047172 T_estimate  115.15446395779654  loop time  0.1687321662902832  time spent setting step sizes:  0.0
+0 NS 9719 accept rate for MD_atom = 0.815625 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9720 Emax_of_step  -1.1341808690779742 T_estimate  114.11160707444536  loop time  0.18323755264282227  time spent setting step sizes:  0.06969213485717773
+9732 Emax_of_step  -1.1349114237435414 T_estimate  113.51798420739011  loop time  0.16618609428405762  time spent setting step sizes:  0.0
+9744 Emax_of_step  -1.1356427506830067 T_estimate  113.01050888588726  loop time  0.16786718368530273  time spent setting step sizes:  0.0
+9756 Emax_of_step  -1.1361206480607113 T_estimate  111.57132709791128  loop time  0.16726303100585938  time spent setting step sizes:  0.0
+9768 Emax_of_step  -1.136783574713169 T_estimate  111.07378836115984  loop time  0.17151188850402832  time spent setting step sizes:  0.0
+9780 Emax_of_step  -1.1373472708343857 T_estimate  110.31836294587382  loop time  0.17579293251037598  time spent setting step sizes:  0.0
+9792 Emax_of_step  -1.1381988061530255 T_estimate  110.37928896901016  loop time  0.19234824180603027  time spent setting step sizes:  0.0
+9804 Emax_of_step  -1.1390243398689552 T_estimate  109.97363528927715  loop time  0.16515278816223145  time spent setting step sizes:  0.0
+9816 Emax_of_step  -1.1398150763798818 T_estimate  109.16537381832154  loop time  0.17571187019348145  time spent setting step sizes:  0.0
+9828 Emax_of_step  -1.1406283289059063 T_estimate  108.43124311327286  loop time  0.17197322845458984  time spent setting step sizes:  0.0
+0 NS 9839 accept rate for MD_atom = 0.799583 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9840 Emax_of_step  -1.1414097810769377 T_estimate  107.77984859643938  loop time  0.17333626747131348  time spent setting step sizes:  0.0669867992401123
+9852 Emax_of_step  -1.1422333763454837 T_estimate  107.55696549522315  loop time  0.1719648838043213  time spent setting step sizes:  0.0
+9864 Emax_of_step  -1.1427496692974901 T_estimate  106.30597604738043  loop time  0.17518997192382812  time spent setting step sizes:  0.0
+9876 Emax_of_step  -1.143640439073616 T_estimate  106.7503436255724  loop time  0.17912912368774414  time spent setting step sizes:  0.0
+9888 Emax_of_step  -1.1443413188665408 T_estimate  105.79788246660158  loop time  0.17597174644470215  time spent setting step sizes:  0.0
+9900 Emax_of_step  -1.1450800524587874 T_estimate  105.44973979340334  loop time  0.18330025672912598  time spent setting step sizes:  0.0
+9912 Emax_of_step  -1.1455829428644155 T_estimate  104.45963298294325  loop time  0.1805586814880371  time spent setting step sizes:  0.0
+9924 Emax_of_step  -1.1462988259384486 T_estimate  103.33003454142934  loop time  0.17685317993164062  time spent setting step sizes:  0.0
+9936 Emax_of_step  -1.1470097158167434 T_estimate  103.39331760702773  loop time  0.16994404792785645  time spent setting step sizes:  0.0
+9948 Emax_of_step  -1.1476249408671335 T_estimate  102.90907596930244  loop time  0.18289875984191895  time spent setting step sizes:  0.0
+0 NS 9959 accept rate for MD_atom = 0.805208 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+9960 Emax_of_step  -1.1484056060781496 T_estimate  103.14825701544812  loop time  0.17327427864074707  time spent setting step sizes:  0.0771939754486084
+9972 Emax_of_step  -1.1495367444482665 T_estimate  103.41711945593586  loop time  0.17511606216430664  time spent setting step sizes:  0.0
+9984 Emax_of_step  -1.150272071125115 T_estimate  102.89534041172992  loop time  0.17424774169921875  time spent setting step sizes:  0.0
+9996 Emax_of_step  -1.1507611413906231 T_estimate  101.9114243891848  loop time  0.17056632041931152  time spent setting step sizes:  0.0
+10008 Emax_of_step  -1.1514002400323158 T_estimate  101.03571761443682  loop time  0.18881893157958984  time spent setting step sizes:  0.0
+10020 Emax_of_step  -1.1523084775015482 T_estimate  101.06153858411125  loop time  0.17957186698913574  time spent setting step sizes:  0.0
+10032 Emax_of_step  -1.1527404336843143 T_estimate  100.15183533123644  loop time  0.18823719024658203  time spent setting step sizes:  0.0
+10044 Emax_of_step  -1.1530906771022025 T_estimate  99.44933721394771  loop time  0.16729974746704102  time spent setting step sizes:  0.0
+10056 Emax_of_step  -1.1537246469740041 T_estimate  98.52380162279258  loop time  0.16348528861999512  time spent setting step sizes:  0.0
+10068 Emax_of_step  -1.1542882620541146 T_estimate  97.55964866215864  loop time  0.16501665115356445  time spent setting step sizes:  0.0
+0 NS 10079 accept rate for MD_atom = 0.816875 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+10080 Emax_of_step  -1.1546815671098305 T_estimate  96.99726547456804  loop time  0.176591157913208  time spent setting step sizes:  0.07507205009460449
+10092 Emax_of_step  -1.1555456603693026 T_estimate  97.45175862887395  loop time  0.17127490043640137  time spent setting step sizes:  0.0
+10104 Emax_of_step  -1.1563520960339904 T_estimate  96.9004317358472  loop time  0.17801499366760254  time spent setting step sizes:  0.0
+10116 Emax_of_step  -1.1568092744485152 T_estimate  95.91124945250434  loop time  0.16614294052124023  time spent setting step sizes:  0.0
+10128 Emax_of_step  -1.1575685688246005 T_estimate  95.51411948012077  loop time  0.17192816734313965  time spent setting step sizes:  0.0
+10140 Emax_of_step  -1.1584210871493104 T_estimate  95.31328975045648  loop time  0.18041086196899414  time spent setting step sizes:  0.0
+10152 Emax_of_step  -1.1589210689499434 T_estimate  95.25259196092638  loop time  0.173112154006958  time spent setting step sizes:  0.0
+10164 Emax_of_step  -1.1592517745152848 T_estimate  94.28176064360936  loop time  0.16692185401916504  time spent setting step sizes:  0.0
+10176 Emax_of_step  -1.1600084059066331 T_estimate  93.38765931684877  loop time  0.18089604377746582  time spent setting step sizes:  0.0
+10188 Emax_of_step  -1.1605939706073862 T_estimate  91.76498436555637  loop time  0.16657209396362305  time spent setting step sizes:  0.0
+0 NS 10199 accept rate for MD_atom = 0.806458 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+10200 Emax_of_step  -1.1613792593438916 T_estimate  91.27385321632822  loop time  0.1591510772705078  time spent setting step sizes:  0.07271790504455566
+10212 Emax_of_step  -1.1620746906921502 T_estimate  90.53121105538493  loop time  0.17295598983764648  time spent setting step sizes:  0.0
+10224 Emax_of_step  -1.162668523961387 T_estimate  89.33732444556715  loop time  0.1617298126220703  time spent setting step sizes:  0.0
+10236 Emax_of_step  -1.163082652218969 T_estimate  88.0511879715407  loop time  0.17226219177246094  time spent setting step sizes:  0.0
+10248 Emax_of_step  -1.1639651958152406 T_estimate  88.1721288904842  loop time  0.1610398292541504  time spent setting step sizes:  0.0
+10260 Emax_of_step  -1.1642655005147924 T_estimate  87.2275445303137  loop time  0.1676342487335205  time spent setting step sizes:  0.0
+10272 Emax_of_step  -1.1647981198209063 T_estimate  86.52003907994235  loop time  0.16988396644592285  time spent setting step sizes:  0.0
+10284 Emax_of_step  -1.1652501772536414 T_estimate  85.96282989125254  loop time  0.16795587539672852  time spent setting step sizes:  0.0
+10296 Emax_of_step  -1.1664478296582141 T_estimate  86.60243648522665  loop time  0.18809103965759277  time spent setting step sizes:  0.0
+10308 Emax_of_step  -1.1668587967173782 T_estimate  86.21197322609598  loop time  0.18040990829467773  time spent setting step sizes:  0.0
+0 NS 10319 accept rate for MD_atom = 0.806458 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+10320 Emax_of_step  -1.1673136528862718 T_estimate  85.62616527803941  loop time  0.17107510566711426  time spent setting step sizes:  0.07305288314819336
+10332 Emax_of_step  -1.1680353527911003 T_estimate  85.48979303097248  loop time  0.15675902366638184  time spent setting step sizes:  0.0
+10344 Emax_of_step  -1.1684839099501003 T_estimate  84.80858754106642  loop time  0.16228818893432617  time spent setting step sizes:  0.0
+10356 Emax_of_step  -1.1691139679771685 T_estimate  84.21280656093523  loop time  0.16996192932128906  time spent setting step sizes:  0.0
+10368 Emax_of_step  -1.1694468265597597 T_estimate  83.42547336544152  loop time  0.17548203468322754  time spent setting step sizes:  0.0
+10380 Emax_of_step  -1.169939232449165 T_estimate  82.653892031041  loop time  0.16437792778015137  time spent setting step sizes:  0.0
+10392 Emax_of_step  -1.170802383900572 T_estimate  82.99382434869909  loop time  0.15944409370422363  time spent setting step sizes:  0.0
+10404 Emax_of_step  -1.17155047184012 T_estimate  82.80333241794114  loop time  0.1731119155883789  time spent setting step sizes:  0.0
+10416 Emax_of_step  -1.1723986680516787 T_estimate  82.24451079936257  loop time  0.16670918464660645  time spent setting step sizes:  0.0
+10428 Emax_of_step  -1.1727728423893375 T_estimate  81.04146541761645  loop time  0.17385077476501465  time spent setting step sizes:  0.0
+0 NS 10439 accept rate for MD_atom = 0.830208 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+10440 Emax_of_step  -1.1732528668143747 T_estimate  80.79462016015998  loop time  0.17313003540039062  time spent setting step sizes:  0.07066798210144043
+10452 Emax_of_step  -1.1740516316885514 T_estimate  80.9743970320468  loop time  0.17664313316345215  time spent setting step sizes:  0.0
+10464 Emax_of_step  -1.1743600380074988 T_estimate  79.24156071184566  loop time  0.1559460163116455  time spent setting step sizes:  0.0
+10476 Emax_of_step  -1.1750187288738054 T_estimate  79.13730442131586  loop time  0.18073701858520508  time spent setting step sizes:  0.0
+10488 Emax_of_step  -1.1758422227961645 T_estimate  79.17829318607663  loop time  0.1587388515472412  time spent setting step sizes:  0.0
+10500 Emax_of_step  -1.1766702317510067 T_estimate  79.45095755590683  loop time  0.16957807540893555  time spent setting step sizes:  0.0
+10512 Emax_of_step  -1.177160903811627 T_estimate  79.24462318997836  loop time  0.15975379943847656  time spent setting step sizes:  0.0
+10524 Emax_of_step  -1.1776439464474646 T_estimate  79.25041157018156  loop time  0.17149114608764648  time spent setting step sizes:  0.0
+10536 Emax_of_step  -1.178123451566009 T_estimate  79.2165205265274  loop time  0.16906189918518066  time spent setting step sizes:  0.0
+10548 Emax_of_step  -1.1786129399147116 T_estimate  78.60532352965721  loop time  0.1587061882019043  time spent setting step sizes:  0.0
+0 NS 10559 accept rate for MD_atom = 0.822917 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+10560 Emax_of_step  -1.1791601853657698 T_estimate  77.95842372560779  loop time  0.1664741039276123  time spent setting step sizes:  0.06691193580627441
+10572 Emax_of_step  -1.1795374003261807 T_estimate  77.31616156063139  loop time  0.17089104652404785  time spent setting step sizes:  0.0
+10584 Emax_of_step  -1.1799544989809874 T_estimate  76.95305232527836  loop time  0.16208982467651367  time spent setting step sizes:  0.0
+10596 Emax_of_step  -1.1807570677417827 T_estimate  76.95049316476835  loop time  0.17812204360961914  time spent setting step sizes:  0.0
+10608 Emax_of_step  -1.181593312154719 T_estimate  77.1384624804009  loop time  0.16288495063781738  time spent setting step sizes:  0.0
+10620 Emax_of_step  -1.1820357437673945 T_estimate  76.3182758682916  loop time  0.1695690155029297  time spent setting step sizes:  0.0
+10632 Emax_of_step  -1.1826777366222039 T_estimate  76.17499674490257  loop time  0.16499805450439453  time spent setting step sizes:  0.0
+10644 Emax_of_step  -1.1833928277188868 T_estimate  76.0541370605003  loop time  0.19197487831115723  time spent setting step sizes:  0.0
+10656 Emax_of_step  -1.183912292928131 T_estimate  75.81604912808157  loop time  0.18712997436523438  time spent setting step sizes:  0.0
+10668 Emax_of_step  -1.1843890971859758 T_estimate  75.18897632546448  loop time  0.16280913352966309  time spent setting step sizes:  0.0
+0 NS 10679 accept rate for MD_atom = 0.825417 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+10680 Emax_of_step  -1.1850832881178852 T_estimate  75.50399332672829  loop time  0.1638798713684082  time spent setting step sizes:  0.07446503639221191
+10692 Emax_of_step  -1.1854333054268829 T_estimate  74.58302553294985  loop time  0.1849689483642578  time spent setting step sizes:  0.0
+10704 Emax_of_step  -1.1857572960839506 T_estimate  73.81368532016596  loop time  0.17734909057617188  time spent setting step sizes:  0.0
+10716 Emax_of_step  -1.1862193045792544 T_estimate  73.05425658577678  loop time  0.16629981994628906  time spent setting step sizes:  0.0
+10728 Emax_of_step  -1.1868352920543421 T_estimate  72.85262280498449  loop time  0.1630382537841797  time spent setting step sizes:  0.0
+10740 Emax_of_step  -1.1871424133199915 T_estimate  72.24718815403608  loop time  0.17641997337341309  time spent setting step sizes:  0.0
+10752 Emax_of_step  -1.1878465905620412 T_estimate  72.42222258613147  loop time  0.18178200721740723  time spent setting step sizes:  0.0
+10764 Emax_of_step  -1.188277640262769 T_estimate  72.23495132992157  loop time  0.1833488941192627  time spent setting step sizes:  0.0
+10776 Emax_of_step  -1.188670857678601 T_estimate  71.93158862936272  loop time  0.18120598793029785  time spent setting step sizes:  0.0
+10788 Emax_of_step  -1.18923582777227 T_estimate  71.9794768297939  loop time  0.16868209838867188  time spent setting step sizes:  0.0
+0 NS 10799 accept rate for MD_atom = 0.821250 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+10800 Emax_of_step  -1.1896291745377072 T_estimate  70.97842180548082  loop time  0.17885518074035645  time spent setting step sizes:  0.07792472839355469
+10812 Emax_of_step  -1.1902228274390259 T_estimate  70.92623481605814  loop time  0.16755986213684082  time spent setting step sizes:  0.0
+10824 Emax_of_step  -1.1905416405073477 T_estimate  70.02470777878248  loop time  0.16907429695129395  time spent setting step sizes:  0.0
+10836 Emax_of_step  -1.1910212702344265 T_estimate  69.62647112088408  loop time  0.1619737148284912  time spent setting step sizes:  0.0
+10848 Emax_of_step  -1.1914938776663213 T_estimate  69.35475819490678  loop time  0.17365813255310059  time spent setting step sizes:  0.0
+10860 Emax_of_step  -1.1918604547040206 T_estimate  68.94638462879719  loop time  0.16917705535888672  time spent setting step sizes:  0.0
+10872 Emax_of_step  -1.1925214515977087 T_estimate  69.00545691397302  loop time  0.16854190826416016  time spent setting step sizes:  0.0
+10884 Emax_of_step  -1.1929467074997047 T_estimate  68.47229218031981  loop time  0.17168593406677246  time spent setting step sizes:  0.0
+10896 Emax_of_step  -1.1931627918632457 T_estimate  67.67682675953874  loop time  0.1713862419128418  time spent setting step sizes:  0.0
+10908 Emax_of_step  -1.1934151378381477 T_estimate  67.05005779309403  loop time  0.16623878479003906  time spent setting step sizes:  0.0
+0 NS 10919 accept rate for MD_atom = 0.820000 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+10920 Emax_of_step  -1.1938747676620876 T_estimate  66.86203637810077  loop time  0.1729593276977539  time spent setting step sizes:  0.06873583793640137
+10932 Emax_of_step  -1.1943667233980582 T_estimate  66.51215067973568  loop time  0.16951894760131836  time spent setting step sizes:  0.0
+10944 Emax_of_step  -1.1949001390115563 T_estimate  66.31469002989739  loop time  0.17685317993164062  time spent setting step sizes:  0.0
+10956 Emax_of_step  -1.1953470338084413 T_estimate  66.18570508302764  loop time  0.16038179397583008  time spent setting step sizes:  0.0
+10968 Emax_of_step  -1.195855310305766 T_estimate  64.91623111357127  loop time  0.18355607986450195  time spent setting step sizes:  0.0
+10980 Emax_of_step  -1.196547244780844 T_estimate  64.86106575181527  loop time  0.16674494743347168  time spent setting step sizes:  0.0
+10992 Emax_of_step  -1.1970576757900457 T_estimate  64.9539736784544  loop time  0.17021417617797852  time spent setting step sizes:  0.0
+11004 Emax_of_step  -1.197551971853728 T_estimate  65.01039312635345  loop time  0.17037272453308105  time spent setting step sizes:  0.0
+11016 Emax_of_step  -1.1978669131951363 T_estimate  63.756602291848374  loop time  0.17406105995178223  time spent setting step sizes:  0.0
+11028 Emax_of_step  -1.1983979158623759 T_estimate  63.998837208847625  loop time  0.16142010688781738  time spent setting step sizes:  0.0
+0 NS 11039 accept rate for MD_atom = 0.825417 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+11040 Emax_of_step  -1.1987675408007088 T_estimate  64.09298618632369  loop time  0.18898415565490723  time spent setting step sizes:  0.0752267837524414
+11052 Emax_of_step  -1.1990278662160865 T_estimate  63.710680414676965  loop time  0.1737978458404541  time spent setting step sizes:  0.0
+11064 Emax_of_step  -1.1993456591239489 T_estimate  63.35783462286457  loop time  0.18147826194763184  time spent setting step sizes:  0.0
+11076 Emax_of_step  -1.1998755231609588 T_estimate  63.49757155987524  loop time  0.17399287223815918  time spent setting step sizes:  0.0
+11088 Emax_of_step  -1.2003732769298694 T_estimate  62.88290460851093  loop time  0.17583990097045898  time spent setting step sizes:  0.0
+11100 Emax_of_step  -1.200664806678985 T_estimate  62.418541319545135  loop time  0.17366814613342285  time spent setting step sizes:  0.0
+11112 Emax_of_step  -1.2011208290604194 T_estimate  62.14563526529141  loop time  0.16351699829101562  time spent setting step sizes:  0.0
+11124 Emax_of_step  -1.2015556805371346 T_estimate  61.851904091664466  loop time  0.17946386337280273  time spent setting step sizes:  0.0
+11136 Emax_of_step  -1.2020168269098939 T_estimate  61.10136178819026  loop time  0.16355514526367188  time spent setting step sizes:  0.0
+11148 Emax_of_step  -1.2022963010858876 T_estimate  60.95172065860077  loop time  0.18095111846923828  time spent setting step sizes:  0.0
+0 NS 11159 accept rate for MD_atom = 0.824583 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+11160 Emax_of_step  -1.2025503862673252 T_estimate  60.73597034583897  loop time  0.17989778518676758  time spent setting step sizes:  0.06599807739257812
+11172 Emax_of_step  -1.2029635439105042 T_estimate  60.356640116319305  loop time  0.17148113250732422  time spent setting step sizes:  0.0
+11184 Emax_of_step  -1.203375547689544 T_estimate  60.011613170021654  loop time  0.1744518280029297  time spent setting step sizes:  0.0
+11196 Emax_of_step  -1.2036958864416625 T_estimate  59.63775823115111  loop time  0.16946887969970703  time spent setting step sizes:  0.0
+11208 Emax_of_step  -1.2041989496795913 T_estimate  59.32874490380237  loop time  0.17868614196777344  time spent setting step sizes:  0.0
+11220 Emax_of_step  -1.2045242433412227 T_estimate  58.850889333747084  loop time  0.16728496551513672  time spent setting step sizes:  0.0
+11232 Emax_of_step  -1.2050639724700958 T_estimate  58.8000341909494  loop time  0.17316913604736328  time spent setting step sizes:  0.0
+11244 Emax_of_step  -1.205199921559634 T_estimate  58.145741970457635  loop time  0.16541290283203125  time spent setting step sizes:  0.0
+11256 Emax_of_step  -1.205458166232953 T_estimate  57.632079301118154  loop time  0.2989621162414551  time spent setting step sizes:  0.0
+11268 Emax_of_step  -1.2059180751498166 T_estimate  57.75042426760383  loop time  0.16433477401733398  time spent setting step sizes:  0.0
+0 NS 11279 accept rate for MD_atom = 0.823750 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+11280 Emax_of_step  -1.2063136602750675 T_estimate  57.66361023133087  loop time  0.1717090606689453  time spent setting step sizes:  0.0689241886138916
+11292 Emax_of_step  -1.2066607755592424 T_estimate  56.61227448352876  loop time  0.17975878715515137  time spent setting step sizes:  0.0
+11304 Emax_of_step  -1.2070221844197881 T_estimate  56.24997077353732  loop time  0.1797490119934082  time spent setting step sizes:  0.0
+11316 Emax_of_step  -1.2076845107772742 T_estimate  56.628332063232556  loop time  0.16402697563171387  time spent setting step sizes:  0.0
+11328 Emax_of_step  -1.2080109710166889 T_estimate  56.18441120129067  loop time  0.19112205505371094  time spent setting step sizes:  0.0
+11340 Emax_of_step  -1.2083892747102432 T_estimate  56.02541617915759  loop time  0.1693871021270752  time spent setting step sizes:  0.0
+11352 Emax_of_step  -1.2086286106434536 T_estimate  55.417312185201254  loop time  0.17006897926330566  time spent setting step sizes:  0.0
+11364 Emax_of_step  -1.2088822576863538 T_estimate  55.34145020873  loop time  0.17289400100708008  time spent setting step sizes:  0.0
+11376 Emax_of_step  -1.2091453927284646 T_estimate  55.06411623386428  loop time  0.17716717720031738  time spent setting step sizes:  0.0
+11388 Emax_of_step  -1.2094857985649003 T_estimate  54.51885791636116  loop time  0.17212581634521484  time spent setting step sizes:  0.0
+0 NS 11399 accept rate for MD_atom = 0.815208 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+11400 Emax_of_step  -1.2098214437227577 T_estimate  53.947585999550355  loop time  0.1662886142730713  time spent setting step sizes:  0.06828522682189941
+11412 Emax_of_step  -1.2100933567390624 T_estimate  53.01708281027381  loop time  0.16936421394348145  time spent setting step sizes:  0.0
+11424 Emax_of_step  -1.2106848218486403 T_estimate  53.124552486048316  loop time  0.16318178176879883  time spent setting step sizes:  0.0
+11436 Emax_of_step  -1.2110936043306095 T_estimate  53.19147718203447  loop time  0.17443609237670898  time spent setting step sizes:  0.0
+11448 Emax_of_step  -1.2115224409502272 T_estimate  52.78144356416956  loop time  0.17350006103515625  time spent setting step sizes:  0.0
+11460 Emax_of_step  -1.2118514991401557 T_estimate  52.624906949671185  loop time  0.17949199676513672  time spent setting step sizes:  0.0
+11472 Emax_of_step  -1.2121142551578796 T_estimate  52.27773623250791  loop time  0.17042779922485352  time spent setting step sizes:  0.0
+11484 Emax_of_step  -1.2123546666321119 T_estimate  51.3525892688498  loop time  0.17159509658813477  time spent setting step sizes:  0.0
+11496 Emax_of_step  -1.2125569378201269 T_estimate  50.55964666064567  loop time  0.1738581657409668  time spent setting step sizes:  0.0
+11508 Emax_of_step  -1.212788096895305 T_estimate  50.15354696867957  loop time  0.167921781539917  time spent setting step sizes:  0.0
+0 NS 11519 accept rate for MD_atom = 0.813125 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+11520 Emax_of_step  -1.2130598525000076 T_estimate  49.811865949128766  loop time  0.18045306205749512  time spent setting step sizes:  0.08768606185913086
+11532 Emax_of_step  -1.2134880161798014 T_estimate  49.701136256464444  loop time  0.17440104484558105  time spent setting step sizes:  0.0
+11544 Emax_of_step  -1.2138523520398676 T_estimate  49.525452327924  loop time  0.1680159568786621  time spent setting step sizes:  0.0
+11556 Emax_of_step  -1.2142563020309525 T_estimate  49.57577249627961  loop time  0.18169188499450684  time spent setting step sizes:  0.0
+11568 Emax_of_step  -1.2146752353554089 T_estimate  49.36018319122888  loop time  0.1837320327758789  time spent setting step sizes:  0.0
+11580 Emax_of_step  -1.2148782326500265 T_estimate  49.177136676334406  loop time  0.16977310180664062  time spent setting step sizes:  0.0
+11592 Emax_of_step  -1.215240951747461 T_estimate  48.628245470778765  loop time  0.17392396926879883  time spent setting step sizes:  0.0
+11604 Emax_of_step  -1.2154561695845831 T_estimate  47.78148131457092  loop time  0.1663520336151123  time spent setting step sizes:  0.0
+11616 Emax_of_step  -1.2158109536469095 T_estimate  47.35710262949026  loop time  0.19099688529968262  time spent setting step sizes:  0.0
+11628 Emax_of_step  -1.21602380621917 T_estimate  46.73843619701141  loop time  0.18146729469299316  time spent setting step sizes:  0.0
+0 NS 11639 accept rate for MD_atom = 0.825625 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+11640 Emax_of_step  -1.2163651704844132 T_estimate  46.367348384734605  loop time  0.16543364524841309  time spent setting step sizes:  0.06766009330749512
+11652 Emax_of_step  -1.216605486812031 T_estimate  45.879515853882594  loop time  0.17715001106262207  time spent setting step sizes:  0.0
+11664 Emax_of_step  -1.2168552390886136 T_estimate  45.61692389607796  loop time  0.17188501358032227  time spent setting step sizes:  0.0
+11676 Emax_of_step  -1.2171536257082223 T_estimate  45.047298345052035  loop time  0.155195951461792  time spent setting step sizes:  0.0
+11688 Emax_of_step  -1.2174340823753265 T_estimate  44.86939302300064  loop time  0.1598069667816162  time spent setting step sizes:  0.0
+11700 Emax_of_step  -1.2178188261810678 T_estimate  45.00937360856411  loop time  0.17480802536010742  time spent setting step sizes:  0.0
+11712 Emax_of_step  -1.2182475973565026 T_estimate  45.03582579196237  loop time  0.16035103797912598  time spent setting step sizes:  0.0
+11724 Emax_of_step  -1.2185710249976887 T_estimate  44.67922278822363  loop time  0.17426705360412598  time spent setting step sizes:  0.0
+11736 Emax_of_step  -1.218926977760379 T_estimate  44.55545494189552  loop time  0.16477704048156738  time spent setting step sizes:  0.0
+11748 Emax_of_step  -1.2191777501789096 T_estimate  43.85783937212943  loop time  0.1655721664428711  time spent setting step sizes:  0.0
+0 NS 11759 accept rate for MD_atom = 0.822917 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+11760 Emax_of_step  -1.219346554763588 T_estimate  43.60643611451471  loop time  0.17301368713378906  time spent setting step sizes:  0.06912088394165039
+11772 Emax_of_step  -1.2197053043043926 T_estimate  43.44333396323671  loop time  0.1805582046508789  time spent setting step sizes:  0.0
+11784 Emax_of_step  -1.2199041167087121 T_estimate  43.13782401200011  loop time  0.1753530502319336  time spent setting step sizes:  0.0
+11796 Emax_of_step  -1.2201580678255373 T_estimate  42.80045153634895  loop time  0.16643404960632324  time spent setting step sizes:  0.0
+11808 Emax_of_step  -1.220416513085692 T_estimate  42.42069888868887  loop time  0.18231201171875  time spent setting step sizes:  0.0
+11820 Emax_of_step  -1.2208412542545901 T_estimate  42.477484567644815  loop time  0.18375301361083984  time spent setting step sizes:  0.0
+11832 Emax_of_step  -1.2210600147749635 T_estimate  42.32249203291937  loop time  0.15737271308898926  time spent setting step sizes:  0.0
+11844 Emax_of_step  -1.2213221125027156 T_estimate  41.969324720987466  loop time  0.1777811050415039  time spent setting step sizes:  0.0
+11856 Emax_of_step  -1.2215770185317114 T_estimate  41.61609732880386  loop time  0.17592597007751465  time spent setting step sizes:  0.0
+11868 Emax_of_step  -1.2217381725759597 T_estimate  41.24137923315975  loop time  0.17456412315368652  time spent setting step sizes:  0.0
+0 NS 11879 accept rate for MD_atom = 0.821250 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+11880 Emax_of_step  -1.2220462997404598 T_estimate  40.71997617554883  loop time  0.16836285591125488  time spent setting step sizes:  0.07325506210327148
+11892 Emax_of_step  -1.2224571138900806 T_estimate  41.11099507319813  loop time  0.18197202682495117  time spent setting step sizes:  0.0
+11904 Emax_of_step  -1.222677547173141 T_estimate  41.0272495256712  loop time  0.1670379638671875  time spent setting step sizes:  0.0
+11916 Emax_of_step  -1.2229298292277564 T_estimate  40.798377645656444  loop time  0.16786813735961914  time spent setting step sizes:  0.0
+11928 Emax_of_step  -1.2230754928918155 T_estimate  40.4913783981514  loop time  0.16213297843933105  time spent setting step sizes:  0.0
+11940 Emax_of_step  -1.223464450604487 T_estimate  40.30503960813748  loop time  0.18151092529296875  time spent setting step sizes:  0.0
+11952 Emax_of_step  -1.2238040190637938 T_estimate  40.011422243396886  loop time  0.1717219352722168  time spent setting step sizes:  0.0
+11964 Emax_of_step  -1.224055888072664 T_estimate  39.83897219757703  loop time  0.16622304916381836  time spent setting step sizes:  0.0
+11976 Emax_of_step  -1.224391834985102 T_estimate  39.1665972711417  loop time  0.15460205078125  time spent setting step sizes:  0.0
+11988 Emax_of_step  -1.2246212688776406 T_estimate  38.863032625470225  loop time  0.1939070224761963  time spent setting step sizes:  0.0
+0 NS 11999 accept rate for MD_atom = 0.820417 (4800)
+0 full_auto full_auto_set_stepsizes adjusted MD_atom_timestep to 0.506250
+LOOP TIME total  185.70634984970093  per iter  0.01547423963417223
+TIME SPENT SETTING STEP SIZES total  8.276027202606201
+root walkers write time  0.014348030090332031
+0 : final energy  -1.2265196200426707
+0 : final energy  -1.2262921380828262
+0 : final energy  -1.2273574380987133
+0 : final energy  -1.2258570704892515
+0 : final energy  -1.23816864258916
+0 : final energy  -1.2302554584002785
+0 : final energy  -1.2273729125990032
+0 : final energy  -1.2256466268394106
+0 : final energy  -1.2253501168971672
+0 : final energy  -1.2298568565431423
+0 : final energy  -1.2279382745534997
+0 : final energy  -1.2256273800158262
+0 : final energy  -1.2263780222336536
+0 : final energy  -1.2263159216402832
+0 : final energy  -1.2260823911244607
+0 : final energy  -1.2270364412115897
+0 : final energy  -1.2295315259033623
+0 : final energy  -1.2310094431856293
+0 : final energy  -1.2258168863704795
+0 : final energy  -1.225522930399331
+0 : final energy  -1.2304370627157963
+0 : final energy  -1.2267416916181397
+0 : final energy  -1.2279305333100312
+0 : final energy  -1.2258759388148586
+0 : final energy  -1.2262990373627585
+0 : final energy  -1.225237399777198
+0 : final energy  -1.2294506142197534
+0 : final energy  -1.2259036886493522
+0 : final energy  -1.2255780650431436
+0 : final energy  -1.225998353071132
+0 : final energy  -1.225362791655146
+0 : final energy  -1.22689437055141
+0 : final energy  -1.2277490580127854
+0 : final energy  -1.2251658714127218
+0 : final energy  -1.2303659138231344
+0 : final energy  -1.2254340664144143
+0 : final energy  -1.2252921938645553
+0 : final energy  -1.2265004660222347
+0 : final energy  -1.226077523347868
+0 : final energy  -1.2256848174285466
+0 : final energy  -1.227565446756913
+0 : final energy  -1.2279902266757523
+0 : final energy  -1.2303106131293746
+0 : final energy  -1.2281737514114028
+0 : final energy  -1.2329840499259683
+0 : final energy  -1.2285968018759994
+0 : final energy  -1.2276202746536007
+0 : final energy  -1.2256986188290704
+0 : final energy  -1.2249164350417912
+0 : final energy  -1.2259707977344638
+0 : final energy  -1.2248572799387303
+0 : final energy  -1.229809589291061
+0 : final energy  -1.2265426325265252
+0 : final energy  -1.226543195796518
+0 : final energy  -1.2291617993968338
+0 : final energy  -1.2265081982260246
+0 : final energy  -1.2334780432886967
+0 : final energy  -1.2314881468679735
+0 : final energy  -1.2256671196937645
+0 : final energy  -1.2341042171483967
+0 : final energy  -1.2253784312160518
+0 : final energy  -1.2297222993169405
+0 : final energy  -1.2251873688428478
+0 : final energy  -1.2264566295392247
+0 : final energy  -1.2275277205651618
+0 : final energy  -1.2261807076418496
+0 : final energy  -1.225729004919619
+0 : final energy  -1.2277361679126437
+0 : final energy  -1.2281206082474776
+0 : final energy  -1.2303225364286978
+0 : final energy  -1.2258324995031078
+0 : final energy  -1.22804168296395
+0 : final energy  -1.2250017238377142
+0 : final energy  -1.2317042173710004
+0 : final energy  -1.2252090969800857
+0 : final energy  -1.2322661107311572
+0 : final energy  -1.2269002691685507
+0 : final energy  -1.2262636781118192
+0 : final energy  -1.2257627192369864
+0 : final energy  -1.2275767964088746
+0 : final energy  -1.2330020101600494
+0 : final energy  -1.2250628876895837
+0 : final energy  -1.2249515683062597
+0 : final energy  -1.2309024543595724
+0 : final energy  -1.2283008004082598
+0 : final energy  -1.22575940104271
+0 : final energy  -1.2256903754823893
+0 : final energy  -1.229339118771925
+0 : final energy  -1.2257172936473377
+0 : final energy  -1.226364547341889
+0 : final energy  -1.2256903977688338
+0 : final energy  -1.2258386766283178
+0 : final energy  -1.2301861763982516
+0 : final energy  -1.2291182558132354
+0 : final energy  -1.234231452640535
+0 : final energy  -1.2262702468399367
+0 : final energy  -1.2269796853175448
+0 : final energy  -1.2249492988867585
+0 : final energy  -1.2264351896685006
+0 : final energy  -1.2253609768597125
+0 : final energy  -1.2249197417427262
+0 : final energy  -1.2261522849487816
+0 : final energy  -1.2249788633769219
+0 : final energy  -1.225159144247672
+0 : final energy  -1.2258893183023254
+0 : final energy  -1.2264633909124778
+0 : final energy  -1.2270198222316426
+0 : final energy  -1.2251689540898303
+0 : final energy  -1.2273077272798858
+0 : final energy  -1.2252452614491545
+0 : final energy  -1.2277807802886742
+0 : final energy  -1.2272190828778409
+0 : final energy  -1.2261331658479813
+0 : final energy  -1.2314391277262657
+0 : final energy  -1.2281860922209669
+0 : final energy  -1.2272758113289335
+0 : final energy  -1.2285738185269819
+0 : final energy  -1.2269868142602538
+0 : final energy  -1.226772722954352
+0 : final energy  -1.228028162097683

@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 import ctypes
 import operator
+import sys
 
 import numpy as np
 from numpy.linalg import norm
@@ -385,6 +386,8 @@ End LAMMPSlib Interface Documentation
 
     def propagate(self, atoms, properties, system_changes, n_steps, dt=None, dt_not_real_time=False, velocity_field=None):
 
+        # TODO: where to freeze forces
+        # TODO: add additional variable to pass on which atoms to keep fixed
         """"atoms: Atoms object
             Contains positions, unit-cell, ...
         properties: list of str
@@ -437,7 +440,7 @@ End LAMMPSlib Interface Documentation
 
         self.set_lammps_pos(atoms)
 
-        if n_steps > 0:
+        if n_steps > 0:  # TODO: here are velocities passed onto LAMMPS
             if velocity_field is None:
                 vel = atoms.get_velocities() / unit_convert("velocity", self.units)
             else:
@@ -456,6 +459,20 @@ End LAMMPSlib Interface Documentation
                 (ctypes.c_double * len(lmp_velocities))(*lmp_velocities)
 #            self.lmp.put_coosrds(lmp_c_velocities)
             self.lmp.scatter_atoms('v', 1, 3, lmp_c_velocities)
+
+            # Keep atoms fixed
+            keep_atoms_fixed = int(sum([x == 0 for x in lmp_velocities]) / 3)
+            if keep_atoms_fixed > 0:
+                self.lmp.command("group fixed id <= " + str(keep_atoms_fixed))
+                self.lmp.command("fix freeze fixed setforce 0.0 0.0 0.0")
+                self.lmp.command("fix walls all wall/reflect zlo 0 zhi "
+                                 + str(atoms.cell[2, 2]) + " units box")
+
+            # TODO: if we fix forces here, then it should be passed on, just pass on keep_atoms_fixed
+            # TODO: if you have atoms with EXACTLY zero velocities, then freeze them
+
+        # TODO: keep_atoms_fixed = 0 for potential energy calculations of the
+        #  initial configurations
 
         # Run for 0 time to calculate
         if dt is not None:
@@ -517,7 +534,7 @@ End LAMMPSlib Interface Documentation
         self.results['stress'] = stress * (-unit_convert("pressure", self.units))
 
 #        if 'forces' in properties:
-        f = np.zeros((len(atoms), 3))
+        f = np.zeros((len(atoms), 3))  # TODO: sets forces, doesn't update them
         f[:,:] = np.array([x for x in self.lmp.gather_atoms("f",1,3)]).reshape(-1,3)
         f *= unit_convert("force", self.units)
 
