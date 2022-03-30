@@ -11,6 +11,10 @@ from ase.visualize.plot import plot_atoms
 RNG = np.random.default_rng(12345)  # 1 = 12345, 2 = 5, 3 = 37
 PLT = False
 KEMAX_MAX_T = 10000
+set_wall = True
+# Direction (x, y, z) normal to which a reflecting wall is set at fractional
+# positions of 0 and 1 along that direction. Should only be used for surface
+# slabs, centered in the simulation cell
 
 
 def main(n_walkers=240, at="H", size=(2, 2, 3), sig=2.5, v=10, nat=4, buf=2):
@@ -40,6 +44,7 @@ def main(n_walkers=240, at="H", size=(2, 2, 3), sig=2.5, v=10, nat=4, buf=2):
         slab.info["KEmax"] = 1.5 * len(slab) * kB * KEMAX_MAX_T
         slab.info["iter"] = -1
         slab.info["volume"] = slab.get_volume()
+        slab.info["set_wall"] = set_wall
         slabs.append(slab)
     write(filename="slab-1.extxyz", images=slabs, format="extxyz")
     if PLT:

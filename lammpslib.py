@@ -465,8 +465,9 @@ End LAMMPSlib Interface Documentation
             if keep_atoms_fixed > 0:
                 self.lmp.command("group fixed id <= " + str(keep_atoms_fixed))
                 self.lmp.command("fix freeze fixed setforce 0.0 0.0 0.0")
-                self.lmp.command("fix walls all wall/reflect zlo 0 zhi "
-                                 + str(atoms.cell[2, 2]) + " units box")
+                if atoms.info["set_wall"]:
+                    self.lmp.command("fix walls all wall/reflect zlo 0 zhi "
+                                     + str(atoms.cell[2, 2]) + " units box")
 
             # TODO: if we fix forces here, then it should be passed on, just pass on keep_atoms_fixed
             # TODO: if you have atoms with EXACTLY zero velocities, then freeze them
