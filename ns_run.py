@@ -871,10 +871,12 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
     #DOC \item else perturb velocities
     else: # perturb
         velo = at.get_velocities()
+
         velo_mag = np.linalg.norm(velo)
         #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
         if velo_mag == 0.0:
             at.set_velocities(gen_random_velo(at, KEmax_use))
+
         #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom\_velo\_rej\_free\_perturb\_angle
         else:
             # pick new random magnitude - count on dimensionality to make change small
@@ -884,7 +886,6 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
             scaled_vel = gen_random_velo(at, KEmax_use, velo/velo_mag) * sqrt_masses_2D
 
             if rotate:
-                rotate_dir_3N(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
                 if movement_args['2D']:
                     rotate_dir_3N_2D(scaled_vel, movement_args['atom_velo_rej_free_perturb_angle'])
                 else:
@@ -986,11 +987,13 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
             propagate_NVE_ASE(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
             final_E = eval_energy(at)
         elif do_calc_lammps:
+
             if propagate_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'], algo='NVE'):
                 final_E = pot.results['energy'] + eval_energy(at, do_PE=False)
             else: # propagate returned success == False
                 final_E = 2.0*abs(Emax)
                 ## print("error in propagate_lammps NVE, setting final_E = 2*abs(Emax) =" , final_E)
+
         elif do_calc_fortran:
             final_E = f_MC_MD.MD_atom_NVE_walk(at, n_steps=movement_args['atom_traj_len'], timestep=movement_args['MD_atom_timestep'], debug=ns_args['debug'])
             final_E += eval_energy(at, do_PE=False, do_KE=False)
@@ -1070,9 +1073,9 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     if do_calc_fortran and not ns_args['reproducible']:
         #DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk
         at.wrap()
-        if movement_args['2D']: 
+        if (ns_args['debug'] >= 10 and movement_args['2D']): 
             pp=at.get_positions()
-            if (pp[1,2]>0.00001): #LIVIA
+            if (any(pp[:,2])>0.00001): #LIVIA
                 exit_error("Not a 2D system anymore\n",3)
  
         if movement_args['MC_atom_velocities']:
@@ -1088,6 +1091,9 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 
     elif (do_calc_lammps and movement_args['MC_atom_Galilean'] and ns_args['LAMMPS_fix_gmc']):
         orig_pos = at.get_positions()
+        if (ns_args['debug'] >= 10 and movement_args['2D']): 
+            if (any(orig_pos[:,2])>0.00001): #LIVIA
+                exit_error("Not a 2D system anymore\n",3)
         orig_energy = at.info['ns_energy']
         extra_term = eval_energy(at, do_PE=False, do_KE=False)
         if propagate_lammps(at, step_size, n_steps, algo='GMC', Emax=Emax-extra_term ):
