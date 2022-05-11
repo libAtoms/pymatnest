@@ -1,0 +1,5 @@
+name: pymatnest
+dependencies:
+    - numpy
+    - matplotlib
+    - ipython
