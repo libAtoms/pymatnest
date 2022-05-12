@@ -892,7 +892,7 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
     #DOC \item if atom\_velo\_rej\_free\_fully\_randomize, pick random velocities consistent with Emax
     if movement_args['atom_velo_rej_free_fully_randomize']:
         # randomize completely
-        at.set_velocities(gen_random_velo(at, KEmax_use))
+        at.set_velocities(gen_random_velo(at, KEmax_use))  # TODO: RBW – methinks there might be an issue here too
         if movement_args['keep_atoms_fixed'] > 0:  # for surface simulations
             random_velo = at.get_velocities()
             random_velo[:movement_args['keep_atoms_fixed'], :] = 0
@@ -903,11 +903,16 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
         velo_mag = np.linalg.norm(velo)
         #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
         if velo_mag == 0.0:
-            at.set_velocities(gen_random_velo(at, KEmax_use))
+            # at.set_velocities(gen_random_velo(at, KEmax_use))  # this was here, don't delete with prints
             if movement_args['keep_atoms_fixed'] > 0:  # for surface simulations
-                random_velo = at.get_velocities()
-                random_velo[:movement_args['keep_atoms_fixed'], :] = 0
-                at.set_velocities(random_velo)
+                # TODO: RBW – KEmax_use applies to free particles, not fixed (?)
+                at_velo = at.get_velocities()
+                random_velo = gen_random_velo(
+                    at[movement_args['keep_atoms_fixed']:], KEmax_use)
+                at_velo[movement_args['keep_atoms_fixed']:] = random_velo
+                at.set_velocities(at_velo)
+            else:
+                at.set_velocities(gen_random_velo(at, KEmax_use))
         #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom\_velo\_rej\_free\_perturb\_angle
         else:
             # pick new random magnitude - count on dimensionality to make change small
@@ -3919,6 +3924,7 @@ def main():
                 print("RBW: set init vels for man surf configs from restart")
                 if movement_args['do_velocities']:
                     for at in walkers:
+                        # TODO: RBW – make sure surface restart files contain KEmax calculated from number of free atoms, otherwise, their kinetic energy can be inefficiently high
                         rej_free_perturb_velo(at, None, KEmax)
                         # adds KE to at.info['ns_energy']
 
