@@ -1075,7 +1075,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
         at.wrap()
         if (ns_args['debug'] >= 10 and movement_args['2D']): 
             pp=at.get_positions()
-            if (any(pp[:,2])>0.00001): #LIVIA
+            if (any(pp[:,2])>0.00001 and nD==2): #LIVIA
                 exit_error("Not a 2D system anymore\n",3)
  
         if movement_args['MC_atom_velocities']:
