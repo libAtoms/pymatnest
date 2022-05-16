@@ -1120,28 +1120,35 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
         if movement_args['GMC_dir_perturb_angle'] < 0.0 or np.linalg.norm(at.arrays['GMC_direction']) == 0.0:
             # completely random orientation, magnitude 1
             at.arrays['GMC_direction'][:,:] = rng.normal(1.0, (len(at), 3))
-            at.arrays['GMC_direction'] /= np.linalg.norm(at.arrays['GMC_direction'])
+            if (movement_args['keep_atoms_fixed'] > 0):
+                at.arrays['GMC_direction'][:movement_args['keep_atoms_fixed'],:] = 0.0
+            at.arrays['GMC_direction'] /= np.linalg.norm(at.arrays['GMC_direction']) # what is this line doing?
+
         elif movement_args['GMC_dir_perturb_angle'] > 0.0:
             # apply random rotations
-            rotate_dir_3N(at.arrays['GMC_direction'], movement_args['GMC_dir_perturb_angle'])
+            if movement_args['keep_atoms_fixed'] > 0:
+                rotate_dir_3N(at.arrays['GMC_direction'][movement_args['keep_atoms_fixed']:,:], movement_args['GMC_dir_perturb_angle'])
+
+            else:
+                rotate_dir_3N(at.arrays['GMC_direction'], movement_args['GMC_dir_perturb_angle'])
 
     #DOC \item if using fortran calculator and not reproducible
     if do_calc_fortran and not ns_args['reproducible']:
         #DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk
         at.wrap()
         pp=at.get_positions()
-        if (pp[1,2]>0.00001): #LIVIA
+        if (pp[1,2]>0.00001 and nD==2): #LIVIA
             exit_error("Not a 2D system anymore\n",3)
 
         if movement_args['MC_atom_velocities']:
-            #if not movement_args['2D']:
-            (n_try, n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), nD, KEmax, step_size_velo)
+            (n_try, n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), nD, movement_args['keep_atoms_fixed'], KEmax, step_size_velo)
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
         else:
             if movement_args['MC_atom_Galilean']:
                 (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), no_reverse=movement_args['GMC_no_reverse'], pert_ang=movement_args['GMC_dir_perturb_angle_during'])
             else:
-                (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), nD)
+                # fixed atoms MC works by including the number of atoms to be kept fixed - LIVIA
+                (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), nD, movement_args['keep_atoms_fixed'])
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
 
     elif (do_calc_lammps and movement_args['MC_atom_Galilean'] and ns_args['LAMMPS_fix_gmc']):
@@ -1182,6 +1189,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
             n_reflect = 0
             pos = at.get_positions()
             d_pos = step_size*at.arrays['GMC_direction']
+            #print("LIVIA d_pos", d_pos)
 
             for i_MC_step in range(n_steps):
                 if not do_no_reverse:
@@ -1226,11 +1234,13 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
                     at.info['ns_energy'] = E
                     at.set_positions(pos)
                     at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
+                    #print("LIVIA accept", at.arrays['GMC_direction'][:,:])
                     n_accept = 1
                 else: # reject
                     # E and GMC_direction in at were never overwritten, no need to restore, but do need to reverse dir
                     at.set_positions(last_good_pos)
                     at.arrays['GMC_direction'] *= -1.0
+                    #print("LIVIA reject", at.arrays['GMC_direction'][:,:])
                     n_accept = 0
             else:
                 if n_reverse > 0 and not cur_E_is_correct:
@@ -1238,6 +1248,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
                 at.info['ns_energy'] = E
                 at.set_positions(pos)
                 at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
+                #print("LIVIA reverse", at.arrays['GMC_direction'][:,:])
                 n_try = n_reflect + n_reverse
                 n_accept = n_reflect
 
@@ -1991,8 +2002,10 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                 # build up stats from walkers
                 if (not key=="MC_atom_velo"):
                     stats = walk_single_walker(buf, exploration_movement_args, Emax, KEmax)
+                    #print("LIVIA 1 ", stats)
                 else:
                     stats = do_MC_atom_velo_walk(buf, exploration_movement_args, Emax, nD, KEmax)
+                    #print("LIVIA 2 ", stats)
 
                   #DOC     running statistics for the number of accepted/rejected moves on each process are recorded
                 accumulate_stats(stats_cumul, stats)
@@ -3906,7 +3919,8 @@ def main():
             if movement_args['keep_atoms_fixed'] > 0:
                 print("RBW: calc ns_energy for man surf configs from restart")
                 for (i_at, at) in enumerate(walkers):
-                    at.set_calculator(pot)
+                    if do_calc_quip or do_calc_lammps:
+                        at.set_calculator(pot)
                     energy = eval_energy(at)
                     at.info['ns_energy'] = rand_perturb_energy(
                         energy, ns_args['random_energy_perturbation'])
