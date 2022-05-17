@@ -88,7 +88,7 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
 
    do_vel = (step_size_vel /= 0.0)
 
-   n_try = N*n_steps
+   n_try = (N-fixN)*n_steps
    n_accept_pos = 0
    n_accept_vel = 0
    E = ll_eval_energy(N, Z, pos, n_extra_data, extra_data, cell)
@@ -154,7 +154,9 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
          endif
 
       end do
+
    end do
+   !write(*,*) "LIVIA", n_accept_pos, n_steps, step_size_pos, dE, E
 
    final_E = E
 

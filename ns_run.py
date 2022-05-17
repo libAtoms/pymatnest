@@ -1104,7 +1104,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     n_steps = movement_args['atom_traj_len']
     step_size = movement_args['MC_atom_step_size']
     step_size_velo = movement_args['MC_atom_velo_step_size']
-    n_try = n_steps*len(at)
+    n_try = n_steps*(len(at)-movement_args['keep_atoms_fixed']) # does this do anything? actual n_try is set within fortran code 
     n_accept=0
     n_accept_velo = None
 
@@ -1189,7 +1189,6 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
             n_reflect = 0
             pos = at.get_positions()
             d_pos = step_size*at.arrays['GMC_direction']
-            #print("LIVIA d_pos", d_pos)
 
             for i_MC_step in range(n_steps):
                 if not do_no_reverse:
@@ -1234,13 +1233,11 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
                     at.info['ns_energy'] = E
                     at.set_positions(pos)
                     at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
-                    #print("LIVIA accept", at.arrays['GMC_direction'][:,:])
                     n_accept = 1
                 else: # reject
                     # E and GMC_direction in at were never overwritten, no need to restore, but do need to reverse dir
                     at.set_positions(last_good_pos)
                     at.arrays['GMC_direction'] *= -1.0
-                    #print("LIVIA reject", at.arrays['GMC_direction'][:,:])
                     n_accept = 0
             else:
                 if n_reverse > 0 and not cur_E_is_correct:
@@ -1248,7 +1245,6 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
                 at.info['ns_energy'] = E
                 at.set_positions(pos)
                 at.arrays['GMC_direction'][:,:] = d_pos/np.linalg.norm(d_pos)
-                #print("LIVIA reverse", at.arrays['GMC_direction'][:,:])
                 n_try = n_reflect + n_reverse
                 n_accept = n_reflect
 
@@ -2002,10 +1998,8 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
                 # build up stats from walkers
                 if (not key=="MC_atom_velo"):
                     stats = walk_single_walker(buf, exploration_movement_args, Emax, KEmax)
-                    #print("LIVIA 1 ", stats)
                 else:
                     stats = do_MC_atom_velo_walk(buf, exploration_movement_args, Emax, nD, KEmax)
-                    #print("LIVIA 2 ", stats)
 
                   #DOC     running statistics for the number of accepted/rejected moves on each process are recorded
                 accumulate_stats(stats_cumul, stats)
