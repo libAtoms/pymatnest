@@ -64,7 +64,7 @@ subroutine fortran_MC_atom_velo(N, vel, mass, n_steps, step_size, nD, KEmax, fin
 end subroutine fortran_MC_atom_velo
 
 subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell, n_steps, &
-                           step_size_pos, step_size_vel, Emax, nD, fixN, KEmax, final_E, n_try, n_accept_pos, n_accept_vel)
+                           step_size_pos, step_size_vel, Emax, nD, fixN, wall, KEmax, final_E, n_try, n_accept_pos, n_accept_vel)
    implicit none
    integer :: N
    integer :: Z(N)
@@ -72,12 +72,12 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
    integer :: n_extra_data
    double precision :: extra_data(n_extra_data,N)
    integer :: n_steps
-   double precision :: step_size_pos, step_size_vel, Emax, KEmax, final_E
+   double precision :: step_size_pos, step_size_vel, Emax, KEmax, final_E, wall
    integer :: n_try, n_accept_pos, n_accept_vel, nD, fixN
 
    logical :: do_vel
    integer :: d_i
-   double precision :: d_r, E, dE, KE, dKE, d_pos(3), d_vel(3)
+   double precision :: d_r, E, dE, KE, dKE, d_pos(3), d_vel(3), new_z
 
    double precision, external :: ll_eval_energy
    integer, external :: ll_move_atom_1
@@ -138,8 +138,22 @@ subroutine fortran_MC_atom(N, Z, pos, vel, mass, n_extra_data, extra_data, cell,
          !    single atom is calculated. 
          call random_number(d_pos)
          d_pos = 2.0*step_size_pos*(d_pos-0.5)
+
          if (nD==2) d_pos(3)=0.0
-         n_accept_pos = n_accept_pos + ll_move_atom_1(N, Z, pos, n_extra_data, extra_data, cell, d_i, d_pos, Emax-E, dE)
+
+         if (wall>0.0) then ! this is a surface simulation with a wall set
+            new_z=mod( (pos(3,d_i)+d_pos(3)), cell(3,3)) ! wrap Z coordinate
+            if (new_z < 0.0) new_z=new_z+cell(3,3) ! if coordinate was negative
+            if (new_z > (cell(3,3)-wall)) then
+                dE = 0.0 ! reject trial move, energy does not change
+            else ! proceed with the step
+                n_accept_pos = n_accept_pos + ll_move_atom_1(N, Z, pos, n_extra_data, extra_data, &
+                             & cell, d_i, d_pos, Emax-E, dE)
+            endif
+         else ! not a surface simulation, proceed as normal
+            n_accept_pos = n_accept_pos + ll_move_atom_1(N, Z, pos, n_extra_data, extra_data, cell, d_i, d_pos, Emax-E, dE)
+         endif
+
          E = E + dE
 
          if (do_vel .and.  vel_pos_rv >= 0.5) then

@@ -38,8 +38,12 @@ def usage():
        | Name of file to read in for atom information
        | default: ''
 
-    ``keep_atoms_fixed=int``
-       | Number of atoms to fix in surface simulation
+    ``keep_atoms_fixed=int ``
+       | Number of atoms to fix in surface simulation. 
+
+    ``apply_Z_wall=[T|F] ``
+       | Whether to have a boundary in the Z direction to keep free particles reaching the other side of "surface" layer due to periodic boundary conditions.
+       | This functionality is not fully tested! Recommended use with MC evaluator and fortran. If constructing a surface layer, make it parallel to the XY plane and set the X dimension with the "wall" taken into account, no atoms should violate the wall rrestriction initially!!!
 
     ``restart_file=path_to_file``
        | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files.
@@ -483,7 +487,8 @@ def usage():
     sys.stderr.write("min_volume_per_atom=float (1)\n")
     sys.stderr.write("start_species=int int [ float ] [, int int [ float ] ... ] (MANDATORY, this or start_config_file required. atomic_number multiplicity [not recomended: mass (amu)]. Info repeated for each species, separated by commas, mass is optional and not recommended.\n")
     sys.stderr.write("start_config_file=str (MANDATORY, this or start_species required. if set filename to read initial atom information from (instead of creating them)\n")
-    sys.stderr.write("keep_atoms_fixed=int")
+    sys.stderr.write("keep_atoms_fixed=int (0, no atoms to be fixed)\n")
+    sys.stderr.write("apply_Z_wall=[T | F] (F, supported only for fortran MC)\n")
     sys.stderr.write("restart_file=path_to_file (file for restart configs. Mutually exclusive with start_*, one is required)\n")
     sys.stderr.write("n_walkers=int (MANDATORY)\n")
     sys.stderr.write("n_cull=int (1, number of walkers to kill at each NS iteration)\n")
@@ -1148,7 +1153,7 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
                 (n_try, n_accept, final_E) = f_MC_MD.GMC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), no_reverse=movement_args['GMC_no_reverse'], pert_ang=movement_args['GMC_dir_perturb_angle_during'])
             else:
                 # fixed atoms MC works by including the number of atoms to be kept fixed - LIVIA
-                (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), nD, movement_args['keep_atoms_fixed'])
+                (n_try, n_accept, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False), nD, movement_args['keep_atoms_fixed'], movement_args['wall_dist'])
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=True)
 
     elif (do_calc_lammps and movement_args['MC_atom_Galilean'] and ns_args['LAMMPS_fix_gmc']):
@@ -3516,6 +3521,11 @@ def main():
 
         movement_args['2D'] = str_to_logical(args.pop('2D', "F"))
         movement_args['keep_atoms_fixed'] = int(args.pop('keep_atoms_fixed', 0))
+        movement_args['apply_Z_wall'] = str_to_logical(args.pop('apply_Z_wall', "F"))
+        if movement_args['apply_Z_wall']:
+            movement_args['wall_dist'] = 10.00 # LIVIA - review this hard coded value 
+        else:
+            movement_args['wall_dist'] = 0.0
 
         if 'QUIP_pot_params_file' in ns_args:
             if not have_quippy:
@@ -3643,6 +3653,7 @@ def main():
                         species_list.append("%d %d" % (Z, n_of_Z))
             if comm is not None:
                 species_list = comm.bcast(species_list, root=0)
+
 
         if do_calc_lammps:
             if not ns_args['LAMMPS_atom_types'] == 'TYPE_EQUALS_Z':
