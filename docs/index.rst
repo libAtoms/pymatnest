@@ -23,7 +23,7 @@ domain.
 If you use this code please cite the following articles:
 
 R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*,
-Phys. Rev. E (2017), 96, 043311, http://link.aps.org/doi/10.1103/PhysRevE.96.043311
+Phys. Rev. E (2017), 96, 043311, https://link.aps.org/doi/10.1103/PhysRevE.96.043311
 
 L.B. Partay, G. Csanyi, N. Bernstein *Nested sampling for materials*
 Eur. Phys. J. B (2021) 94, 159, https://link.springer.com/article/10.1140/epjb/s10051-021-00172-1

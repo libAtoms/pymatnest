@@ -1,20 +1,20 @@
 
-The ``pymatnest`` package is a software library for carrying out nested sampling calculations. 
-It can be used to explore the energy landscape of different materials (both clusters and bulk materials), 
-calculate thermodynamic variables at arbitrary temperatures, locate phase transitions and calculate the 
+The ``pymatnest`` package is a software library for carrying out nested sampling calculations.
+It can be used to explore the energy landscape of different materials (both clusters and bulk materials),
+calculate thermodynamic variables at arbitrary temperatures, locate phase transitions and calculate the
 phase diagram. It can be used with LAMMPS, and the supplied fortran models, and both with MC and MD.
 
-If you use pymatnest, please cite the following publications: 
+If you use pymatnest, please cite the following publications:
 (references are available in bibtex format in the ``NS_publications.bib`` file)
 
-L.B. Partay, A.P. Bartok, G. Csanyi, *Efficient Sampling of Atomic Configurational Spaces*\ , 
-J. Phys. Chem. B (2010), 114, 10502–10512, http://pubs.acs.org/doi/abs/10.1021/jp1012973
+L.B. Partay, A.P. Bartok, G. Csanyi, *Efficient Sampling of Atomic Configurational Spaces*\ ,
+J. Phys. Chem. B (2010), 114, 10502–10512, https://pubs.acs.org/doi/abs/10.1021/jp1012973
 
 R.J.N. Baldock, L.B. Partay, A.P. Bartok, M.C. Payne, G. Csanyi, *Determining pressure-temperature phase diagrams of materials*\ ,
-Phys. Rev. B (2016), 93, 174108, http://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108 
+Phys. Rev. B (2016), 93, 174108, https://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108
 
 R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*\ ,
-Phys. Rev. E (2017), 96, 043311, http://link.aps.org/doi/10.1103/PhysRevE.96.043311
+Phys. Rev. E (2017), 96, 043311, https://link.aps.org/doi/10.1103/PhysRevE.96.043311
 
 Further publications using the pymatnest package:
 
@@ -30,7 +30,7 @@ System requirements
 -------------------
 
 You have to have ``numpy`` and ``ASE`` installed (check that you have a newer ASE
-version otherwise the extended xyz version will not be recognised). 
+version otherwise the extended xyz version will not be recognised).
 You have to have ``mpi4py`` and ``psutil`` too.
 
 Compilation of the streamlined FORTRAN models and MC/MD walkers.
@@ -56,18 +56,18 @@ flag, which allows lammps crashes to be handled gracefully within python.  Add i
 Basic instructions for recent versions of ``LAMMPS`` and ``mpi4py`` version 2.0.0 or newer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create an appropriate ``LAMMPS`` **serial** makefile, and compile with 
+Create an appropriate ``LAMMPS`` **serial** makefile, and compile with
 
 
 * ``make [machine] mode=shlib``
 
 For example ``make serial mode=shlib``.
-Install the python files supplied with ``LAMMPS`` :                                    
+Install the python files supplied with ``LAMMPS`` :
 
 
 * ``make install-python``
 
-Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where ``LAMMPS`` installed the python packages. (Likely to be in the PYTHONAPTH, where a lammps directory is created). 
+Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where ``LAMMPS`` installed the python packages. (Likely to be in the PYTHONAPTH, where a lammps directory is created).
 
 The input file variable ``LAMMPS_name`` is what you set for ``[machine]`` when installing ``lammps_[machine].so``.
 By default it is what you set for ``machine`` when compiling ``LAMMPS``\ , unless the library was renamed when installing.
@@ -75,7 +75,7 @@ By default it is what you set for ``machine`` when compiling ``LAMMPS``\ , unles
 Basic instructions for ``LAMMPS`` versions Nov 2020 or before:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Create an appropriate ``LAMMPS`` **parallel** makefile, and compile with 
+Create an appropriate ``LAMMPS`` **parallel** makefile, and compile with
 
 
 * ``make [machine] mode=shlib``
@@ -86,18 +86,18 @@ Copy ``lammps_top_dir/src/liblammps_[machine].so`` to the same place where you c
 
 The input file variable ``LAMMPS_name`` is what you set for ``[machine]`` when installing ``lammps_[machine].so``.
 By default it is what you set for ``machine`` when compiling ``LAMMPS``\ , unless the library was renamed when installing.
-Set the input variable ``LAMMPS_serial=F``. 
+Set the input variable ``LAMMPS_serial=F``.
 
 Support for GMC within LAMMPS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Copy the two GMC-related files ``ns_run_dir/lammps_patches/fix_gmc.*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
+Copy the two GMC-related files ``ns_run_dir/lammps_patches/fix_gmc.*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/``
 before compiling, and set ``LAMMPS_fix_gmc=T`` in the input file.
 
 Support for molecules
 ^^^^^^^^^^^^^^^^^^^^^
 
-For using molecules use the latest version of LAMMPS. If you need, copy the improper related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/`` 
+For using molecules use the latest version of LAMMPS. If you need, copy the improper related files ``ns_run_dir/lammps_patches/create_*`` to the ``LAMMPS`` directory ``lammps_top_dir/src/``
 before compiling.  See the file ``example_inputs/inputs.test.cluster.MD.lammps.polymer`` for an example.
 
 Mixed ``MPI-OpenMP``
@@ -119,17 +119,17 @@ When running:
 * add ``LAMMPS_header_extra='package omp 0'`` input file argument.
 * Use ``LAMMPS`` pair style that activates omp, e.g. ``pair_style lj/cut/omp 3.00``.
 * Pass flags to ``mpirun`` to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are available for OpenMP parallelization.
-* 
+*
   Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task's ``LAMMPS`` work over all 16 cores:
 
 
-  * 
+  *
     ``export OMP_NUM_THREADS=16``
 
-  * 
+  *
     ``mpirun -np 8 -x OMP_NUM_THREADS --map-by slot:pe=$OMP_NUM_THREADS ns_run < inputs``
 
-Note: the ``-np 8`` may not be needed, depending on your queueing system. 
+Note: the ``-np 8`` may not be needed, depending on your queueing system.
 
 Other notes
 ^^^^^^^^^^^
@@ -152,7 +152,7 @@ Apply the communicator patch to the ``LAMMPS`` source by doing
 * ``patch < ns_run_dir/lammps_patches/communicator_self.patch``
 
 where ``ns_run_dir`` is the directory where ``ns_run`` is, and ``lammps_top_dir`` is the ``LAMMPS`` directory.
-Create a Makefile for **parallel** lammps in ``lammps_top_dir/src/MAKE``. 
+Create a Makefile for **parallel** lammps in ``lammps_top_dir/src/MAKE``.
 Define ``-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF`` in the ``LMP_INC`` makefile variable, then compile
 as above.
 
@@ -161,11 +161,11 @@ For older versions of ``LAMMPS``
 
 **Important note:** Check the ``lammps.py`` file as the path definition used to have a bug in the line:
 
-``else: self.lib = CDLL(join(modpath,"/liblammps_%s.so" % name),RTLD_GLOBAL)`` 
+``else: self.lib = CDLL(join(modpath,"/liblammps_%s.so" % name),RTLD_GLOBAL)``
 
 You HAVE TO delete the ``/`` before ``liblammps`` otherwise it is interpreted as an absolute path!!!
 
-Running 
+Running
 --------
 
 To start a nested sampling run type
@@ -174,7 +174,7 @@ To start a nested sampling run type
 
 When running, it is strongly recommendded you set the ``OMP_NUM_THREADS=1`` environment variable (e.g. in your jobscript) to avoid
 multiple ``OpenMP`` threads starting which can seriosly slow down the calculations (unless you have compiled ``LAMMPS`` to be used
-with mixed ``MPI-OpenMP``\ ). 
+with mixed ``MPI-OpenMP``\ ).
 
 Example input files can be found in the folder ``./example_inputs``.
 
@@ -188,14 +188,14 @@ If you get weird errors about modules and/or ``.so`` files not found, do (in sh 
 
 where ``ns_run_dir`` is the directory where ``ns_run`` is.
 This appears to be necessary on some HPC machines where mpirun copies the executable,
-because ``ns_run`` by default looks for modules in the same directory as the top level 
+because ``ns_run`` by default looks for modules in the same directory as the top level
 python script itself. If it is still not sufficient, you might have to copy the entire ``ns_run_dir``
 to the directory where the jobs are submitted from.
 
 Running on ARCHER (UK National Supercomputing Service)
 ------------------------------------------------------
 
-Install the latest ``ASE`` (3.9 or later) version and add that directory to your ``PYTHONPATH``\ , as the 
+Install the latest ``ASE`` (3.9 or later) version and add that directory to your ``PYTHONPATH``\ , as the
 default version on ARCHER is just 3.8.
 
 Copy the whole ``pymatnest`` library to your ``/work`` directory, otherwise the compute nodes will not be
@@ -271,11 +271,11 @@ About the documentation
 -----------------------
 
 The documentation with example input files and a list of keywords...etc. can be found at
-http://libatoms.github.io/pymatnest/.
+https://libatoms.github.io/pymatnest/.
 
 The documentation is generated by Sphinx, using the files within the ``doc`` library.
 Modules are autodocumented with ``.. automodule::`` so all the properly formatted comments
 in the python code (i.e. within triple quote) appear.
 The installation and basic usage guidelines in the documentation are shown as the content of the README.md file
 is ``.. included:``\ -d.
-Example inputs are located in the folder ``./example_inputs`` and these files are also included in the documentation together with additional comments. 
+Example inputs are located in the folder ``./example_inputs`` and these files are also included in the documentation together with additional comments.
