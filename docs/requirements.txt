@@ -1,4 +1,2 @@
 sphinx
 sphinxcontrib-fulltoc
-sphinx-mdinclude==0.5.0
-docutils

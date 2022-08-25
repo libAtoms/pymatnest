@@ -2,5 +2,5 @@ Installation and quick start guide
 ==================================
 
 
-.. mdinclude:: ../README.md
+.. include:: ../README.rst
 
