@@ -18,9 +18,6 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
-        run: sudo apt-get install pandoc
-
-      - name: Install dependencies
         run: pip install -r docs/requirements.txt
 
       - name: Build
