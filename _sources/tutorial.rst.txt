@@ -147,7 +147,7 @@ following command. (``./ns_analyse --help`` prints all the possible options)
 
     ./ns_analyse MD_lammps_tutorial_100_a.energies -M 1 -n 200 -D 5
 
-This will print the output onto the screen. The fourth column is the heat capacity, and the result should look something like the curves below. The graph shows the heat capacity curve for three independent samplings. The larger peak corresponds to 
+This will print the output onto the screen. The fifth column is the heat capacity, and the result should look something like the curves below. The graph shows the heat capacity curve for three independent samplings. The larger peak corresponds to 
 the "condensation" of the six atoms. (Note that everything is in K, eV,... etc in the output, not in LJ units!)
 (You can start the sampling a few more times to have some parallel results - unless you explicitly set a seed for the random number generator
 all the runs will be independent and different. Do not forget to change the ``out_file_prefix`` keyword, so new runs do not overwrite previous ones.)

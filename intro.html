@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Nested sampling method &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -46,18 +47,18 @@
           <div class="body" role="main">
             
   <section id="nested-sampling-method">
-<h1>Nested sampling method<a class="headerlink" href="#nested-sampling-method" title="Permalink to this headline">¶</a></h1>
+<h1>Nested sampling method<a class="headerlink" href="#nested-sampling-method" title="Permalink to this heading">¶</a></h1>
 <dl class="field-list simple">
-<dt class="field-odd">Authors</dt>
+<dt class="field-odd">Authors<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Noam, Rob, Gabor, Livia</p>
 </dd>
-<dt class="field-even">Date</dt>
+<dt class="field-even">Date<span class="colon">:</span></dt>
 <dd class="field-even"><p>2015</p>
 </dd>
 </dl>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>The nested sampling method was first introduced by John Skilling <a class="footnote-reference brackets" href="#f1" id="id1">1</a>
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<p>The nested sampling method was first introduced by John Skilling <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>
 in the field of applied probability and inference to efficiently sample
 probability densities in high-dimensional spaces where the regions contributing
 most of the probability mass are exponentially localized.
@@ -84,30 +85,20 @@ configuration spaces.</p>
 <li><p>considerable computational gain over parallel tempering</p></li>
 </ul>
 </div></blockquote>
-<dl class="footnote brackets">
-<dt class="label" id="f1"><span class="brackets"><a class="fn-backref" href="#id1">1</a></span></dt>
-<dd><ol class="upperalpha simple" start="10">
+<aside class="footnote-list brackets">
+<aside class="footnote brackets" id="f1" role="note">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
+<ol class="upperalpha simple" start="10">
 <li><p>Skilling, in Nested Sampling, edited by Rainer Fischer, Roland Preuss, and Udo von Toussaint, AIP Conf. Proc. No. 735 (AIP, New York, 2004), p. 395</p></li>
 </ol>
-</dd>
-</dl>
+</aside>
+</aside>
 </section>
 <section id="publications">
-<h2>Publications<a class="headerlink" href="#publications" title="Permalink to this headline">¶</a></h2>
-<p>L.B. Partay, A.P. Bartok, G. Csanyi, <em>Efficient Sampling of Atomic Configurational Spaces</em>,
-J. Phys. Chem. B (2010), 114, 10502–10512, <a class="reference external" href="http://pubs.acs.org/doi/abs/10.1021/jp1012973">http://pubs.acs.org/doi/abs/10.1021/jp1012973</a></p>
-<p>R.J.N. Baldock, L.B. Partay, A.P. Bartok, M.C. Payne, G. Csanyi, <em>Determining pressure-temperature phase diagrams of materials</em>,
-Phys. Rev. B (2016), 93, 174108, <a class="reference external" href="http://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108">http://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108</a></p>
-<p>R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, <em>Constant-pressure nested sampling with atomistic dynamics</em>,
-Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="http://link.aps.org/doi/10.1103/PhysRevE.96.043311">http://link.aps.org/doi/10.1103/PhysRevE.96.043311</a></p>
-<p>Further publications using the pymatnest package:</p>
-<p>L.B. Partay <em>On the performance of interatomic potential models of iron: Comparison of the phase diagrams</em>,
-Comp. Mat. Sci. (2018), 149, 153, <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0927025618301794">https://www.sciencedirect.com/science/article/pii/S0927025618301794</a></p>
-<p>J. Dorrell, L.B. Partay <em>Thermodynamics and the potential energy landscape: case study of small water clusters</em>,
-Phys. Chem. Chem. Phys. (2019), 21, 7305 <a class="reference external" href="https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b">https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b</a></p>
+<h2>Publications<a class="headerlink" href="#publications" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="algorithm">
-<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this headline">¶</a></h2>
+<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this heading">¶</a></h2>
 <p>Nested sampling is an iterative, “top-down” method, it samples the Potential Energy Landscape (PES)
 through a series of nested energy levels, starting from the high energy region (gas phase) and going towards the
 global minimum. The sampling is done using a set of walkers - these are randomly generated configurations at the initial step of the sampling,
@@ -121,7 +112,7 @@ The iteration is continued until a satisfactory low energy configuration is reac
 <img alt="_images/NS_PES_animation.gif" src="_images/NS_PES_animation.gif" />
 </section>
 <section id="pymatnest">
-<h2><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this headline">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> package is a software
 library written in Fortran 95/python for the purpose of carrying out
 nested sampling calculations with a variety of options suitable for different systems.
@@ -129,11 +120,10 @@ It can be used with the supplied fortran potential models and it also has interf
 <blockquote>
 <div><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">QUIP</span></code></p></li>
 </ul>
 </div></blockquote>
 <section id="mc-and-md-step-algorithms">
-<h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Permalink to this headline">¶</a></h3>
+<h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Permalink to this heading">¶</a></h3>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">rej_free_perturb_velo</span></code></dt><dd><ul class="simple">
 <li><p>if atom_velo_rej_free_fully_randomize, pick random velocities consistent with Emax</p></li>
@@ -357,8 +347,9 @@ running statistics for the number of accepted/rejected moves on each process are
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul class="current">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Nested sampling method</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#publications">Publications</a></li>
@@ -379,12 +370,17 @@ running statistics for the number of accepted/rejected moves on each process are
 <li class="toctree-l1"><a class="reference internal" href="stacktrace.html"><cite>stacktrace</cite> module</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">About <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code></a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="install.html"
-                        title="next chapter">Installation and quick start guide</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="index.html"
+                          title="previous chapter">About <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code></a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="install.html"
+                          title="next chapter">Installation and quick start guide</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -396,12 +392,12 @@ running statistics for the number of accepted/rejected moves on each process are
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -427,7 +423,7 @@ running statistics for the number of accepted/rejected moves on each process are
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

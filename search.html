@@ -1,7 +1,7 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <script src="_static/searchtools.js"></script>
@@ -44,13 +45,14 @@
             
   <h1 id="search-documentation">Search</h1>
   
-  <div id="fallback" class="admonition warning">
-  <script>$('#fallback').hide();</script>
+  <noscript>
+  <div class="admonition warning">
   <p>
     Please activate JavaScript to enable the search
     functionality.
   </p>
   </div>
+  </noscript>
   
   
   <p>
@@ -60,7 +62,7 @@
   
   
   <form action="" method="get">
-    <input type="text" name="q" aria-labelledby="search-documentation" value="" />
+    <input type="text" name="q" aria-labelledby="search-documentation" value="" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
     <input type="submit" value="search" />
     <span id="search-progress" style="padding-left: 10px"></span>
   </form>
@@ -78,8 +80,9 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Nested sampling method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and quick start guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getstart.html">Getting started</a></li>
@@ -91,6 +94,7 @@
 <li class="toctree-l1"><a class="reference internal" href="stacktrace.html"><cite>stacktrace</cite> module</a></li>
 </ul>
 
+  </div>
         </div>
       </div>
       <div class="clearer"></div>
@@ -110,7 +114,7 @@
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

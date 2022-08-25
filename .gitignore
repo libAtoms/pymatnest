@@ -1,6 +1,0 @@
-*.stdout
-*.stdout.rundir
-*.stderr
-*.pyc
-*.mod
-*.so

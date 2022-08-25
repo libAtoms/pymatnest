@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Tutorials &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -46,9 +47,9 @@
           <div class="body" role="main">
             
   <section id="tutorials">
-<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this headline">¶</a></h1>
+<h1>Tutorials<a class="headerlink" href="#tutorials" title="Permalink to this heading">¶</a></h1>
 <section id="tutorial-1-6-lennard-jones-atoms-at-fixed-volume">
-<h2>Tutorial 1: 6 Lennard-Jones atoms at fixed volume<a class="headerlink" href="#tutorial-1-6-lennard-jones-atoms-at-fixed-volume" title="Permalink to this headline">¶</a></h2>
+<h2>Tutorial 1: 6 Lennard-Jones atoms at fixed volume<a class="headerlink" href="#tutorial-1-6-lennard-jones-atoms-at-fixed-volume" title="Permalink to this heading">¶</a></h2>
 <p>Let’s sample the potential energy landscape of six identical Lennard-Jones atoms,
 in a cubic box of fixed volume, then calculate the heat capacity curve and see what
 is the most stable structure found by nested sampling.
@@ -56,7 +57,7 @@ To calculate the potential energy and generate configurations we will use <code 
 Guidance on package requirements and on how to install <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>
 can be found in the <a class="reference internal" href="install.html"><span class="doc">Installation and quick start guide</span></a>.</p>
 <section id="create-the-input-file-ns-input-tutorial-inp">
-<h3>Create the input file ns_input_tutorial.inp<a class="headerlink" href="#create-the-input-file-ns-input-tutorial-inp" title="Permalink to this headline">¶</a></h3>
+<h3>Create the input file ns_input_tutorial.inp<a class="headerlink" href="#create-the-input-file-ns-input-tutorial-inp" title="Permalink to this heading">¶</a></h3>
 <p>We want six atoms in our simulation cell, and for the sake of simplicity let’s call them
 hydrogens. The <code class="docutils literal notranslate"><span class="pre">start_species</span></code> keyword defines this, the first integer is the atomic number,
 the second integer is the number of such atoms.</p>
@@ -122,7 +123,7 @@ units for <code class="docutils literal notranslate"><span class="pre">LAMMPS</s
 </div>
 </section>
 <section id="starting-the-run">
-<h3>Starting the run<a class="headerlink" href="#starting-the-run" title="Permalink to this headline">¶</a></h3>
+<h3>Starting the run<a class="headerlink" href="#starting-the-run" title="Permalink to this heading">¶</a></h3>
 <p>Now that the input file is ready, we can start the calculation by typing</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">ns_run</span> <span class="o">&lt;</span> <span class="n">ns_input_tutorial</span><span class="o">.</span><span class="n">inp</span> <span class="o">&gt;</span> <span class="n">ns_tutorial</span><span class="o">.</span><span class="n">out</span>
 </pre></div>
@@ -131,7 +132,7 @@ units for <code class="docutils literal notranslate"><span class="pre">LAMMPS</s
 example as it will be very inefficient).</p>
 </section>
 <section id="output-files-and-post-processing">
-<h3>Output files and post-processing<a class="headerlink" href="#output-files-and-post-processing" title="Permalink to this headline">¶</a></h3>
+<h3>Output files and post-processing<a class="headerlink" href="#output-files-and-post-processing" title="Permalink to this heading">¶</a></h3>
 <p>A set of output files will be generated. The file</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">NS_MD_lammps_tutorial_120_a</span><span class="o">.</span><span class="n">energies</span>
 </pre></div>
@@ -161,7 +162,7 @@ following command. (<code class="docutils literal notranslate"><span class="pre"
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">ns_analyse</span> <span class="n">MD_lammps_tutorial_100_a</span><span class="o">.</span><span class="n">energies</span> <span class="o">-</span><span class="n">M</span> <span class="mi">1</span> <span class="o">-</span><span class="n">n</span> <span class="mi">200</span> <span class="o">-</span><span class="n">D</span> <span class="mi">5</span>
 </pre></div>
 </div>
-<p>This will print the output onto the screen. The fourth column is the heat capacity, and the result should look something like the curves below. The graph shows the heat capacity curve for three independent samplings. The larger peak corresponds to
+<p>This will print the output onto the screen. The fifth column is the heat capacity, and the result should look something like the curves below. The graph shows the heat capacity curve for three independent samplings. The larger peak corresponds to
 the “condensation” of the six atoms. (Note that everything is in K, eV,… etc in the output, not in LJ units!)
 (You can start the sampling a few more times to have some parallel results - unless you explicitly set a seed for the random number generator
 all the runs will be independent and different. Do not forget to change the <code class="docutils literal notranslate"><span class="pre">out_file_prefix</span></code> keyword, so new runs do not overwrite previous ones.)</p>
@@ -170,7 +171,7 @@ all the runs will be independent and different. Do not forget to change the <cod
 </figure>
 </section>
 <section id="improving-convergence">
-<h3>Improving convergence<a class="headerlink" href="#improving-convergence" title="Permalink to this headline">¶</a></h3>
+<h3>Improving convergence<a class="headerlink" href="#improving-convergence" title="Permalink to this heading">¶</a></h3>
 <p>Though the above heat capacity curves show similar behaviour we should be able to improve convergence further.
 This can be done by increasing the number of walkers (“improving the resolution of the potential energy landscape”)
 and/or increasing the length of the trajectory when generating a new sample.</p>
@@ -195,8 +196,9 @@ and we do not necessarily need all the configurations in the trajectory file (th
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul class="current">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Nested sampling method</a></li>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Installation and quick start guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="getstart.html">Getting started</a></li>
@@ -217,12 +219,17 @@ and we do not necessarily need all the configurations in the trajectory file (th
 <li class="toctree-l1"><a class="reference internal" href="stacktrace.html"><cite>stacktrace</cite> module</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="getstart.html"
-                        title="previous chapter">Getting started</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="ns_run.html"
-                        title="next chapter"><cite>pymatnest</cite> module</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="getstart.html"
+                          title="previous chapter">Getting started</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="ns_run.html"
+                          title="next chapter"><cite>pymatnest</cite> module</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -234,12 +241,12 @@ and we do not necessarily need all the configurations in the trajectory file (th
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -265,7 +272,7 @@ and we do not necessarily need all the configurations in the trajectory file (th
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

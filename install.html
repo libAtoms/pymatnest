@@ -1,10 +1,10 @@
 
 <!DOCTYPE html>
 
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Installation and quick start guide &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
@@ -13,6 +13,7 @@
     <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
+    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -46,31 +47,50 @@
           <div class="body" role="main">
             
   <section id="installation-and-quick-start-guide">
-<h1>Installation and quick start guide<a class="headerlink" href="#installation-and-quick-start-guide" title="Permalink to this headline">¶</a></h1>
+<h1>Installation and quick start guide<a class="headerlink" href="#installation-and-quick-start-guide" title="Permalink to this heading">¶</a></h1>
+<p>The <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> package is a software library for carrying out nested sampling calculations.
+It can be used to explore the energy landscape of different materials (both clusters and bulk materials),
+calculate thermodynamic variables at arbitrary temperatures, locate phase transitions and calculate the
+phase diagram. It can be used with LAMMPS, and the supplied fortran models, and both with MC and MD.</p>
+<p>If you use pymatnest, please cite the following publications:
+(references are available in bibtex format in the <code class="docutils literal notranslate"><span class="pre">NS_publications.bib</span></code> file)</p>
+<p>L.B. Partay, A.P. Bartok, G. Csanyi, <em>Efficient Sampling of Atomic Configurational Spaces</em>,
+J. Phys. Chem. B (2010), 114, 10502–10512, <a class="reference external" href="https://pubs.acs.org/doi/abs/10.1021/jp1012973">https://pubs.acs.org/doi/abs/10.1021/jp1012973</a></p>
+<p>R.J.N. Baldock, L.B. Partay, A.P. Bartok, M.C. Payne, G. Csanyi, <em>Determining pressure-temperature phase diagrams of materials</em>,
+Phys. Rev. B (2016), 93, 174108, <a class="reference external" href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108">https://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108</a></p>
+<p>R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, <em>Constant-pressure nested sampling with atomistic dynamics</em>,
+Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="https://link.aps.org/doi/10.1103/PhysRevE.96.043311">https://link.aps.org/doi/10.1103/PhysRevE.96.043311</a></p>
+<p>Further publications using the pymatnest package:</p>
+<p>L.B. Partay <em>On the performance of interatomic potential models of iron: Comparison of the phase diagrams</em>,
+Comp. Mat. Sci. (2018), 149, 153, <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0927025618301794">https://www.sciencedirect.com/science/article/pii/S0927025618301794</a></p>
+<p>J. Dorrell, L.B. Partay <em>Thermodynamics and the potential energy landscape: case study of small water clusters</em>,
+Phys. Chem. Chem. Phys. (2019), 21, 7305 <a class="reference external" href="https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b">https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b</a></p>
+<hr class="docutils" />
 <section id="system-requirements">
-<h2>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this headline">¶</a></h2>
+<h2>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this heading">¶</a></h2>
 <p>You have to have <code class="docutils literal notranslate"><span class="pre">numpy</span></code> and <code class="docutils literal notranslate"><span class="pre">ASE</span></code> installed (check that you have a newer ASE
 version otherwise the extended xyz version will not be recognised).
 You have to have <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> and <code class="docutils literal notranslate"><span class="pre">psutil</span></code> too.</p>
 </section>
 <section id="compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">
-<h2>Compilation of the streamlined FORTRAN models and MC/MD walkers.<a class="headerlink" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers" title="Permalink to this headline">¶</a></h2>
+<h2>Compilation of the streamlined FORTRAN models and MC/MD walkers.<a class="headerlink" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers" title="Permalink to this heading">¶</a></h2>
 <ol class="arabic simple">
 <li><p>edit <code class="docutils literal notranslate"><span class="pre">Makefile.arch</span></code> (by default Linux appropriate variables are set)</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">make</span></code></p></li>
 </ol>
 </section>
-<section id="using-with-quip">
-<h2>Using with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code><a class="headerlink" href="#using-with-quip" title="Permalink to this headline">¶</a></h2>
-<p>Make sure your <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> is set correctly to find the <code class="docutils literal notranslate"><span class="pre">quippy</span></code> module.
-(Note: Check the <code class="docutils literal notranslate"><span class="pre">QUIP_ARCH</span></code> with which you build quippy, as some might result in segmentation fault when running
-<code class="docutils literal notranslate"><span class="pre">ns_run</span></code> (e.g. try gfortan_openmpi if gfortran fails)</p>
-</section>
 <section id="using-with-lammps">
-<h2>Using with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#using-with-lammps" title="Permalink to this headline">¶</a></h2>
+<h2>Using with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#using-with-lammps" title="Permalink to this heading">¶</a></h2>
 <p>These instructions assume the latest (git/svn) version of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>.  It is not tested how
 far back older versions would also work.</p>
-<p>### Basic instructions for recent versions of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> and <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> version 2.0.0 or newer</p>
+<section id="nearly-mandatory-compilation-flags-for-all-lammps-versions">
+<h3>Nearly mandatory compilation flags (for all <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions)<a class="headerlink" href="#nearly-mandatory-compilation-flags-for-all-lammps-versions" title="Permalink to this heading">¶</a></h3>
+<p>It is necessary to take advantage of the <code class="docutils literal notranslate"><span class="pre">-DLAMMPS_EXCEPTIONS</span></code>
+flag, which allows lammps crashes to be handled gracefully within python.  Add it to the <code class="docutils literal notranslate"><span class="pre">LMP_INC</span></code> variable in the
+<code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> makefile before compiling.</p>
+</section>
+<section id="basic-instructions-for-recent-versions-of-lammps-and-mpi4py-version-2-0-0-or-newer">
+<h3>Basic instructions for recent versions of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> and <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> version 2.0.0 or newer<a class="headerlink" href="#basic-instructions-for-recent-versions-of-lammps-and-mpi4py-version-2-0-0-or-newer" title="Permalink to this heading">¶</a></h3>
 <p>Create an appropriate <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> <strong>serial</strong> makefile, and compile with</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></p></li>
@@ -83,7 +103,9 @@ Install the python files supplied with <code class="docutils literal notranslate
 <p>Copy <code class="docutils literal notranslate"><span class="pre">lammps_top_dir/src/liblammps_[machine].so</span></code> to the same place where <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> installed the python packages. (Likely to be in the PYTHONAPTH, where a lammps directory is created).</p>
 <p>The input file variable <code class="docutils literal notranslate"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal notranslate"><span class="pre">[machine]</span></code> when installing <code class="docutils literal notranslate"><span class="pre">lammps_[machine].so</span></code>.
 By default it is what you set for <code class="docutils literal notranslate"><span class="pre">machine</span></code> when compiling <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, unless the library was renamed when installing.</p>
-<p>### Basic instructions for <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions Nov 2020 or before:</p>
+</section>
+<section id="basic-instructions-for-lammps-versions-nov-2020-or-before">
+<h3>Basic instructions for <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions Nov 2020 or before:<a class="headerlink" href="#basic-instructions-for-lammps-versions-nov-2020-or-before" title="Permalink to this heading">¶</a></h3>
 <p>Create an appropriate <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> <strong>parallel</strong> makefile, and compile with</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">[machine]</span> <span class="pre">mode=shlib</span></code></p></li>
@@ -93,17 +115,19 @@ By default it is what you set for <code class="docutils literal notranslate"><sp
 <p>The input file variable <code class="docutils literal notranslate"><span class="pre">LAMMPS_name</span></code> is what you set for <code class="docutils literal notranslate"><span class="pre">[machine]</span></code> when installing <code class="docutils literal notranslate"><span class="pre">lammps_[machine].so</span></code>.
 By default it is what you set for <code class="docutils literal notranslate"><span class="pre">machine</span></code> when compiling <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, unless the library was renamed when installing.
 Set the input variable <code class="docutils literal notranslate"><span class="pre">LAMMPS_serial=F</span></code>.</p>
-<p>### Nearly mandatory compilation flags (for all <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions)</p>
-<p>It is extremely useful, essentially required, to take advantage of the (relatively recent) <code class="docutils literal notranslate"><span class="pre">-DLAMMPS_EXCEPTIONS</span></code>
-flag, which allows lammps crashes to be handled gracefully within python.  Add it to the <code class="docutils literal notranslate"><span class="pre">LMP_INC</span></code> variable in the
-<code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> makefile before compiling</p>
-<p>### Support for GMC within LAMMPS</p>
+</section>
+<section id="support-for-gmc-within-lammps">
+<h3>Support for GMC within LAMMPS<a class="headerlink" href="#support-for-gmc-within-lammps" title="Permalink to this heading">¶</a></h3>
 <p>Copy the two GMC-related files <code class="docutils literal notranslate"><span class="pre">ns_run_dir/lammps_patches/fix_gmc.*</span></code> to the <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> directory <code class="docutils literal notranslate"><span class="pre">lammps_top_dir/src/</span></code>
 before compiling, and set <code class="docutils literal notranslate"><span class="pre">LAMMPS_fix_gmc=T</span></code> in the input file.</p>
-<p>### Support for molecules</p>
+</section>
+<section id="support-for-molecules">
+<h3>Support for molecules<a class="headerlink" href="#support-for-molecules" title="Permalink to this heading">¶</a></h3>
 <p>For using molecules use the latest version of LAMMPS. If you need, copy the improper related files <code class="docutils literal notranslate"><span class="pre">ns_run_dir/lammps_patches/create_*</span></code> to the <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> directory <code class="docutils literal notranslate"><span class="pre">lammps_top_dir/src/</span></code>
 before compiling.  See the file <code class="docutils literal notranslate"><span class="pre">example_inputs/inputs.test.cluster.MD.lammps.polymer</span></code> for an example.</p>
-<p>### Mixed <code class="docutils literal notranslate"><span class="pre">MPI-OpenMP</span></code></p>
+</section>
+<section id="mixed-mpi-openmp">
+<h3>Mixed <code class="docutils literal notranslate"><span class="pre">MPI-OpenMP</span></code><a class="headerlink" href="#mixed-mpi-openmp" title="Permalink to this heading">¶</a></h3>
 <p>It is possible to use <code class="docutils literal notranslate"><span class="pre">OpenMP</span></code> to parallelize each <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> task.  This has been tested to run, but not for correctness or efficiency.</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">lammps_top_dir/src</span></code></p></li>
@@ -112,29 +136,28 @@ before compiling.  See the file <code class="docutils literal notranslate"><span
 <p>Add openmp enabling flag (e.g. <code class="docutils literal notranslate"><span class="pre">-fopenmp</span></code> for gfortran) to <code class="docutils literal notranslate"><span class="pre">CCFLAGS</span></code> in the <code class="docutils literal notranslate"><span class="pre">MAKE/MINE/Makefile.[machine]</span></code>, then compile and install
 as above.</p>
 <p>When running:</p>
-<ul>
+<ul class="simple">
 <li><p>Set <code class="docutils literal notranslate"><span class="pre">OMP_NUM_THREADS</span></code> environment variable for number of <code class="docutils literal notranslate"><span class="pre">OpenMP</span></code> threads per task, and</p></li>
 <li><p>add <code class="docutils literal notranslate"><span class="pre">LAMMPS_header_extra='package</span> <span class="pre">omp</span> <span class="pre">0'</span></code> input file argument.</p></li>
 <li><p>Use <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> pair style that activates omp, e.g. <code class="docutils literal notranslate"><span class="pre">pair_style</span> <span class="pre">lj/cut/omp</span> <span class="pre">3.00</span></code>.</p></li>
 <li><p>Pass flags to <code class="docutils literal notranslate"><span class="pre">mpirun</span></code> to tell it to run fewer MPI tasks than total number of cores assigned to entire job so that cores are available for OpenMP parallelization.</p></li>
 <li><p>Example for OpenMPI, on 8 nodes, with 16 cores each, OpenMP parallelizing each MPI task’s <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> work over all 16 cores:</p>
-<blockquote>
-<div><ul class="simple">
+<ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">export</span> <span class="pre">OMP_NUM_THREADS=16</span></code></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">mpirun</span> <span class="pre">-np</span> <span class="pre">8</span> <span class="pre">-x</span> <span class="pre">OMP_NUM_THREADS</span> <span class="pre">--map-by</span> <span class="pre">slot:pe=$OMP_NUM_THREADS</span> <span class="pre">ns_run</span> <span class="pre">&lt;</span> <span class="pre">inputs</span></code></p></li>
 </ul>
-</div></blockquote>
 </li>
 </ul>
 <p>Note: the <code class="docutils literal notranslate"><span class="pre">-np</span> <span class="pre">8</span></code> may not be needed, depending on your queueing system.</p>
-<p>### Other notes</p>
-<p>You <strong>have</strong> to compile a parallel version of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>.  <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> “serial” compilation still
-links to fake <code class="docutils literal notranslate"><span class="pre">MPI</span></code> routines, which then conflict in unpredictable ways with
-the true mpi routines that <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> includes.</p>
+</section>
+<section id="other-notes">
+<h3>Other notes<a class="headerlink" href="#other-notes" title="Permalink to this heading">¶</a></h3>
 <p>The <code class="docutils literal notranslate"><span class="pre">LAMMPS</span> <span class="pre">ASE</span></code> interface (<code class="docutils literal notranslate"><span class="pre">ns_run_dir/lammpslib.py</span></code>) is a heavily modified version of</p>
-<p>&lt;<a class="reference external" href="https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py">https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py</a>&gt;</p>
+<p><a class="reference external" href="https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py">https://svn.fysik.dtu.dk/projects/ase-extra/trunk/ase/calculators/lammpslib.py</a></p>
 <p>For more information on how the interface works, see the <a class="reference internal" href="lammpslib.html"><span class="doc">lammpslib module</span></a>.</p>
-<p>### For versions of <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> older than 2.0.0</p>
+</section>
+<section id="for-versions-of-mpi4py-older-than-2-0-0">
+<h3>For versions of <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> older than 2.0.0<a class="headerlink" href="#for-versions-of-mpi4py-older-than-2-0-0" title="Permalink to this heading">¶</a></h3>
 <p>If you have <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> version older than 2.0.0, you will need to patch LAMMPS as follows.</p>
 <p>Apply the communicator patch to the <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> source by doing</p>
 <ul class="simple">
@@ -145,13 +168,16 @@ the true mpi routines that <code class="docutils literal notranslate"><span clas
 Create a Makefile for <strong>parallel</strong> lammps in <code class="docutils literal notranslate"><span class="pre">lammps_top_dir/src/MAKE</span></code>.
 Define <code class="docutils literal notranslate"><span class="pre">-DLIBRARY_MPI_COMM_WORLD=MPI_COMM_SELF</span></code> in the <code class="docutils literal notranslate"><span class="pre">LMP_INC</span></code> makefile variable, then compile
 as above.</p>
-<p>### For older versions of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></p>
+</section>
+<section id="for-older-versions-of-lammps">
+<h3>For older versions of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#for-older-versions-of-lammps" title="Permalink to this heading">¶</a></h3>
 <p><strong>Important note:</strong> Check the <code class="docutils literal notranslate"><span class="pre">lammps.py</span></code> file as the path definition used to have a bug in the line:</p>
 <p><code class="docutils literal notranslate"><span class="pre">else:</span> <span class="pre">self.lib</span> <span class="pre">=</span> <span class="pre">CDLL(join(modpath,&quot;/liblammps_%s.so&quot;</span> <span class="pre">%</span> <span class="pre">name),RTLD_GLOBAL)</span></code></p>
 <p>You HAVE TO delete the <code class="docutils literal notranslate"><span class="pre">/</span></code> before <code class="docutils literal notranslate"><span class="pre">liblammps</span></code> otherwise it is interpreted as an absolute path!!!</p>
 </section>
+</section>
 <section id="running">
-<h2>Running<a class="headerlink" href="#running" title="Permalink to this headline">¶</a></h2>
+<h2>Running<a class="headerlink" href="#running" title="Permalink to this heading">¶</a></h2>
 <p>To start a nested sampling run type</p>
 <blockquote>
 <div><p><code class="docutils literal notranslate"><span class="pre">ns_run</span> <span class="pre">&lt;</span> <span class="pre">input</span></code></p>
@@ -175,7 +201,7 @@ python script itself. If it is still not sufficient, you might have to copy the 
 to the directory where the jobs are submitted from.</p>
 </section>
 <section id="running-on-archer-uk-national-supercomputing-service">
-<h2>Running on ARCHER (UK National Supercomputing Service)<a class="headerlink" href="#running-on-archer-uk-national-supercomputing-service" title="Permalink to this headline">¶</a></h2>
+<h2>Running on ARCHER (UK National Supercomputing Service)<a class="headerlink" href="#running-on-archer-uk-national-supercomputing-service" title="Permalink to this heading">¶</a></h2>
 <p>Install the latest <code class="docutils literal notranslate"><span class="pre">ASE</span></code> (3.9 or later) version and add that directory to your <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>, as the
 default version on ARCHER is just 3.8.</p>
 <p>Copy the whole <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> library to your <code class="docutils literal notranslate"><span class="pre">/work</span></code> directory, otherwise the compute nodes will not be
@@ -188,7 +214,7 @@ able to read all the relevant python files.</p>
 </div></blockquote>
 </section>
 <section id="analysis">
-<h2>Analysis<a class="headerlink" href="#analysis" title="Permalink to this headline">¶</a></h2>
+<h2>Analysis<a class="headerlink" href="#analysis" title="Permalink to this heading">¶</a></h2>
 <p>To analyse the results you can use</p>
 <blockquote>
 <div><p><code class="docutils literal notranslate"><span class="pre">ns_analyse</span> <span class="pre">-M</span> <span class="pre">0.01</span> <span class="pre">-D</span> <span class="pre">0.01</span> <span class="pre">-n</span> <span class="pre">100</span> <span class="pre">file.energies</span> <span class="pre">&gt;</span> <span class="pre">analysis</span></code></p>
@@ -199,7 +225,7 @@ able to read all the relevant python files.</p>
 </div></blockquote>
 </section>
 <section id="temperature-averaged-analysis-workflow">
-<h2>Temperature averaged analysis workflow<a class="headerlink" href="#temperature-averaged-analysis-workflow" title="Permalink to this headline">¶</a></h2>
+<h2>Temperature averaged analysis workflow<a class="headerlink" href="#temperature-averaged-analysis-workflow" title="Permalink to this heading">¶</a></h2>
 <p>This assumes that QUIP is installed (<code class="docutils literal notranslate"><span class="pre">structure_analysis_traj</span></code> and <code class="docutils literal notranslate"><span class="pre">mean_var_correl</span></code> are part of QUIP).</p>
 <dl class="simple">
 <dt>Merge configurations using</dt><dd><p><code class="docutils literal notranslate"><span class="pre">ns_process_traj</span> <span class="pre">-t</span></code></p>
@@ -227,14 +253,14 @@ It calculates the weights on its own and can deal with single trajectory files a
 <p>The following variables set in the script may be intersting:</p>
 <p><strong>significant_part</strong></p>
 <p>The parameter <code class="docutils literal notranslate"><span class="pre">significant_part</span></code> controls how much of the sampled structures we actually consider. It follows the name
-<code class="docutils literal notranslate"><span class="pre">_signifpart_</span></code> in the filename. For example, if it was set to 0.25 we would only consider the ca 25% most likely structures. (Due to discrete weight steps, this number is not exact.) The default value of <code class="docutils literal notranslate"><span class="pre">significant_part</span></code> is 0.95. This ignores irrelevant structures and especially excludes high volume systems when we consider the solid phases. (To speed up the calculations one could go lower, but without further experimentation, no clear recommendations can be made with regards to this.)</p>
+<code class="docutils literal notranslate"><span class="pre">_signifpart_\</span> <span class="pre">``in</span> <span class="pre">the</span> <span class="pre">filename.</span> <span class="pre">For</span> <span class="pre">example,</span> <span class="pre">if</span> <span class="pre">it</span> <span class="pre">was</span> <span class="pre">set</span> <span class="pre">to</span> <span class="pre">0.25</span> <span class="pre">we</span> <span class="pre">would</span> <span class="pre">only</span> <span class="pre">consider</span> <span class="pre">the</span> <span class="pre">ca</span> <span class="pre">25%</span> <span class="pre">most</span> <span class="pre">likely</span> <span class="pre">structures.</span> <span class="pre">(Due</span> <span class="pre">to</span> <span class="pre">discrete</span> <span class="pre">weight</span> <span class="pre">steps,</span> <span class="pre">this</span> <span class="pre">number</span> <span class="pre">is</span> <span class="pre">not</span> <span class="pre">exact.)</span> <span class="pre">The</span> <span class="pre">default</span> <span class="pre">value</span> <span class="pre">of</span></code>significant_part`` is 0.95. This ignores irrelevant structures and especially excludes high volume systems when we consider the solid phases. (To speed up the calculations one could go lower, but without further experimentation, no clear recommendations can be made with regards to this.)</p>
 <p><strong>do_rdfd</strong></p>
 <p><code class="docutils literal notranslate"><span class="pre">do_rdfd</span> <span class="pre">=</span> <span class="pre">False</span></code> controls whether radial density functions are calculated. RDFs in QUIP are not using periodic cells. This makes it very hard to compare different cells of the same structure. Hence, it is turned off. If set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the script uses a 6x6x6 supercell for the comparison structures.</p>
 </section>
 <section id="about-the-documentation">
-<h2>About the documentation<a class="headerlink" href="#about-the-documentation" title="Permalink to this headline">¶</a></h2>
+<h2>About the documentation<a class="headerlink" href="#about-the-documentation" title="Permalink to this heading">¶</a></h2>
 <p>The documentation with example input files and a list of keywords…etc. can be found at
-&lt;<a class="reference external" href="http://libatoms.github.io/pymatnest/">http://libatoms.github.io/pymatnest/</a>&gt;.</p>
+<a class="reference external" href="https://libatoms.github.io/pymatnest/">https://libatoms.github.io/pymatnest/</a>.</p>
 <p>The documentation is generated by Sphinx, using the files within the <code class="docutils literal notranslate"><span class="pre">doc</span></code> library.
 Modules are autodocumented with <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">automodule::</span></code> so all the properly formatted comments
 in the python code (i.e. within triple quote) appear.
@@ -251,14 +277,25 @@ Example inputs are located in the folder <code class="docutils literal notransla
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul class="current">
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="intro.html">Nested sampling method</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation and quick start guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#system-requirements">System requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">Compilation of the streamlined FORTRAN models and MC/MD walkers.</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#using-with-quip">Using with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code></a></li>
-<li class="toctree-l2"><a class="reference internal" href="#using-with-lammps">Using with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-with-lammps">Using with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#nearly-mandatory-compilation-flags-for-all-lammps-versions">Nearly mandatory compilation flags (for all <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#basic-instructions-for-recent-versions-of-lammps-and-mpi4py-version-2-0-0-or-newer">Basic instructions for recent versions of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> and <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> version 2.0.0 or newer</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#basic-instructions-for-lammps-versions-nov-2020-or-before">Basic instructions for <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions Nov 2020 or before:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#support-for-gmc-within-lammps">Support for GMC within LAMMPS</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#support-for-molecules">Support for molecules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mixed-mpi-openmp">Mixed <code class="docutils literal notranslate"><span class="pre">MPI-OpenMP</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-notes">Other notes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#for-versions-of-mpi4py-older-than-2-0-0">For versions of <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> older than 2.0.0</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#for-older-versions-of-lammps">For older versions of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#running">Running</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#running-on-archer-uk-national-supercomputing-service">Running on ARCHER (UK National Supercomputing Service)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#analysis">Analysis</a></li>
@@ -275,12 +312,17 @@ Example inputs are located in the folder <code class="docutils literal notransla
 <li class="toctree-l1"><a class="reference internal" href="stacktrace.html"><cite>stacktrace</cite> module</a></li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="intro.html"
-                        title="previous chapter">Nested sampling method</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="getstart.html"
-                        title="next chapter">Getting started</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="intro.html"
+                          title="previous chapter">Nested sampling method</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="getstart.html"
+                          title="next chapter">Getting started</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -292,12 +334,12 @@ Example inputs are located in the folder <code class="docutils literal notransla
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script>$('#searchbox').show(0);</script>
+<script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
       <div class="clearer"></div>
@@ -323,7 +365,7 @@ Example inputs are located in the folder <code class="docutils literal notransla
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
     </div>
   </body>
 </html>

@@ -1,6 +1,0 @@
-test*.traj.*.extxyz
-test*.snapshot.*.extxyz
-test*.out
-test*.energies
-*energies*analysis
-job*pbs
