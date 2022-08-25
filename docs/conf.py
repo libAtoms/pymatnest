@@ -36,7 +36,7 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinxcontrib.fulltoc',
     'sphinx.ext.githubpages',
-    'sphinx_mdinclude',
+    'sphinx-mdinclude',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
