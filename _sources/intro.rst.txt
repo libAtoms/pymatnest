@@ -35,7 +35,7 @@ Publications
 -------------------------------------
 .. include:: ../README.rst
    :start-after: (references are available in bibtex format in the ``NS_publications.bib`` file)
-   :end-before: ******
+   :end-before: ----  
 
 Algorithm
 -------------------------------------
