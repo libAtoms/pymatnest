@@ -15,7 +15,7 @@ Long term support of the package is ensured by:
  - Gabor Csanyi (University of Cambridge)
  - Rob Baldock  (EPFL)
  - Livia Bartok-Partay (University of Warwick)
- 
+
 Copyright 2015-2016.
 
 Most of the publicly available version is in the public

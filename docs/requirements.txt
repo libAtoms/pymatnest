@@ -1,2 +1,3 @@
 Sphinx==5.1.1
 sphinxcontrib-fulltoc
+sphinx-mdinclude

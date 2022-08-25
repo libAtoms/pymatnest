@@ -2,6 +2,5 @@ Installation and quick start guide
 ==================================
 
 
-.. include:: ../README.md
-   :start-after: ****** 
+.. mdinclude:: ../README.md
 
