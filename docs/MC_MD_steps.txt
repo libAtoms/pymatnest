@@ -64,8 +64,8 @@
     * perturb final energy by random\_energy\_perturbation
 
 ``full_auto_set_stepsizes``
-    * Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.
-    * The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes
+    * Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range. 
+    * The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes 
     * For each (H)MC move type the following is performed
         * Set ''movement\_args'' parameters so that only one (H)MC call is made at a time
         * Min and max acceptance rates are copied from parameters MC\_adjust\_min\_rate / MD\_adjust\_min\_rate and MC\_adjust\_max\_rate / MD\_adjust\_max\_rate
@@ -73,7 +73,7 @@
             * Repeat the following 200/num\_of\_MPI\_processes times:
                 * Copy a configuration from the live set (each MPI process chooses a different configuration)
                 * Each MPI processes performs one (H)MC move on its cloned configuration
-                  running statistics for the number of accepted/rejected moves on each process are recorded
+                  running statistics for the number of accepted/rejected moves on each process are recorded 
             * The total number of accepted/rejected moves for this step size (summed across all MPI processes) are estabilshed
                 * If the total acceptance rate is within the desired range, return this stepsize
                         * If this is NOT the first time the loop has been performed for this (H)MC move AND we previously obtained an acceptance rate on one side of the desired range, and now find an acceptance rate on the other side of the desired range

@@ -29,6 +29,7 @@ jobs:
         run: |
           conda install lammps -c conda-forge
           python -m pip install -r docs/requirements.txt
+          export PYTHONPATH="${{github.workspace}}:$PYTHONPATH"
 
       - name: Build main package
         run: make libs
