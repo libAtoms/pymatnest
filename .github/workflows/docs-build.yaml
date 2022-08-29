@@ -25,10 +25,12 @@ jobs:
           conda install lammps -c conda-forge
           python -m pip install -r docs/requirements.txt
 
-      - name: Build
+      - name: Build main package
+        run: make libs
+
+      - name: Build docs
         working-directory: ${{github.workspace}}/docs
-        run: |
-          make html
+        run: make html
 
       - name: Commit to gh-pages branch
         if: github.ref == 'refs/heads/master'
