@@ -764,7 +764,11 @@ def propagate_lammps(at, dt, n_steps, algo, Emax=None):
 
     # set appropriate fix
     if algo == 'NVE':
-        pot.lmp.command('fix 1 all nve')
+        if movement_args['keep_atoms_fixed'] > 0: #LIVIA
+            #pot.lmp.command('group mobile id > ' + str(movement_args['keep_atoms_fixed']))
+            pot.lmp.command('fix 1 mobile nve')
+        else:
+            pot.lmp.command('fix 1 all nve')
     elif algo == 'GMC':
         # Hard coded value needed for LAMMPS. Let's hope our RNG maximum is at
         # least this large.
@@ -823,7 +827,13 @@ def gen_random_velo(at, KEmax, unit_rv=None):
         unit_rv = velo_unit_rv(len(at))
     if movement_args['2D']:
         unit_rv[:, 2] = 0.0
-    rv_mag = velo_rv_mag(len(at))
+
+    # propose right magnitude of randomness consistent with mobile atoms
+    if movement_args['keep_atoms_fixed'] > 0:
+        rv_mag = velo_rv_mag(len(at)-movement_args['keep_atoms_fixed'])
+    else:
+        rv_mag = velo_rv_mag(len(at))
+    #rv_mag = velo_rv_mag(len(at))
 
     # from Baldock thesis Eq. 11.10
     #     p^{**} = r \mathbf{S} \hat{\mathbf{r}}
@@ -833,7 +843,12 @@ def gen_random_velo(at, KEmax, unit_rv=None):
     # v_i = p_i / m_i = r (2/m)^{1/2} (E-U)^{1/2} \hat{r}_i
 
     masses = at.get_masses()
+
+    # the "np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt(KEmax)" is filling it up with the same term
     velocities = rv_mag * np.sqrt(2.0/np.array([masses,]*3).transpose()) * np.sqrt(KEmax) * unit_rv
+    # zero velocities of fixed atoms (these were not taken into account in the nDOF)
+    if movement_args['keep_atoms_fixed'] > 0:
+        velocities[:movement_args['keep_atoms_fixed']]=0.0
 
     return velocities
 
@@ -896,30 +911,21 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
     orig_KE = at.get_kinetic_energy()
     #DOC \item if atom\_velo\_rej\_free\_fully\_randomize, pick random velocities consistent with Emax
     if movement_args['atom_velo_rej_free_fully_randomize']:
-        # randomize completely
-        at.set_velocities(gen_random_velo(at, KEmax_use))  # TODO: RBW – methinks there might be an issue here too
-        if movement_args['keep_atoms_fixed'] > 0:  # for surface simulations
-            random_velo = at.get_velocities()
-            random_velo[:movement_args['keep_atoms_fixed'], :] = 0
-            at.set_velocities(random_velo)
+        # randomize completely, fixed atoms are taken care of
+        at.set_velocities(gen_random_velo(at, KEmax_use))  
+
     #DOC \item else perturb velocities
     else:  # perturb
         velo = at.get_velocities()
         velo_mag = np.linalg.norm(velo)
         #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
         if velo_mag == 0.0:
-            # at.set_velocities(gen_random_velo(at, KEmax_use))  # this was here, don't delete with prints
-            if movement_args['keep_atoms_fixed'] > 0:  # for surface simulations
-                # TODO: RBW – KEmax_use applies to free particles, not fixed (?)
-                at_velo = at.get_velocities()
-                random_velo = gen_random_velo(
-                    at[movement_args['keep_atoms_fixed']:], KEmax_use)
-                at_velo[movement_args['keep_atoms_fixed']:] = random_velo
-                at.set_velocities(at_velo)
-            else:
-                at.set_velocities(gen_random_velo(at, KEmax_use))
+            # generate random velocities, fixed atoms are taken care of
+            at.set_velocities(gen_random_velo(at, KEmax_use))  
+
         #DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom\_velo\_rej\_free\_perturb\_angle
         else:
+            # using default settings we will do this. 
             # pick new random magnitude - count on dimensionality to make change small
             # WARNING: check this for variable masses
 
@@ -2347,7 +2353,10 @@ def do_ns_loop():
             if movement_args['do_velocities']:
                 nExtraDOF = 0
             else:
-                nExtraDOF = n_atoms*nD
+                if movement_args['keep_atoms_fixed'] > 0:
+                    nExtraDOF = (n_atoms-movement_args['keep_atoms_fixed'])*nD
+                else:
+                    nExtraDOF = n_atoms*nD
             energy_io.write("%d %d %d %s %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF, movement_args['MC_cell_flat_V_prior'], n_atoms))
 
     ## print(print_prefix, ": random state ", np.random.get_state())
@@ -2987,7 +2996,8 @@ def do_ns_loop():
                 # print("WALK EXTRA on rank ", rank, "at iteration ", i_ns_step,
                 # " walker ", r_i)
                 if ns_args['debug'] >= 10 and size <= 1:
-                    walkers[r_i].info['n_walks'] += movement_args['n_steps']
+                    #walkers[r_i].info['n_walks'] += movement_args['n_steps'] # LIVIA-this gives error, does not exist
+                    walkers[r_i].info['n_walks'] += movement_args['atom_traj_len']
                 accumulate_stats(walk_stats_adjust, walk_stats)
                 accumulate_stats(walk_stats_monitor, walk_stats)
 
