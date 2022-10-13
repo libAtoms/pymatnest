@@ -15,6 +15,7 @@
     <script src="_static/underscore.js"></script>
     <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -120,7 +121,10 @@ Eur. Phys. J. B (2021) 94, 159, <a class="reference external" href="https://link
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="getstart.html">Getting started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="getstart.html#list-of-input-parameters">List of input parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="getstart.html#module-ns_run">List of input parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="getstart.html#ns_run.usage"><code class="docutils literal notranslate"><span class="pre">usage()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="getstart.html#example-input-files">Example input files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="getstart.html#lj-cluster-with-the-supplied-fortran-code-using-mc">LJ Cluster with the supplied fortran code, using MC</a></li>
 <li class="toctree-l3"><a class="reference internal" href="getstart.html#lj-cluster-with-quip-using-md">LJ Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>, using MD</a></li>
@@ -148,10 +152,107 @@ Eur. Phys. J. B (2021) 94, 159, <a class="reference external" href="https://link
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="ns_run.html"><cite>pymatnest</cite> module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="ns_rng.html"><cite>ns_rng</cite> module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="rngstream.html"><cite>rngstream</cite> module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="lammpslib.html"><cite>lammpslib</cite> module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="stacktrace.html"><cite>stacktrace</cite> module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ns_rng.html"><cite>ns_rng</cite> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="ns_rng.html#ns_rng.NsRng"><code class="docutils literal notranslate"><span class="pre">NsRng</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRng.float_uniform"><code class="docutils literal notranslate"><span class="pre">NsRng.float_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRng.int_uniform"><code class="docutils literal notranslate"><span class="pre">NsRng.int_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRng.normal"><code class="docutils literal notranslate"><span class="pre">NsRng.normal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRng.seed_common"><code class="docutils literal notranslate"><span class="pre">NsRng.seed_common()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRng.seed_init"><code class="docutils literal notranslate"><span class="pre">NsRng.seed_init()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRng.seed_local"><code class="docutils literal notranslate"><span class="pre">NsRng.seed_local()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRng.shuffle_in_place"><code class="docutils literal notranslate"><span class="pre">NsRng.shuffle_in_place()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngInternal"><code class="docutils literal notranslate"><span class="pre">NsRngInternal</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngInternal.float_uniform"><code class="docutils literal notranslate"><span class="pre">NsRngInternal.float_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngInternal.int_uniform"><code class="docutils literal notranslate"><span class="pre">NsRngInternal.int_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngInternal.normal"><code class="docutils literal notranslate"><span class="pre">NsRngInternal.normal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngInternal.shuffle_in_place"><code class="docutils literal notranslate"><span class="pre">NsRngInternal.shuffle_in_place()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngInternal.switch_to_common"><code class="docutils literal notranslate"><span class="pre">NsRngInternal.switch_to_common()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngInternal.switch_to_local"><code class="docutils literal notranslate"><span class="pre">NsRngInternal.switch_to_local()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngNumpy"><code class="docutils literal notranslate"><span class="pre">NsRngNumpy</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngNumpy.float_uniform"><code class="docutils literal notranslate"><span class="pre">NsRngNumpy.float_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngNumpy.int_uniform"><code class="docutils literal notranslate"><span class="pre">NsRngNumpy.int_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngNumpy.normal"><code class="docutils literal notranslate"><span class="pre">NsRngNumpy.normal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngNumpy.shuffle_in_place"><code class="docutils literal notranslate"><span class="pre">NsRngNumpy.shuffle_in_place()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngNumpy.switch_to_common"><code class="docutils literal notranslate"><span class="pre">NsRngNumpy.switch_to_common()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngNumpy.switch_to_local"><code class="docutils literal notranslate"><span class="pre">NsRngNumpy.switch_to_local()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream"><code class="docutils literal notranslate"><span class="pre">NsRngStream</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream.float_uniform"><code class="docutils literal notranslate"><span class="pre">NsRngStream.float_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream.int_uniform"><code class="docutils literal notranslate"><span class="pre">NsRngStream.int_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream.normal"><code class="docutils literal notranslate"><span class="pre">NsRngStream.normal()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream.normal_variate"><code class="docutils literal notranslate"><span class="pre">NsRngStream.normal_variate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream.set_package_seed"><code class="docutils literal notranslate"><span class="pre">NsRngStream.set_package_seed()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream.shuffle_in_place"><code class="docutils literal notranslate"><span class="pre">NsRngStream.shuffle_in_place()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream.switch_to_common"><code class="docutils literal notranslate"><span class="pre">NsRngStream.switch_to_common()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="ns_rng.html#ns_rng.NsRngStream.switch_to_local"><code class="docutils literal notranslate"><span class="pre">NsRngStream.switch_to_local()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="ns_rng.html#ns_rng.os_random_uint32"><code class="docutils literal notranslate"><span class="pre">os_random_uint32()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="rngstream.html"><cite>rngstream</cite> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="rngstream.html#rngstream.RngStream"><code class="docutils literal notranslate"><span class="pre">RngStream</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream.create_stream"><code class="docutils literal notranslate"><span class="pre">RngStream.create_stream()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream.float_uniform_01"><code class="docutils literal notranslate"><span class="pre">RngStream.float_uniform_01()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream.get_state"><code class="docutils literal notranslate"><span class="pre">RngStream.get_state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream.int_uniform"><code class="docutils literal notranslate"><span class="pre">RngStream.int_uniform()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream.set_package_seed"><code class="docutils literal notranslate"><span class="pre">RngStream.set_package_seed()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="rngstream.html#rngstream.RngStream_InfoState"><code class="docutils literal notranslate"><span class="pre">RngStream_InfoState</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream_InfoState.Anti"><code class="docutils literal notranslate"><span class="pre">RngStream_InfoState.Anti</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream_InfoState.Bg"><code class="docutils literal notranslate"><span class="pre">RngStream_InfoState.Bg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream_InfoState.Cg"><code class="docutils literal notranslate"><span class="pre">RngStream_InfoState.Cg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream_InfoState.Ig"><code class="docutils literal notranslate"><span class="pre">RngStream_InfoState.Ig</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream_InfoState.IncPrec"><code class="docutils literal notranslate"><span class="pre">RngStream_InfoState.IncPrec</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="rngstream.html#rngstream.RngStream_InfoState.name"><code class="docutils literal notranslate"><span class="pre">RngStream_InfoState.name</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="lammpslib.html"><cite>lammpslib</cite> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.calculate"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.calculate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.default_parameters"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.default_parameters</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.implemented_properties"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.implemented_properties</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.initialise_lammps"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.initialise_lammps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.initialized"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.initialized</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.lammpsbc"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.lammpsbc()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.parse_angles"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.parse_angles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.parse_bonds"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.parse_bonds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.parse_dihedrals"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.parse_dihedrals()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.parse_impropers"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.parse_impropers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.propagate"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.propagate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.rebuild"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.rebuild()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.redo_atom_types"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.redo_atom_types()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.restart_lammps"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.restart_lammps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.set_angles"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.set_angles()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.set_bonds"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.set_bonds()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.set_cell"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.set_cell()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.set_charges"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.set_charges()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.set_dihedrals"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.set_dihedrals()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.set_impropers"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.set_impropers()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.set_lammps_pos"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.set_lammps_pos()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.start_lammps"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.start_lammps()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="lammpslib.html#lammpslib.LAMMPSlib.started"><code class="docutils literal notranslate"><span class="pre">LAMMPSlib.started</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="lammpslib.html#lammpslib.convert_cell"><code class="docutils literal notranslate"><span class="pre">convert_cell()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lammpslib.html#lammpslib.is_upper_triangular"><code class="docutils literal notranslate"><span class="pre">is_upper_triangular()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lammpslib.html#lammpslib.unit_convert"><code class="docutils literal notranslate"><span class="pre">unit_convert()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="lammpslib.html#lammpslib.write_lammps_data"><code class="docutils literal notranslate"><span class="pre">write_lammps_data()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="stacktrace.html"><cite>stacktrace</cite> module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="stacktrace.html#stacktrace.debug"><code class="docutils literal notranslate"><span class="pre">debug()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="stacktrace.html#stacktrace.listen"><code class="docutils literal notranslate"><span class="pre">listen()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </div>
 </section>
@@ -230,7 +331,7 @@ Eur. Phys. J. B (2021) 94, 159, <a class="reference external" href="https://link
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.1.1.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
     </div>
   </body>
 </html>
