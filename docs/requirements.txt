@@ -1,2 +1,5 @@
 sphinx
 sphinxcontrib-fulltoc
+numpy
+ase
+psutil

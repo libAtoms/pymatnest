@@ -17,13 +17,26 @@ jobs:
           python-version: '3.10'
           cache: 'pip'
 
-      - name: Install dependencies
-        run: pip install -r docs/requirements.txt
+      - name: Add conda to system path
+        run: echo $CONDA/bin >> $GITHUB_PATH
 
-      - name: Build
-        working-directory: ${{github.workspace}}/docs
+      - name: Install latex for math display
         run: |
-          make html
+          sudo apt-get update -y
+          sudo apt-get install -y texlive-latex-recommended
+
+      - name: Install python dependencies
+        run: |
+          conda install lammps -c conda-forge
+          python -m pip install -r docs/requirements.txt
+          export PYTHONPATH="${{github.workspace}}:$PYTHONPATH"
+
+      - name: Build main package
+        run: make libs
+
+      - name: Build docs
+        working-directory: ${{github.workspace}}/docs
+        run: make html
 
       - name: Commit to gh-pages branch
         if: github.ref == 'refs/heads/master'
