@@ -16,13 +16,19 @@ Phys. Rev. B (2016), 93, 174108, https://journals.aps.org/prb/abstract/10.1103/P
 R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, *Constant-pressure nested sampling with atomistic dynamics*\ ,
 Phys. Rev. E (2017), 96, 043311, https://link.aps.org/doi/10.1103/PhysRevE.96.043311
 
-Further publications using the pymatnest package:
+L.B. Partay, G. Csanyi and N. Bernstein *Nested sampling for materials*\, Eur. Phys. J. B (2021) 94, 159, https://link.springer.com/article/10.1140/epjb/s10051-021-00172-1
+
+Further examples of publications using the pymatnest package:
 
 L.B. Partay *On the performance of interatomic potential models of iron: Comparison of the phase diagrams*\ ,
 Comp. Mat. Sci. (2018), 149, 153, https://www.sciencedirect.com/science/article/pii/S0927025618301794
 
 J. Dorrell, L.B. Partay *Thermodynamics and the potential energy landscape: case study of small water clusters*\ ,
 Phys. Chem. Chem. Phys. (2019), 21, 7305 https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b
+
+A.P. Bartok, G. Hantal and L.B. Partay *Insight into Liquid Polymorphism from the Complex Phase Behavior of a Simple Model*\, Phys. Rev. Lett. (2021) 127, 015701 https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.127.015701
+
+L.B. Partay and G. Hantal *Stability of the high-density Jagla liquid in 2D: sensitivity to parameterisation*\, Soft Matter, (2022) 18, 5261 https://pubs.rsc.org/en/content/articlelanding/2022/SM/D2SM00491G
 
 ----
 
@@ -46,7 +52,7 @@ Using with ``LAMMPS``
 These instructions assume the latest (git/svn) version of ``LAMMPS``.  It is not tested how
 far back older versions would also work.
 
-Nearly mandatory compilation flags (for all ``LAMMPS`` versions)
+Mandatory compilation flags (for all ``LAMMPS`` versions)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 It is necessary to take advantage of the ``-DLAMMPS_EXCEPTIONS``
