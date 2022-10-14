@@ -681,63 +681,6 @@ thermodynamic variables will not be necessarily well converged.</p>
 </pre></div>
 </div>
 </section>
-<section id="lj-cluster-with-quip-using-md">
-<h3>LJ Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>, using MD<a class="headerlink" href="#lj-cluster-with-quip-using-md" title="Permalink to this heading">¶</a></h3>
-<p>This input file will start a calculation of 6 Lennard-Jones atoms
-in a cubic cell with volume 648 Angstrom^3, using the potential implemented in <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>
-and using MD trajectory for generating a new sample configuration. As the shape
-and volume of the cell will not be changed, a cluster will be formed by the atoms.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># starting volume (in this example it is Angstrom^3)</span>
-<span class="n">max_volume_per_atom</span><span class="o">=</span><span class="mf">108.0</span>     
-<span class="c1"># 6 atoms with atomic number 1, let mass default to 1.0</span>
-<span class="n">start_species</span><span class="o">=</span><span class="mi">1</span> <span class="mi">6</span>
-<span class="n">start_energy_ceiling_per_atom</span><span class="o">=</span><span class="mf">6.7</span>
-
-<span class="c1"># size of live set</span>
-<span class="n">n_walkers</span><span class="o">=</span><span class="mi">256</span>                 
-<span class="c1"># at each iteration 1 walker is killed</span>
-<span class="n">n_cull</span><span class="o">=</span><span class="mi">1</span>                      
-<span class="c1"># total number of iterations will be n_iter_times_fraction_killed / (n_cull/n_walkers)</span>
-<span class="n">n_iter_times_fraction_killed</span><span class="o">=</span><span class="mi">150</span>         
-<span class="c1"># prefix of all the output files</span>
-<span class="n">out_file_prefix</span><span class="o">=</span><span class="n">test</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">MD</span><span class="o">.</span><span class="n">quip</span>   
-
-<span class="c1"># use MD generating a new walker</span>
-<span class="n">atom_algorithm</span><span class="o">=</span><span class="n">MD</span>             
-<span class="n">n_model_calls_expected</span><span class="o">=</span><span class="mi">3</span>      
-<span class="n">n_atom_steps</span><span class="o">=</span><span class="mi">5</span>                
-<span class="c1"># length of atomic trajectory in each step</span>
-<span class="n">atom_traj_len</span><span class="o">=</span><span class="mi">5</span>               
-<span class="c1"># number of cell volume steps</span>
-<span class="n">n_cell_volume_steps</span><span class="o">=</span><span class="mi">0</span>         
-<span class="c1"># number of cell shear steps</span>
-<span class="n">n_cell_shear_steps</span><span class="o">=</span><span class="mi">0</span>          
-<span class="c1"># number of cell strectch steps</span>
-<span class="n">n_cell_stretch_steps</span><span class="o">=</span><span class="mi">0</span>        
-
-<span class="c1"># param file to store potential parameters</span>
-<span class="n">QUIP_pot_params_file</span><span class="o">=</span><span class="n">quip_params</span><span class="o">.</span><span class="n">cluster</span><span class="o">.</span><span class="n">xml</span> 
-<span class="c1"># Lennard-Jones potential</span>
-<span class="n">QUIP_pot_args</span><span class="o">=</span><span class="n">IP</span> <span class="n">LJ</span>           
-
-<span class="c1"># use QUIP</span>
-<span class="n">energy_calculator</span><span class="o">=</span><span class="n">quip</span>        
-
-<span class="n">rng</span><span class="o">=</span><span class="n">numpy</span>
-
-<span class="c1"># verbosity level</span>
-<span class="n">debug</span><span class="o">=</span><span class="mi">0</span>                       
-</pre></div>
-</div>
-<p>The corresponding <code class="docutils literal notranslate"><span class="pre">quip_params.cluster.xml</span></code> file is the following:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>&lt;LJ_params n_types=&quot;1&quot; label=&quot;default&quot;&gt;
-&lt;!-- dummy paramters for testing purposes, no physical meaning --&gt;
-&lt;per_type_data type=&quot;1&quot; atomic_num=&quot;1&quot; /&gt;
-&lt;per_pair_data type1=&quot;1&quot; type2=&quot;1&quot; sigma=&quot;1.0&quot; eps6=&quot;1.0&quot; eps12=&quot;1.0&quot; cutoff=&quot;3.0&quot; energy_shift=&quot;T&quot; linear_force_shift=&quot;F&quot; /&gt;
-&lt;/LJ_params&gt;
-</pre></div>
-</div>
-</section>
 <section id="periodic-lj-with-lammps-using-md">
 <h3>Periodic LJ with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD<a class="headerlink" href="#periodic-lj-with-lammps-using-md" title="Permalink to this heading">¶</a></h3>
 <p>This input file will start a calculation of 64 Lennard-Jones atoms
@@ -1023,7 +966,6 @@ value if the run already reached the number of iterations set previously. (Note:
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#example-input-files">Example input files</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#lj-cluster-with-the-supplied-fortran-code-using-mc">LJ Cluster with the supplied fortran code, using MC</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#lj-cluster-with-quip-using-md">LJ Cluster with <code class="docutils literal notranslate"><span class="pre">QUIP</span></code>, using MD</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#periodic-lj-with-lammps-using-md">Periodic LJ with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#periodic-binary-lj-with-the-supplied-fortran-code-or-lammps-using-md">Periodic binary LJ with the supplied fortran code or <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#molecule-with-lammps-using-md">Molecule with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>, using MD</a></li>

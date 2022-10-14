@@ -117,7 +117,7 @@ distance, the parameters below means that LJ_sigma = 2.5 Angstrom and LJ_epsilon
 units for <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>).
 <code class="docutils literal notranslate"><span class="pre">LAMMPS_name</span></code> is the name of the <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> machine <em>your</em> <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> was built with.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">energy_calculator</span><span class="o">=</span><span class="n">lammps</span>
-<span class="n">LAMMPS_name</span><span class="o">=</span><span class="n">mpi</span>
+<span class="n">LAMMPS_name</span><span class="o">=</span><span class="n">serial</span>
 <span class="n">LAMMPS_init_cmds</span><span class="o">=</span><span class="n">pair_style</span> <span class="n">lj</span><span class="o">/</span><span class="n">cut</span> <span class="mf">7.50</span><span class="p">;</span> <span class="n">pair_coeff</span> <span class="o">*</span> <span class="o">*</span> <span class="mf">0.1</span> <span class="mf">2.5</span><span class="p">;</span> <span class="n">pair_modify</span> <span class="n">shift</span> <span class="n">yes</span>
 <span class="n">LAMMPS_atom_types</span><span class="o">=</span><span class="n">H</span> <span class="mi">1</span>
 </pre></div>
@@ -158,13 +158,14 @@ every core generates its own snapshot file.</p>
 </figure>
 <p>The simplest way to extract thermodynamic information from the run is to use the <code class="docutils literal notranslate"><span class="pre">ns_analyse</span></code> code from the <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> library.
 This script uses the <code class="docutils literal notranslate"><span class="pre">.energies</span></code> file to calculate the partition function, expected value of energy, heat capacity, volume…etc.
-To calculate thermodynamic properties at 200 temperatures starting from 1 K in 5 K increments we need to use the
+As this is a Lennard-Jones system, we wish to work in LJ units, so we set the Boltzmann constant to be 1.0 (option -k)
+To calculate thermodynamic properties at 200 temperatures starting from 0.0001 and in 0.0004 (epsilon/k_B) increments we need to use the
 following command. (<code class="docutils literal notranslate"><span class="pre">./ns_analyse</span> <span class="pre">--help</span></code> prints all the possible options)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">ns_analyse</span> <span class="n">MD_lammps_tutorial_100_a</span><span class="o">.</span><span class="n">energies</span> <span class="o">-</span><span class="n">M</span> <span class="mi">1</span> <span class="o">-</span><span class="n">n</span> <span class="mi">200</span> <span class="o">-</span><span class="n">D</span> <span class="mi">5</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">ns_analyse</span> <span class="n">MD_lammps_tutorial_100_a</span><span class="o">.</span><span class="n">energies</span> <span class="o">-</span><span class="n">k</span> <span class="mf">1.0</span> <span class="o">-</span><span class="n">M</span> <span class="mf">0.0001</span> <span class="o">-</span><span class="n">n</span> <span class="mi">200</span> <span class="o">-</span><span class="n">D</span> <span class="mf">0.0004</span>
 </pre></div>
 </div>
 <p>This will print the output onto the screen. The fifth column is the heat capacity, and the result should look something like the curves below. The graph shows the heat capacity curve for three independent samplings. The larger peak corresponds to
-the “condensation” of the six atoms. (Note that everything is in K, eV,… etc in the output, not in LJ units!)
+the “condensation” of the six atoms.
 (You can start the sampling a few more times to have some parallel results - unless you explicitly set a seed for the random number generator
 all the runs will be independent and different. Do not forget to change the <code class="docutils literal notranslate"><span class="pre">out_file_prefix</span></code> keyword, so new runs do not overwrite previous ones.)</p>
 <figure class="align-center">

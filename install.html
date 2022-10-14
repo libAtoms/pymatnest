@@ -61,11 +61,14 @@ J. Phys. Chem. B (2010), 114, 10502–10512, <a class="reference external" href=
 Phys. Rev. B (2016), 93, 174108, <a class="reference external" href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108">https://journals.aps.org/prb/abstract/10.1103/PhysRevB.93.174108</a></p>
 <p>R.J.N. Baldock, N. Bernstein, K. M. Salerno, L.B. Partay, G. Csanyi, <em>Constant-pressure nested sampling with atomistic dynamics</em>,
 Phys. Rev. E (2017), 96, 043311, <a class="reference external" href="https://link.aps.org/doi/10.1103/PhysRevE.96.043311">https://link.aps.org/doi/10.1103/PhysRevE.96.043311</a></p>
-<p>Further publications using the pymatnest package:</p>
+<p>L.B. Partay, G. Csanyi and N. Bernstein <em>Nested sampling for materials</em>, Eur. Phys. J. B (2021) 94, 159, <a class="reference external" href="https://link.springer.com/article/10.1140/epjb/s10051-021-00172-1">https://link.springer.com/article/10.1140/epjb/s10051-021-00172-1</a></p>
+<p>Further examples of publications using the pymatnest package:</p>
 <p>L.B. Partay <em>On the performance of interatomic potential models of iron: Comparison of the phase diagrams</em>,
 Comp. Mat. Sci. (2018), 149, 153, <a class="reference external" href="https://www.sciencedirect.com/science/article/pii/S0927025618301794">https://www.sciencedirect.com/science/article/pii/S0927025618301794</a></p>
 <p>J. Dorrell, L.B. Partay <em>Thermodynamics and the potential energy landscape: case study of small water clusters</em>,
 Phys. Chem. Chem. Phys. (2019), 21, 7305 <a class="reference external" href="https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b">https://pubs.rsc.org/en/content/articlehtml/2019/cp/c9cp00474b</a></p>
+<p>A.P. Bartok, G. Hantal and L.B. Partay <em>Insight into Liquid Polymorphism from the Complex Phase Behavior of a Simple Model</em>, Phys. Rev. Lett. (2021) 127, 015701 <a class="reference external" href="https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.127.015701">https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.127.015701</a></p>
+<p>L.B. Partay and G. Hantal <em>Stability of the high-density Jagla liquid in 2D: sensitivity to parameterisation</em>, Soft Matter, (2022) 18, 5261 <a class="reference external" href="https://pubs.rsc.org/en/content/articlelanding/2022/SM/D2SM00491G">https://pubs.rsc.org/en/content/articlelanding/2022/SM/D2SM00491G</a></p>
 <hr class="docutils" />
 <section id="system-requirements">
 <h2>System requirements<a class="headerlink" href="#system-requirements" title="Permalink to this heading">¶</a></h2>
@@ -84,8 +87,8 @@ You have to have <code class="docutils literal notranslate"><span class="pre">mp
 <h2>Using with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code><a class="headerlink" href="#using-with-lammps" title="Permalink to this heading">¶</a></h2>
 <p>These instructions assume the latest (git/svn) version of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code>.  It is not tested how
 far back older versions would also work.</p>
-<section id="nearly-mandatory-compilation-flags-for-all-lammps-versions">
-<h3>Nearly mandatory compilation flags (for all <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions)<a class="headerlink" href="#nearly-mandatory-compilation-flags-for-all-lammps-versions" title="Permalink to this heading">¶</a></h3>
+<section id="mandatory-compilation-flags-for-all-lammps-versions">
+<h3>Mandatory compilation flags (for all <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions)<a class="headerlink" href="#mandatory-compilation-flags-for-all-lammps-versions" title="Permalink to this heading">¶</a></h3>
 <p>It is necessary to take advantage of the <code class="docutils literal notranslate"><span class="pre">-DLAMMPS_EXCEPTIONS</span></code>
 flag, which allows lammps crashes to be handled gracefully within python.  Add it to the <code class="docutils literal notranslate"><span class="pre">LMP_INC</span></code> variable in the
 <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> makefile before compiling.</p>
@@ -286,7 +289,7 @@ Example inputs are located in the folder <code class="docutils literal notransla
 <li class="toctree-l2"><a class="reference internal" href="#system-requirements">System requirements</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#compilation-of-the-streamlined-fortran-models-and-mc-md-walkers">Compilation of the streamlined FORTRAN models and MC/MD walkers.</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#using-with-lammps">Using with <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#nearly-mandatory-compilation-flags-for-all-lammps-versions">Nearly mandatory compilation flags (for all <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#mandatory-compilation-flags-for-all-lammps-versions">Mandatory compilation flags (for all <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions)</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#basic-instructions-for-recent-versions-of-lammps-and-mpi4py-version-2-0-0-or-newer">Basic instructions for recent versions of <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> and <code class="docutils literal notranslate"><span class="pre">mpi4py</span></code> version 2.0.0 or newer</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#basic-instructions-for-lammps-versions-nov-2020-or-before">Basic instructions for <code class="docutils literal notranslate"><span class="pre">LAMMPS</span></code> versions Nov 2020 or before:</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#support-for-gmc-within-lammps">Support for GMC within LAMMPS</a></li>
