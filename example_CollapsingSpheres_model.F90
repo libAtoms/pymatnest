@@ -257,14 +257,14 @@ implicit none
 	 if (dr_mag_sq < cutoff_sq(1)) then
 	    dr_mag = sqrt(dr_mag_sq)
 
-            dE = dE - (sigma(1)/dr_mag)**14 + 0.5d0*(1-tanh(kk(1)*(dr_mag-sigma1(1)))) + e_shift(1) 
+            dE = dE - ((sigma(1)/dr_mag)**14 + 0.5d0*(1-tanh(kk(1)*(dr_mag-sigma1(1)))) + e_shift(1)) 
 
 	 endif
 
 	 if (drp_mag_sq < cutoff_sq(1)) then
 	    drp_mag = sqrt(drp_mag_sq)
 
-            dE = dE + (sigma(1)/drp_mag)**14 + 0.5d0*(1-tanh(kk(1)*(drp_mag-sigma1(1)))) + e_shift(1)
+            dE = dE + ((sigma(1)/drp_mag)**14 + 0.5d0*(1-tanh(kk(1)*(drp_mag-sigma1(1)))) + e_shift(1))
 
 	 !   if (n_extra_data == 1) then
 	 !      new_extra_data(1,i) = new_extra_data(1,i) + 0.5*epsilon(Z_i,Z_j)*(((sigma(Z_i,Z_j)/drp_mag)**12 - &
