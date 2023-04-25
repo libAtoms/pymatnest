@@ -1,0 +1,46 @@
+name: Sphinx & deploy - commit to gh-pages
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Add conda to system path
+        run: echo $CONDA/bin >> $GITHUB_PATH
+
+      - name: Install latex for math display
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y texlive-latex-recommended
+
+      - name: Install python dependencies
+        run: |
+          conda install lammps -c conda-forge
+          python -m pip install -r docs/requirements.txt
+          export PYTHONPATH="${{github.workspace}}:$PYTHONPATH"
+
+      - name: Build main package
+        run: make libs
+
+      - name: Build docs
+        working-directory: ${{github.workspace}}/docs
+        run: make html
+
+      - name: Commit to gh-pages branch
+        if: github.ref == 'refs/heads/master'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs/_build/html

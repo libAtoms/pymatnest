@@ -1,4 +1,4 @@
-Nested sampling method 
+Nested sampling method
 ==================================
 
 :Authors: Noam, Rob, Gabor, Livia
@@ -8,48 +8,51 @@ Nested sampling method
 Overview
 -------------------------------------
 
-The nested sampling method was first introduced by John Skilling [#f1]_ 
-in the field of applied probability and inference to efficiently sample 
-probability densities in high-dimensional spaces where the regions contributing 
+The nested sampling method was first introduced by John Skilling [#f1]_
+in the field of applied probability and inference to efficiently sample
+probability densities in high-dimensional spaces where the regions contributing
 most of the probability mass are exponentially localized.
-It is an annealing algorithm that creates a sequence of probability distributions, 
-each more concentrated than the previous one near the high-likelihood region of the 
+It is an annealing algorithm that creates a sequence of probability distributions,
+each more concentrated than the previous one near the high-likelihood region of the
 parameter space - i.e. in the context of materials, the low-energy region of configuration space.
 
 
 Since its original inception, nested sampling has also been applied to atomistic systems,
-and its several advantages mean it became a powerful method to sample atomic 
-configuration spaces.
-   * calculate the partition function, hence all thermodynamic properties become accessible
-      - calculate the heat capacity and locate the phase transitions
-      - with an order parameter calculate the free energy
-   * the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step
-   * no prior knowledge is needed of the phases or phase transitions
-   * can be used with both constant volume and constant pressure calculations
-   * calculate the entire phase diagram in an automated way
-   * considerable computational gain over parallel tempering
+and its several advantages mean it became a powerful method to sample atomic
+configuration spaces.[#f2]_
+* calculate the partition function, hence all thermodynamic properties become accessible
+
+    - calculate the heat capacity and locate the phase transitions
+    - with an order parameter calculate the free energy
+
+* the sampling process itself is independent of temperature, thus the calculation of thermodynamic quantities is a simple post-processing step
+* no prior knowledge is needed of the phases or phase transitions
+* can be used with both constant volume and constant pressure calculations
+* calculate the entire phase diagram in an automated way
+* considerable computational gain over parallel tempering
 
 .. [#f1] J. Skilling, in Nested Sampling, edited by Rainer Fischer, Roland Preuss, and Udo von Toussaint, AIP Conf. Proc. No. 735 (AIP, New York, 2004), p. 395
+.. [#f2] L.B. Partay, G. Csanyi and N. Bernstein Nested sampling for materials, Eur. Phys. J. B (2021) 94:159
 
 Publications
 -------------------------------------
-.. include:: ../README.md
+.. include:: ../README.rst
    :start-after: (references are available in bibtex format in the ``NS_publications.bib`` file)
-   :end-before: ******
+   :end-before: ----
 
 Algorithm
 -------------------------------------
 
-Nested sampling is an iterative, "top-down" method, it samples the Potential Energy Landscape (PES) 
+Nested sampling is an iterative, "top-down" method, it samples the Potential Energy Landscape (PES)
 through a series of nested energy levels, starting from the high energy region (gas phase) and going towards the
 global minimum. The sampling is done using a set of walkers - these are randomly generated configurations at the initial step of the sampling,
-and the number of these determine the "resolution" of which the PES is sampled. 
-Then, at every iteration step, the walker with the highest energy (enthalpy in case of constant pressure sampling) 
+and the number of these determine the "resolution" of which the PES is sampled.
+Then, at every iteration step, the walker with the highest energy (enthalpy in case of constant pressure sampling)
 is removed, and a new one is generated to keep the number of walkers constant.
-To generate the new configuration, one of the existing walkers is randomly selected and cloned, and this cloned configuration is 
-modified (through an MCMC, a total-enthalpy Hamiltonian MC or a Galilean MC walk), such that its energy (enthalpy) does not exceed 
+To generate the new configuration, one of the existing walkers is randomly selected and cloned, and this cloned configuration is
+modified (through an MCMC, a total-enthalpy Hamiltonian MC or a Galilean MC walk), such that its energy (enthalpy) does not exceed
 the that of the last removed walker.
-The iteration is continued until a satisfactory low energy configuration is reached. 
+The iteration is continued until a satisfactory low energy configuration is reached.
 
 .. image:: NS_PES_animation.gif
 
@@ -58,7 +61,7 @@ The iteration is continued until a satisfactory low energy configuration is reac
 
 The ``pymatnest`` package is a software
 library written in Fortran 95/python for the purpose of carrying out
-nested sampling calculations with a variety of options suitable for different systems. 
+nested sampling calculations with a variety of options suitable for different systems.
 It can be used with the supplied fortran potential models and it also has interfaces with the following packages:
 
    - ``LAMMPS``

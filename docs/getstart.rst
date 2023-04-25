@@ -24,21 +24,6 @@ thermodynamic variables will not be necessarily well converged.
 .. literalinclude:: ../example_inputs/inputs.test.cluster.MC.fortran
     :language: python
 
-LJ Cluster with ``QUIP``, using MD
---------------------------------------------------------------------
-
-This input file will start a calculation of 6 Lennard-Jones atoms 
-in a cubic cell with volume 648 Angstrom^3, using the potential implemented in ``QUIP``
-and using MD trajectory for generating a new sample configuration. As the shape 
-and volume of the cell will not be changed, a cluster will be formed by the atoms.
-
-.. literalinclude:: ../example_inputs/inputs.test.cluster.MD.quip
-    :language: python
-
-The corresponding ``quip_params.cluster.xml`` file is the following:
-
-.. literalinclude:: ../example_inputs/quip_params.cluster.xml
-
 Periodic LJ with ``LAMMPS``, using MD
 --------------------------------------------------------
 

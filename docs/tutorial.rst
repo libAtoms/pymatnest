@@ -87,7 +87,7 @@ units for ``LAMMPS``).
 ::
 
     energy_calculator=lammps
-    LAMMPS_name=mpi
+    LAMMPS_name=serial
     LAMMPS_init_cmds=pair_style lj/cut 7.50; pair_coeff * * 0.1 2.5; pair_modify shift yes
     LAMMPS_atom_types=H 1
 
@@ -140,15 +140,16 @@ Look at a configuration in the snapshot file. It should look similar to this, sh
 
 The simplest way to extract thermodynamic information from the run is to use the ``ns_analyse`` code from the ``pymatnest`` library. 
 This script uses the ``.energies`` file to calculate the partition function, expected value of energy, heat capacity, volume...etc.
-To calculate thermodynamic properties at 200 temperatures starting from 1 K in 5 K increments we need to use the 
+As this is a Lennard-Jones system, we wish to work in LJ units, so we set the Boltzmann constant to be 1.0 (option -k) 
+To calculate thermodynamic properties at 200 temperatures starting from 0.0001 and in 0.0004 (epsilon/k_B) increments we need to use the 
 following command. (``./ns_analyse --help`` prints all the possible options) 
 
 ::
 
-    ./ns_analyse MD_lammps_tutorial_100_a.energies -M 1 -n 200 -D 5
+    ./ns_analyse MD_lammps_tutorial_100_a.energies -k 1.0 -M 0.0001 -n 200 -D 0.0004
 
 This will print the output onto the screen. The fifth column is the heat capacity, and the result should look something like the curves below. The graph shows the heat capacity curve for three independent samplings. The larger peak corresponds to 
-the "condensation" of the six atoms. (Note that everything is in K, eV,... etc in the output, not in LJ units!)
+the "condensation" of the six atoms.
 (You can start the sampling a few more times to have some parallel results - unless you explicitly set a seed for the random number generator
 all the runs will be independent and different. Do not forget to change the ``out_file_prefix`` keyword, so new runs do not overwrite previous ones.)
 

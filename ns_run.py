@@ -13,6 +13,8 @@ import collections
 from traceback import print_exception
 
 import check_memory
+from ase.md.verlet import VelocityVerlet
+import importlib
 
 print_prefix=""
 
@@ -79,7 +81,7 @@ def usage():
        | String used as prefix for the different output files.
        | No default.
 
-    ``energy_calculator= ( quip | lammps | internal | fortran)``
+    ``energy_calculator= ( ASE | lammps | internal | fortran)``
        | Energy calculator.
        | default: fortran
 
@@ -350,11 +352,8 @@ def usage():
     ``MD_adjust_max_rate=float``
        |  default: 0.95
 
-    ``QUIP_pot_args=str``
-       |  MANDATORY if energy_calculator=quip
-
-    ``QUIP_pot_params_file=str``
-       |  MANDATORY if energy_calculator=quip
+    ``ASE_calc_module=str``
+       |  MANDATORY if energy_calculator=ASE
 
     ``FORTRAN_model=str``
        |  MANDATORY if energy_calculator=fortran
@@ -498,7 +497,7 @@ def usage():
     sys.stderr.write("T_estimate_finite_diff_lag=int (1000, lag for doing finite difference in current T estimate\n")
     sys.stderr.write("min_Emax=float (None.  Termination condition based on Emax)\n")
     sys.stderr.write("out_file_prefix=str (None)\n")
-    sys.stderr.write("energy_calculator= ( quip | lammps | internal | fortran) (fortran)\n")
+    sys.stderr.write("energy_calculator= ( ASE | lammps | internal | fortran) (fortran)\n")
     sys.stderr.write("n_extra_data=int (0, amount of extra data per atom to pass around)\n")
     sys.stderr.write("ns_run_analyzers=str ('', analyzers to apply during run\n")
     sys.stderr.write("\n")
@@ -586,8 +585,7 @@ def usage():
     sys.stderr.write("MD_adjust_min_rate=float (0.5)\n")
     sys.stderr.write("MD_adjust_max_rate=float (0.95)\n")
     sys.stderr.write("\n")
-    sys.stderr.write("QUIP_pot_args=str (MANDATORY if energy_calculator=quip)\n")
-    sys.stderr.write("QUIP_pot_params_file=str (MANDATORY if energy_calculator=quip)\n")
+    sys.stderr.write("ASE_calc_module=str (MANDATORY if energy_calculator=ASE)\n")
     sys.stderr.write("FORTRAN_model=str (MANDATORY if energy_calculator=fortran)\n")
     sys.stderr.write("FORTRAN_model_params=str (parameters for energy_calculator=fortran)\n")
     sys.stderr.write("LAMMPS_fix_gmc=[T | F]\n")
@@ -676,7 +674,7 @@ def energy_internal(at):
     return energy_internal_pos(at.get_positions(), at.get_cell()[0,0])
 
 def eval_energy_PE(at):
-    if do_calc_quip or do_calc_lammps:
+    if do_calc_ASE or do_calc_lammps:
         if do_calc_lammps:
             #NB only MD can make crazy positions, so maybe just do this after MD propagation?
             at.wrap()
@@ -724,7 +722,7 @@ def eval_energy(at, do_KE=True, do_PE=True):
     return energy
 
 def eval_forces(at):
-    if do_calc_quip or do_calc_lammps:
+    if do_calc_ASE or do_calc_lammps:
         if do_calc_lammps:
             #NB only MD can make crazy positions, so maybe just do this after MD propagation?
             at.wrap()
@@ -739,21 +737,16 @@ def eval_forces(at):
 
     return forces
 
-def propagate_NVE_quippy(at, dt, n_steps):
-    old_velo = at.get_velocities()
-    if old_velo is not None:
-        if not hasattr(at, 'velo'):
-            at.add_property('velo', 0.0, n_cols=3)
-        at.velo[:,:] = old_velo.transpose()/(ase.units.Ang/ase.units.fs)
-    ds=quippy.DynamicalSystem(at)
+def propagate_NVE_ASE(at, dt, n_steps):
+    at.calc = pot
 
     # dt is being converted from ASE units to fs
     if ns_args['debug'] >= 10:
-        ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=1, write_interval=0, save_interval=0)
+        vv = VelocityVerlet(at, dt=dt, logfile='-')
     else:
-        ds.run(pot, dt=dt/ase.units.fs, n_steps=n_steps, summary_interval=0, write_interval=0, save_interval=0)
+        vv = VelocityVerlet(at, dt=dt)
 
-    at.set_velocities(at.velo.transpose()*(ase.units.Ang/ase.units.fs))
+    vv.run(n_steps)
 
 
 def propagate_lammps(at, dt, n_steps, algo, Emax=None):
@@ -917,6 +910,7 @@ def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
     #DOC \item else perturb velocities
     else:  # perturb
         velo = at.get_velocities()
+
         velo_mag = np.linalg.norm(velo)
         #DOC \item if current velocity=0, can't rescale, so pick random velocities consistent with Emax
         if velo_mag == 0.0:
@@ -1041,18 +1035,17 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
         if final_E is None:  # didn't abort due to exception in eval_forces()
             final_E = eval_energy(at)
     else:
-        if do_calc_quip:
-            propagate_NVE_quippy(at, dt=movement_args['MD_atom_timestep'],
-                                 n_steps=movement_args['atom_traj_len'])
+        if do_calc_ASE:
+            propagate_NVE_ASE(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'])
             final_E = eval_energy(at)
         elif do_calc_lammps:
-            if propagate_lammps(at, dt=movement_args['MD_atom_timestep'],
-                                n_steps=movement_args['atom_traj_len'],
-                                algo='NVE'):
+
+            if propagate_lammps(at, dt=movement_args['MD_atom_timestep'], n_steps=movement_args['atom_traj_len'], algo='NVE'):
                 final_E = pot.results['energy'] + eval_energy(at, do_PE=False)
             else:  # propagate returned success == False
                 final_E = 2.0*abs(Emax)
                 ## print("error in propagate_lammps NVE, setting final_E = 2*abs(Emax) =" , final_E)
+
         elif do_calc_fortran:
             final_E = f_MC_MD.MD_atom_NVE_walk(
                 at, n_steps=movement_args['atom_traj_len'],
@@ -1060,8 +1053,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
                 debug=ns_args['debug'])
             final_E += eval_energy(at, do_PE=False, do_KE=False)
         else:
-            exit_error("Need some non-quippy, non-fortran, non-lammps way of "
-                       "doing MD\n", 3)
+            exit_error("Need some non-ASE, non-fortran, non-lammps way of doing MD\n",3)
 
     reject_fuzz = False
     final_KE = eval_energy_KE(at)
@@ -1147,10 +1139,11 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
     if do_calc_fortran and not ns_args['reproducible']:
         #DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk
         at.wrap()
-        pp=at.get_positions()
-        if (pp[1,2]>0.00001 and nD==2): #LIVIA
-            exit_error("Not a 2D system anymore\n",3)
-
+        if (ns_args['debug'] >= 10 and movement_args['2D']): 
+            pp=at.get_positions()
+            if (any(pp[:,2])>0.00001 and nD==2): #LIVIA
+                exit_error("Not a 2D system anymore\n",3)
+ 
         if movement_args['MC_atom_velocities']:
             (n_try, n_accept, n_accept_velo, final_E) = f_MC_MD.MC_atom_walk(at, n_steps, step_size, Emax-eval_energy(at, do_PE=False, do_KE=False), nD, movement_args['keep_atoms_fixed'], KEmax, step_size_velo)
             at.info['ns_energy'] = final_E + eval_energy(at, do_PE=False, do_KE=False)
@@ -1164,6 +1157,9 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 
     elif (do_calc_lammps and movement_args['MC_atom_Galilean'] and ns_args['LAMMPS_fix_gmc']):
         orig_pos = at.get_positions()
+        if (ns_args['debug'] >= 10 and movement_args['2D']): 
+            if (any(orig_pos[:,2])>0.00001): #LIVIA
+                exit_error("Not a 2D system anymore\n",3)
         orig_energy = at.info['ns_energy']
         extra_term = eval_energy(at, do_PE=False, do_KE=False)
         if propagate_lammps(at, step_size, n_steps, algo='GMC', Emax=Emax-extra_term ):
@@ -2003,7 +1999,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
 
                 k = i%len(walkers) # cycle through walkers array
                 buf = walkers[k].copy() # copy config k into buffer "buf" for walking (walkers array unchanged)
-                buf.set_calculator(walkers[k].get_calculator())# copy calculator
+                buf.calc = walkers[k].calc # copy calculator
 
                 #DOC \item Each MPI processes performs one (H)MC move on its cloned configuration
                 # build up stats from walkers
@@ -2259,8 +2255,8 @@ def additive_init_config(at, Emax):
     pos = at.get_positions()
     for i_at in range(1,len(at)):
         at_new = at[0:i_at+1]
-        if do_calc_quip or do_calc_lammps:
-            at_new.set_calculator(at.get_calculator())
+        if do_calc_ASE or do_calc_lammps:
+            at_new.calc = at.calc
         at_new.set_positions(pos[0:i_at+1,:])
         success = False
         for i_try in range(10):
@@ -2899,18 +2895,13 @@ def do_ns_loop():
                     cur_config_ind += 1
         # move cloned walkers
 
-        if (i_ns_step == start_first_iter
-                and movement_args['full_auto_step_sizes']):
-            # set initial step sizes. Performed here since this is the first
-            # time all the arrays are in place
-            conf_pre = walkers[0].copy()
-            conf_pre.set_calculator(walkers[0].get_calculator())
-            move_args_pre = deepcopy(movement_args)
-            walk_stats_pre = walk_single_walker(conf_pre, move_args_pre,
-                                                Emax_of_step, KEmax)
-            delta_step_size_setting_duration = full_auto_set_stepsizes(
-                walkers, walk_stats_pre, movement_args, comm, Emax_of_step,
-                KEmax, size)
+        if (i_ns_step == start_first_iter and movement_args['full_auto_step_sizes']):
+            # set initial step sizes. Performed here since this is the first time all the arrays are in place
+            conf_pre=walkers[0].copy()
+            conf_pre.calc = walkers[0].calc
+            move_args_pre=deepcopy(movement_args)
+            walk_stats_pre=walk_single_walker(conf_pre, move_args_pre, Emax_of_step, KEmax)
+            delta_step_size_setting_duration = full_auto_set_stepsizes(walkers, walk_stats_pre, movement_args, comm, Emax_of_step, KEmax, size)
             total_step_size_setting_duration += delta_step_size_setting_duration
             step_size_setting_duration += delta_step_size_setting_duration
             del(walk_stats_pre)
@@ -3084,10 +3075,10 @@ def main():
         global size, rank, comm, rng, np, sys, ns_analyzers
         global n_cull, n_walkers, n_walkers_per_task
         global n_extra_walk_per_task
-        global do_calc_quip, do_calc_lammps, do_calc_internal, do_calc_fortran
+        global do_calc_ASE, do_calc_lammps, do_calc_internal, do_calc_fortran
         global energy_io, traj_io, walkers
         global n_atoms, KEmax, pot
-        global MPI, quippy, f_MC_MD
+        global MPI, f_MC_MD
         global track_traj_io, cur_config_ind
         global E_dump_io
         global print_prefix
@@ -3110,14 +3101,6 @@ def main():
             else:
                 usage()
                 sys.exit(1)
-
-        try:
-            import quippy
-            have_quippy = True
-            print("successfully loaded quippy module")
-        except:
-            have_quippy = False
-            print("WARNING: no quippy module loaded")
 
         # initialize mpi
         comm = None
@@ -3260,22 +3243,17 @@ def main():
 
         # parse energy_calculator
         ns_args['energy_calculator'] = args.pop('energy_calculator', 'fortran')
-        do_calc_quip = False
+        do_calc_ASE = False
         do_calc_lammps = False
         do_calc_internal = False
         do_calc_fortran = False
-        if ns_args['energy_calculator'] == 'quip':
-            if not have_quippy:
-                exit_error("Got energy_calculator=quip but not quippy module\n", 3)
-            do_calc_quip=True
+        if ns_args['energy_calculator'] == 'ASE':
             try:
-                ns_args['QUIP_pot_args'] = args.pop('QUIP_pot_args')
+                ns_args['ASE_calc_module'] = args.pop('ASE_calc_module')
             except:
-                exit_error("need QUIP potential args QUIP_pot_args\n",1)
-            try:
-                ns_args['QUIP_pot_params_file'] = args.pop('QUIP_pot_params_file')
-            except:
-                exit_error("need QUIP potential params file QUIP_pot_params_file\n", 1)
+                exit_error("need ASE calculator module name ASE_calc_module\n",1)
+
+            do_calc_ASE=True
         elif ns_args['energy_calculator'] == 'lammps':
             try:
                 from lammpslib import LAMMPSlib
@@ -3537,19 +3515,6 @@ def main():
         else:
             movement_args['wall_dist'] = 0.0
 
-        if 'QUIP_pot_params_file' in ns_args:
-            if not have_quippy:
-                exit_error("Got QUIP_pot_params but no quippy module\n", 3)
-            try:
-                if rank == 0:
-                    ns_args['QUIP_pot_params'] = open(ns_args['QUIP_pot_params_file'], "r").read()
-                else:
-                    ns_args['QUIP_pot_params'] = None
-                if comm is not None:
-                    ns_args['QUIP_pot_params'] = comm.bcast(ns_args['QUIP_pot_params'], root=0)
-            except:
-                exit_error("Failed to read params file '%s'\n" % ns_args['QUIP_pot_params_file'], 1)
-
         if len(args) > 0:
             exit_error(str(args)+"\nUnknown arguments read in\n", 2)
 
@@ -3559,8 +3524,7 @@ def main():
 
         # initialize in-situ analyzers
         try:
-            import importlib
-            ns_analyzers = []
+            ns_analyzers=[]
             for analyzer_str in ns_args['ns_run_analyzers'].split(";"):
                 try:
                     (analyzer_name, ns_analyzer_interval) = analyzer_str.split()
@@ -3581,8 +3545,8 @@ def main():
             ns_analyzers = None
 
         # initialise potential
-        if do_calc_quip:
-            pot = quippy.Potential(ns_args['QUIP_pot_args'], param_str=ns_args['QUIP_pot_params'], calculation_always_required=True, cutoff_skin=1.0)
+        if do_calc_ASE:
+            pot = importlib.import_module(ns_args['ASE_calc_module']).calc
         elif do_calc_internal or do_calc_fortran:
             pass
         elif do_calc_lammps:
@@ -3757,8 +3721,6 @@ def main():
 
                     init_atoms.set_cell(init_atoms.get_cell()*float(len(init_atoms))**(1.0/3.0), scale_atoms=True)
 
-                if do_calc_quip:
-                    init_atoms = quippy.Atoms(init_atoms)
                 ase.io.write(sys.stdout, init_atoms, parallel=False, format=ns_args['config_file_format'])
                 # ase.io.write(sys.stdout, init_atoms, format=ns_args['config_file_format'])
             else:  # rank != 0
@@ -3767,17 +3729,6 @@ def main():
             # bcast atoms created on rank == 0
             if comm is not None:
                 init_atoms = comm.bcast(init_atoms, root=0)
-            if do_calc_quip:
-                init_atoms.set_cutoff(pot.cutoff(), cutoff_skin=1.0)
-
-            # make sure masses are set if velocities are going to be used
-            if movement_args['do_velocities']:
-                if init_atoms.has('masses'):
-                    if do_calc_quip: # quip will need 'mass' field, convert from masses
-                        init_atoms.add_property('mass', 0.0)
-                        init_atoms.mass[:] = init_atoms.get_masses()*quippy.MASSCONVERT
-                else: # no 'masses'
-                    exit_error("got do_velocities, but masses property isn't set.  This should never happen\n", 3)
 
             # create extra data arrays if needed
             if ns_args['n_extra_data'] > 0:
@@ -3800,8 +3751,8 @@ def main():
                     at.info['from_config_ind'] = -1
                     at.info['config_ind_time'] = -1
                     config_ind += 1
-                if do_calc_quip or do_calc_lammps:
-                    at.set_calculator(pot)
+                if do_calc_ASE or do_calc_lammps:
+                    at.calc = pot
 
             if ns_args['track_configs']:
                 if comm is not None:
@@ -3959,12 +3910,10 @@ def main():
 
             for at in walkers:
                 if ns_args['n_extra_data'] > 0 and (not 'ns_extra_data' in at.arrays or at.arrays['ns_extra_data'].size/len(at) != ns_args['n_extra_data']):
-                    at.arrays['ns_extra_data'] = np.zeros(
-                        (len(at), ns_args['n_extra_data']))
-                if do_calc_quip or do_calc_lammps:
-                    at.set_calculator(pot)
-                at.info['ns_energy'] = rand_perturb_energy(
-                    eval_energy(at), ns_args['random_energy_perturbation'])
+                    at.arrays['ns_extra_data'] = np.zeros( (len(at), ns_args['n_extra_data']) )
+                if do_calc_ASE or do_calc_lammps:
+                    at.calc = pot
+                at.info['ns_energy'] = rand_perturb_energy(eval_energy(at), ns_args['random_energy_perturbation'])
 
                 if 'iter' in at.info:
                     start_first_iter = at.info['iter'] + 1
@@ -3983,13 +3932,8 @@ def main():
                                 at.info['volume']/10.0/len(at))
                         key_found = True
                 if not key_found:
-                    print("WARNING: no volume information was found in the "
-                          "restart file. If volume changes will be done, "
-                          "the starting stepsize will be the default")
-
-            if do_calc_quip:
-                walkers = [quippy.Atoms(at) for at in walkers]
-
+                    print( "WARNING: no volume information was found in the restart file. If volume changes will be done, the starting stepsize will be the default")
+                    
         sys.stdout.flush()
 
         # add GMC direction if needed
@@ -4073,10 +4017,6 @@ def main():
         sys.stdout.flush()
         n_atoms = len(walkers[0])
         # do NS
-        # QUIP_IO if have_quippy:
-            # QUIP_IO traj_io = quippy.CInOutput(ns_args['out_file_prefix']+'traj.%d.extxyz' % rank, action=quippy.OUTPUT)
-        # QUIP_IO else:
-            # QUIP_IO traj_file = ns_args['out_file_prefix']+'traj.%08d.'+('%04d' % rank)+'.extxyz'
 
         # open the file where the trajectory will be printed
         if ns_args['restart_file'] == '':  # start from scratch, so if this file exists, overwrite it
@@ -4094,17 +4034,19 @@ def main():
                 mode = "a+"
             with open(ns_args['out_file_prefix']+'traj.%d.%s' % (rank, ns_args['config_file_format']), mode) as f:
                 prev_pos = None
-                # loop this way with "while True" and "f.readline()" because
-                # directly looping over f does not set position reported by
-                # f.tell() to end of line
+                # loop this way with "while True" and "f.readline()" because directly looping over f does not 
+                # set position reported by f.tell() to end of line
+                # make sure there's somplace to truncate to if traj file has only one config and it's already too late
+                prev_pos = 0
+                prev_prev_pos = 0
                 while True:
                     l = f.readline()
                     if not l:
                         break
                     m = re.search(r"\biter=(\d+)\b", l)
                     if m is not None:
-                        iter = int(m.group(1))
-                        if iter >= start_first_iter:
+                        cur_iter = int(m.group(1))
+                        if cur_iter >= start_first_iter:
                             # rewind back to two lines back, before start of this config
                             f.seek(prev_prev_pos)
                             f.truncate()
