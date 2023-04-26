@@ -3883,7 +3883,7 @@ def main():
 
             # Calculate ns_energy for manual surface configurations from restart
             if movement_args['keep_atoms_fixed'] > 0:
-                print("RBW: calc ns_energy for man surf configs from restart")
+                # print("RBW: calc ns_energy for man surf configs from restart") # debug
                 for (i_at, at) in enumerate(walkers):
                     if do_calc_ASE or do_calc_lammps:
                         at.set_calculator(pot)
@@ -3901,7 +3901,7 @@ def main():
             # RBW checked this and seed-averaged initial total energies are ~
             # the same, which means velocities *seem* to be set properly
             if movement_args['keep_atoms_fixed'] > 0:
-                print("RBW: set init vels for man surf configs from restart")
+                # print("RBW: set init vels for man surf configs from restart") # debug
                 if movement_args['do_velocities']:
                     for at in walkers:
                         # TODO: RBW – make sure surface restart files contain KEmax calculated from number of free atoms, otherwise, their kinetic energy can be inefficiently high
