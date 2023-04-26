@@ -3885,7 +3885,7 @@ def main():
             if movement_args['keep_atoms_fixed'] > 0:
                 print("RBW: calc ns_energy for man surf configs from restart")
                 for (i_at, at) in enumerate(walkers):
-                    if do_calc_quip or do_calc_lammps:
+                    if do_calc_ASE or do_calc_lammps:
                         at.set_calculator(pot)
                     energy = eval_energy(at)
                     at.info['ns_energy'] = rand_perturb_energy(
