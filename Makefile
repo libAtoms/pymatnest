@@ -1,6 +1,6 @@
 include Makefile.arch
 
-F90_MODEL_UTILS = example_mat_mod.F90 example_LJ_params_mod.F90 example_bead_spring_polymer_params_mod.F90 example_Jagla_params_mod.F90 example_CollapsingSpheres_params_mod.F90
+F90_MODEL_UTILS = example_mat_mod.F90 example_LJ_params_mod.F90 example_bead_spring_polymer_params_mod.F90 example_Jagla_params_mod.F90 example_CollapsingSpheres_params_mod.F90 Wang_LJ_params_mod.F90
 
 F90_MODELS = $(wildcard *_model.F90)
 
