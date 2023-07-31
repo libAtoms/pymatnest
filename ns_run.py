@@ -45,7 +45,8 @@ def usage():
 
     ``apply_Z_wall=[T|F] ``
        | Whether to have a boundary in the Z direction to keep free particles reaching the other side of "surface" layer due to periodic boundary conditions.
-       | This functionality is not fully tested! Recommended use with MC evaluator and fortran. If constructing a surface layer, make it parallel to the XY plane and set the X dimension with the "wall" taken into account, no atoms should violate the wall rrestriction initially!!!
+       | This functionality is not fully tested! Recommended use with MC evaluator and fortran. If constructing a surface layer, make it parallel to the XY plane and set the X dimension with the "wall" taken into account, no atoms should violate the wall restriction initially!!!
+       | If True, the wall is set at 10 angstroms below the top of the simulation cell.
 
     ``restart_file=path_to_file``
        | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files.
@@ -763,6 +764,9 @@ def propagate_lammps(at, dt, n_steps, algo, Emax=None):
         else:
             pot.lmp.command('fix 1 all nve')
     elif algo == 'GMC':
+        # GMC does not work with fixed atoms # Ray Yang
+        if movement_args['keep_atoms_fixed'] > 0:
+            exit_error("propagate_lammps got algo '%s', which does not work with fixed atoms\n" % algo)
         # Hard coded value needed for LAMMPS. Let's hope our RNG maximum is at
         # least this large.
         pot.lmp.command(
@@ -1047,6 +1051,9 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
                 ## print("error in propagate_lammps NVE, setting final_E = 2*abs(Emax) =" , final_E)
 
         elif do_calc_fortran:
+            # Fortran MD code does not support fixed atoms # Ray Yang
+            if movement_args['keep_atoms_fixed'] > 0:
+                exit_error("do_MD_atom_walk() called with keep_atoms_fixed > 0, but no way to do that with fortran code\n", 3)
             final_E = f_MC_MD.MD_atom_NVE_walk(
                 at, n_steps=movement_args['atom_traj_len'],
                 timestep=movement_args['MD_atom_timestep'],
@@ -3511,6 +3518,7 @@ def main():
         movement_args['keep_atoms_fixed'] = int(args.pop('keep_atoms_fixed', 0))
         movement_args['apply_Z_wall'] = str_to_logical(args.pop('apply_Z_wall', "F"))
         if movement_args['apply_Z_wall']:
+            # TODO: RY - the wall_dist should be a parameter and should allow user to change its value
             movement_args['wall_dist'] = 10.00 # LIVIA - review this hard coded value 
         else:
             movement_args['wall_dist'] = 0.0
