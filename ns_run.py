@@ -743,9 +743,18 @@ def propagate_NVE_ASE(at, dt, n_steps):
 
     # dt is being converted from ASE units to fs
     if ns_args['debug'] >= 10:
-        vv = VelocityVerlet(at, dt=dt, logfile='-')
+        if movement_args['keep_atoms_fixed'] > 0: #LIVIA
+            from ase.constraints import FixAtoms
+            c = FixAtoms(indices=[atom.index for atom in at if atom.index < movement_args['keep_atoms_fixed']])
+            at.set_constraint(c)
+        vv = VelocityVerlet(at, timestep=dt, logfile='-')
+
     else:
-        vv = VelocityVerlet(at, dt=dt)
+        if movement_args['keep_atoms_fixed'] > 0: #LIVIA
+            from ase.constraints import FixAtoms
+            c = FixAtoms(indices=[atom.index for atom in at if atom.index < movement_args['keep_atoms_fixed']])
+            at.set_constraint(c)
+        vv = VelocityVerlet(at, timestep=dt)
 
     vv.run(n_steps)
 
