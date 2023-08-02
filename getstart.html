@@ -1,21 +1,17 @@
-
 <!DOCTYPE html>
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Getting started &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=d534aad8" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/sphinx_highlight.js"></script>
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=404a92a0"></script>
+    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -77,8 +73,18 @@
 <div class="line">default: ‘’</div>
 </div>
 </dd>
+<dt id="term-keep_atoms_fixed-int"><a href="#id1"><span class="problematic" id="id2">``</span></a>keep_atoms_fixed=int ``<a class="headerlink" href="#term-keep_atoms_fixed-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<div class="line">Number of atoms to fix in surface simulation. </div>
+</div>
+</dd>
+<dt id="term-apply_Z_wall-T-F"><a href="#id3"><span class="problematic" id="id4">``</span></a>apply_Z_wall=[T|F] ``<a class="headerlink" href="#term-apply_Z_wall-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<div class="line">Whether to have a boundary in the Z direction to keep free particles reaching the other side of “surface” layer due to periodic boundary conditions.</div>
+<div class="line">This functionality is not fully tested! Recommended use with MC evaluator and fortran. If constructing a surface layer, make it parallel to the XY plane and set the X dimension with the “wall” taken into account, no atoms should violate the wall restriction initially!!!</div>
+<div class="line">If True, the wall is set at 10 angstroms below the top of the simulation cell.</div>
+</div>
+</dd>
 <dt id="term-restart_file-path_to_file"><code class="docutils literal notranslate"><span class="pre">restart_file=path_to_file</span></code><a class="headerlink" href="#term-restart_file-path_to_file" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">File for restart configs. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">start_*</span></code>, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. </div>
+<div class="line">File for restart configs. Mutually exclusive with <code class="docutils literal notranslate"><span class="pre">start_*</span></code>, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files.</div>
 </div>
 </dd>
 <dt id="term-n_walkers-int"><code class="docutils literal notranslate"><span class="pre">n_walkers=int</span></code><a class="headerlink" href="#term-n_walkers-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
@@ -116,7 +122,7 @@
 </div>
 </dd>
 <dt id="term-out_file_prefix-str"><code class="docutils literal notranslate"><span class="pre">out_file_prefix=str</span></code><a class="headerlink" href="#term-out_file_prefix-str" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">String used as prefix for the different output files. </div>
+<div class="line">String used as prefix for the different output files.</div>
 <div class="line">No default.</div>
 </div>
 </dd>
@@ -130,23 +136,23 @@
 <div class="line">default: 0</div>
 </div>
 </dd>
-<dt id="term-KEmax_max_T-float"><code class="docutils literal notranslate"><span class="pre">KEmax_max_T=float</span></code> <a class="headerlink" href="#term-KEmax_max_T-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-KEmax_max_T-float"><code class="docutils literal notranslate"><span class="pre">KEmax_max_T=float</span></code><a class="headerlink" href="#term-KEmax_max_T-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">If &gt; 0, maximum temperature for estimating KEmax.  For constant <em>P</em> ensemble 3/2 P Vmax will be used if KEmax_max_T is &lt; 0.</div>
 <div class="line">default: -1</div>
 </div>
 </dd>
-<dt id="term-kB-float"><code class="docutils literal notranslate"><span class="pre">kB=float</span></code> <a class="headerlink" href="#term-kB-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-kB-float"><code class="docutils literal notranslate"><span class="pre">kB=float</span></code><a class="headerlink" href="#term-kB-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Boltzmann constant</div>
 <div class="line">default: 8.6173324e-5 (eV/A)</div>
 </div>
 </dd>
 <dt id="term-start_energy_ceiling_per_atom-float"><code class="docutils literal notranslate"><span class="pre">start_energy_ceiling_per_atom=float</span></code><a class="headerlink" href="#term-start_energy_ceiling_per_atom-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">Maximum potential energy per atom for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. </div>
+<div class="line">Maximum potential energy per atom for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.</div>
 <div class="line">default: 1.0e9</div>
 </div>
 </dd>
 <dt id="term-start_energy_ceiling-float"><code class="docutils literal notranslate"><span class="pre">start_energy_ceiling=float</span></code><a class="headerlink" href="#term-start_energy_ceiling-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">DEPRECATED: use <code class="docutils literal notranslate"><span class="pre">start_energy_ceiling_per_atom</span></code>. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs. </div>
+<div class="line">DEPRECATED: use <code class="docutils literal notranslate"><span class="pre">start_energy_ceiling_per_atom</span></code>. Maximum potential energy for initial configurations.  P*Vmax is added to this automatically in case of NpT runs.</div>
 <div class="line">default: 1.0e9</div>
 </div>
 </dd>
@@ -156,7 +162,7 @@
 </div>
 </dd>
 <dt id="term-n_model_calls_expected-int"><code class="docutils literal notranslate"><span class="pre">n_model_calls_expected=int</span></code><a class="headerlink" href="#term-n_model_calls_expected-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. (It is recommended to use n_model_calls_expected/[number of processors] &gt; 20) Either this or the keyword <code class="docutils literal notranslate"><span class="pre">n_model_calls</span></code> is mandatory, but the use of this keyword is strongly recommended. If &lt; 0, value will be set to _sum_ of each type of steps (accounting for atom_traj_len), so <code class="docutils literal notranslate"><span class="pre">n_*_steps</span></code> will be setting the _number_ of calls, rather than just the ratios. </div>
+<div class="line">Total number of model calls performed during the random walk, expected by the user. The actual number of model calls performed during runtime can be different: this number is divided up among the processors in case of running parallel, and in order to make sure different processors perform about the same number of calls, it can be increased for some. (It is recommended to use n_model_calls_expected/[number of processors] &gt; 20) Either this or the keyword <code class="docutils literal notranslate"><span class="pre">n_model_calls</span></code> is mandatory, but the use of this keyword is strongly recommended. If &lt; 0, value will be set to _sum_ of each type of steps (accounting for atom_traj_len), so <code class="docutils literal notranslate"><span class="pre">n_*_steps</span></code> will be setting the _number_ of calls, rather than just the ratios.</div>
 <div class="line">default: 0</div>
 </div>
 </dd>
@@ -170,67 +176,67 @@
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-n_atom_steps-int"><code class="docutils literal notranslate"><span class="pre">n_atom_steps=int</span></code> <a class="headerlink" href="#term-n_atom_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-n_atom_steps-int"><code class="docutils literal notranslate"><span class="pre">n_atom_steps=int</span></code><a class="headerlink" href="#term-n_atom_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Ratio of atomic trajectories will be determined by <code class="docutils literal notranslate"><span class="pre">n_atom_steps</span></code>/SUM(<code class="docutils literal notranslate"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
-<dt id="term-atom_traj_len-int"><code class="docutils literal notranslate"><span class="pre">atom_traj_len=int</span></code> <a class="headerlink" href="#term-atom_traj_len-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-atom_traj_len-int"><code class="docutils literal notranslate"><span class="pre">atom_traj_len=int</span></code><a class="headerlink" href="#term-atom_traj_len-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Length of atomic trajectory (MD steps or MC sweeps) in each atomic type step.</div>
 <div class="line">default: 8</div>
 </div>
 </dd>
-<dt id="term-atom_traj_len_cost_multiplier-int"><code class="docutils literal notranslate"><span class="pre">atom_traj_len_cost_multiplier=int</span></code> <a class="headerlink" href="#term-atom_traj_len_cost_multiplier-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-atom_traj_len_cost_multiplier-int"><code class="docutils literal notranslate"><span class="pre">atom_traj_len_cost_multiplier=int</span></code><a class="headerlink" href="#term-atom_traj_len_cost_multiplier-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Multiplier for cost of an atomic step (set to 1 for MD, TE-HMC, and SP-MC with O(1) cost moves, N for naive SP-MC)</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
-<dt id="term-break_up_atom_traj-T-F"><code class="docutils literal notranslate"><span class="pre">break_up_atom_traj=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-break_up_atom_traj-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-break_up_atom_traj-T-F"><code class="docutils literal notranslate"><span class="pre">break_up_atom_traj=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-break_up_atom_traj-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Whether to intersperse <code class="docutils literal notranslate"><span class="pre">n_atom_steps</span></code> atomic sub-trajectories with other types of steps.</div>
-<div class="line">default: F </div>
+<div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-n_cell_volume_steps-int"><code class="docutils literal notranslate"><span class="pre">n_cell_volume_steps=int</span></code> <a class="headerlink" href="#term-n_cell_volume_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-n_cell_volume_steps-int"><code class="docutils literal notranslate"><span class="pre">n_cell_volume_steps=int</span></code><a class="headerlink" href="#term-n_cell_volume_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Ratio of cell volume steps will be determined by <code class="docutils literal notranslate"><span class="pre">n_cell_volume_steps</span></code>/SUM(<code class="docutils literal notranslate"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
-<dt id="term-n_cell_shear_steps-int"><code class="docutils literal notranslate"><span class="pre">n_cell_shear_steps=int</span></code> <a class="headerlink" href="#term-n_cell_shear_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-n_cell_shear_steps-int"><code class="docutils literal notranslate"><span class="pre">n_cell_shear_steps=int</span></code><a class="headerlink" href="#term-n_cell_shear_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Ratio of cell shear steps will be determined by <code class="docutils literal notranslate"><span class="pre">n_cell_shear_steps</span></code>/SUM(<code class="docutils literal notranslate"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
-<dt id="term-n_cell_stretch_steps-int"><code class="docutils literal notranslate"><span class="pre">n_cell_stretch_steps=int</span></code> <a class="headerlink" href="#term-n_cell_stretch_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-n_cell_stretch_steps-int"><code class="docutils literal notranslate"><span class="pre">n_cell_stretch_steps=int</span></code><a class="headerlink" href="#term-n_cell_stretch_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Ratio of cell stretch steps will be determined by <code class="docutils literal notranslate"><span class="pre">n_cell_stretch_steps</span></code>/SUM(<code class="docutils literal notranslate"><span class="pre">n_*_steps</span></code>).</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
-<dt id="term-n_swap_steps-int"><code class="docutils literal notranslate"><span class="pre">n_swap_steps=int</span></code> <a class="headerlink" href="#term-n_swap_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-n_swap_steps-int"><code class="docutils literal notranslate"><span class="pre">n_swap_steps=int</span></code><a class="headerlink" href="#term-n_swap_steps-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Ratio of species swap steps will be determined by <code class="docutils literal notranslate"><span class="pre">n_swap_steps</span></code>/SUM(<code class="docutils literal notranslate"><span class="pre">n_*_steps</span></code>). It has to be set other than zero for a multicomponent system.</div>
 <div class="line">default: 0</div>
 </div>
 </dd>
-<dt id="term-swap_max_cluster-int"><code class="docutils literal notranslate"><span class="pre">swap_max_cluster=int</span></code> <a class="headerlink" href="#term-swap_max_cluster-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-swap_max_cluster-int"><code class="docutils literal notranslate"><span class="pre">swap_max_cluster=int</span></code><a class="headerlink" href="#term-swap_max_cluster-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Maximum size of interconnected cluster to try to swap.</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
-<dt id="term-swap_r_cut-float"><code class="docutils literal notranslate"><span class="pre">swap_r_cut=float</span></code> <a class="headerlink" href="#term-swap_r_cut-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-swap_r_cut-float"><code class="docutils literal notranslate"><span class="pre">swap_r_cut=float</span></code><a class="headerlink" href="#term-swap_r_cut-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Cutoff radius for defining connected atoms for cluster.</div>
 <div class="line">default: 2.5</div>
 </div>
 </dd>
-<dt id="term-swap_cluster_probability_increment-float"><code class="docutils literal notranslate"><span class="pre">swap_cluster_probability_increment=float</span></code> <a class="headerlink" href="#term-swap_cluster_probability_increment-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-swap_cluster_probability_increment-float"><code class="docutils literal notranslate"><span class="pre">swap_cluster_probability_increment=float</span></code><a class="headerlink" href="#term-swap_cluster_probability_increment-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Factor between prob. of picking increasing larger clusters.</div>
 <div class="line">default: 0.75</div>
 </div>
 </dd>
-<dt id="term-swap_velo-T-F"><code class="docutils literal notranslate"><span class="pre">swap_velo=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-swap_velo-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-swap_velo-T-F"><code class="docutils literal notranslate"><span class="pre">swap_velo=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-swap_velo-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">If true, swap velocities when swapping atoms, breaking coherence a bit.</div>
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-no_swap_velo_fix_mag_alt-T-F"><code class="docutils literal notranslate"><span class="pre">no_swap_velo_fix_mag_alt=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-no_swap_velo_fix_mag_alt-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-no_swap_velo_fix_mag_alt-T-F"><code class="docutils literal notranslate"><span class="pre">no_swap_velo_fix_mag_alt=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-no_swap_velo_fix_mag_alt-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">If true, use alternate method for correcting velocity magnitudes when not swapping velocities.</div>
 <div class="line">default: F</div>
 </div>
@@ -240,17 +246,17 @@
 <div class="line">default: 0</div>
 </div>
 </dd>
-<dt id="term-semi_grand_potentials-Z1"><a href="#id1"><span class="problematic" id="id2">``</span></a>semi_grand_potentials=Z1<a class="headerlink" href="#term-semi_grand_potentials-Z1" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-semi_grand_potentials-Z1"><a href="#id5"><span class="problematic" id="id6">``</span></a>semi_grand_potentials=Z1<a class="headerlink" href="#term-semi_grand_potentials-Z1" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Chemical potentials for semi-grand canonical species-type transmutations</div>
 <div class="line">default: ‘’</div>
 </div>
 </dd>
-<dt id="term-velo_traj_len-int"><code class="docutils literal notranslate"><span class="pre">velo_traj_len=int</span></code> <a class="headerlink" href="#term-velo_traj_len-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-velo_traj_len-int"><code class="docutils literal notranslate"><span class="pre">velo_traj_len=int</span></code><a class="headerlink" href="#term-velo_traj_len-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Number of MC steps in (optional) explicit velocity MC trajectory.</div>
 <div class="line">default: 0</div>
 </div>
 </dd>
-<dt id="term-random_energy_perturbation-float"><code class="docutils literal notranslate"><span class="pre">random_energy_perturbation=float</span></code> <a class="headerlink" href="#term-random_energy_perturbation-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-random_energy_perturbation-float"><code class="docutils literal notranslate"><span class="pre">random_energy_perturbation=float</span></code><a class="headerlink" href="#term-random_energy_perturbation-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">default: 1.0e-12</div>
 </div>
 </dd>
@@ -259,57 +265,57 @@
 <div class="line">Use either Monte Carlo or Molecular dynamics to explore. GMC is an alias for atom_algorithm=MC, MC_atom_Galilean=True.</div>
 </div>
 </dd>
-<dt id="term-MC_atom_velocities-T-F"><code class="docutils literal notranslate"><span class="pre">MC_atom_velocities=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-MC_atom_velocities-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MC_atom_velocities-T-F"><code class="docutils literal notranslate"><span class="pre">MC_atom_velocities=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-MC_atom_velocities-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">This keyword is supported only for energy_calculator=fortran.</div>
-<div class="line">default: F </div>
+<div class="line">default: F</div>
 </div>
 </dd>
 <dt id="term-MC_atom_velocities_pre_perturb-T-F"><code class="docutils literal notranslate"><span class="pre">MC_atom_velocities_pre_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-MC_atom_velocities_pre_perturb-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Perturb velocities (rejection free) before MC + velocities walk.</div>
-<div class="line">default: F </div>
+<div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-MC_atom_step_size-float"><code class="docutils literal notranslate"><span class="pre">MC_atom_step_size=float</span></code> <a class="headerlink" href="#term-MC_atom_step_size-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MC_atom_step_size-float"><code class="docutils literal notranslate"><span class="pre">MC_atom_step_size=float</span></code><a class="headerlink" href="#term-MC_atom_step_size-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Initial atom move step size in units of (max_volume_per_atom * N_atoms)^(1/3)</div>
 <div class="line">default: 1.0</div>
 </div>
 </dd>
-<dt id="term-MC_atom_step_size_max-float"><code class="docutils literal notranslate"><span class="pre">MC_atom_step_size_max=float</span></code> <a class="headerlink" href="#term-MC_atom_step_size_max-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MC_atom_step_size_max-float"><code class="docutils literal notranslate"><span class="pre">MC_atom_step_size_max=float</span></code><a class="headerlink" href="#term-MC_atom_step_size_max-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Maximum atom step size in units of (max_volume_per_atom * N_atoms)^(1/3).</div>
 <div class="line">default: 1.0</div>
 </div>
 </dd>
-<dt id="term-MC_atom_uniform_rv-T-F"><code class="docutils literal notranslate"><span class="pre">MC_atom_uniform_rv=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-MC_atom_uniform_rv-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MC_atom_uniform_rv-T-F"><code class="docutils literal notranslate"><span class="pre">MC_atom_uniform_rv=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-MC_atom_uniform_rv-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-MC_atom_Galilean-T-F"><code class="docutils literal notranslate"><span class="pre">MC_atom_Galilean=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-MC_atom_Galilean-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MC_atom_Galilean-T-F"><code class="docutils literal notranslate"><span class="pre">MC_atom_Galilean=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-MC_atom_Galilean-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-GMC_no_reverse-T-F"><code class="docutils literal notranslate"><span class="pre">GMC_no_reverse=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-GMC_no_reverse-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-GMC_no_reverse-T-F"><code class="docutils literal notranslate"><span class="pre">GMC_no_reverse=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-GMC_no_reverse-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">default: T</div>
 </div>
 </dd>
-<dt id="term-MD_atom_velo_pre_perturb-T-F"><code class="docutils literal notranslate"><span class="pre">MD_atom_velo_pre_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-MD_atom_velo_pre_perturb-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MD_atom_velo_pre_perturb-T-F"><code class="docutils literal notranslate"><span class="pre">MD_atom_velo_pre_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-MD_atom_velo_pre_perturb-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Perturb velocities before MD trajectory</div>
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-MD_atom_velo_post_perturb-T-F"><code class="docutils literal notranslate"><span class="pre">MD_atom_velo_post_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-MD_atom_velo_post_perturb-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MD_atom_velo_post_perturb-T-F"><code class="docutils literal notranslate"><span class="pre">MD_atom_velo_post_perturb=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-MD_atom_velo_post_perturb-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Perturb velocities after MD trajectory</div>
 <div class="line">default: T</div>
 </div>
 </dd>
-<dt id="term-MD_atom_velo_flip_accept-T-F"><code class="docutils literal notranslate"><span class="pre">MD_atom_velo_flip_accept=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-MD_atom_velo_flip_accept-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MD_atom_velo_flip_accept-T-F"><code class="docutils literal notranslate"><span class="pre">MD_atom_velo_flip_accept=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-MD_atom_velo_flip_accept-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">default: F</div>
 </div>
 </dd>
-<dt id="term-MD_atom_timestep-float"><code class="docutils literal notranslate"><span class="pre">MD_atom_timestep=float</span></code> <a class="headerlink" href="#term-MD_atom_timestep-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MD_atom_timestep-float"><code class="docutils literal notranslate"><span class="pre">MD_atom_timestep=float</span></code><a class="headerlink" href="#term-MD_atom_timestep-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">default: 0.1 (ASE time units)</div>
 </div>
 </dd>
-<dt id="term-MD_atom_timestep_max-float"><code class="docutils literal notranslate"><span class="pre">MD_atom_timestep_max=float</span></code> <a class="headerlink" href="#term-MD_atom_timestep_max-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-MD_atom_timestep_max-float"><code class="docutils literal notranslate"><span class="pre">MD_atom_timestep_max=float</span></code><a class="headerlink" href="#term-MD_atom_timestep_max-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">default: 2.0 (ASE time units)</div>
 </div>
 </dd>
@@ -353,8 +359,8 @@
 <dt id="term-MC_cell_P-float"><code class="docutils literal notranslate"><span class="pre">MC_cell_P=float</span></code><a class="headerlink" href="#term-MC_cell_P-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Pressure value to be used. The unit of pressure depends on both the energy calculator and on the potential model used. Note that ASE uses</div>
 <div class="line">eV as energy and Angstrom as distance units everywhere, thus this case the pressure in the input have to be eV/Angstrom^3 (in case of using LAMMPS</div>
-<div class="line">the lammpslib module will convert the units for lammps to whatever units are set by the potential type) </div>
-<div class="line">default: 0.0 </div>
+<div class="line">the lammpslib module will convert the units for lammps to whatever units are set by the potential type)</div>
+<div class="line">default: 0.0</div>
 </div>
 </dd>
 <dt id="term-MC_cell_flat_V_prior-T-F"><code class="docutils literal notranslate"><span class="pre">MC_cell_flat_V_prior=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-MC_cell_flat_V_prior-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
@@ -415,12 +421,12 @@
 <div class="line">default: T</div>
 </div>
 </dd>
-<dt id="term-monitor_step_interval_times_fraction_killed-float"><code class="docutils literal notranslate"><span class="pre">monitor_step_interval_times_fraction_killed=float</span></code> <a class="headerlink" href="#term-monitor_step_interval_times_fraction_killed-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-monitor_step_interval_times_fraction_killed-float"><code class="docutils literal notranslate"><span class="pre">monitor_step_interval_times_fraction_killed=float</span></code><a class="headerlink" href="#term-monitor_step_interval_times_fraction_killed-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Divided by <code class="docutils literal notranslate"><span class="pre">n_cull/n_walkers</span></code> to get actual monitoring interval in iterations, negative for only using last iteration, 0 for no monitoring</div>
 <div class="line">default: 1</div>
 </div>
 </dd>
-<dt id="term-adjust_step_interval_times_fraction_killed-float"><code class="docutils literal notranslate"><span class="pre">adjust_step_interval_times_fraction_killed=float</span></code> <a class="headerlink" href="#term-adjust_step_interval_times_fraction_killed-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-adjust_step_interval_times_fraction_killed-float"><code class="docutils literal notranslate"><span class="pre">adjust_step_interval_times_fraction_killed=float</span></code><a class="headerlink" href="#term-adjust_step_interval_times_fraction_killed-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Divided by <code class="docutils literal notranslate"><span class="pre">n_cull/n_walkers</span></code> to get actual step adjustment interval in iterations, negative for only using last iteration, 0 for no adjust.</div>
 <div class="line">default: 1</div>
 </div>
@@ -477,7 +483,7 @@
 <div class="line">parameters (optional) for fortran model</div>
 </div>
 </dd>
-<dt id="term-LAMMPS_fix_gmc-T-F"><code class="docutils literal notranslate"><span class="pre">LAMMPS_fix_gmc=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code> <a class="headerlink" href="#term-LAMMPS_fix_gmc-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
+<dt id="term-LAMMPS_fix_gmc-T-F"><code class="docutils literal notranslate"><span class="pre">LAMMPS_fix_gmc=[T</span> <span class="pre">|</span> <span class="pre">F]</span></code><a class="headerlink" href="#term-LAMMPS_fix_gmc-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">default: F</div>
 </div>
 </dd>
@@ -522,7 +528,7 @@
 </div>
 </dd>
 <dt id="term-2D-T-F"><code class="docutils literal notranslate"><span class="pre">2D=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code><a class="headerlink" href="#term-2D-T-F" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">Perform 2D simulation. Some functionality may be limited with this option! </div>
+<div class="line">Perform 2D simulation. Some functionality may be limited with this option!</div>
 <div class="line">The 2D area is in the xy plane, the z axis stays constant during the simulation (set its value using the keyword <code class="docutils literal notranslate"><span class="pre">Z_cell_axis</span></code>).</div>
 <div class="line">The maximum allowed volume is still defined as volume in this case!</div>
 <div class="line">If constant pressure is set, the p*V term is now p*A*Z_cell_axis, thus set the MC_cell_P parameter multiplied by 1/Z_cell_axis.</div>
@@ -530,8 +536,8 @@
 </div>
 </dd>
 <dt id="term-Z_cell_axis-float"><code class="docutils literal notranslate"><span class="pre">Z_cell_axis=float</span></code><a class="headerlink" href="#term-Z_cell_axis-float" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">Only used if 2D=T. Value of the Z cell axis, perpendicular to the area in case of a 2D simulation. </div>
-<div class="line">This stays constant during the simulation. </div>
+<div class="line">Only used if 2D=T. Value of the Z cell axis, perpendicular to the area in case of a 2D simulation.</div>
+<div class="line">This stays constant during the simulation.</div>
 <div class="line">default: 10.0</div>
 </div>
 </dd>
@@ -581,7 +587,7 @@
 </div>
 </dd>
 <dt id="term-initial_walk_adjust_interval-int"><code class="docutils literal notranslate"><span class="pre">initial_walk_adjust_interval=int</span></code><a class="headerlink" href="#term-initial_walk_adjust_interval-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">in initial walks, interval between walks for adjusting step size </div>
+<div class="line">in initial walks, interval between walks for adjusting step size</div>
 <div class="line">default: ‘’</div>
 </div>
 </dd>
@@ -596,7 +602,7 @@
 </div>
 </dd>
 <dt id="term-traj_interval-int"><code class="docutils literal notranslate"><span class="pre">traj_interval=int</span></code><a class="headerlink" href="#term-traj_interval-int" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
-<div class="line">Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set &lt;=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge. </div>
+<div class="line">Iteration interval at which the currently culled configuration(s) is/are printed to the trajectory output, in the set format. If it is set &lt;=0, no trajectory files will be printed at all. Useful option for larger runs as the trajectory files can become huge.</div>
 <div class="line">default: 100</div>
 </div>
 </dd>
@@ -622,7 +628,7 @@
 <dt id="term-ns_run_analyzers-string"><code class="docutils literal notranslate"><span class="pre">ns_run_analyzers=string</span></code><a class="headerlink" href="#term-ns_run_analyzers-string" title="Permalink to this term">¶</a></dt><dd><div class="line-block">
 <div class="line">Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH</div>
 <div class="line">Positive interval refers to NS loop, negative to initial walks</div>
-<div class="line">default:’’ </div>
+<div class="line">default:’’</div>
 </div>
 </dd>
 </dl>
@@ -1039,8 +1045,8 @@ value if the run already reached the number of iterations set previously. (Note:
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.2.3.
+    &#169; Copyright 2015, livia.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.1.2.
     </div>
   </body>
 </html>
