@@ -1872,7 +1872,7 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
 
         key_flags =  1*np.asarray([ i in key_ints for i in range(7)])
 
-        totalkeys = np.zeros( (len(key_flags)), dtype=np.int)
+        totalkeys = np.zeros( (len(key_flags)), dtype=int)
         comm.Allreduce([key_flags, MPI.INT], [totalkeys, MPI.INT], MPI.SUM)
 
         key_list = []
@@ -1925,9 +1925,9 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
             (n_try, n_accept) = walk_stats[key]
         else:
             n_try=0
-        n_try_g = np.zeros( (1), dtype=np.int)
+        n_try_g = np.zeros( (1), dtype=int)
         if (comm is not None):
-            n_try_s = np.array( [n_try], dtype = np.int)
+            n_try_s = np.array( [n_try], dtype = int)
             comm.Allreduce([n_try_s, MPI.INT], [n_try_g, MPI.INT], MPI.SUM)
         else:
             n_try_g[0] = n_try
@@ -2031,10 +2031,10 @@ def full_auto_set_stepsizes(walkers, walk_stats, movement_args, comm, Emax, KEma
             (n_try, n_accept) = stats_cumul[key]
 
             if comm is not None:
-                n_try_s = np.array( [n_try], dtype = np.int)
-                n_accept_s = np.array( [n_accept], dtype = np.int)
-                n_try_g = np.zeros( (1), dtype=np.int)
-                n_accept_g = np.zeros( (1), dtype=np.int)
+                n_try_s = np.array( [n_try], dtype = int)
+                n_accept_s = np.array( [n_accept], dtype = int)
+                n_try_g = np.zeros( (1), dtype=int)
+                n_accept_g = np.zeros( (1), dtype=int)
                 # comm.barrier() #BARRIER
                 comm.Allreduce([n_try_s, MPI.INT], [n_try_g, MPI.INT], MPI.SUM)
                 comm.Allreduce([n_accept_s, MPI.INT], [n_accept_g, MPI.INT], MPI.SUM)
@@ -2135,10 +2135,10 @@ def adjust_step_sizes(walk_stats, movement_args, comm, do_print_rate=True, monit
     for key in walk_stats:
         (n_try, n_accept) = walk_stats[key]
         if comm is not None:
-            n_try_s = np.array( [n_try], dtype = np.int)
-            n_accept_s = np.array( [n_accept], dtype = np.int)
-            n_try_g = np.zeros( (1), dtype=np.int)
-            n_accept_g = np.zeros( (1), dtype=np.int)
+            n_try_s = np.array( [n_try], dtype = int)
+            n_accept_s = np.array( [n_accept], dtype = int)
+            n_try_g = np.zeros( (1), dtype=int)
+            n_accept_g = np.zeros( (1), dtype=int)
             # comm.barrier() #BARRIER
             comm.Allreduce([n_try_s, MPI.INT], [n_try_g, MPI.INT], MPI.SUM)
             comm.Allreduce([n_accept_s, MPI.INT], [n_accept_g, MPI.INT], MPI.SUM)
@@ -3917,13 +3917,17 @@ def main():
             # Set init velocities for manual surface configurations from restart
             # RBW checked this and seed-averaged initial total energies are ~
             # the same, which means velocities *seem* to be set properly
-            if movement_args['keep_atoms_fixed'] > 0:
+            # LBP: only perturb if this is a "fake" restart to start a surface sim.
+            #       proper restart does not need perturbation as that messes up KE
+            if movement_args['keep_atoms_fixed'] > 0 and walkers[0].info['iter'] < 1:
                 # print("RBW: set init vels for man surf configs from restart") # debug
                 if movement_args['do_velocities']:
                     for at in walkers:
                         # TODO: RBW – make sure surface restart files contain KEmax calculated from number of free atoms, otherwise, their kinetic energy can be inefficiently high
+                        energy = eval_energy(at)
                         rej_free_perturb_velo(at, None, KEmax)
                         # adds KE to at.info['ns_energy']
+                        energy = eval_energy(at)
 
             for at in walkers:
                 if ns_args['n_extra_data'] > 0 and (not 'ns_extra_data' in at.arrays or at.arrays['ns_extra_data'].size/len(at) != ns_args['n_extra_data']):
