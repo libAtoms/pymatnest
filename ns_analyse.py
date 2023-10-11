@@ -12,8 +12,12 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
         (n_walkers, n_cull, n_Extra_DOF) = fields
         flat_V_prior = "False"
         N_atoms = "0"
+        variable_n_live = "False"
     elif len(fields) == 5:
         (n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms) = fields
+        variable_n_live = "False"
+    elif len(fields) == 6:
+        (n_walkers, n_cull, n_Extra_DOF, flat_V_prior, N_atoms, variable_n_live) = fields
     else:
         raise ValueError("unknown number of fields %d (not 3 or 5) in first line of energies file" % len(fields))
     n_walkers = int(n_walkers)
@@ -26,6 +30,13 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
     else:
         sys.stderr.write("Unknown flat_V_prior string '%s'\n" % flat_V_prior)
         sys.exit(1)
+    if variable_n_live.lower() == "t" or variable_n_live.lower() == "true":
+        variable_n_live = True
+    elif variable_n_live.lower() == "f" or variable_n_live.lower() == "false":
+        variable_n_live = False
+    else:
+        sys.stderr.write("Unknown variable_n_live string '%s'\n" % variable_n_live)
+        sys.exit(1)
     N_atoms = int(N_atoms)
 
     Es=[]
@@ -37,26 +48,26 @@ def read_inputs(args, line_skip=0, line_end=None, interval=1):
         if n_fields is not None and n_fields != len(fields):
             sys.stderr.write(f'Mismatch field # prev {n_fields} cur {len(fields)}, skipping\n')
             continue
-        if len(fields) == 3:
+        if (len(fields) == 3 and not variable_n_live) or (len(fields) == 4 and variable_n_live):
             try:
                 E = float(fields[1])
                 V = float(fields[2])
             except:
                 continue
             if n_fields is None:
-                n_fields = 3
+                n_fields = len(fields)
             Es.append(E)
             Vs.append(V)
-        elif len(fields) == 2:
+        elif (len(fields) == 2 and not variable_n_live):
             try:
                 E = float(fields[1])
             except:
                 continue
             if n_fields is None:
-                n_fields = 2
+                n_fields = len(fields)
             Es.append(E)
         else: # silently skip lines with problems
-            sys.stderr.write("WARNING: input line with problem: number of fields not 2 or 3, or not floats\n")
+            sys.stderr.write("WARNING: input line with problem: number of fields not 2 or 3 (without variable_n_live) or 4 (with variable_n_live), or not floats\n")
             continue
 
     if len(Vs) == 0:
