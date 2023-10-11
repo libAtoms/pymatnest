@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="./">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Nested sampling method &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=d534aad8" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=0dc0530d" />
     
-    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js?v=404a92a0"></script>
+    <script src="_static/documentation_options.js?v=29a6c3e3"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
-    <script src="_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -44,7 +44,7 @@
           <div class="body" role="main">
             
   <section id="nested-sampling-method">
-<h1>Nested sampling method<a class="headerlink" href="#nested-sampling-method" title="Permalink to this heading">¶</a></h1>
+<h1>Nested sampling method<a class="headerlink" href="#nested-sampling-method" title="Link to this heading">¶</a></h1>
 <dl class="field-list simple">
 <dt class="field-odd">Authors<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Noam, Rob, Gabor, Livia</p>
@@ -54,7 +54,7 @@
 </dd>
 </dl>
 <section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this heading">¶</a></h2>
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h2>
 <p>The nested sampling method was first introduced by John Skilling <a class="footnote-reference brackets" href="#f1" id="id1" role="doc-noteref"><span class="fn-bracket">[</span>1<span class="fn-bracket">]</span></a>
 in the field of applied probability and inference to efficiently sample
 probability densities in high-dimensional spaces where the regions contributing
@@ -93,7 +93,7 @@ configuration spaces.[#f2]_
 </aside>
 </section>
 <section id="publications">
-<h2>Publications<a class="headerlink" href="#publications" title="Permalink to this heading">¶</a></h2>
+<h2>Publications<a class="headerlink" href="#publications" title="Link to this heading">¶</a></h2>
 <p>L.B. Partay, A.P. Bartok, G. Csanyi, <em>Efficient Sampling of Atomic Configurational Spaces</em>,
 J. Phys. Chem. B (2010), 114, 10502–10512, <a class="reference external" href="https://pubs.acs.org/doi/abs/10.1021/jp1012973">https://pubs.acs.org/doi/abs/10.1021/jp1012973</a></p>
 <p>R.J.N. Baldock, L.B. Partay, A.P. Bartok, M.C. Payne, G. Csanyi, <em>Determining pressure-temperature phase diagrams of materials</em>,
@@ -110,7 +110,7 @@ Phys. Chem. Chem. Phys. (2019), 21, 7305 <a class="reference external" href="htt
 <p>L.B. Partay and G. Hantal <em>Stability of the high-density Jagla liquid in 2D: sensitivity to parameterisation</em>, Soft Matter, (2022) 18, 5261 <a class="reference external" href="https://pubs.rsc.org/en/content/articlelanding/2022/SM/D2SM00491G">https://pubs.rsc.org/en/content/articlelanding/2022/SM/D2SM00491G</a></p>
 </section>
 <section id="algorithm">
-<h2>Algorithm<a class="headerlink" href="#algorithm" title="Permalink to this heading">¶</a></h2>
+<h2>Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">¶</a></h2>
 <p>Nested sampling is an iterative, “top-down” method, it samples the Potential Energy Landscape (PES)
 through a series of nested energy levels, starting from the high energy region (gas phase) and going towards the
 global minimum. The sampling is done using a set of walkers - these are randomly generated configurations at the initial step of the sampling,
@@ -124,7 +124,7 @@ The iteration is continued until a satisfactory low energy configuration is reac
 <img alt="_images/NS_PES_animation.gif" src="_images/NS_PES_animation.gif" />
 </section>
 <section id="pymatnest">
-<h2><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Permalink to this heading">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> package is a software
 library written in Fortran 95/python for the purpose of carrying out
 nested sampling calculations with a variety of options suitable for different systems.
@@ -135,7 +135,7 @@ It can be used with the supplied fortran potential models and it also has interf
 </ul>
 </div></blockquote>
 <section id="mc-and-md-step-algorithms">
-<h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Permalink to this heading">¶</a></h3>
+<h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Link to this heading">¶</a></h3>
 <dl class="simple">
 <dt><code class="docutils literal notranslate"><span class="pre">rej_free_perturb_velo</span></code></dt><dd><ul class="simple">
 <li><p>if atom_velo_rej_free_fully_randomize, pick random velocities consistent with Emax</p></li>
@@ -747,7 +747,7 @@ Transcript written on math.log.
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

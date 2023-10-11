@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>lammpslib &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=d534aad8" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=0dc0530d" />
     
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=404a92a0"></script>
+    <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -66,7 +66,9 @@
 <span class="c1"># 6. do we need a subroutine generator that converts a lammps string</span>
 <span class="c1">#   into a python function that can be called</span>
 
-<div class="viewcode-block" id="is_upper_triangular"><a class="viewcode-back" href="../lammpslib.html#lammpslib.is_upper_triangular">[docs]</a><span class="k">def</span> <span class="nf">is_upper_triangular</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
+<div class="viewcode-block" id="is_upper_triangular">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.is_upper_triangular">[docs]</a>
+<span class="k">def</span> <span class="nf">is_upper_triangular</span><span class="p">(</span><span class="n">mat</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;test if 3x3 matrix is upper triangular&quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="nf">near0</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -75,7 +77,10 @@
 
     <span class="k">return</span> <span class="n">near0</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">near0</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">near0</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="convert_cell"><a class="viewcode-back" href="../lammpslib.html#lammpslib.convert_cell">[docs]</a><span class="k">def</span> <span class="nf">convert_cell</span><span class="p">(</span><span class="n">ase_cell</span><span class="p">):</span>
+
+<div class="viewcode-block" id="convert_cell">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.convert_cell">[docs]</a>
+<span class="k">def</span> <span class="nf">convert_cell</span><span class="p">(</span><span class="n">ase_cell</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Convert a parallel piped (forming right hand basis)</span>
 <span class="sd">    to lower triangular matrix LAMMPS can accept. This</span>
@@ -109,6 +114,7 @@
         <span class="k">return</span> <span class="n">cell</span><span class="p">,</span> <span class="kc">None</span></div>
 
 
+
 <span class="n">lammps_real</span> <span class="o">=</span> <span class="p">{</span>
       <span class="s2">&quot;mass&quot;</span> <span class="p">:</span> <span class="mf">0.001</span> <span class="o">*</span> <span class="n">ase</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">kg</span> <span class="o">/</span> <span class="n">ase</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">mol</span><span class="p">,</span>
       <span class="s2">&quot;distance&quot;</span> <span class="p">:</span> <span class="n">ase</span><span class="o">.</span><span class="n">units</span><span class="o">.</span><span class="n">Angstrom</span><span class="p">,</span>
@@ -132,13 +138,18 @@
 <span class="n">lammps_units</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;real&quot;</span><span class="p">:</span><span class="n">lammps_real</span><span class="p">,</span>
               <span class="s2">&quot;metal&quot;</span><span class="p">:</span><span class="n">lammps_metal</span><span class="p">}</span>
 
-<div class="viewcode-block" id="unit_convert"><a class="viewcode-back" href="../lammpslib.html#lammpslib.unit_convert">[docs]</a><span class="k">def</span> <span class="nf">unit_convert</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;metal&#39;</span><span class="p">):</span>
+<div class="viewcode-block" id="unit_convert">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.unit_convert">[docs]</a>
+<span class="k">def</span> <span class="nf">unit_convert</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;metal&#39;</span><span class="p">):</span>
    <span class="k">try</span><span class="p">:</span>
       <span class="k">return</span> <span class="n">lammps_units</span><span class="p">[</span><span class="n">units</span><span class="p">][</span><span class="n">quantity</span><span class="p">]</span>
    <span class="k">except</span><span class="p">:</span>
       <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Unit </span><span class="si">{}</span><span class="s2"> in unit system </span><span class="si">{}</span><span class="s2"> is not implemented.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">quantity</span><span class="p">,</span><span class="n">units</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib">[docs]</a><span class="k">class</span> <span class="nc">LAMMPSlib</span><span class="p">(</span><span class="n">Calculator</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib">[docs]</a>
+<span class="k">class</span> <span class="nc">LAMMPSlib</span><span class="p">(</span><span class="n">Calculator</span><span class="p">):</span>
 
 <span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    LAMMPSlib Interface Documentation</span>
@@ -310,7 +321,9 @@
         <span class="n">read_molecular_info</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">comm</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 
-<div class="viewcode-block" id="LAMMPSlib.parse_bonds"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.parse_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">parse_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+<div class="viewcode-block" id="LAMMPSlib.parse_bonds">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.parse_bonds">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">bonds</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">max_n_bonds</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)):</span>
@@ -322,11 +335,17 @@
                     <span class="n">atoms</span><span class="o">.</span><span class="n">bonds</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
                 <span class="n">atoms</span><span class="o">.</span><span class="n">max_n_bonds</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">max_n_bonds</span><span class="p">,</span> <span class="n">n_bonds</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.set_bonds"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_bonds">[docs]</a>    <span class="k">def</span> <span class="nf">set_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.set_bonds">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_bonds">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_bonds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">)</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">bonds</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;create_bonds single/bond </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.parse_angles"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.parse_angles">[docs]</a>    <span class="k">def</span> <span class="nf">parse_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.parse_angles">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.parse_angles">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">max_n_angles</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)):</span>
@@ -338,11 +357,17 @@
                     <span class="n">atoms</span><span class="o">.</span><span class="n">angles</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)),</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
                 <span class="n">atoms</span><span class="o">.</span><span class="n">max_n_angles</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">max_n_angles</span><span class="p">,</span> <span class="n">n_angles</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.set_angles"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_angles">[docs]</a>    <span class="k">def</span> <span class="nf">set_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.set_angles">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_angles">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_angles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">)</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">angles</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;create_bonds single/angle </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.parse_dihedrals"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.parse_dihedrals">[docs]</a>    <span class="k">def</span> <span class="nf">parse_dihedrals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.parse_dihedrals">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.parse_dihedrals">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_dihedrals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">atoms</span><span class="p">):</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">dihedrals</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">max_n_dihedrals</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)):</span>
@@ -354,11 +379,17 @@
                     <span class="n">atoms</span><span class="o">.</span><span class="n">dihedrals</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)),</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
                 <span class="n">atoms</span><span class="o">.</span><span class="n">max_n_dihedrals</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">max_n_dihedrals</span><span class="p">,</span> <span class="n">n_dihedrals</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.set_dihedrals"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_dihedrals">[docs]</a>    <span class="k">def</span> <span class="nf">set_dihedrals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.set_dihedrals">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_dihedrals">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_dihedrals</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">,</span> <span class="n">i4</span><span class="p">)</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">dihedrals</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;create_bonds single/dihedral </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">,</span> <span class="n">i4</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.parse_impropers"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.parse_impropers">[docs]</a>    <span class="k">def</span> <span class="nf">parse_impropers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.parse_impropers">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.parse_impropers">[docs]</a>
+    <span class="k">def</span> <span class="nf">parse_impropers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">atoms</span><span class="p">):</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">impropers</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">atoms</span><span class="o">.</span><span class="n">max_n_impropers</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="p">)):</span>
@@ -370,17 +401,26 @@
                     <span class="n">atoms</span><span class="o">.</span><span class="n">impropers</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)),</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="nb">int</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
                 <span class="n">atoms</span><span class="o">.</span><span class="n">max_n_impropers</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">max_n_impropers</span><span class="p">,</span> <span class="n">n_impropers</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.set_impropers"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_impropers">[docs]</a>    <span class="k">def</span> <span class="nf">set_impropers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.set_impropers">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_impropers">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_impropers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">,</span> <span class="n">i4</span><span class="p">)</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">impropers</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;create_improper </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="p">,</span> <span class="n">i3</span><span class="p">,</span> <span class="n">i4</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.set_charges"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_charges">[docs]</a>    <span class="k">def</span> <span class="nf">set_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.set_charges">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_charges">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_charges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;mmcharge&#39;</span><span class="p">]):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;set atom </span><span class="si">{}</span><span class="s1"> charge </span><span class="si">{}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">j</span><span class="p">))</span></div>
 
 
 
-<div class="viewcode-block" id="LAMMPSlib.set_cell"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_cell">[docs]</a>    <span class="k">def</span> <span class="nf">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">change</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.set_cell">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_cell">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">change</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="n">lammps_cell</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">coord_transform</span> <span class="o">=</span> <span class="n">convert_cell</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
         <span class="n">xhi</span> <span class="o">=</span> <span class="n">lammps_cell</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">yhi</span> <span class="o">=</span> <span class="n">lammps_cell</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
@@ -401,7 +441,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="n">cell_cmd</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.set_lammps_pos"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_lammps_pos">[docs]</a>    <span class="k">def</span> <span class="nf">set_lammps_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.set_lammps_pos">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.set_lammps_pos">[docs]</a>
+    <span class="k">def</span> <span class="nf">set_lammps_pos</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="n">pos</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span> <span class="o">/</span> <span class="n">unit_convert</span><span class="p">(</span><span class="s2">&quot;distance&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
 
         <span class="c1"># If necessary, transform the positions to new coordinate system</span>
@@ -418,10 +461,16 @@
 <span class="c1">#        self.lmp.put_coosrds(lmp_c_positions)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">scatter_atoms</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">lmp_c_positions</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.calculate"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.calculate">[docs]</a>    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.calculate">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.calculate">[docs]</a>
+    <span class="k">def</span> <span class="nf">calculate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">propagate</span><span class="p">(</span><span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.propagate"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.propagate">[docs]</a>    <span class="k">def</span> <span class="nf">propagate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+<div class="viewcode-block" id="LAMMPSlib.propagate">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.propagate">[docs]</a>
+    <span class="k">def</span> <span class="nf">propagate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">properties</span><span class="p">,</span> <span class="n">system_changes</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                   <span class="n">dt_not_real_time</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">velocity_field</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;&quot;atoms: Atoms object</span>
@@ -592,7 +641,10 @@
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">keep_alive</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.lammpsbc"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.lammpsbc">[docs]</a>    <span class="k">def</span> <span class="nf">lammpsbc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pbc</span><span class="p">,</span> <span class="n">fix</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.lammpsbc">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.lammpsbc">[docs]</a>
+    <span class="k">def</span> <span class="nf">lammpsbc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pbc</span><span class="p">,</span> <span class="n">fix</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">pbc</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;p&#39;</span>
         <span class="k">elif</span> <span class="n">fix</span><span class="p">:</span>
@@ -600,7 +652,10 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="s1">&#39;s&#39;</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.rebuild"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.rebuild">[docs]</a>    <span class="k">def</span> <span class="nf">rebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.rebuild">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.rebuild">[docs]</a>
+    <span class="k">def</span> <span class="nf">rebuild</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">atoms</span><span class="p">):</span>
 
        <span class="k">try</span><span class="p">:</span>
           <span class="n">n_diff</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">previous_atoms_numbers</span><span class="p">)</span>
@@ -626,7 +681,10 @@
 
        <span class="bp">self</span><span class="o">.</span><span class="n">redo_atom_types</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.redo_atom_types"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.redo_atom_types">[docs]</a>    <span class="k">def</span> <span class="nf">redo_atom_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.redo_atom_types">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.redo_atom_types">[docs]</a>
+    <span class="k">def</span> <span class="nf">redo_atom_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">atoms</span><span class="p">):</span>
 
        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">atom_types_equal_atomic_numbers</span><span class="p">:</span>
           <span class="n">current_types</span> <span class="o">=</span> <span class="p">{</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">Z</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">Z</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span> <span class="n">atoms</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span> <span class="p">)</span> <span class="p">}</span>
@@ -649,7 +707,10 @@
 
        <span class="bp">self</span><span class="o">.</span><span class="n">previous_atoms_numbers</span> <span class="o">=</span> <span class="n">atoms</span><span class="o">.</span><span class="n">numbers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.restart_lammps"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.restart_lammps">[docs]</a>    <span class="k">def</span> <span class="nf">restart_lammps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.restart_lammps">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.restart_lammps">[docs]</a>
+    <span class="k">def</span> <span class="nf">restart_lammps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s2">&quot;clear&quot;</span><span class="p">)</span>
         <span class="c1"># hope there&#39;s no other state to be reset</span>
@@ -659,7 +720,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">start_lammps</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">initialise_lammps</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.start_lammps"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.start_lammps">[docs]</a>    <span class="k">def</span> <span class="nf">start_lammps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.start_lammps">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.start_lammps">[docs]</a>
+    <span class="k">def</span> <span class="nf">start_lammps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># start lammps process</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">log_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">cmd_args</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;-echo&#39;</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="s1">&#39;-log&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;-screen&#39;</span><span class="p">,</span> <span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;-nocite&#39;</span><span class="p">]</span>
@@ -686,7 +750,10 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">started</span><span class="o">=</span><span class="kc">True</span></div>
 
-<div class="viewcode-block" id="LAMMPSlib.initialise_lammps"><a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.initialise_lammps">[docs]</a>    <span class="k">def</span> <span class="nf">initialise_lammps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LAMMPSlib.initialise_lammps">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.LAMMPSlib.initialise_lammps">[docs]</a>
+    <span class="k">def</span> <span class="nf">initialise_lammps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atoms</span><span class="p">):</span>
 
         <span class="c1"># Initialising commands</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">boundary</span><span class="p">:</span>
@@ -840,10 +907,14 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="o">.</span><span class="n">read_molecular_info</span> <span class="ow">and</span> <span class="s1">&#39;mmcharge&#39;</span> <span class="ow">in</span> <span class="n">atoms</span><span class="o">.</span><span class="n">arrays</span><span class="p">:</span> 
             <span class="bp">self</span><span class="o">.</span><span class="n">set_charges</span><span class="p">(</span><span class="n">atoms</span><span class="p">)</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">True</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialized</span> <span class="o">=</span> <span class="kc">True</span></div>
+</div>
 
 
-<div class="viewcode-block" id="write_lammps_data"><a class="viewcode-back" href="../lammpslib.html#lammpslib.write_lammps_data">[docs]</a><span class="k">def</span> <span class="nf">write_lammps_data</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">atom_types</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+
+<div class="viewcode-block" id="write_lammps_data">
+<a class="viewcode-back" href="../lammpslib.html#lammpslib.write_lammps_data">[docs]</a>
+<span class="k">def</span> <span class="nf">write_lammps_data</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">atoms</span><span class="p">,</span> <span class="n">atom_types</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cutoff</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                       <span class="n">molecule_ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">charges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;metal&#39;</span><span class="p">,</span>
                       <span class="n">bond_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">angle_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dihedral_types</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 		      <span class="n">improper_types</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1002,6 +1073,7 @@
         <span class="n">fh</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
 
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -1055,7 +1127,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>

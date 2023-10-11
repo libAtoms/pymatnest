@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 
-<html lang="en">
+<html lang="en" data-content_root="../">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ns_run &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=d534aad8" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=0dc0530d" />
     
-    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js?v=404a92a0"></script>
+    <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
     <script src="../_static/doctools.js?v=888ff710"></script>
-    <script src="../_static/sphinx_highlight.js?v=4825356b"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -56,7 +56,9 @@
 
 <span class="n">print_prefix</span><span class="o">=</span><span class="s2">&quot;&quot;</span>
 
-<div class="viewcode-block" id="usage"><a class="viewcode-back" href="../ns_run.html#ns_run.usage">[docs]</a><span class="k">def</span> <span class="nf">usage</span><span class="p">():</span>
+<div class="viewcode-block" id="usage">
+<a class="viewcode-back" href="../ns_run.html#ns_run.usage">[docs]</a>
+<span class="k">def</span> <span class="nf">usage</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot; Print help to the standard output about the usage of the code and input parameters. The current list of parameters is the following:</span>
 
 <span class="sd">.. glossary::</span>
@@ -658,7 +660,10 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;track_configs=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;track_configs_write=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="excepthook_mpi_abort"><a class="viewcode-back" href="../ns_run.html#ns_run.excepthook_mpi_abort">[docs]</a><span class="k">def</span> <span class="nf">excepthook_mpi_abort</span><span class="p">(</span><span class="n">exctype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
+
+<div class="viewcode-block" id="excepthook_mpi_abort">
+<a class="viewcode-back" href="../ns_run.html#ns_run.excepthook_mpi_abort">[docs]</a>
+<span class="k">def</span> <span class="nf">excepthook_mpi_abort</span><span class="p">(</span><span class="n">exctype</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">tb</span><span class="p">):</span>
     <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span><span class="s1">&#39;Uncaught Exception Type:&#39;</span><span class="p">,</span> <span class="n">exctype</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span><span class="s1">&#39;Value:&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span><span class="s1">&#39;Traceback:&#39;</span><span class="p">,</span> <span class="n">tb</span><span class="p">)</span>
@@ -672,7 +677,10 @@
         <span class="k">pass</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="exit_error"><a class="viewcode-back" href="../ns_run.html#ns_run.exit_error">[docs]</a><span class="k">def</span> <span class="nf">exit_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">stat</span><span class="p">):</span>
+
+<div class="viewcode-block" id="exit_error">
+<a class="viewcode-back" href="../ns_run.html#ns_run.exit_error">[docs]</a>
+<span class="k">def</span> <span class="nf">exit_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">stat</span><span class="p">):</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
     <span class="k">try</span><span class="p">:</span>
@@ -681,18 +689,27 @@
         <span class="k">pass</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">stat</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="str_to_logical"><a class="viewcode-back" href="../ns_run.html#ns_run.str_to_logical">[docs]</a><span class="k">def</span> <span class="nf">str_to_logical</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+
+<div class="viewcode-block" id="str_to_logical">
+<a class="viewcode-back" href="../ns_run.html#ns_run.str_to_logical">[docs]</a>
+<span class="k">def</span> <span class="nf">str_to_logical</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span> <span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="s2">&quot;T&quot;</span><span class="p">,</span> <span class="s2">&quot;true&quot;</span><span class="p">,</span> <span class="s2">&quot;True&quot;</span><span class="p">,</span> <span class="s2">&quot;TRUE&quot;</span><span class="p">,</span> <span class="s2">&quot;1&quot;</span> <span class="p">]:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">if</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">[</span> <span class="s2">&quot;f&quot;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="s2">&quot;false&quot;</span><span class="p">,</span> <span class="s2">&quot;False&quot;</span><span class="p">,</span> <span class="s2">&quot;FALSE&quot;</span><span class="p">,</span> <span class="s2">&quot;0&quot;</span> <span class="p">]:</span>
         <span class="k">return</span> <span class="kc">False</span>
     <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;Failed to parse logical</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="internal_Vlj"><a class="viewcode-back" href="../ns_run.html#ns_run.internal_Vlj">[docs]</a><span class="k">def</span> <span class="nf">internal_Vlj</span><span class="p">(</span><span class="n">dr_vec</span><span class="p">,</span> <span class="n">Eshift</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
+
+<div class="viewcode-block" id="internal_Vlj">
+<a class="viewcode-back" href="../ns_run.html#ns_run.internal_Vlj">[docs]</a>
+<span class="k">def</span> <span class="nf">internal_Vlj</span><span class="p">(</span><span class="n">dr_vec</span><span class="p">,</span> <span class="n">Eshift</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dr_vec</span><span class="o">**-</span><span class="mi">12</span> <span class="o">-</span> <span class="n">dr_vec</span><span class="o">**-</span><span class="mi">6</span><span class="p">)</span> <span class="o">-</span> <span class="n">Eshift</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">dr_vec</span><span class="p">))</span></div>
 
+
 <span class="c1"># pos is Nx3, l is a scalar box size</span>
-<div class="viewcode-block" id="energy_internal_pos"><a class="viewcode-back" href="../ns_run.html#ns_run.energy_internal_pos">[docs]</a><span class="k">def</span> <span class="nf">energy_internal_pos</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
+<div class="viewcode-block" id="energy_internal_pos">
+<a class="viewcode-back" href="../ns_run.html#ns_run.energy_internal_pos">[docs]</a>
+<span class="k">def</span> <span class="nf">energy_internal_pos</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">l</span><span class="p">):</span>
     <span class="n">n_at</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">dr_list</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="n">n_at</span><span class="o">*</span><span class="p">(</span><span class="n">n_at</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="p">)</span>
     <span class="n">offset</span><span class="o">=</span><span class="mi">0</span>
@@ -709,10 +726,16 @@
 
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">internal_Vlj</span><span class="p">(</span><span class="n">dr_list_mag</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">dr_list_mag</span> <span class="o">&lt;</span> <span class="n">internal_cutoff</span><span class="p">)],</span><span class="n">Eshift</span><span class="p">))</span></div>
 
-<div class="viewcode-block" id="energy_internal"><a class="viewcode-back" href="../ns_run.html#ns_run.energy_internal">[docs]</a><span class="k">def</span> <span class="nf">energy_internal</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+
+<div class="viewcode-block" id="energy_internal">
+<a class="viewcode-back" href="../ns_run.html#ns_run.energy_internal">[docs]</a>
+<span class="k">def</span> <span class="nf">energy_internal</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">energy_internal_pos</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="n">at</span><span class="o">.</span><span class="n">get_cell</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="eval_energy_PE"><a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy_PE">[docs]</a><span class="k">def</span> <span class="nf">eval_energy_PE</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+
+<div class="viewcode-block" id="eval_energy_PE">
+<a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy_PE">[docs]</a>
+<span class="k">def</span> <span class="nf">eval_energy_PE</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">do_calc_ASE</span> <span class="ow">or</span> <span class="n">do_calc_lammps</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">do_calc_lammps</span><span class="p">:</span>
             <span class="c1">#NB only MD can make crazy positions, so maybe just do this after MD propagation?</span>
@@ -727,7 +750,10 @@
 
     <span class="k">return</span> <span class="n">energy</span></div>
 
-<div class="viewcode-block" id="eval_energy_KE"><a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy_KE">[docs]</a><span class="k">def</span> <span class="nf">eval_energy_KE</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+
+<div class="viewcode-block" id="eval_energy_KE">
+<a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy_KE">[docs]</a>
+<span class="k">def</span> <span class="nf">eval_energy_KE</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">at</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;momenta&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">at</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">):</span>
         <span class="n">energy</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
@@ -735,10 +761,16 @@
 
     <span class="k">return</span> <span class="n">energy</span></div>
 
-<div class="viewcode-block" id="eval_energy_PV"><a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy_PV">[docs]</a><span class="k">def</span> <span class="nf">eval_energy_PV</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+
+<div class="viewcode-block" id="eval_energy_PV">
+<a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy_PV">[docs]</a>
+<span class="k">def</span> <span class="nf">eval_energy_PV</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">at</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="eval_energy_mu"><a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy_mu">[docs]</a><span class="k">def</span> <span class="nf">eval_energy_mu</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+
+<div class="viewcode-block" id="eval_energy_mu">
+<a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy_mu">[docs]</a>
+<span class="k">def</span> <span class="nf">eval_energy_mu</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;semi_grand_potentials&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">mu</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;semi_grand_potentials&#39;</span><span class="p">]</span>
         <span class="n">energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span> <span class="n">mu</span><span class="p">[</span><span class="n">Z</span><span class="p">]</span> <span class="k">for</span> <span class="n">Z</span> <span class="ow">in</span> <span class="n">at</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span> <span class="p">])</span>
@@ -747,7 +779,10 @@
 
     <span class="k">return</span> <span class="n">energy</span></div>
 
-<div class="viewcode-block" id="eval_energy"><a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy">[docs]</a><span class="k">def</span> <span class="nf">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<div class="viewcode-block" id="eval_energy">
+<a class="viewcode-back" href="../ns_run.html#ns_run.eval_energy">[docs]</a>
+<span class="k">def</span> <span class="nf">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">do_KE</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">do_PE</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calls appropriate functions to calculate the potential energy, kinetic energy and the p*V term.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">energy</span> <span class="o">=</span> <span class="n">eval_energy_PV</span><span class="p">(</span><span class="n">at</span><span class="p">)</span> <span class="o">+</span> <span class="n">eval_energy_mu</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
@@ -760,7 +795,10 @@
 
     <span class="k">return</span> <span class="n">energy</span></div>
 
-<div class="viewcode-block" id="eval_forces"><a class="viewcode-back" href="../ns_run.html#ns_run.eval_forces">[docs]</a><span class="k">def</span> <span class="nf">eval_forces</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
+
+<div class="viewcode-block" id="eval_forces">
+<a class="viewcode-back" href="../ns_run.html#ns_run.eval_forces">[docs]</a>
+<span class="k">def</span> <span class="nf">eval_forces</span><span class="p">(</span><span class="n">at</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">do_calc_ASE</span> <span class="ow">or</span> <span class="n">do_calc_lammps</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">do_calc_lammps</span><span class="p">:</span>
             <span class="c1">#NB only MD can make crazy positions, so maybe just do this after MD propagation?</span>
@@ -776,7 +814,10 @@
 
     <span class="k">return</span> <span class="n">forces</span></div>
 
-<div class="viewcode-block" id="propagate_NVE_ASE"><a class="viewcode-back" href="../ns_run.html#ns_run.propagate_NVE_ASE">[docs]</a><span class="k">def</span> <span class="nf">propagate_NVE_ASE</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+
+<div class="viewcode-block" id="propagate_NVE_ASE">
+<a class="viewcode-back" href="../ns_run.html#ns_run.propagate_NVE_ASE">[docs]</a>
+<span class="k">def</span> <span class="nf">propagate_NVE_ASE</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
     <span class="n">at</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">pot</span>
 
     <span class="c1"># dt is being converted from ASE units to fs</span>
@@ -797,7 +838,10 @@
     <span class="n">vv</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">n_steps</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="propagate_lammps"><a class="viewcode-back" href="../ns_run.html#ns_run.propagate_lammps">[docs]</a><span class="k">def</span> <span class="nf">propagate_lammps</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">algo</span><span class="p">,</span> <span class="n">Emax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="propagate_lammps">
+<a class="viewcode-back" href="../ns_run.html#ns_run.propagate_lammps">[docs]</a>
+<span class="k">def</span> <span class="nf">propagate_lammps</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">dt</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">,</span> <span class="n">algo</span><span class="p">,</span> <span class="n">Emax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">pot</span><span class="o">.</span><span class="n">first_propagate</span><span class="p">:</span>
         <span class="n">pot</span><span class="o">.</span><span class="n">first_propagate</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">else</span><span class="p">:</span>
@@ -816,8 +860,7 @@
             <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;propagate_lammps got algo &#39;</span><span class="si">%s</span><span class="s2">&#39;, which does not work with fixed atoms</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">algo</span><span class="p">)</span>
         <span class="c1"># Hard coded value needed for LAMMPS. Let&#39;s hope our RNG maximum is at</span>
         <span class="c1"># least this large.</span>
-        <span class="n">pot</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span>
-            <span class="s1">&#39;fix 1 all gmc </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">900000000</span><span class="p">),</span> <span class="n">Emax</span><span class="p">))</span>
+        <span class="n">pot</span><span class="o">.</span><span class="n">lmp</span><span class="o">.</span><span class="n">command</span><span class="p">(</span><span class="s1">&#39;fix 1 all ns/gmc </span><span class="si">{}</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">900000000</span><span class="p">),</span> <span class="n">Emax</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">exit_error</span><span class="p">(</span>
             <span class="s2">&quot;propagate_lammps got algo &#39;</span><span class="si">%s</span><span class="s2">&#39;, neither NVE nor GMC</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">algo</span><span class="p">)</span>
@@ -846,7 +889,10 @@
     <span class="k">return</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="velo_rv_mag"><a class="viewcode-back" href="../ns_run.html#ns_run.velo_rv_mag">[docs]</a><span class="k">def</span> <span class="nf">velo_rv_mag</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+
+<div class="viewcode-block" id="velo_rv_mag">
+<a class="viewcode-back" href="../ns_run.html#ns_run.velo_rv_mag">[docs]</a>
+<span class="k">def</span> <span class="nf">velo_rv_mag</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
         <span class="c1">#unit_rv[:,2] = 0.0 # commented out from here, as unit_rv is unknown to this function at this point</span>
         <span class="n">nDOF</span> <span class="o">=</span> <span class="mf">2.0</span>
@@ -860,13 +906,19 @@
     <span class="k">return</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">**</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="n">nDOF</span><span class="o">*</span><span class="n">n</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="velo_unit_rv"><a class="viewcode-back" href="../ns_run.html#ns_run.velo_unit_rv">[docs]</a><span class="k">def</span> <span class="nf">velo_unit_rv</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+
+<div class="viewcode-block" id="velo_unit_rv">
+<a class="viewcode-back" href="../ns_run.html#ns_run.velo_unit_rv">[docs]</a>
+<span class="k">def</span> <span class="nf">velo_unit_rv</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
     <span class="n">unit_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="n">unit_rv</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">unit_rv</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">unit_rv</span></div>
 
 
-<div class="viewcode-block" id="gen_random_velo"><a class="viewcode-back" href="../ns_run.html#ns_run.gen_random_velo">[docs]</a><span class="k">def</span> <span class="nf">gen_random_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">unit_rv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="gen_random_velo">
+<a class="viewcode-back" href="../ns_run.html#ns_run.gen_random_velo">[docs]</a>
+<span class="k">def</span> <span class="nf">gen_random_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">unit_rv</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">unit_rv</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">unit_rv</span> <span class="o">=</span> <span class="n">velo_unit_rv</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
@@ -897,12 +949,18 @@
     <span class="k">return</span> <span class="n">velocities</span></div>
 
 
-<div class="viewcode-block" id="pairwise"><a class="viewcode-back" href="../ns_run.html#ns_run.pairwise">[docs]</a><span class="k">def</span> <span class="nf">pairwise</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+
+<div class="viewcode-block" id="pairwise">
+<a class="viewcode-back" href="../ns_run.html#ns_run.pairwise">[docs]</a>
+<span class="k">def</span> <span class="nf">pairwise</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
     <span class="n">a</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="rotate_dir_3N"><a class="viewcode-back" href="../ns_run.html#ns_run.rotate_dir_3N">[docs]</a><span class="k">def</span> <span class="nf">rotate_dir_3N</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">max_ang</span><span class="p">):</span>
+
+<div class="viewcode-block" id="rotate_dir_3N">
+<a class="viewcode-back" href="../ns_run.html#ns_run.rotate_dir_3N">[docs]</a>
+<span class="k">def</span> <span class="nf">rotate_dir_3N</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">max_ang</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">max_ang</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="c1"># apply random rotations</span>
@@ -917,7 +975,10 @@
         <span class="n">vec</span><span class="p">[</span><span class="n">ind_1_a</span><span class="p">,</span><span class="n">ind_1_c</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_1</span>
         <span class="n">vec</span><span class="p">[</span><span class="n">ind_2_a</span><span class="p">,</span><span class="n">ind_2_c</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_2</span></div>
 
-<div class="viewcode-block" id="rotate_dir_3N_2D"><a class="viewcode-back" href="../ns_run.html#ns_run.rotate_dir_3N_2D">[docs]</a><span class="k">def</span> <span class="nf">rotate_dir_3N_2D</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">max_ang</span><span class="p">):</span>
+
+<div class="viewcode-block" id="rotate_dir_3N_2D">
+<a class="viewcode-back" href="../ns_run.html#ns_run.rotate_dir_3N_2D">[docs]</a>
+<span class="k">def</span> <span class="nf">rotate_dir_3N_2D</span><span class="p">(</span><span class="n">vec</span><span class="p">,</span> <span class="n">max_ang</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">max_ang</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="c1"># apply random rotations</span>
@@ -933,7 +994,10 @@
         <span class="n">vec</span><span class="p">[</span><span class="n">ind_2_a</span><span class="p">,</span><span class="n">ind_2_c</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_2</span></div>
 
 
-<div class="viewcode-block" id="rej_free_perturb_velo"><a class="viewcode-back" href="../ns_run.html#ns_run.rej_free_perturb_velo">[docs]</a><span class="k">def</span> <span class="nf">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<div class="viewcode-block" id="rej_free_perturb_velo">
+<a class="viewcode-back" href="../ns_run.html#ns_run.rej_free_perturb_velo">[docs]</a>
+<span class="k">def</span> <span class="nf">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``rej_free_perturb_velo``</span>
 
@@ -998,7 +1062,10 @@
     <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">new_KE</span><span class="o">-</span><span class="n">orig_KE</span></div>
 
 
-<div class="viewcode-block" id="do_MC_atom_velo_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_velo_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">nD</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_MC_atom_velo_walk">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_velo_walk">[docs]</a>
+<span class="k">def</span> <span class="nf">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">nD</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do\_MC\_atom\_velo\_walk``</span>
 
@@ -1045,7 +1112,10 @@
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;MC_atom_velo&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">n_try</span><span class="p">,</span> <span class="n">n_accept</span><span class="p">)}</span></div>
 
 
-<div class="viewcode-block" id="do_MD_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MD_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MD_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_MD_atom_walk">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_MD_atom_walk">[docs]</a>
+<span class="k">def</span> <span class="nf">do_MD_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MD_atom_walk``</span>
 
@@ -1154,7 +1224,10 @@
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;MD_atom&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_accept</span><span class="p">)}</span></div>
 
 
-<div class="viewcode-block" id="do_MC_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_MC_atom_walk">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_walk">[docs]</a>
+<span class="k">def</span> <span class="nf">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_atom_walk``</span>
 
@@ -1356,7 +1429,10 @@
 
     <span class="k">return</span> <span class="n">out</span></div>
 
-<div class="viewcode-block" id="propose_volume_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_volume_step">[docs]</a><span class="k">def</span> <span class="nf">propose_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">flat_V_prior</span><span class="p">):</span>
+
+<div class="viewcode-block" id="propose_volume_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.propose_volume_step">[docs]</a>
+<span class="k">def</span> <span class="nf">propose_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">flat_V_prior</span><span class="p">):</span>
     <span class="n">dV</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">step_size</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
     <span class="n">orig_V</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
     <span class="n">new_V</span> <span class="o">=</span> <span class="n">orig_V</span><span class="o">+</span><span class="n">dV</span>
@@ -1371,7 +1447,10 @@
         <span class="n">p_accept</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">new_V</span><span class="o">/</span><span class="n">orig_V</span><span class="p">)</span><span class="o">**</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="propose_area_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_area_step">[docs]</a><span class="k">def</span> <span class="nf">propose_area_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">flat_V_prior</span><span class="p">):</span>
+
+<div class="viewcode-block" id="propose_area_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.propose_area_step">[docs]</a>
+<span class="k">def</span> <span class="nf">propose_area_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">,</span> <span class="n">flat_V_prior</span><span class="p">):</span>
     <span class="n">dA</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">step_size</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
     <span class="n">orig_cell</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_cell</span><span class="p">()</span>
     <span class="n">orig_A</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span> <span class="o">/</span> <span class="n">orig_cell</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
@@ -1388,7 +1467,10 @@
         <span class="n">p_accept</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="n">new_A</span><span class="o">/</span><span class="n">orig_A</span><span class="p">)</span><span class="o">**</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">))</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="propose_shear_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_shear_step">[docs]</a><span class="k">def</span> <span class="nf">propose_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
+
+<div class="viewcode-block" id="propose_shear_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.propose_shear_step">[docs]</a>
+<span class="k">def</span> <span class="nf">propose_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
    <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
        <span class="c1"># pick random vector</span>
        <span class="n">rnd_vec_ind</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -1425,7 +1507,10 @@
    <span class="n">transform</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">orig_cell</span><span class="p">),</span> <span class="n">new_cell</span><span class="p">)</span>
    <span class="k">return</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="propose_stretch_step"><a class="viewcode-back" href="../ns_run.html#ns_run.propose_stretch_step">[docs]</a><span class="k">def</span> <span class="nf">propose_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
+
+<div class="viewcode-block" id="propose_stretch_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.propose_stretch_step">[docs]</a>
+<span class="k">def</span> <span class="nf">propose_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">step_size</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
         <span class="n">rnd_v1_ind</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="n">rnd_v2_ind</span> <span class="o">=</span> <span class="mi">1</span>
@@ -1441,7 +1526,10 @@
     <span class="n">transform</span><span class="p">[</span><span class="n">rnd_v2_ind</span><span class="p">,</span><span class="n">rnd_v2_ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">rv</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="min_aspect_ratio"><a class="viewcode-back" href="../ns_run.html#ns_run.min_aspect_ratio">[docs]</a><span class="k">def</span> <span class="nf">min_aspect_ratio</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
+
+<div class="viewcode-block" id="min_aspect_ratio">
+<a class="viewcode-back" href="../ns_run.html#ns_run.min_aspect_ratio">[docs]</a>
+<span class="k">def</span> <span class="nf">min_aspect_ratio</span><span class="p">(</span><span class="n">vol</span><span class="p">,</span> <span class="n">cell</span><span class="p">):</span>
     <span class="n">min_aspect_ratio</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">float_info</span><span class="o">.</span><span class="n">max</span>
     <span class="n">nD</span><span class="o">=</span><span class="mi">3</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
@@ -1461,7 +1549,10 @@
 
     <span class="k">return</span> <span class="n">min_aspect_ratio</span></div>
 
-<div class="viewcode-block" id="do_cell_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_cell_step">[docs]</a><span class="k">def</span> <span class="nf">do_cell_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_cell_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_cell_step">[docs]</a>
+<span class="k">def</span> <span class="nf">do_cell_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">p_accept</span> <span class="o">&lt;</span> <span class="mf">1.0</span> <span class="ow">and</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">p_accept</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>
 
@@ -1507,7 +1598,10 @@
             <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra_data</span>
         <span class="k">return</span> <span class="kc">False</span></div>
 
-<div class="viewcode-block" id="do_cell_shape_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_cell_shape_walk">[docs]</a><span class="k">def</span> <span class="nf">do_cell_shape_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_cell_shape_walk">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_cell_shape_walk">[docs]</a>
+<span class="k">def</span> <span class="nf">do_cell_shape_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">):</span>
     <span class="n">possible_moves</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;MC_cell_shear&#39;</span><span class="p">:</span> <span class="n">propose_shear_step</span><span class="p">,</span>
         <span class="s1">&#39;MC_cell_stretch&#39;</span><span class="p">:</span> <span class="n">propose_stretch_step</span> <span class="p">}</span>
@@ -1519,7 +1613,10 @@
             <span class="p">(</span><span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span> <span class="o">=</span> <span class="n">propose_step_func</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_step_size&quot;</span><span class="p">])</span>
             <span class="n">do_cell_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">p_accept</span><span class="p">,</span> <span class="n">transform</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="do_MC_semi_grand_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_semi_grand_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_semi_grand_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_MC_semi_grand_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_semi_grand_step">[docs]</a>
+<span class="k">def</span> <span class="nf">do_MC_semi_grand_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
     <span class="k">global</span> <span class="n">Z_list</span>
 
     <span class="n">Z</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
@@ -1545,7 +1642,10 @@
 
     <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_semi_grand&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_accept</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_swap_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_swap_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_swap_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_MC_swap_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_swap_step">[docs]</a>
+<span class="k">def</span> <span class="nf">do_MC_swap_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_swap_step``</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
@@ -1634,7 +1734,10 @@
 
     <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{(</span><span class="s1">&#39;MC_swap_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">c1</span><span class="p">))</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">accept_n</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_volume_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_volume_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_MC_cell_volume_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_volume_step">[docs]</a>
+<span class="k">def</span> <span class="nf">do_MC_cell_volume_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_volume_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -1650,7 +1753,10 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_volume_per_atom&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_shear_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_shear_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_MC_cell_shear_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_shear_step">[docs]</a>
+<span class="k">def</span> <span class="nf">do_MC_cell_shear_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_shear_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -1662,7 +1768,10 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_shear&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
-<div class="viewcode-block" id="do_MC_cell_stretch_step"><a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_stretch_step">[docs]</a><span class="k">def</span> <span class="nf">do_MC_cell_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_MC_cell_stretch_step">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_cell_stretch_step">[docs]</a>
+<span class="k">def</span> <span class="nf">do_MC_cell_stretch_step</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_MC_cell_stretch_step``</span>
     <span class="n">step_rv</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
@@ -1675,7 +1784,10 @@
         <span class="k">return</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;MC_cell_stretch&#39;</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="p">})</span></div>
 
 
-<div class="viewcode-block" id="do_atom_walk"><a class="viewcode-back" href="../ns_run.html#ns_run.do_atom_walk">[docs]</a><span class="k">def</span> <span class="nf">do_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="do_atom_walk">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_atom_walk">[docs]</a>
+<span class="k">def</span> <span class="nf">do_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``do_atom_walk``</span>
     <span class="n">n_reps</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_atom_steps_per_call&#39;</span><span class="p">]</span>
@@ -1691,7 +1803,10 @@
 
     <span class="k">return</span> <span class="p">(</span><span class="n">n_reps</span><span class="o">*</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_traj_len&#39;</span><span class="p">]</span><span class="o">*</span><span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_traj_len_cost_multiplier&#39;</span><span class="p">],</span> <span class="n">out</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="rand_perturb_energy"><a class="viewcode-back" href="../ns_run.html#ns_run.rand_perturb_energy">[docs]</a><span class="k">def</span> <span class="nf">rand_perturb_energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">perturbation</span><span class="p">,</span> <span class="n">Emax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+<div class="viewcode-block" id="rand_perturb_energy">
+<a class="viewcode-back" href="../ns_run.html#ns_run.rand_perturb_energy">[docs]</a>
+<span class="k">def</span> <span class="nf">rand_perturb_energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">perturbation</span><span class="p">,</span> <span class="n">Emax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">Emax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">:</span>
             <span class="n">energy</span> <span class="o">+=</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span><span class="o">*</span><span class="n">perturbation</span>
@@ -1719,9 +1834,12 @@
 
     <span class="k">return</span> <span class="n">energy</span></div>
 
+
 <span class="c1">####################################################################################################</span>
 
-<div class="viewcode-block" id="add_to_list"><a class="viewcode-back" href="../ns_run.html#ns_run.add_to_list">[docs]</a><span class="k">def</span> <span class="nf">add_to_list</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">nums</span><span class="p">,</span> <span class="n">walk_len_avail</span><span class="p">,</span> <span class="n">first_free_slot</span><span class="p">):</span>
+<div class="viewcode-block" id="add_to_list">
+<a class="viewcode-back" href="../ns_run.html#ns_run.add_to_list">[docs]</a>
+<span class="k">def</span> <span class="nf">add_to_list</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">ind</span><span class="p">,</span> <span class="n">costs</span><span class="p">,</span> <span class="n">nums</span><span class="p">,</span> <span class="n">walk_len_avail</span><span class="p">,</span> <span class="n">first_free_slot</span><span class="p">):</span>
 
     <span class="k">if</span> <span class="n">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">walk_len_avail</span><span class="p">,</span> <span class="n">first_free_slot</span><span class="p">)</span>
@@ -1741,7 +1859,10 @@
 
     <span class="k">return</span> <span class="p">(</span><span class="n">walk_len_avail</span><span class="p">,</span> <span class="n">first_free_slot</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="create_list"><a class="viewcode-back" href="../ns_run.html#ns_run.create_list">[docs]</a><span class="k">def</span> <span class="nf">create_list</span><span class="p">(</span><span class="n">costs</span><span class="p">,</span> <span class="n">nums</span><span class="p">,</span> <span class="n">walk_len</span><span class="p">):</span>
+
+<div class="viewcode-block" id="create_list">
+<a class="viewcode-back" href="../ns_run.html#ns_run.create_list">[docs]</a>
+<span class="k">def</span> <span class="nf">create_list</span><span class="p">(</span><span class="n">costs</span><span class="p">,</span> <span class="n">nums</span><span class="p">,</span> <span class="n">walk_len</span><span class="p">):</span>
 
     <span class="nb">list</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">walk_len_avail</span> <span class="o">=</span> <span class="n">walk_len</span>
@@ -1751,9 +1872,12 @@
 
     <span class="k">return</span> <span class="nb">list</span></div>
 
+
 <span class="c1">####################################################################################################</span>
 
-<div class="viewcode-block" id="walk_single_walker"><a class="viewcode-back" href="../ns_run.html#ns_run.walk_single_walker">[docs]</a><span class="k">def</span> <span class="nf">walk_single_walker</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
+<div class="viewcode-block" id="walk_single_walker">
+<a class="viewcode-back" href="../ns_run.html#ns_run.walk_single_walker">[docs]</a>
+<span class="k">def</span> <span class="nf">walk_single_walker</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Do random walk on a single atoms object.&quot;&quot;&quot;</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``walk_single_walker``</span>
@@ -1824,7 +1948,10 @@
     <span class="k">return</span> <span class="n">out</span></div>
 
 
-<div class="viewcode-block" id="max_energy"><a class="viewcode-back" href="../ns_run.html#ns_run.max_energy">[docs]</a><span class="k">def</span> <span class="nf">max_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">kinetic_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+<div class="viewcode-block" id="max_energy">
+<a class="viewcode-back" href="../ns_run.html#ns_run.max_energy">[docs]</a>
+<span class="k">def</span> <span class="nf">max_energy</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">kinetic_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Collect the current energies of the walkers from all the processes and</span>
 <span class="sd">    chooses the right number of highest energies to be culled&quot;&quot;&quot;</span>
     <span class="c1"># do local max</span>
@@ -1855,10 +1982,13 @@
 
     <span class="k">return</span> <span class="p">(</span><span class="n">Emax</span><span class="p">,</span> <span class="n">Vmax</span><span class="p">,</span> <span class="n">rank_of_max</span><span class="p">,</span> <span class="n">ind_of_max</span><span class="p">)</span></div>
 
+
 <span class="c1"># WARNING: full_auto_set_stepsizes shouldn&#39;t really depend on walk_stats from a real walk, since it does all its own pilot walks</span>
 <span class="c1"># right now it uses this data structure to figure out what kind of steps actually occur, but it should probably get this</span>
 <span class="c1"># information right from movement_args, rather than relying on what happened to have happened in the real walks</span>
-<div class="viewcode-block" id="full_auto_set_stepsizes"><a class="viewcode-back" href="../ns_run.html#ns_run.full_auto_set_stepsizes">[docs]</a><span class="k">def</span> <span class="nf">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size_n_proc</span><span class="p">):</span>
+<div class="viewcode-block" id="full_auto_set_stepsizes">
+<a class="viewcode-back" href="../ns_run.html#ns_run.full_auto_set_stepsizes">[docs]</a>
+<span class="k">def</span> <span class="nf">full_auto_set_stepsizes</span><span class="p">(</span><span class="n">walkers</span><span class="p">,</span> <span class="n">walk_stats</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">,</span> <span class="n">size_n_proc</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Automatically set all step sizes. Returns the time (in seconds) taken for the routine to run.&quot;&quot;&quot;</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``full_auto_set_stepsizes``</span>
@@ -2166,7 +2296,10 @@
     <span class="n">duration</span> <span class="o">=</span> <span class="n">full_auto_end_time</span> <span class="o">-</span> <span class="n">full_auto_start_time</span>
     <span class="k">return</span> <span class="n">duration</span></div>
 
-<div class="viewcode-block" id="adjust_step_sizes"><a class="viewcode-back" href="../ns_run.html#ns_run.adjust_step_sizes">[docs]</a><span class="k">def</span> <span class="nf">adjust_step_sizes</span><span class="p">(</span><span class="n">walk_stats</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">do_print_rate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">monitor_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+<div class="viewcode-block" id="adjust_step_sizes">
+<a class="viewcode-back" href="../ns_run.html#ns_run.adjust_step_sizes">[docs]</a>
+<span class="k">def</span> <span class="nf">adjust_step_sizes</span><span class="p">(</span><span class="n">walk_stats</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">do_print_rate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">monitor_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Adjust step size to keep the acceptance ratio at the desired level.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2238,14 +2371,20 @@
                 <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;adjust_step_sizes adjusted </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="nb">dir</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">]))</span></div>
 
 
-<div class="viewcode-block" id="zero_stats"><a class="viewcode-back" href="../ns_run.html#ns_run.zero_stats">[docs]</a><span class="k">def</span> <span class="nf">zero_stats</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">):</span>
+
+<div class="viewcode-block" id="zero_stats">
+<a class="viewcode-back" href="../ns_run.html#ns_run.zero_stats">[docs]</a>
+<span class="k">def</span> <span class="nf">zero_stats</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">movement_args</span><span class="p">:</span>
         <span class="n">m</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;(.*)_(step_size|timestep)$&#39;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">m</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">d</span><span class="p">[</span><span class="n">m</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="accumulate_stats"><a class="viewcode-back" href="../ns_run.html#ns_run.accumulate_stats">[docs]</a><span class="k">def</span> <span class="nf">accumulate_stats</span><span class="p">(</span><span class="n">d_cumul</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+
+<div class="viewcode-block" id="accumulate_stats">
+<a class="viewcode-back" href="../ns_run.html#ns_run.accumulate_stats">[docs]</a>
+<span class="k">def</span> <span class="nf">accumulate_stats</span><span class="p">(</span><span class="n">d_cumul</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">d_cumul</span><span class="p">:</span>
             <span class="n">d_cumul</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">i1</span><span class="o">+</span><span class="n">i2</span> <span class="k">for</span> <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">d_cumul</span><span class="p">[</span><span class="n">key</span><span class="p">])])</span>
@@ -2253,8 +2392,11 @@
             <span class="n">d_cumul</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="n">key</span><span class="p">]</span></div>
 
 
+
 <span class="c1"># figure out n_steps to walk on each iteration to get correct expected number</span>
-<div class="viewcode-block" id="set_n_from_expected"><a class="viewcode-back" href="../ns_run.html#ns_run.set_n_from_expected">[docs]</a><span class="k">def</span> <span class="nf">set_n_from_expected</span><span class="p">(</span><span class="n">prop</span><span class="p">):</span>
+<div class="viewcode-block" id="set_n_from_expected">
+<a class="viewcode-back" href="../ns_run.html#ns_run.set_n_from_expected">[docs]</a>
+<span class="k">def</span> <span class="nf">set_n_from_expected</span><span class="p">(</span><span class="n">prop</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">prop</span><span class="o">+</span><span class="s1">&#39;_expected&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">prop</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;Got both &quot;</span><span class="o">+</span><span class="n">prop</span><span class="o">+</span><span class="s2">&quot; and &quot;</span><span class="o">+</span><span class="n">prop</span><span class="o">+</span><span class="s2">&quot;_expected, conflict</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
@@ -2303,7 +2445,10 @@
     <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;Final value of </span><span class="si">%s</span><span class="s2">=</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">prop</span><span class="p">]))</span></div>
 
-<div class="viewcode-block" id="additive_init_config"><a class="viewcode-back" href="../ns_run.html#ns_run.additive_init_config">[docs]</a><span class="k">def</span> <span class="nf">additive_init_config</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">):</span>
+
+<div class="viewcode-block" id="additive_init_config">
+<a class="viewcode-back" href="../ns_run.html#ns_run.additive_init_config">[docs]</a>
+<span class="k">def</span> <span class="nf">additive_init_config</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">do_calc_lammps</span><span class="p">:</span>
         <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;python additive_init_config doesn&#39;t work with LAMMPS, since it varies list of atoms</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
     <span class="n">pos</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
@@ -2329,7 +2474,10 @@
     <span class="n">at</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">energy</span></div>
 
-<div class="viewcode-block" id="save_snapshot"><a class="viewcode-back" href="../ns_run.html#ns_run.save_snapshot">[docs]</a><span class="k">def</span> <span class="nf">save_snapshot</span><span class="p">(</span><span class="n">snapshot_id</span><span class="p">):</span>
+
+<div class="viewcode-block" id="save_snapshot">
+<a class="viewcode-back" href="../ns_run.html#ns_run.save_snapshot">[docs]</a>
+<span class="k">def</span> <span class="nf">save_snapshot</span><span class="p">(</span><span class="n">snapshot_id</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Save the current walker configurations&#39; as a snapshot in the file ``out_file_prefix.iter.rank.config_file_format``</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2374,7 +2522,10 @@
     <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_per_parallel_task&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">snapshot_io</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="clean_prev_snapshot"><a class="viewcode-back" href="../ns_run.html#ns_run.clean_prev_snapshot">[docs]</a><span class="k">def</span> <span class="nf">clean_prev_snapshot</span><span class="p">(</span><span class="nb">iter</span><span class="p">):</span>
+
+<div class="viewcode-block" id="clean_prev_snapshot">
+<a class="viewcode-back" href="../ns_run.html#ns_run.clean_prev_snapshot">[docs]</a>
+<span class="k">def</span> <span class="nf">clean_prev_snapshot</span><span class="p">(</span><span class="nb">iter</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">iter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_clean&#39;</span><span class="p">]:</span>
         <span class="n">snapshot_file</span><span class="o">=</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;out_file_prefix&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;snapshot.</span><span class="si">%d</span><span class="s1">.</span><span class="si">%d</span><span class="s1">.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">iter</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;config_file_format&#39;</span><span class="p">])</span>
         <span class="k">try</span><span class="p">:</span>
@@ -2383,7 +2534,10 @@
             <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;: WARNING: Failed to delete &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">snapshot_file</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="do_ns_loop"><a class="viewcode-back" href="../ns_run.html#ns_run.do_ns_loop">[docs]</a><span class="k">def</span> <span class="nf">do_ns_loop</span><span class="p">():</span>
+
+<div class="viewcode-block" id="do_ns_loop">
+<a class="viewcode-back" href="../ns_run.html#ns_run.do_ns_loop">[docs]</a>
+<span class="k">def</span> <span class="nf">do_ns_loop</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This is the main nested sampling loop, doing the iterations.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -2609,14 +2763,20 @@
                 <span class="n">E_dump_list</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">w</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">walkers</span><span class="p">])</span>
             <span class="n">E_dump_list_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_ns_step</span><span class="p">)</span>
 
+        <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;traj_interval&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">traj_walker_list</span><span class="p">:</span>
+                <span class="n">ase</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">traj_io</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;config_file_format&#39;</span><span class="p">])</span>
+            <span class="n">traj_io</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+            <span class="n">traj_walker_list</span><span class="o">=</span><span class="p">[]</span>
+
         <span class="c1"># print(the recorded Emax walkers configurations to output file)</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_interval&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i_ns_step</span> <span class="o">%</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_interval&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_interval&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span> <span class="ow">or</span>
-                <span class="p">(</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_seq_pairs&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">i_ns_step</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i_ns_step</span> <span class="o">%</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_interval&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)):</span>
-            <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;traj_interval&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">for</span> <span class="n">at</span> <span class="ow">in</span> <span class="n">traj_walker_list</span><span class="p">:</span>
-                    <span class="n">ase</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">traj_io</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;config_file_format&#39;</span><span class="p">])</span>
-                <span class="n">traj_io</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
-                <span class="n">traj_walker_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="p">(</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_seq_pairs&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">i_ns_step</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">i_ns_step</span><span class="o">%</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;snapshot_interval&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">)</span> <span class="p">:</span>
+            <span class="c1">##NB if ns_args[&#39;traj_interval&#39;] &gt; 0:</span>
+                <span class="c1">##NB for at in traj_walker_list:</span>
+                    <span class="c1">##NB ase.io.write(traj_io, at, parallel=False, format=ns_args[&#39;config_file_format&#39;])</span>
+                <span class="c1">##NB traj_io.flush()</span>
+                <span class="c1">##NB traj_walker_list=[]</span>
             <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;E_dump_interval&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">E_dump_list_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">comm</span><span class="o">.</span><span class="n">allgather</span><span class="p">(</span><span class="n">E_dump_list</span><span class="p">))</span>
@@ -3121,7 +3281,10 @@
     <span class="k">return</span> <span class="n">i_ns_step</span><span class="o">-</span><span class="mi">1</span></div>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../ns_run.html#ns_run.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../ns_run.html#ns_run.main">[docs]</a>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot; Main function &quot;&quot;&quot;</span>
         <span class="k">global</span> <span class="n">movement_args</span>
         <span class="k">global</span> <span class="n">ns_args</span><span class="p">,</span> <span class="n">start_first_iter</span>
@@ -4197,6 +4360,7 @@
             <span class="n">MPI</span><span class="o">.</span><span class="n">Finalize</span><span class="p">()</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
 
+
 </pre></div>
 
             <div class="clearer"></div>
@@ -4250,7 +4414,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.1.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
     </div>
   </body>
 </html>
