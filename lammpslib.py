@@ -5,6 +5,7 @@ from __future__ import print_function
 import os
 import ctypes
 import operator
+import sys
 
 import numpy as np
 from numpy.linalg import norm
@@ -379,11 +380,11 @@ End LAMMPSlib Interface Documentation
 #        self.lmp.put_coosrds(lmp_c_positions)
         self.lmp.scatter_atoms('x', 1, 3, lmp_c_positions)
 
-
     def calculate(self, atoms, properties, system_changes):
         self.propagate(atoms, properties, system_changes, 0)
 
-    def propagate(self, atoms, properties, system_changes, n_steps, dt=None, dt_not_real_time=False, velocity_field=None):
+    def propagate(self, atoms, properties, system_changes, n_steps, dt=None,
+                  dt_not_real_time=False, velocity_field=None):
 
         """"atoms: Atoms object
             Contains positions, unit-cell, ...
@@ -404,15 +405,17 @@ End LAMMPSlib Interface Documentation
         if not self.started:
             self.start_lammps()
 
-        ####################################################################################################
-        #NB
+        ########################################################################
+        # NB
         if not self.initialized:
             self.initialise_lammps(atoms)
-        else: # still need to reset cell
-            # reset positions so that if they are cray from last propagation, change_box (in set_cell()) won't hang
-            # could do this only after testing for crazy positions?
-            # could also use scatter_atoms() to set values (requires MPI comm), or extra_atoms() to get pointers to local 
-            #     data structures to zero, but then will have to be careful with parallelism
+        else:  # Still need to reset cell
+            # Reset positions so that if they are crazy from last propagation,
+            # change_box (in set_cell()) won't hang.
+            # Could do this only after testing for crazy positions?
+            # Could also use scatter_atoms() to set values (requires MPI comm),
+            # or extra_atoms() to get pointers to local data structures to zero,
+            # but then will have to be careful with parallelism
             self.lmp.command("set atom * x 0.0 y 0.0 z 0.0")
             self.set_cell(atoms, change=True)
 
@@ -422,30 +425,32 @@ End LAMMPSlib Interface Documentation
         do_rebuild = False
         do_redo_atom_types = False
         try:
-            do_rebuild = ( len(atoms.numbers) != len(self.previous_atoms_numbers) ) or ( "numbers" in system_changes )
+            do_rebuild = (len(atoms.numbers) != len(self.previous_atoms_numbers)) or ("numbers" in system_changes)
             if not do_rebuild:
-                do_redo_atom_types = ( atoms.numbers != self.previous_atoms_numbers ).any()
+                do_redo_atom_types = (
+                        atoms.numbers != self.previous_atoms_numbers).any()
         except Exception:
            pass
 
-        self.lmp.command('echo none') # don't echo the atom positions
+        self.lmp.command('echo none')  # don't echo the atom positions
         if do_rebuild:
-           self.rebuild(atoms)
+            self.rebuild(atoms)
         elif do_redo_atom_types:
-           self.redo_atom_types(atoms)
-        self.lmp.command('echo log') # switch back log
+            self.redo_atom_types(atoms)
+        self.lmp.command('echo log')  # switch back log
 
         self.set_lammps_pos(atoms)
 
-        if n_steps > 0:
+        if n_steps > 0:  # TODO: here are velocities passed onto LAMMPS
             if velocity_field is None:
-                vel = atoms.get_velocities() / unit_convert("velocity", self.units)
+                vel = atoms.get_velocities() / unit_convert("velocity",
+                                                            self.units)
             else:
                 vel = atoms.arrays[velocity_field]
 
             # If necessary, transform the velocities to new coordinate system
             if self.coord_transform is not None:
-                vel = np.dot(self.coord_transform , np.matrix.transpose(vel) )
+                vel = np.dot(self.coord_transform, np.matrix.transpose(vel))
                 vel = np.matrix.transpose(vel)
 
             # Convert ase velocities matrix to lammps-style velocities array
@@ -454,8 +459,28 @@ End LAMMPSlib Interface Documentation
             # Convert that lammps-style array into a C object
             lmp_c_velocities =\
                 (ctypes.c_double * len(lmp_velocities))(*lmp_velocities)
-#            self.lmp.put_coosrds(lmp_c_velocities)
+            # self.lmp.put_coords(lmp_c_velocities)
             self.lmp.scatter_atoms('v', 1, 3, lmp_c_velocities)
+
+            # Keep atoms fixed
+            # # RY: use LAMMPS_init_cmds to set up NVE, 
+            # # e.g. group fixed id <= X; group mobile id > X; fix 1 mobile nve
+            # keep_atoms_fixed = int(sum([x == 0 for x in lmp_velocities]) / 3)
+            # if keep_atoms_fixed > 0:
+            #     self.lmp.command("group fixed id <= " + str(keep_atoms_fixed))
+            #     self.lmp.command("group mobile id > " + str(keep_atoms_fixed))
+                #self.lmp.command("fix freeze fixed setforce 0.0 0.0 0.0")
+                #if atoms.info["set_wall"]:
+                #    self.lmp.command("fix walls all wall/reflect zlo 0 zhi "
+                #                     + str(atoms.cell[2, 2]) + " units box")
+
+            # TODO: if we fix forces here, then it should be passed on, just
+            #  pass on keep_atoms_fixed
+            # TODO: if you have atoms with EXACTLY zero velocities, then freeze
+            #  them
+
+        # TODO: keep_atoms_fixed = 0 for potential energy calculations of the
+        #  initial configurations
 
         # Run for 0 time to calculate
         if dt is not None:
@@ -517,7 +542,7 @@ End LAMMPSlib Interface Documentation
         self.results['stress'] = stress * (-unit_convert("pressure", self.units))
 
 #        if 'forces' in properties:
-        f = np.zeros((len(atoms), 3))
+        f = np.zeros((len(atoms), 3))  # TODO: sets forces, doesn't update them
         f[:,:] = np.array([x for x in self.lmp.gather_atoms("f",1,3)]).reshape(-1,3)
         f *= unit_convert("force", self.units)
 
@@ -529,9 +554,11 @@ End LAMMPSlib Interface Documentation
         if not self.parameters.keep_alive:
             self.lmp.close()
 
-    def lammpsbc(self, pbc):
+    def lammpsbc(self, pbc, fix):
         if pbc:
             return 'p'
+        elif fix:
+            return 'f'
         else:
             return 's'
 
@@ -632,8 +659,13 @@ End LAMMPSlib Interface Documentation
                 if 'boundary' in cmd:
                     break
             else:
-                self.lmp.command(
-                    'boundary ' + ' '.join([self.lammpsbc(bc) for bc in pbc]))
+                fix = False
+                # TODO: RBW – quick fix so that boundary parallel to surface
+                #  is not shrink wrapped
+                # if "set_wall" in atoms.info.keys():
+                #    fix = True
+                self.lmp.command('boundary ' + ' '.join([self.lammpsbc(bc, fix)
+                                                         for bc in pbc]))
 
         # Initialize cell
         self.set_cell(atoms, change=not self.parameters.create_box)
@@ -771,6 +803,7 @@ End LAMMPSlib Interface Documentation
             self.set_charges(atoms)
 
         self.initialized = True
+
 
 def write_lammps_data(filename, atoms, atom_types, comment=None, cutoff=None,
                       molecule_ids=None, charges=None, units='metal',

@@ -92,6 +92,8 @@ def analyse(log_a, T, interval=1):
 
     Cvp = n_Extra_DOF*k_Boltzmann/2.0 + k_Boltzmann *beta*beta * (sum(Z_term * Es**2)/Z - U_pot**2)
 
+    # TODO: Modify script here to calculate ensemble-averaged order parameters
+
     if Vs is not None:
         V = sum(Z_term*Vs)/Z
         #thermal_exp = -1.0/V * (sum(Z_term*Vs*Vs)*(-beta)*Z - sum(Z_term*Vs)*sum(Z_term*Vs)*(-beta)) / Z**2
