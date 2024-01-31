@@ -55,18 +55,45 @@ implicit none
    integer :: N_params
    double precision :: params(N_params)
 
-   epsilon(1,1) = 4.0
-   epsilon(2,2) = 4.0
-   epsilon(1,2) = 6.0
-   epsilon(2,1) = epsilon(1,2)
+   if (N_params==1) then
 
-   sigma(1,1) = 1.0
-   sigma(2,2) = 1.0
-   sigma(1,2) = (sigma(1,1)+sigma(2,2))/2.0
-   sigma(2,1) = sigma(1,2)
+       write(*,*) "No LJ parameters were found, the default will be used:"
+       epsilon(1,1) = 4.0
+       epsilon(2,2) = 4.0
+       epsilon(1,2) = 6.0
+       epsilon(2,1) = epsilon(1,2)
+    
+       sigma(1,1) = 1.0
+       sigma(2,2) = 1.0
+       sigma(1,2) = (sigma(1,1)+sigma(2,2))/2.0
+       sigma(2,1) = sigma(1,2)
+    
+       cutoff = 3.0*sigma
+       cutoff_sq = cutoff*cutoff
 
-   cutoff = 3.0*sigma
-   cutoff_sq = cutoff*cutoff
+   else
+
+       epsilon(1,1) = 4.0*params(1) ! The usual 4 factor in the LJ equation is
+                                    !  included here!
+       epsilon(2,2) = 4.0*params(2)
+       epsilon(1,2) = sqrt(epsilon(1,1)*epsilon(2,2))
+       epsilon(2,1) = epsilon(1,2)
+    
+       sigma(1,1) = params(3)
+       sigma(2,2) = params(4)
+       sigma(1,2) = (sigma(1,1)+sigma(2,2))/2.0
+       sigma(2,1) = sigma(1,2)
+    
+       cutoff = params(5)*sigma
+       cutoff_sq = cutoff*cutoff
+       write(*,*) "User defined LJ parameters:"
+       write(*,*) "(1)-(1)Epsilon=",params(1),"(2)-(2)Epsilon=",params(2)
+       write(*,*) "(1)-(1)Sigma=",  params(3),"(2)-(2)Sigma=",params(4)
+       write(*,*) "Mixed term LJ parameters are calculated using the", &
+                  &" Lorenz-Berthelot rule."
+       write(*,*) "LJ cutoff=",cutoff
+   endif
+
 
    E_offset = (sigma/cutoff)**12 - (sigma/cutoff)**6
 
