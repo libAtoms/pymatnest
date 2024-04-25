@@ -7,10 +7,10 @@
 
     <title>Tutorials &#8212; ns_doc 1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=0dc0530d" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=1476913b" />
     
     <script src="_static/documentation_options.js?v=29a6c3e3"></script>
-    <script src="_static/doctools.js?v=888ff710"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
@@ -150,7 +150,8 @@ every core generates its own snapshot file.</p>
 </div>
 <p>Look at a configuration in the snapshot file. It should look similar to this, showing an octahedral structure, the global minimum for 6 LJ atoms:</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="_images/doc_figure_tutorial_LJ6.jpg"><img alt="_images/doc_figure_tutorial_LJ6.jpg" src="_images/doc_figure_tutorial_LJ6.jpg" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="_images/doc_figure_tutorial_LJ6.jpg"><img alt="_images/doc_figure_tutorial_LJ6.jpg" src="_images/doc_figure_tutorial_LJ6.jpg" style="width: 500px;" />
+</a>
 </figure>
 <p>The simplest way to extract thermodynamic information from the run is to use the <code class="docutils literal notranslate"><span class="pre">ns_analyse</span></code> code from the <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> library.
 This script uses the <code class="docutils literal notranslate"><span class="pre">.energies</span></code> file to calculate the partition function, expected value of energy, heat capacity, volume…etc.
@@ -165,7 +166,8 @@ the “condensation” of the six atoms.
 (You can start the sampling a few more times to have some parallel results - unless you explicitly set a seed for the random number generator
 all the runs will be independent and different. Do not forget to change the <code class="docutils literal notranslate"><span class="pre">out_file_prefix</span></code> keyword, so new runs do not overwrite previous ones.)</p>
 <figure class="align-center">
-<a class="reference internal image-reference" href="_images/doc_figure_tutorial_120_cv.jpg"><img alt="_images/doc_figure_tutorial_120_cv.jpg" src="_images/doc_figure_tutorial_120_cv.jpg" style="width: 500px;" /></a>
+<a class="reference internal image-reference" href="_images/doc_figure_tutorial_120_cv.jpg"><img alt="_images/doc_figure_tutorial_120_cv.jpg" src="_images/doc_figure_tutorial_120_cv.jpg" style="width: 500px;" />
+</a>
 </figure>
 </section>
 <section id="improving-convergence">
@@ -235,7 +237,7 @@ and we do not necessarily need all the configurations in the trajectory file (th
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
-<div id="searchbox" style="display: none" role="search">
+<search id="searchbox" style="display: none" role="search">
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
@@ -243,7 +245,7 @@ and we do not necessarily need all the configurations in the trajectory file (th
       <input type="submit" value="Go" />
     </form>
     </div>
-</div>
+</search>
 <script>document.getElementById('searchbox').style.display = "block"</script>
         </div>
       </div>
@@ -270,7 +272,7 @@ and we do not necessarily need all the configurations in the trajectory file (th
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
     </div>
   </body>
 </html>
