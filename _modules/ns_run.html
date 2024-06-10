@@ -4308,15 +4308,18 @@
             <span class="k">else</span><span class="p">:</span>  <span class="c1"># restart, so the existing file should be appended</span>
                 <span class="k">try</span><span class="p">:</span>
                     <span class="n">energy_io</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;out_file_prefix&#39;</span><span class="p">]</span><span class="o">+</span><span class="s1">&#39;energies&#39;</span><span class="p">,</span> <span class="s1">&#39;r+&#39;</span><span class="p">)</span>
+                    <span class="n">line_pos</span> <span class="o">=</span> <span class="mi">0</span>
                     <span class="n">tmp_iter</span> <span class="o">=</span> <span class="mi">0</span>
                     <span class="n">line</span> <span class="o">=</span> <span class="n">energy_io</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>  <span class="c1"># read the first line of nwalker,ncull..etc information</span>
                     <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">line_pos</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                     <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>  <span class="c1"># we do create an infinite loop here :(</span>
                         <span class="n">line</span> <span class="o">=</span> <span class="n">energy_io</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span>            <span class="c1"># read lines one by one</span>
                         <span class="k">if</span> <span class="ow">not</span> <span class="n">line</span><span class="p">:</span>                           <span class="c1"># something went wrong, exit the infinit loop</span>
                             <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;WARNING: end of .energies file reached without finding the iteration number&quot;</span><span class="p">,</span> <span class="n">start_first_iter</span><span class="p">)</span>
                             <span class="k">break</span>
                         <span class="n">i</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+                        <span class="n">line_pos</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>                  <span class="c1">#Track the position of the end of each line</span>
                         <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">10000</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
                             <span class="nb">print</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="s2">&quot;reading .energies file line </span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">i</span><span class="p">)</span>
                         <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">n_cull</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>                    <span class="c1"># if this is n_cull-th line, examine the stored iteration</span>
@@ -4324,6 +4327,7 @@
                             <span class="n">tmp_iter</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">tmp_split</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>       <span class="c1"># tmp_iter contains the iteration number of the line as an integer number</span>
                         <span class="k">if</span> <span class="n">tmp_iter</span> <span class="o">==</span> <span class="n">start_first_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>   <span class="c1"># if this is the iteration same as in the snapshot,</span>
                             <span class="nb">print</span><span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="s2">&quot;truncating energy file at line &quot;</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                            <span class="n">energy_io</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">line_pos</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>         <span class="c1">#Move the file pointer to the end of the line</span>
                             <span class="n">energy_io</span><span class="o">.</span><span class="n">truncate</span><span class="p">()</span>                <span class="c1">#delete the rest of the file, as we are restarting from here</span>
                             <span class="k">break</span>
                 <span class="k">except</span> <span class="ne">FileNotFoundError</span><span class="p">:</span>
