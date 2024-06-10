@@ -4112,15 +4112,18 @@ def main():
             else:  # restart, so the existing file should be appended
                 try:
                     energy_io = open(ns_args['out_file_prefix']+'energies', 'r+')
+                    line_pos = 0
                     tmp_iter = 0
                     line = energy_io.readline()  # read the first line of nwalker,ncull..etc information
                     i = 0
+                    line_pos += len(line)
                     while True:  # we do create an infinite loop here :(
                         line = energy_io.readline()            # read lines one by one
                         if not line:                           # something went wrong, exit the infinit loop
                             print("WARNING: end of .energies file reached without finding the iteration number", start_first_iter)
                             break
                         i = i + 1
+                        line_pos += len(line)                  #Track the position of the end of each line
                         if i % 10000 == 0:
                             print(rank, "reading .energies file line %d" % i)
                         if i % n_cull == 0:                    # if this is n_cull-th line, examine the stored iteration
@@ -4128,6 +4131,7 @@ def main():
                             tmp_iter = int(tmp_split[0])       # tmp_iter contains the iteration number of the line as an integer number
                         if tmp_iter == start_first_iter - 1:   # if this is the iteration same as in the snapshot,
                             print(rank, "truncating energy file at line ", i)
+                            energy_io.seek(line_pos, 0)         #Move the file pointer to the end of the line
                             energy_io.truncate()                #delete the rest of the file, as we are restarting from here
                             break
                 except FileNotFoundError:
