@@ -2368,7 +2368,7 @@ def do_ns_loop():
                     nExtraDOF = (n_atoms-movement_args['keep_atoms_fixed'])*nD
                 else:
                     nExtraDOF = n_atoms*nD
-            energy_io.write("%d %d %d %s %d\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF, movement_args['MC_cell_flat_V_prior'], n_atoms))
+            energy_io.write("%d %d %d %s %d true\n" % (ns_args['n_walkers'], ns_args['n_cull'], nExtraDOF, movement_args['MC_cell_flat_V_prior'], n_atoms))
 
     ## print(print_prefix, ": random state ", np.random.get_state())
     ## if rank == 0:
@@ -2522,8 +2522,8 @@ def do_ns_loop():
 
         # record Emax walkers energies
         if rank == 0:
-            for (E, V) in zip(Emax, Vmax):
-                energy_io.write("%d %.60f %.60f\n" % (i_ns_step, E, V))
+            for ii, (E, V) in enumerate(zip(Emax, Vmax)):
+                energy_io.write("%d %.50f %.50f %d\n" % (i_ns_step, E, V, ns_args['n_walkers'] - ii))
             energy_io.flush()
 
             ## Save the energies and corresponding iteration numbers in a list then print(them out only when printing a snapshot)
