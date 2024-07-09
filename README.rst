@@ -30,7 +30,7 @@ A.P. Bartok, G. Hantal and L.B. Partay *Insight into Liquid Polymorphism from th
 
 L.B. Partay and G. Hantal *Stability of the high-density Jagla liquid in 2D: sensitivity to parameterisation*\, Soft Matter, (2022) 18, 5261 https://pubs.rsc.org/en/content/articlelanding/2022/SM/D2SM00491G
 
-M. Yang, L.B. Partay and R.B. Wexler *Surface phase diagrams from nested sampling*\, 	Phys. Chem. Chem. Phys., (2024),26, 13862, https://pubs.rsc.org/en/content/articlehtml/2024/cp/d4cp00050a
+`M.` Yang, L.B. Partay and R.B. Wexler *Surface phase diagrams from nested sampling*\, 	Phys. Chem. Chem. Phys., (2024),26, 13862, https://pubs.rsc.org/en/content/articlehtml/2024/cp/d4cp00050a
 
 ----
 
