@@ -479,7 +479,14 @@ def usage():
      | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH
      | Positive interval refers to NS loop, negative to initial walks
      | default:''
-
+    
+    ``min_nn_dis=float``
+     | Optional input to add additional rejection criteria when initially generating walkers. If any nearest neighbour distances are less than this length, given in Angstroms, the walker is rejected.
+     | default: 0.0
+    
+    ``calc_nn_dis=[ T | F ]``
+     | While you can set the min_nn_dis to add an additional rejection criteria to the initial walker generation, you can use this keyword to keep the rejection criteria on throughout the sampling. This does increase the calculation time of a run and scales exponentially with the number of atoms.
+     | default: F
     """
     sys.stderr.write("Usage: %s [ -no_mpi ] < input\n" % sys.argv[0])
     sys.stderr.write("input:\n")
@@ -619,6 +626,8 @@ def usage():
     sys.stderr.write("no_extra_walks_at_all=[ T | F ] (F)\n")
     sys.stderr.write("track_configs=[ T | F ] (F)\n")
     sys.stderr.write("track_configs_write=[ T | F ] (F)\n")
+    sys.stderr.write("min_nn_dis=float, (0.0, reject initial walkers with a nearest neighbour distance less than this value in Angstroms)")
+    sys.stderr.write("calc_nn_dis=[ T | F ], (F, reject walkers with a nearest neighbour distance less than min_nn_dis throughout the entire sampling procedure)")
 
 def excepthook_mpi_abort(exctype, value, tb):
     print( print_prefix,'Uncaught Exception Type:', exctype)
@@ -1090,7 +1099,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
     reject_Emax = (final_E >= Emax)
     reject_KEmax = (KEmax > 0.0 and final_KE >= KEmax)
 
-    #################################VGF_MODIFIED#########################################
+    #VGF calculate nn_distances and reject if enabled, otherwise skip calculation and dont reject based on nn distance
     if ns_args['calc_nn_dis']:
         distances = ase.geometry.get_distances(at.get_positions(), pbc=True, cell=at.get_cell())
         bonds = np.sort(distances[1], axis=None)
@@ -1100,7 +1109,7 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
         reject_len = min_bond < ns_args['min_nn_dis']
     else:
         reject_len = False
-    #####################################################################################
+    #VGF end
 
     #DOC \item if reject
     if reject_fuzz or reject_Emax or reject_KEmax or reject_len:  # reject
@@ -1465,7 +1474,8 @@ def do_cell_step(at, Emax, p_accept, transform):
 
     # set new positions and velocities
     at.set_cell(new_cell, scale_atoms=True)
-    ################################################VGF-MODIFIED#######################################
+    
+    #VGF calculate nn_distances and reject if enabled, otherwise skip calculation and dont reject based on nn distance
     if ns_args['calc_nn_dis']:
         distances = ase.geometry.get_distances(at.get_positions(), pbc=True, cell=at.get_cell())
         bonds = np.sort(distances[1], axis=None)
@@ -1475,7 +1485,8 @@ def do_cell_step(at, Emax, p_accept, transform):
         accept_len = min_bond > ns_args['min_nn_dis']
     else:
         accept_len = True
-    ###################################################################################################
+    #VGF end
+    
     if Emax is None:
         return
 
@@ -3283,12 +3294,12 @@ def main():
         ns_args['random_energy_perturbation'] = float(args.pop('random_energy_perturbation', 1.0e-12))
         ns_args['n_extra_data'] = int(args.pop('n_extra_data', 0))
         ns_args['Z_cell_axis'] = float(args.pop('Z_cell_axis', 10.0))
-        #VGF parameters
+        #VGF nn parameters
         ns_args['min_nn_dis'] = float(args.pop('min_nn_dis', 0.0))
         ns_args['calc_nn_dis_init'] = ns_args['min_nn_dis'] > 0.0
         
         ns_args['calc_nn_dis'] = str_to_logical(args.pop('calc_nn_dis', 'F'))
-        #End VGF parameters
+        #VGF end nn parameters
 
         # surely there's a cleaner way of doing this?
         try:
@@ -3864,7 +3875,7 @@ def main():
                     # random initial positions
                     energy = float('nan')
                     n_try = 0
-                    ###################################VGF-MODIFIED###############################
+                    #VGF added optional nn rejection criteria
                     reject_len = True
                     while (n_try < ns_args['random_init_max_n_tries']) and (((math.isnan(energy) or energy > ns_args['start_energy_ceiling'])) or reject_len):
                         at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
@@ -3872,7 +3883,7 @@ def main():
                             temp_at=at.get_positions()
                             temp_at[:,2]=0.0
                             at.set_positions(temp_at)
-                        ##################################################################
+                        #VGF calculate nn_distances and reject if enabled, otherwise skip calculation and dont reject based on nn distance
                         if ns_args['calc_nn_dis_init']:
                             distances = ase.geometry.get_distances(at.get_positions(), pbc=True, cell=at.get_cell())
                             bonds = np.sort(distances[1], axis=None)
@@ -3883,7 +3894,7 @@ def main():
                             reject_len = min_bond < ns_args['min_nn_dis']
                         else:
                             reject_len = False
-                        #####################################################################
+                        #VGF end
                         energy = eval_energy(at)
                         n_try += 1
 
@@ -3913,13 +3924,13 @@ def main():
                 energy = eval_energy(at)
                 at.info['ns_energy'] = rand_perturb_energy(energy, ns_args['random_energy_perturbation'])
                 at.info['volume'] = at.get_volume()
-                ###VGF modified###
+                #VGF if nn rejection criteria enabled, print the final smallest nearest neighbour distance
                 if ns_args['calc_nn_dis_init']:
                     distances = ase.geometry.get_distances(at.get_positions())
                     bonds = np.sort(distances[1], axis=None)
                     min_bond = bonds[len(at)]
                     print('min_bond_final', rank, min_bond)
-                ###################
+                #VGF end
                 
             # Done initialising atomic positions. Now initialise momenta
 
