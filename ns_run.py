@@ -905,7 +905,7 @@ def rotate_dir_3N_2D(vec, max_ang):
 
 def rej_free_perturb_velo(at, Emax, KEmax, rotate=True):
 #DOC
-#DOC ``rej_free_perturb_velo(at, Emax, KEmax, rotate=True)``
+#DOC ``rej_free_perturb_velo``
 
     if not at.has('momenta') or not at.has('masses'):
         return
