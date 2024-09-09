@@ -1,9 +1,3 @@
-#This is a modified version of the pymatnest ns_run.py file, with an additional criteria to reject
-#configurations if they contain bond lengths less than a given bond length defined by the
-#'min_nn_dis' keyword
-
-#Modification made by @V.G.Fletcher
-
 import re, math, time, os
 import pprint
 import numpy as np, ase, ase.io
