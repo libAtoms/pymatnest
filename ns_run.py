@@ -1,6 +1,6 @@
 #This is a modified version of the pymatnest ns_run.py file, with an additional criteria to reject
 #configurations if they contain bond lengths less than a given bond length defined by the
-#'min_bond_len' keyword
+#'min_nn_dis' keyword
 
 #Modification made by @V.G.Fletcher
 
@@ -1097,28 +1097,19 @@ def do_MD_atom_walk(at, movement_args, Emax, KEmax):
     reject_KEmax = (KEmax > 0.0 and final_KE >= KEmax)
 
     #################################VGF_MODIFIED#########################################
-    if ns_args['calc_distances']:
+    if ns_args['calc_nn_dis']:
         distances = ase.geometry.get_distances(at.get_positions(), pbc=True, cell=at.get_cell())
         bonds = np.sort(distances[1], axis=None)
         config_size = len(at)
         min_bond = bonds[config_size]
 
-        reject_len = min_bond < ns_args['min_bond_len']
-        
-        num_bonds= bonds[config_size:] < (ns_args['min_bond_len'] + 0.1)
-        perc_holes = sum(num_bonds)/len(num_bonds)
-
-        reject_pot_hole = perc_holes > ns_args['hole_tolerance']
-
-        if reject_pot_hole and not (reject_fuzz or reject_Emax or reject_KEmax or reject_len):
-            ase.io.write(f"potential_holes.traj.{rank}.extxyz", at, parallel=False, format=ns_args['config_file_format'], append=True)
+        reject_len = min_bond < ns_args['min_nn_dis']
     else:
         reject_len = False
-        reject_pot_hole = False
     #####################################################################################
 
     #DOC \item if reject
-    if reject_fuzz or reject_Emax or reject_KEmax or reject_len or reject_pot_hole:  # reject
+    if reject_fuzz or reject_Emax or reject_KEmax or reject_len:  # reject
         #DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)
         # print(print_prefix, ": WARNING: reject MD traj Emax ", Emax, " initial E ", orig_E, " velo perturbed E ", pre_MD_E, " final E ",final_E, " KEmax ", KEmax, " KE ", final_KE)
         at.set_positions(pre_MD_pos)
@@ -1481,21 +1472,15 @@ def do_cell_step(at, Emax, p_accept, transform):
     # set new positions and velocities
     at.set_cell(new_cell, scale_atoms=True)
     ################################################VGF-MODIFIED#######################################
-    if ns_args['calc_distances']:
+    if ns_args['calc_nn_dis']:
         distances = ase.geometry.get_distances(at.get_positions(), pbc=True, cell=at.get_cell())
         bonds = np.sort(distances[1], axis=None)
         config_size = len(at)
         min_bond = bonds[config_size]
 
-        accept_len = min_bond > ns_args['min_bond_len']
-        
-        num_bonds= bonds[config_size:] < (ns_args['min_bond_len'] + 0.1)
-        perc_holes = sum(num_bonds)/len(num_bonds)
-
-        accept_pot_hole = perc_holes < ns_args['hole_tolerance']
+        accept_len = min_bond > ns_args['min_nn_dis']
     else:
         accept_len = True
-        accept_pot_hole = True
     ###################################################################################################
     if Emax is None:
         return
@@ -1511,12 +1496,10 @@ def do_cell_step(at, Emax, p_accept, transform):
         #print("error in eval_energy setting new_energy = 2*abs(Emax)=" , new_energy)
 
         # accept or reject
-        if new_energy < Emax and accept_pot_hole: # accept
+        if new_energy < Emax: # accept
             at.info['ns_energy'] = new_energy
             return True
         else: # reject and revert
-            if new_energy < Emax:
-                ase.io.write(f"potential_holes.traj.{rank}.extxyz", at, parallel=False, format=ns_args['config_file_format'], append=True)
             at.set_cell(orig_cell,scale_atoms=False)
             at.set_positions(orig_pos)
             if ns_args['n_extra_data'] > 0:
@@ -3307,10 +3290,10 @@ def main():
         ns_args['n_extra_data'] = int(args.pop('n_extra_data', 0))
         ns_args['Z_cell_axis'] = float(args.pop('Z_cell_axis', 10.0))
         #VGF parameters
-        ns_args['min_bond_len'] = float(args.pop('min_bond_len', 0.0))
-        ns_args['hole_tolerance'] = float(args.pop('hole_tolerance',1.0))
-
-        ns_args['calc_distances'] = (ns_args['min_bond_len'] != 0.0) or (ns_args['hole_tolerance'] != 1.0)
+        ns_args['min_nn_dis'] = float(args.pop('min_nn_dis', 0.0))
+        ns_args['calc_nn_dis_init'] = ns_args['min_nn_dis'] > 0.0
+        
+        ns_args['calc_nn_dis'] = str_to_logical(args.pop('calc_nn_dis', 'F'))
         #End VGF parameters
 
         # surely there's a cleaner way of doing this?
@@ -3889,35 +3872,28 @@ def main():
                     n_try = 0
                     ###################################VGF-MODIFIED###############################
                     reject_len = True
-                    reject_pot_hole = True
-                    while (n_try < ns_args['random_init_max_n_tries']) and (((math.isnan(energy) or energy > ns_args['start_energy_ceiling'])) or reject_len or reject_pot_hole):
+                    while (n_try < ns_args['random_init_max_n_tries']) and (((math.isnan(energy) or energy > ns_args['start_energy_ceiling'])) or reject_len):
                         at.set_scaled_positions( rng.float_uniform(0.0, 1.0, (len(at), 3) ) )
                         if movement_args['2D']:  # zero the Z coordiates in a 2D simulation
                             temp_at=at.get_positions()
                             temp_at[:,2]=0.0
                             at.set_positions(temp_at)
                         ##################################################################
-                        if ns_args['calc_distances']:
+                        if ns_args['calc_nn_dis_init']:
                             distances = ase.geometry.get_distances(at.get_positions(), pbc=True, cell=at.get_cell())
                             bonds = np.sort(distances[1], axis=None)
                             config_size = len(at)
                             min_bond = bonds[config_size]
                             #print('min_bond_here', min_bond)
 
-                            reject_len = min_bond < ns_args['min_bond_len']
-        
-                            num_bonds= bonds[config_size:] < (ns_args['min_bond_len'] + 0.1)
-                            perc_holes = sum(num_bonds)/len(num_bonds)
-
-                            reject_pot_hole = perc_holes > ns_args['hole_tolerance']
+                            reject_len = min_bond < ns_args['min_nn_dis']
                         else:
                             reject_len = False
-                            reject_pot_hole = False
                         #####################################################################
                         energy = eval_energy(at)
                         n_try += 1
 
-                    if math.isnan(energy) or energy > ns_args['start_energy_ceiling'] or reject_len or reject_pot_hole:
+                    if math.isnan(energy) or energy > ns_args['start_energy_ceiling'] or reject_len:
                         sys.stderr.write("WARNING: rank %d failed to generate initial config by random positions under max energy %f in %d tries\n" % (rank, ns_args['start_energy_ceiling'], ns_args['random_init_max_n_tries']))
 
                     # try FORTRAN config initializer
@@ -3944,7 +3920,7 @@ def main():
                 at.info['ns_energy'] = rand_perturb_energy(energy, ns_args['random_energy_perturbation'])
                 at.info['volume'] = at.get_volume()
                 ###VGF modified###
-                if ns_args['calc_distances']:
+                if ns_args['calc_nn_dis_init']:
                     distances = ase.geometry.get_distances(at.get_positions())
                     bonds = np.sort(distances[1], axis=None)
                     min_bond = bonds[len(at)]
