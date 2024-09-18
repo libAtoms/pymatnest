@@ -631,6 +631,16 @@
 <div class="line">default:’’</div>
 </div>
 </dd>
+<dt id="term-min_nn_dis-float"><code class="docutils literal notranslate"><span class="pre">min_nn_dis=float</span></code><a class="headerlink" href="#term-min_nn_dis-float" title="Link to this term">¶</a></dt><dd><div class="line-block">
+<div class="line">Optional input to add additional rejection criteria when initially generating walkers. If any nearest neighbour distances are less than this length, given in Angstroms, the walker is rejected.</div>
+<div class="line">default: 0.0</div>
+</div>
+</dd>
+<dt id="term-calc_nn_dis-T-F"><code class="docutils literal notranslate"><span class="pre">calc_nn_dis=[</span> <span class="pre">T</span> <span class="pre">|</span> <span class="pre">F</span> <span class="pre">]</span></code><a class="headerlink" href="#term-calc_nn_dis-T-F" title="Link to this term">¶</a></dt><dd><div class="line-block">
+<div class="line">While you can set the min_nn_dis to add an additional rejection criteria to the initial walker generation, you can use this keyword to keep the rejection criteria on throughout the sampling. This does increase the calculation time of a run and scales exponentially with the number of atoms.</div>
+<div class="line">default: F</div>
+</div>
+</dd>
 </dl>
 </dd></dl>
 
@@ -1047,7 +1057,7 @@ value if the run already reached the number of iterations set previously. (Note:
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
     </div>
   </body>
 </html>

@@ -137,35 +137,51 @@ It can be used with the supplied fortran potential models and it also has interf
 </div></blockquote>
 <section id="mc-and-md-step-algorithms">
 <h3>MC and MD step algorithms<a class="headerlink" href="#mc-and-md-step-algorithms" title="Link to this heading">¶</a></h3>
-<dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">rej_free_perturb_velo</span></code></dt><dd><ul class="simple">
-<li><p>if atom_velo_rej_free_fully_randomize, pick random velocities consistent with Emax</p></li>
-<li><dl class="simple">
-<dt>else perturb velocities</dt><dd><ul>
-<li><p>if current velocity=0, can’t rescale, so pick random velocities consistent with Emax</p></li>
-<li><p>else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom_velo_rej_free_perturb_angle</p></li>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">rej_free_perturb_velo</span></code></dt><dd><dl class="simple">
+<dt><strong>if</strong> atom_velo_rej_free_fully_randomize:</dt><dd><ul class="simple">
+<li><p>pick random velocities consistent with Emax</p></li>
+</ul>
+</dd>
+<dt><strong>else</strong>: (perturb velocities)</dt><dd><dl class="simple">
+<dt><strong>if</strong> current velocity=0:</dt><dd><ul class="simple">
+<li><p>can’t rescale, so pick random velocities consistent with Emax</p></li>
+</ul>
+</dd>
+<dt><strong>else</strong>:</dt><dd><ul class="simple">
+<li><p>pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom_velo_rej_free_perturb_angle</p></li>
 </ul>
 </dd>
 </dl>
-</li>
-</ul>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">do\_MC\_atom\_velo\_walk</span></code></dt><dd><ul class="simple">
-<li><dl class="simple">
-<dt>Else if MC_atom_velo_walk_rej_free</dt><dd><ul>
+</dl>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">do_MC_atom_velo_walk</span></code></dt><dd><dl class="simple">
+<dt><strong>if</strong> MC_atom_velo_walk_rej_free:</dt><dd><ul class="simple">
 <li><p>call rej_free_perturb_velo()</p></li>
 </ul>
 </dd>
-</dl>
-</li>
-<li><p>else do MC pertubation to velocities</p></li>
+<dt><strong>else</strong>:</dt><dd><ul class="simple">
+<li><p>do MC pertubation to velocities</p></li>
 </ul>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">do_MD_atom_walk</span></code></dt><dd><ul class="simple">
-<li><p>if MD_atom_velo_pre_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</p></li>
-<li><p>propagate in time atom_traj_len time steps of length MD_atom_timestep</p></li>
-<li><p>If MD_atom_reject_energy_violation is set, accept/reject entire move on E deviating by less than MD_atom_energy_fuzz times kinetic energy</p></li>
-<li><p>accept/reject entire move on E &lt; Emax and KE &lt; KEmax</p></li>
+</dl>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">do_MD_atom_walk</span></code></dt><dd><dl class="simple">
+<dt><strong>if</strong> MD_atom_velo_pre_perturb:</dt><dd><ul class="simple">
+<li><p>call do_MC_atom_velo_walk() for magnitude and rotation</p></li>
+</ul>
+</dd>
+</dl>
+<p>propagate in time atom_traj_len time steps of length MD_atom_timestep</p>
+<dl class="simple">
+<dt><strong>if</strong> MD_atom_reject_energy_violation is set:</dt><dd><ul class="simple">
+<li><p>accept/reject entire move on E deviating by less than MD_atom_energy_fuzz times kinetic energy</p></li>
+</ul>
+</dd>
+</dl>
+<p>accept/reject entire move on E &lt; Emax and KE &lt; KEmax</p>
+<ul class="simple">
 <li><dl class="simple">
 <dt>if reject</dt><dd><ul>
 <li><p>set positions, velocities, energy back to value before perturbation (maybe should be after?)</p></li>
@@ -173,41 +189,40 @@ It can be used with the supplied fortran potential models and it also has interf
 </dd>
 </dl>
 </li>
-<li><dl class="simple">
-<dt>else</dt><dd><ul>
-<li><p>flip velocities if MD_atom_velo_flip_accept</p></li>
+</ul>
+<dl class="simple">
+<dt><strong>else</strong>: (accepted)</dt><dd><dl class="simple">
+<dt><strong>if</strong> MD_atom_velo_flip_accept:</dt><dd><ul class="simple">
+<li><p>flip velocities</p></li>
+</ul>
+</dd>
+<dt><strong>if</strong> MD_atom_velo_post_perturb:</dt><dd><ul class="simple">
+<li><p>call do_MC_atom_velo_walk() for magnitude and rotation</p></li>
 </ul>
 </dd>
 </dl>
-</li>
-<li><p>if MD_atom_velo_post_perturb, call do_MC_atom_velo_walk() for magnitude and rotation</p></li>
+</dd>
+</dl>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">do_MC_atom_walk</span></code></dt><dd><dl class="simple">
+<dt><strong>if</strong> MC_atom_velocities <strong>and</strong> MC_atom_velocities_pre_perturb:</dt><dd><ul class="simple">
+<li><p>call do_MC_atom_velo_walk() to perturb velocities, magnitude and rotation</p></li>
 </ul>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">do_MC_atom_walk</span></code></dt><dd><ul class="simple">
-<li><p>if MC_atom_velocities and MC_atom_velocities_pre_perturb, call do_MC_atom_velo_walk() to perturb velocities, magnitude and and rotation</p></li>
-<li><dl class="simple">
-<dt>if using fortran calculator and not reproducible</dt><dd><ul>
+<dt><strong>if</strong> using fortran calculator and not reproducible:</dt><dd><ul class="simple">
 <li><p>call fortran MC code f_MC_MD.MC_atom_walk</p></li>
 </ul>
 </dd>
-</dl>
-</li>
-<li><dl class="simple">
-<dt>else</dt><dd><ul>
-<li><p>do python MC</p></li>
-<li><dl class="simple">
-<dt>if MC_atom_Galilean</dt><dd><ul>
+<dt><strong>else</strong>: (do python MC)</dt><dd><dl class="simple">
+<dt><strong>if</strong> MC_atom_Galilean:</dt><dd><ul class="simple">
 <li><p>go Galilean MC in python</p></li>
 </ul>
 </dd>
-</dl>
-</li>
+<dt><strong>else</strong>:</dt><dd><ul class="simple">
 <li><dl class="simple">
-<dt>else</dt><dd><ul>
+<dt><strong>loop</strong> atom_traj_len times</dt><dd><ul>
 <li><dl class="simple">
-<dt>loop atom_traj_len times</dt><dd><ul>
-<li><dl class="simple">
-<dt>loop over atoms in random order</dt><dd><ul>
+<dt><strong>loop</strong> over atoms in random order</dt><dd><ul>
 <li><p>propose single atom move</p></li>
 <li><p>accept/reject on E &lt; Emax</p></li>
 </ul>
@@ -221,33 +236,33 @@ It can be used with the supplied fortran potential models and it also has interf
 </ul>
 </dd>
 </dl>
-</li>
+</dd>
+</dl>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">do_MC_swap_step</span></code></dt><dd><dl class="simple">
+<dt><strong>if</strong> all atomic numbers are identical:</dt><dd><p><strong>return</strong></p>
+</dd>
+</dl>
+<p>randomly pick a desired cluster size</p>
+<p>pick two clusters with distinct atomic numbers, backing off to smaller clusters on failure to find appropriate larger clusters, but always pick at least a pair of atoms to swap</p>
+<dl class="simple">
+<dt><strong>if</strong> energy &lt; Emax:</dt><dd><ul class="simple">
+<li><p>accept swap</p></li>
 </ul>
 </dd>
 </dl>
-</li>
-</ul>
-</dd>
-<dt><code class="docutils literal notranslate"><span class="pre">do_MC_swap_step</span></code></dt><dd><ul class="simple">
-<li><p>return if all atomic numbers are identical</p></li>
-<li><p>randomly pick a desired cluster size</p></li>
-<li><p>pick two clusters with distinct atomic numbers, backing off to smaller clusters on failure to find appropriate larger clusters, but always pick at least a pair of atoms to swap</p></li>
-<li><p>accept swap if energy &lt; Emax</p></li>
-</ul>
 </dd>
 </dl>
 <p><code class="docutils literal notranslate"><span class="pre">do_MC_cell_volume_step</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">do_MC_cell_shear_step</span></code></p>
 <p><code class="docutils literal notranslate"><span class="pre">do_MC_cell_stretch_step</span></code></p>
 <dl>
-<dt><code class="docutils literal notranslate"><span class="pre">do_atom_walk</span></code></dt><dd><ul class="simple">
-<li><p>loop n_atom_steps_per_call times, calling do_MC_atom_walk() or do_MD_atom_walk()</p></li>
-</ul>
+<dt><code class="docutils literal notranslate"><span class="pre">do_atom_walk</span></code></dt><dd><p><strong>loop</strong> n_atom_steps_per_call times, calling do_MC_atom_walk() or do_MD_atom_walk()</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">walk_single_walker</span></code></dt><dd><blockquote>
-<div><ul class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">walk_single_walker</span></code></dt><dd><dl class="simple">
+<dt><strong>loop</strong> <strong>while</strong> n_model_calls_used &lt; n_model_calls:</dt><dd><ul class="simple">
 <li><dl class="simple">
-<dt>create list</dt><dd><ul>
+<dt>pick random item from list:</dt><dd><ul>
 <li><p>do_atom_walk <aside class="system-message">
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
 <p>latex exited with error
@@ -492,53 +507,43 @@ Transcript written on math.log.
 </dd>
 </dl>
 </li>
-<li><dl class="simple">
-<dt>loop while n_model_calls_used &lt; n_model_calls</dt><dd><ul>
-<li><p>pick random item from list</p></li>
 <li><p>do move</p></li>
 </ul>
 </dd>
 </dl>
-</li>
-</ul>
-</div></blockquote>
-<ul class="simple">
-<li><p>perturb final energy by random_energy_perturbation</p></li>
-</ul>
+<p>perturb final energy by random_energy_perturbation</p>
 </dd>
-<dt><code class="docutils literal notranslate"><span class="pre">full_auto_set_stepsizes</span></code></dt><dd><ul class="simple">
-<li><p>Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.</p></li>
-<li><p>The routine is MPI parallelised, so that the wall time goes as 1/num_of_processes</p></li>
-<li><dl class="simple">
-<dt>For each (H)MC move type the following is performed</dt><dd><ul>
-<li><p>Set ‘’movement_args’’ parameters so that only one (H)MC call is made at a time</p></li>
+<dt><code class="docutils literal notranslate"><span class="pre">full_auto_set_stepsizes</span></code></dt><dd><p>Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.</p>
+<p>The routine is MPI parallelised, so that the wall time goes as 1/num_of_processes</p>
+<p>For each (H)MC move type the following is performed:</p>
+<ul class="simple">
+<li><p>Set <code class="docutils literal notranslate"><span class="pre">movement_args</span></code> parameters so that only one (H)MC call is made at a time</p></li>
 <li><p>Min and max acceptance rates are copied from parameters MC_adjust_min_rate / MD_adjust_min_rate and MC_adjust_max_rate / MD_adjust_max_rate</p></li>
 <li><dl class="simple">
-<dt>Step size calibration loop:</dt><dd><ul>
-<li><dl class="simple">
-<dt>Repeat the following 200/num_of_MPI_processes times:</dt><dd><ul>
+<dt><strong>loop</strong> for step size calibration, repeat the following 200/num_of_MPI_processes times:</dt><dd><ul>
 <li><p>Copy a configuration from the live set (each MPI process chooses a different configuration)</p></li>
-<li><p>Each MPI processes performs one (H)MC move on its cloned configuration
-running statistics for the number of accepted/rejected moves on each process are recorded</p></li>
+<li><p>Each MPI processes performs one (H)MC move on its cloned configuration</p></li>
+<li><p>running statistics for the number of accepted/rejected moves on each process are recorded</p></li>
+<li><p>The total number of accepted/rejected moves for this step size (summed across all MPI processes) are estabilshed</p></li>
+<li><dl class="simple">
+<dt><strong>if</strong> the total acceptance rate is within the desired range:</dt><dd><ul>
+<li><p><strong>return</strong> this stepsize</p></li>
 </ul>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt>The total number of accepted/rejected moves for this step size (summed across all MPI processes) are estabilshed</dt><dd><ul>
+<dt><strong>else</strong>:</dt><dd><ul>
 <li><dl class="simple">
-<dt>If the total acceptance rate is within the desired range, return this stepsize</dt><dd><ul>
-<li><dl class="simple">
-<dt>If this is NOT the first time the loop has been performed for this (H)MC move AND we previously obtained an acceptance rate on one side of the desired range, and now find an acceptance rate on the other side of the desired range</dt><dd><ul>
-<li><p>Return the step size that gave an acceptance rate closest to the middle of the desired range.</p></li>
+<dt><strong>if</strong> this is <strong>not</strong> the first time the loop has been performed for this (H)MC move <strong>and</strong> we previously obtained an acceptance rate on one side of the desired range:</dt><dd><ul>
+<li><p>now find an acceptance rate on the other side of the desired range</p></li>
+<li><p><strong>return</strong> the step size that gave an acceptance rate closest to the middle of the desired range.</p></li>
 </ul>
 </dd>
 </dl>
 </li>
-</ul>
-</dd>
-</dl>
-</li>
+<li><dl class="simple">
+<dt><strong>else</strong>: (this is the first time)</dt><dd><ul>
 <li><p>Store step length and acceptance rate</p></li>
 <li><p>update step length, by <aside class="system-message">
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
@@ -632,14 +637,14 @@ Transcript written on math.log.
 </dd>
 </dl>
 </li>
-<li><p>Return step sizes and time taken for routine to run</p></li>
+<li><p><strong>return</strong> step sizes and time taken for routine to run</p></li>
 </ul>
 </dd>
 <dt><code class="docutils literal notranslate"><span class="pre">main</span></code>: parse arguments</dt><dd><ul class="simple">
 <li><dl class="simple">
 <dt>process n_atom_steps</dt><dd><ul>
 <li><dl class="simple">
-<dt>If break_up_atom_traj</dt><dd><ul>
+<dt><strong>if</strong> break_up_atom_traj:</dt><dd><ul>
 <li><p>n_atom_steps_per_call = 1</p></li>
 <li><p>n_atom_steps_n_calls = n_atom_steps</p></li>
 </ul>
@@ -647,7 +652,7 @@ Transcript written on math.log.
 </dl>
 </li>
 <li><dl class="simple">
-<dt>else</dt><dd><ul>
+<dt><strong>else</strong>:</dt><dd><ul>
 <li><p>n_atom_steps_per_call = n_atom_steps</p></li>
 <li><p>n_atom_steps_n_calls = 1</p></li>
 </ul>
@@ -748,7 +753,7 @@ Transcript written on math.log.
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
     </div>
   </body>
 </html>

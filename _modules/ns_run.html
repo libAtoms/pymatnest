@@ -519,7 +519,14 @@
 <span class="sd">     | Analyzers to apply during run.  String consists of semicolon separated pairs of module name and intervals. Module names correspond to analysis modules in NS_PATH/ns_run_analyzers (see there for examples) or elsewhere in PYTHONPATH</span>
 <span class="sd">     | Positive interval refers to NS loop, negative to initial walks</span>
 <span class="sd">     | default:&#39;&#39;</span>
-
+<span class="sd">    </span>
+<span class="sd">    ``min_nn_dis=float``</span>
+<span class="sd">     | Optional input to add additional rejection criteria when initially generating walkers. If any nearest neighbour distances are less than this length, given in Angstroms, the walker is rejected.</span>
+<span class="sd">     | default: 0.0</span>
+<span class="sd">    </span>
+<span class="sd">    ``calc_nn_dis=[ T | F ]``</span>
+<span class="sd">     | While you can set the min_nn_dis to add an additional rejection criteria to the initial walker generation, you can use this keyword to keep the rejection criteria on throughout the sampling. This does increase the calculation time of a run and scales exponentially with the number of atoms.</span>
+<span class="sd">     | default: F</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;Usage: </span><span class="si">%s</span><span class="s2"> [ -no_mpi ] &lt; input</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;input:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -658,7 +665,9 @@
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;delta_random_seed=int (-1, &lt; 0 for seed from /dev/urandom)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;no_extra_walks_at_all=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;track_configs=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;track_configs_write=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;track_configs_write=[ T | F ] (F)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;min_nn_dis=float, (0.0, reject initial walkers with a nearest neighbour distance less than this value in Angstroms)&quot;</span><span class="p">)</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;calc_nn_dis=[ T | F ], (F, reject walkers with a nearest neighbour distance less than min_nn_dis throughout the entire sampling procedure)&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="excepthook_mpi_abort">
@@ -1017,22 +1026,25 @@
         <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;rej_free_perturb_velo() called with Emax and KEmax both None</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span>
 
     <span class="n">orig_KE</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span>
-    <span class="c1">#DOC \item if atom\_velo\_rej\_free\_fully\_randomize, pick random velocities consistent with Emax</span>
+    <span class="c1">#DOC **if** atom\_velo\_rej\_free\_fully\_randomize:</span>
+        <span class="c1">#DOC \item pick random velocities consistent with Emax</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_velo_rej_free_fully_randomize&#39;</span><span class="p">]:</span>
         <span class="c1"># randomize completely, fixed atoms are taken care of</span>
         <span class="n">at</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">gen_random_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">KEmax_use</span><span class="p">))</span>  
 
-    <span class="c1">#DOC \item else perturb velocities</span>
+    <span class="c1">#DOC **else**: (perturb velocities)</span>
     <span class="k">else</span><span class="p">:</span>  <span class="c1"># perturb</span>
         <span class="n">velo</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_velocities</span><span class="p">()</span>
 
         <span class="n">velo_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">velo</span><span class="p">)</span>
-        <span class="c1">#DOC \item if current velocity=0, can&#39;t rescale, so pick random velocities consistent with Emax</span>
+        <span class="c1">#DOC **if** current velocity=0:</span>
+            <span class="c1">#DOC \item can&#39;t rescale, so pick random velocities consistent with Emax</span>
         <span class="k">if</span> <span class="n">velo_mag</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="c1"># generate random velocities, fixed atoms are taken care of</span>
             <span class="n">at</span><span class="o">.</span><span class="n">set_velocities</span><span class="p">(</span><span class="n">gen_random_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">KEmax_use</span><span class="p">))</span>  
 
-        <span class="c1">#DOC \item else, pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom\_velo\_rej\_free\_perturb\_angle</span>
+        <span class="c1">#DOC **else**:</span>
+            <span class="c1">#DOC \item pick new random magnitude consistent with Emax, random rotation of current direction with angle uniform in +/- atom\_velo\_rej\_free\_perturb\_angle</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1"># using default settings we will do this. </span>
             <span class="c1"># pick new random magnitude - count on dimensionality to make change small</span>
@@ -1067,14 +1079,15 @@
 <a class="viewcode-back" href="../ns_run.html#ns_run.do_MC_atom_velo_walk">[docs]</a>
 <span class="k">def</span> <span class="nf">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">nD</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">):</span>
 <span class="c1">#DOC</span>
-<span class="c1">#DOC ``do\_MC\_atom\_velo\_walk``</span>
+<span class="c1">#DOC ``do_MC_atom_velo_walk``</span>
 
-    <span class="c1">#DOC \item Else if MC\_atom\_velo\_walk\_rej\_free</span>
+    <span class="c1">#DOC **if** MC\_atom\_velo\_walk\_rej\_free:</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velo_walk_rej_free&#39;</span><span class="p">]:</span>
         <span class="c1">#DOC \item call rej\_free\_perturb\_velo()</span>
             <span class="n">rej_free_perturb_velo</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
             <span class="k">return</span> <span class="p">{}</span>
-    <span class="c1">#DOC \item else do MC pertubation to velocities</span>
+    <span class="c1">#DOC **else**:</span>
+        <span class="c1">#DOC \item do MC pertubation to velocities</span>
 
     <span class="n">n_steps</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;velo_traj_len&#39;</span><span class="p">]</span>
     <span class="n">step_size</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velo_step_size&#39;</span><span class="p">]</span>
@@ -1128,8 +1141,9 @@
     <span class="k">if</span> <span class="n">orig_E</span> <span class="o">&gt;=</span> <span class="n">Emax</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;: WARNING: orig_E =&quot;</span><span class="p">,</span> <span class="n">orig_E</span><span class="p">,</span> <span class="s2">&quot; &gt;= Emax =&quot;</span><span class="p">,</span> <span class="n">Emax</span><span class="p">)</span>
 
-    <span class="c1">#DOC \item if MD\_atom\_velo\_pre\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation</span>
+    <span class="c1">#DOC **if** MD\_atom\_velo\_pre\_perturb:</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_velo_pre_perturb&#39;</span><span class="p">]:</span>
+        <span class="c1">#DOC \item call do_MC_atom_velo_walk() for magnitude and rotation</span>
         <span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">nD</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
 
     <span class="n">pre_MD_pos</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
@@ -1138,8 +1152,8 @@
         <span class="n">pre_MD_extra_data</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
 
     <span class="n">pre_MD_E</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span>
-
-    <span class="c1">#DOC \item propagate in time atom\_traj\_len time steps of length MD\_atom\_timestep</span>
+    <span class="c1">#DOC propagate in time atom_traj_len time steps of length MD_atom_timestep</span>
+    <span class="c1">#DOC</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;python_MD&#39;</span><span class="p">]:</span>
         <span class="n">forces</span> <span class="o">=</span> <span class="n">eval_forces</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
         <span class="n">final_E</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1181,19 +1195,33 @@
 
     <span class="n">reject_fuzz</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">final_KE</span> <span class="o">=</span> <span class="n">eval_energy_KE</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
-    <span class="c1">#DOC \item If MD\_atom\_reject\_energy\_violation is set, accept/reject entire move on E deviating by less than MD\_atom\_energy\_fuzz times kinetic energy</span>
+    <span class="c1">#DOC **if** MD_atom_reject_energy_violation is set:</span>
+        <span class="c1">#DOC \item accept/reject entire move on E deviating by less than MD\_atom\_energy\_fuzz times kinetic energy</span>
     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">final_E</span><span class="o">-</span><span class="n">pre_MD_E</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_energy_fuzz&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">final_KE</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_reject_energy_violation&#39;</span><span class="p">]:</span>
             <span class="n">reject_fuzz</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="c1"># else:</span>
             <span class="c1"># print(print_prefix, &quot;: WARNING: MD energy deviation &gt; fuzz*final_KE. Pre-MD, post-MD, difference, final_KE &quot;, pre_MD_E, final_E, final_E-pre_MD_E, final_KE)</span>
 
-    <span class="c1">#DOC \item accept/reject entire move on E &lt; Emax and KE &lt; KEmax</span>
+    <span class="c1">#DOC accept/reject entire move on E &lt; Emax and KE &lt; KEmax</span>
+    <span class="c1">#DOC</span>
     <span class="n">reject_Emax</span> <span class="o">=</span> <span class="p">(</span><span class="n">final_E</span> <span class="o">&gt;=</span> <span class="n">Emax</span><span class="p">)</span>
     <span class="n">reject_KEmax</span> <span class="o">=</span> <span class="p">(</span><span class="n">KEmax</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="ow">and</span> <span class="n">final_KE</span> <span class="o">&gt;=</span> <span class="n">KEmax</span><span class="p">)</span>
 
+    <span class="c1">#VGF calculate nn_distances and reject if enabled, otherwise skip calculation and dont reject based on nn distance</span>
+    <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;calc_nn_dis&#39;</span><span class="p">]:</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">ase</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">get_distances</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">at</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
+        <span class="n">bonds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">distances</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">config_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+        <span class="n">min_bond</span> <span class="o">=</span> <span class="n">bonds</span><span class="p">[</span><span class="n">config_size</span><span class="p">]</span>
+
+        <span class="n">reject_len</span> <span class="o">=</span> <span class="n">min_bond</span> <span class="o">&lt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;min_nn_dis&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">reject_len</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="c1">#VGF end</span>
+
     <span class="c1">#DOC \item if reject</span>
-    <span class="k">if</span> <span class="n">reject_fuzz</span> <span class="ow">or</span> <span class="n">reject_Emax</span> <span class="ow">or</span> <span class="n">reject_KEmax</span><span class="p">:</span>  <span class="c1"># reject</span>
+    <span class="k">if</span> <span class="n">reject_fuzz</span> <span class="ow">or</span> <span class="n">reject_Emax</span> <span class="ow">or</span> <span class="n">reject_KEmax</span> <span class="ow">or</span> <span class="n">reject_len</span><span class="p">:</span>  <span class="c1"># reject</span>
         <span class="c1">#DOC \item set positions, velocities, energy back to value before perturbation (maybe should be after?)</span>
         <span class="c1"># print(print_prefix, &quot;: WARNING: reject MD traj Emax &quot;, Emax, &quot; initial E &quot;, orig_E, &quot; velo perturbed E &quot;, pre_MD_E, &quot; final E &quot;,final_E, &quot; KEmax &quot;, KEmax, &quot; KE &quot;, final_KE)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">pre_MD_pos</span><span class="p">)</span>
@@ -1205,9 +1233,10 @@
             <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">pre_MD_extra_data</span>
         <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pre_MD_E</span>
         <span class="n">n_accept</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="c1">#DOC \item else</span>
+    <span class="c1">#DOC **else**: (accepted)</span>
     <span class="k">else</span><span class="p">:</span>  <span class="c1"># accept</span>
-        <span class="c1">#DOC \item flip velocities if MD\_atom\_velo\_flip\_accept</span>
+        <span class="c1">#DOC **if** MD\_atom\_velo\_flip\_accept:</span>
+            <span class="c1">#DOC \item flip velocities</span>
         <span class="c1"># remember to reverse velocities on acceptance to preserve detailed</span>
         <span class="c1"># balance, since velocity is (sometimes) being perturbed, not completely</span>
         <span class="c1"># randomized</span>
@@ -1217,7 +1246,8 @@
         <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">final_E</span>
         <span class="n">n_accept</span> <span class="o">=</span> <span class="mi">1</span>
 
-    <span class="c1">#DOC \item if MD\_atom\_velo\_post\_perturb, call do\_MC\_atom\_velo\_walk() for magnitude and rotation</span>
+        <span class="c1">#DOC **if** MD\_atom\_velo\_post\_perturb:</span>
+            <span class="c1">#DOC \item call do\_MC\_atom\_velo\_walk() for magnitude and rotation</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MD_atom_velo_post_perturb&#39;</span><span class="p">]:</span>
         <span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">nD</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
 
@@ -1242,7 +1272,8 @@
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>
        <span class="n">nD</span><span class="o">=</span><span class="mi">2</span>
 
-    <span class="c1">#DOC \item if MC\_atom\_velocities and MC\_atom\_velocities\_pre\_perturb, call do\_MC\_atom\_velo\_walk() to perturb velocities, magnitude and and rotation</span>
+    <span class="c1">#DOC **if** MC\_atom\_velocities **and** MC\_atom\_velocities\_pre\_perturb:</span>
+        <span class="c1">#DOC \item call do\_MC\_atom\_velo\_walk() to perturb velocities, magnitude and rotation</span>
     <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velocities&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velocities_pre_perturb&#39;</span><span class="p">]:</span>
         <span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">nD</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
 
@@ -1262,7 +1293,7 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">rotate_dir_3N</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;GMC_direction&#39;</span><span class="p">],</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;GMC_dir_perturb_angle&#39;</span><span class="p">])</span>
 
-    <span class="c1">#DOC \item if using fortran calculator and not reproducible</span>
+    <span class="c1">#DOC **if** using fortran calculator and not reproducible:</span>
     <span class="k">if</span> <span class="n">do_calc_fortran</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;reproducible&#39;</span><span class="p">]:</span>
         <span class="c1">#DOC \item call fortran MC code f\_MC\_MD.MC\_atom\_walk</span>
         <span class="n">at</span><span class="o">.</span><span class="n">wrap</span><span class="p">()</span>
@@ -1303,13 +1334,12 @@
             <span class="n">at</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">orig_pos</span><span class="p">)</span>
             <span class="n">n_accept</span> <span class="o">=</span> <span class="mi">0</span>
 
-    <span class="c1">#DOC \item else</span>
+    <span class="c1">#DOC **else**: (do python MC)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1">#DOC \item do python MC</span>
         <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_velocities&#39;</span><span class="p">]:</span>
             <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;MC_atom_velocities only supported for FORTRAN calculator</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
         <span class="n">dz</span><span class="o">=</span><span class="mf">0.0</span>
-        <span class="c1">#DOC \item if MC_atom_Galilean</span>
+        <span class="c1">#DOC **if** MC_atom_Galilean:</span>
         <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_Galilean&#39;</span><span class="p">]:</span>
             <span class="c1">#DOC \item go Galilean MC in python</span>
 
@@ -1382,11 +1412,11 @@
                 <span class="n">n_try</span> <span class="o">=</span> <span class="n">n_reflect</span> <span class="o">+</span> <span class="n">n_reverse</span>
                 <span class="n">n_accept</span> <span class="o">=</span> <span class="n">n_reflect</span>
 
-        <span class="c1">#DOC \item else</span>
+        <span class="c1">#DOC **else**:</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="c1">#DOC \item loop atom\_traj\_len times</span>
+            <span class="c1">#DOC \item **loop** atom\_traj\_len times</span>
             <span class="k">for</span> <span class="n">i_MC_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_steps</span><span class="p">):</span>
-                <span class="c1">#DOC \item loop over atoms in random order</span>
+                <span class="c1">#DOC \item **loop** over atoms in random order</span>
                 <span class="n">at_list</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)))</span>
                 <span class="n">rng</span><span class="o">.</span><span class="n">shuffle_in_place</span><span class="p">(</span><span class="n">at_list</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">i_at</span> <span class="ow">in</span> <span class="n">at_list</span><span class="p">:</span>
@@ -1574,24 +1604,44 @@
 
     <span class="c1"># set new positions and velocities</span>
     <span class="n">at</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">new_cell</span><span class="p">,</span> <span class="n">scale_atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    
+    <span class="c1">#VGF calculate nn_distances and reject if enabled, otherwise skip calculation and dont reject based on nn distance</span>
+    <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;calc_nn_dis&#39;</span><span class="p">]:</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">ase</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">get_distances</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">at</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
+        <span class="n">bonds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">distances</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">config_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+        <span class="n">min_bond</span> <span class="o">=</span> <span class="n">bonds</span><span class="p">[</span><span class="n">config_size</span><span class="p">]</span>
 
+        <span class="n">accept_len</span> <span class="o">=</span> <span class="n">min_bond</span> <span class="o">&gt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;min_nn_dis&#39;</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">accept_len</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="c1">#VGF end</span>
+    
     <span class="k">if</span> <span class="n">Emax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">return</span>
 
-    <span class="c1"># calculate new energy</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;eval_energy got exception &quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
-        <span class="n">new_energy</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">Emax</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">accept_len</span><span class="p">:</span>
+        <span class="c1"># calculate new energy</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span> <span class="s2">&quot;eval_energy got exception &quot;</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+            <span class="n">new_energy</span> <span class="o">=</span> <span class="mf">2.0</span><span class="o">*</span><span class="nb">abs</span><span class="p">(</span><span class="n">Emax</span><span class="p">)</span>
         <span class="c1">#print(&quot;error in eval_energy setting new_energy = 2*abs(Emax)=&quot; , new_energy)</span>
 
-    <span class="c1"># accept or reject</span>
-    <span class="k">if</span> <span class="n">new_energy</span> <span class="o">&lt;</span> <span class="n">Emax</span><span class="p">:</span> <span class="c1"># accept</span>
-        <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_energy</span>
-        <span class="k">return</span> <span class="kc">True</span>
-    <span class="k">else</span><span class="p">:</span> <span class="c1"># reject and revert</span>
+        <span class="c1"># accept or reject</span>
+        <span class="k">if</span> <span class="n">new_energy</span> <span class="o">&lt;</span> <span class="n">Emax</span><span class="p">:</span> <span class="c1"># accept</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_energy</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span> <span class="c1"># reject and revert</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">orig_cell</span><span class="p">,</span><span class="n">scale_atoms</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="n">at</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">orig_pos</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_extra_data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra_data</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        
+    <span class="k">else</span><span class="p">:</span>
         <span class="n">at</span><span class="o">.</span><span class="n">set_cell</span><span class="p">(</span><span class="n">orig_cell</span><span class="p">,</span><span class="n">scale_atoms</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="n">at</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">orig_pos</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_extra_data&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -1650,20 +1700,22 @@
 <span class="c1">#DOC ``do_MC_swap_step``</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_atomic_numbers</span><span class="p">()</span>
 
-    <span class="c1">#DOC \item return if all atomic numbers are identical</span>
+    <span class="c1">#DOC **if** all atomic numbers are identical:</span>
+        <span class="c1">#DOC **return**</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">Z</span><span class="p">[:]</span> <span class="o">==</span> <span class="n">Z</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
         <span class="c1"># don&#39;t try to swap when all atoms are the same</span>
         <span class="k">return</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">{})</span>
 
     <span class="n">r_cut</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;swap_r_cut&#39;</span><span class="p">]</span>
-    <span class="c1">#DOC \item randomly pick a desired cluster size</span>
+    <span class="c1">#DOC randomly pick a desired cluster size</span>
+    <span class="c1">#DOC</span>
     <span class="n">cluster_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;swap_probs&#39;</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span>
     <span class="k">if</span> <span class="n">cluster_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="p">(</span><span class="n">i_list</span><span class="p">,</span> <span class="n">j_list</span><span class="p">)</span> <span class="o">=</span> <span class="n">matscipy</span><span class="o">.</span><span class="n">neighbours</span><span class="o">.</span><span class="n">neighbour_list</span><span class="p">(</span><span class="s1">&#39;ij&#39;</span><span class="p">,</span> <span class="n">at</span><span class="p">,</span> <span class="n">r_cut</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">i_list</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="n">j_list</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="c1">#DOC \item pick two clusters with distinct atomic numbers, backing off to smaller clusters on failure to find appropriate larger clusters, but always pick at least a pair of atoms to swap</span>
+    <span class="c1">#DOC pick two clusters with distinct atomic numbers, backing off to smaller clusters on failure to find appropriate larger clusters, but always pick at least a pair of atoms to swap</span>
     <span class="n">c1</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">c2</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">while</span> <span class="p">(</span><span class="n">c1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">c2</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">Z</span><span class="p">[</span><span class="n">c1</span><span class="p">]</span> <span class="o">==</span> <span class="n">Z</span><span class="p">[</span><span class="n">c2</span><span class="p">])):</span>
@@ -1711,8 +1763,9 @@
         <span class="n">extra_data_2_orig</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="n">c2</span><span class="p">,</span><span class="o">...</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
         <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="n">c1</span><span class="p">,</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra_data_2_orig</span>
         <span class="n">at</span><span class="o">.</span><span class="n">arrays</span><span class="p">[</span><span class="s1">&#39;ns_extra_data&#39;</span><span class="p">][</span><span class="n">c2</span><span class="p">,</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">extra_data_1_orig</span>
-
-    <span class="c1">#DOC \item accept swap if energy &lt; Emax</span>
+    <span class="c1">#DOC</span>
+    <span class="c1">#DOC **if** energy &lt; Emax:</span>
+        <span class="c1">#DOC \item accept swap</span>
     <span class="n">new_energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
     <span class="n">new_KE</span> <span class="o">=</span> <span class="n">eval_energy_KE</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
 
@@ -1792,7 +1845,7 @@
 <span class="c1">#DOC ``do_atom_walk``</span>
     <span class="n">n_reps</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_atom_steps_per_call&#39;</span><span class="p">]</span>
     <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
-    <span class="c1">#DOC \item loop n\_atom\_steps\_per\_call times, calling do\_MC\_atom\_walk() or do\_MD\_atom\_walk()</span>
+    <span class="c1">#DOC **loop** n\_atom\_steps\_per\_call times, calling do\_MC\_atom\_walk() or do\_MD\_atom\_walk()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_reps</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_algorithm&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;MC&#39;</span><span class="p">:</span>
             <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">do_MC_atom_walk</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">))</span>
@@ -1911,33 +1964,32 @@
             <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span>
 
     <span class="k">else</span><span class="p">:</span>
-        <span class="c1">#DOC \item create list</span>
-                            <span class="c1">#DOC \item do\_atom\_walk :math:`*` n\_atom\_step\_n\_calls</span>
         <span class="n">possible_moves</span> <span class="o">=</span> <span class="p">([</span><span class="n">do_atom_walk</span><span class="p">]</span> <span class="o">*</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_atom_steps_n_calls&#39;</span><span class="p">]</span> <span class="o">+</span>
-                            <span class="c1">#DOC \item do\_cell\_volume\_step :math:`*` n\_cell\_volume\_steps</span>
                           <span class="p">[</span><span class="n">do_MC_cell_volume_step</span><span class="p">]</span> <span class="o">*</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_cell_volume_steps&#39;</span><span class="p">]</span> <span class="o">+</span>
-                            <span class="c1">#DOC \item do\_cell\_shear\_step :math:`*` n\_cell\_shear\_steps</span>
                           <span class="p">[</span><span class="n">do_MC_cell_shear_step</span><span class="p">]</span> <span class="o">*</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_cell_shear_steps&#39;</span><span class="p">]</span> <span class="o">+</span>
-                            <span class="c1">#DOC \item do\_cell\_stretch\_step :math:`*` n\_cell\_stretch\_steps</span>
                           <span class="p">[</span><span class="n">do_MC_cell_stretch_step</span><span class="p">]</span> <span class="o">*</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_cell_stretch_steps&#39;</span><span class="p">]</span> <span class="o">+</span>
-                            <span class="c1">#DOC \item do\_swap\_step :math:`*` n\_swap\_steps</span>
                           <span class="p">[</span><span class="n">do_MC_swap_step</span><span class="p">]</span> <span class="o">*</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_swap_steps&#39;</span><span class="p">]</span> <span class="o">+</span>
-                            <span class="c1">#DOC \item do\_semi\_grand\_step :math:`*` n\_semi\_grand\_steps</span>
                           <span class="p">[</span><span class="n">do_MC_semi_grand_step</span><span class="p">]</span> <span class="o">*</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_semi_grand_steps&#39;</span><span class="p">])</span>
 
         <span class="n">out</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">n_model_calls_used</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c1">#DOC \item loop while n\_model\_calls\_used &lt; n\_model\_calls</span>
+    <span class="c1">#DOC **loop** **while** n_model_calls_used &lt; n_model_calls:</span>
         <span class="k">while</span> <span class="n">n_model_calls_used</span> <span class="o">&lt;</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]:</span>
-            <span class="c1">#DOC \item pick random item from list</span>
+        <span class="c1">#DOC \item pick random item from list:</span>
+            <span class="c1">#DOC \item do\_atom\_walk :math:`*` n\_atom\_step\_n\_calls</span>
+            <span class="c1">#DOC \item do\_cell\_volume\_step :math:`*` n\_cell\_volume\_steps</span>
+            <span class="c1">#DOC \item do\_cell\_shear\_step :math:`*` n\_cell\_shear\_steps</span>
+            <span class="c1">#DOC \item do\_cell\_stretch\_step :math:`*` n\_cell\_stretch\_steps</span>
+            <span class="c1">#DOC \item do\_swap\_step :math:`*` n\_swap\_steps</span>
+            <span class="c1">#DOC \item do\_semi\_grand\_step :math:`*` n\_semi\_grand\_steps</span>
             <span class="n">move</span> <span class="o">=</span> <span class="n">possible_moves</span><span class="p">[</span><span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">possible_moves</span><span class="p">))]</span>
-            <span class="c1">#DOC \item do move</span>
+        <span class="c1">#DOC \item do move</span>
             <span class="p">(</span><span class="n">t_n_model_calls</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span> <span class="o">=</span> <span class="n">move</span><span class="p">(</span><span class="n">at</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
             <span class="n">n_model_calls_used</span> <span class="o">+=</span> <span class="n">t_n_model_calls</span>
             <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">t_out</span><span class="p">)</span>
 
-    <span class="c1">#DOC \item perturb final energy by random\_energy\_perturbation</span>
+    <span class="c1">#DOC perturb final energy by random\_energy\_perturbation</span>
     <span class="c1"># perturb final energy</span>
     <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand_perturb_energy</span><span class="p">(</span>
         <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">],</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">],</span> <span class="n">Emax</span><span class="p">)</span>
@@ -1992,8 +2044,8 @@
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Automatically set all step sizes. Returns the time (in seconds) taken for the routine to run.&quot;&quot;&quot;</span>
 <span class="c1">#DOC</span>
 <span class="c1">#DOC ``full_auto_set_stepsizes``</span>
-    <span class="c1">#DOC \item Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.</span>
-
+    <span class="c1">#DOC Step sizes for each (H)MC move are set via a loop which performs additional exploration moves, calibrating each step size to obtain an acceptance rate inside a specified range.</span>
+    <span class="c1">#DOC</span>
     <span class="k">global</span> <span class="n">print_prefix</span>
 
     <span class="n">orig_prefix</span> <span class="o">=</span> <span class="n">print_prefix</span>
@@ -2009,8 +2061,8 @@
         <span class="c1"># in each trial we will evolve walk_n_walkers configurations</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">walk_n_walkers</span> <span class="o">=</span> <span class="n">n_samples_per_move_type</span>
-    <span class="c1">#DOC \item The routine is MPI parallelised, so that the wall time goes as 1/num\_of\_processes</span>
-
+    <span class="c1">#DOC The routine is MPI parallelised, so that the wall time goes as 1/num_of_processes</span>
+    <span class="c1">#DOC</span>
     <span class="n">key_list</span><span class="o">=</span><span class="p">[]</span>
     <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">walk_stats</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
         <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
@@ -2061,10 +2113,11 @@
                 <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="mi">6</span><span class="p">):</span>
                     <span class="n">key_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;MC_swap_&quot;</span><span class="p">)</span>
 
-    <span class="c1">#DOC \item For each (H)MC move type the following is performed</span>
+    <span class="c1">#DOC For each (H)MC move type the following is performed:</span>
+    <span class="c1">#DOC</span>
     <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">key_list</span><span class="p">:</span>
 
-        <span class="c1">#DOC \item Set &#39;&#39;movement\_args&#39;&#39; parameters so that only one (H)MC call is made at a time</span>
+    <span class="c1">#DOC \item Set ``movement_args`` parameters so that only one (H)MC call is made at a time</span>
         <span class="c1"># reprogram n_atom_steps_n_calls, n_cell_volume_steps, n_cell_shear_steps, n_cell_stretch_steps, n_swap_steps according to key</span>
         <span class="c1"># possible key values:</span>
         <span class="c1"># MD_atom # atoms HMC</span>
@@ -2148,7 +2201,7 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">exit_error</span><span class="p">(</span><span class="s2">&quot;full_auto_set_stepsizes got key &#39;</span><span class="si">%s</span><span class="s2">&#39;, unkown to this routine</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 
-        <span class="c1">#DOC \item Min and max acceptance rates are copied from parameters MC\_adjust\_min\_rate / MD\_adjust\_min\_rate and MC\_adjust\_max\_rate / MD\_adjust\_max\_rate</span>
+    <span class="c1">#DOC \item Min and max acceptance rates are copied from parameters MC_adjust_min_rate / MD_adjust_min_rate and MC_adjust_max_rate / MD_adjust_max_rate</span>
 
         <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;MC&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;MC_atom_step_size&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_atom_Galilean&#39;</span><span class="p">]:</span>
@@ -2172,27 +2225,26 @@
         <span class="c1"># protects against possible future bugs that would be hard to detect</span>
 
 
-        <span class="c1">#DOC \item Step size calibration loop:</span>
+    <span class="c1">#DOC \item **loop** for step size calibration, repeat the following 200/num\_of\_MPI\_processes times:</span>
         <span class="nb">dir</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">stats</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># clear acceptance / trial stats for new step size</span>
             <span class="n">stats_cumul</span> <span class="o">=</span> <span class="p">{}</span> <span class="c1"># clear acceptance / trial stats for new step size</span>
-            <span class="c1">#DOC \item Repeat the following 200/num\_of\_MPI\_processes times:</span>
-                <span class="c1">#DOC \item Copy a configuration from the live set (each MPI process chooses a different configuration)</span>
+        <span class="c1">#DOC \item Copy a configuration from the live set (each MPI process chooses a different configuration)</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">first_walker</span><span class="p">,</span><span class="n">first_walker</span> <span class="o">+</span> <span class="n">walk_n_walkers</span><span class="p">):</span>
 
                 <span class="n">k</span> <span class="o">=</span> <span class="n">i</span><span class="o">%</span><span class="nb">len</span><span class="p">(</span><span class="n">walkers</span><span class="p">)</span> <span class="c1"># cycle through walkers array</span>
                 <span class="n">buf</span> <span class="o">=</span> <span class="n">walkers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="c1"># copy config k into buffer &quot;buf&quot; for walking (walkers array unchanged)</span>
                 <span class="n">buf</span><span class="o">.</span><span class="n">calc</span> <span class="o">=</span> <span class="n">walkers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">calc</span> <span class="c1"># copy calculator</span>
 
-                <span class="c1">#DOC \item Each MPI processes performs one (H)MC move on its cloned configuration</span>
+        <span class="c1">#DOC \item Each MPI processes performs one (H)MC move on its cloned configuration</span>
                 <span class="c1"># build up stats from walkers</span>
                 <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">key</span><span class="o">==</span><span class="s2">&quot;MC_atom_velo&quot;</span><span class="p">):</span>
                     <span class="n">stats</span> <span class="o">=</span> <span class="n">walk_single_walker</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">exploration_movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">stats</span> <span class="o">=</span> <span class="n">do_MC_atom_velo_walk</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">exploration_movement_args</span><span class="p">,</span> <span class="n">Emax</span><span class="p">,</span> <span class="n">nD</span><span class="p">,</span> <span class="n">KEmax</span><span class="p">)</span>
 
-                  <span class="c1">#DOC     running statistics for the number of accepted/rejected moves on each process are recorded</span>
+        <span class="c1">#DOC \item running statistics for the number of accepted/rejected moves on each process are recorded</span>
                 <span class="n">accumulate_stats</span><span class="p">(</span><span class="n">stats_cumul</span><span class="p">,</span> <span class="n">stats</span><span class="p">)</span>
 
             <span class="n">first_walker</span> <span class="o">=</span> <span class="n">first_walker</span> <span class="o">+</span> <span class="n">walk_n_walkers</span> <span class="c1"># cycle through local samples</span>
@@ -2210,23 +2262,26 @@
                 <span class="n">n_accept</span> <span class="o">=</span> <span class="n">n_accept_g</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="n">rate</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">n_accept</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">n_try</span><span class="p">)</span>
-            <span class="c1">#DOC \item The total number of accepted/rejected moves for this step size (summed across all MPI processes) are estabilshed</span>
+        <span class="c1">#DOC \item The total number of accepted/rejected moves for this step size (summed across all MPI processes) are estabilshed</span>
 
             <span class="k">if</span> <span class="p">((</span><span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">)):</span>
                 <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;trial stepsize and accept rate for </span><span class="si">%s</span><span class="s2"> = </span><span class="si">%e</span><span class="s2"> , </span><span class="si">%f</span><span class="s2"> (</span><span class="si">%d</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">],</span> <span class="n">rate</span><span class="p">,</span> <span class="n">n_try</span><span class="p">))</span>
 
             <span class="k">if</span> <span class="p">(</span><span class="n">rate</span><span class="o">&gt;</span><span class="n">min_rate</span> <span class="ow">and</span> <span class="n">rate</span><span class="o">&lt;</span><span class="n">max_rate</span><span class="p">):</span>
-                <span class="c1">#DOC \item If the total acceptance rate is within the desired range, return this stepsize</span>
+        <span class="c1">#DOC \item **if** the total acceptance rate is within the desired range:</span>
+            <span class="c1">#DOC \item **return** this stepsize</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
                     <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;full_auto_set_stepsizes adjusted </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">]))</span>
                 <span class="k">break</span>
+        <span class="c1">#DOC \item **else**:</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="k">if</span><span class="p">(</span> <span class="ow">not</span> <span class="n">first_time</span> <span class="p">):</span> <span class="c1"># dodge this the first time round</span>
                     <span class="c1"># Check whether rate and rate_store are on different sides</span>
                     <span class="c1"># of interval</span>
                     <span class="k">if</span> <span class="p">((</span><span class="nb">min</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span><span class="n">rate_store</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">min_rate</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">rate</span><span class="p">,</span><span class="n">rate_store</span><span class="p">)</span><span class="o">&gt;</span><span class="n">max_rate</span><span class="p">)):</span>
-                        <span class="c1">#DOC \item If this is NOT the first time the loop has been performed for this (H)MC move AND we previously obtained an acceptance rate on one side of the desired range, and now find an acceptance rate on the other side of the desired range</span>
-                            <span class="c1">#DOC \item Return the step size that gave an acceptance rate closest to the middle of the desired range.</span>
+            <span class="c1">#DOC \item **if** this is **not** the first time the loop has been performed for this (H)MC move **and** we previously obtained an acceptance rate on one side of the desired range:</span>
+                <span class="c1">#DOC \item now find an acceptance rate on the other side of the desired range</span>
+                <span class="c1">#DOC \item **return** the step size that gave an acceptance rate closest to the middle of the desired range.</span>
 
                         <span class="c1"># check which gives a accept_rate closer to centre of acceptable window</span>
                         <span class="c1"># and take that</span>
@@ -2244,7 +2299,7 @@
                             <span class="k">if</span> <span class="p">(</span><span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">comm</span><span class="o">.</span><span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
                                 <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;full_auto_set_stepsizes adjusted </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">]))</span>
                             <span class="k">break</span>
-
+            <span class="c1">#DOC \item **else**: (this is the first time)</span>
                 <span class="k">else</span><span class="p">:</span> <span class="c1"># this is the first time</span>
                     <span class="n">first_time</span> <span class="o">=</span> <span class="kc">False</span>
 
@@ -2257,10 +2312,10 @@
                 <span class="c1">#update step length</span>
                 <span class="nb">dir</span> <span class="o">=</span> <span class="kc">None</span>
                 <span class="k">if</span> <span class="n">rate</span> <span class="o">&lt;</span> <span class="n">min_rate</span><span class="p">:</span>
-                    <span class="n">exp</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+                    <span class="n">exp</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
                     <span class="nb">dir</span> <span class="o">=</span> <span class="s2">&quot;down&quot;</span>
                 <span class="k">elif</span> <span class="n">rate</span> <span class="o">&gt;=</span> <span class="n">max_rate</span><span class="p">:</span>
-                    <span class="n">exp</span> <span class="o">=</span> <span class="mf">1.0</span>
+                    <span class="n">exp</span> <span class="o">=</span> <span class="mi">1</span>
                     <span class="nb">dir</span> <span class="o">=</span> <span class="s2">&quot;up&quot;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">exp</span> <span class="o">=</span> <span class="kc">None</span>
@@ -2288,7 +2343,7 @@
                         <span class="nb">print</span><span class="p">(</span> <span class="n">print_prefix</span><span class="p">,</span> <span class="s2">&quot;full_auto_set_stepsizes adjusted </span><span class="si">%s</span><span class="s2"> to </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">,</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">]))</span>
                     <span class="k">break</span>
 
-    <span class="c1">#DOC \item Return step sizes and time taken for routine to run</span>
+    <span class="c1">#DOC \item **return** step sizes and time taken for routine to run</span>
 
     <span class="n">print_prefix</span> <span class="o">=</span> <span class="n">orig_prefix</span>
 
@@ -2348,10 +2403,10 @@
             <span class="nb">dir</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">exp</span> <span class="o">=</span> <span class="mf">0.0</span>
             <span class="k">if</span> <span class="n">rate</span> <span class="o">&lt;</span> <span class="n">min_rate</span><span class="p">:</span>
-                <span class="n">exp</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+                <span class="n">exp</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
                 <span class="nb">dir</span> <span class="o">=</span> <span class="s2">&quot;down&quot;</span>
             <span class="k">elif</span> <span class="n">rate</span> <span class="o">&gt;=</span> <span class="n">max_rate</span><span class="p">:</span>
-                <span class="n">exp</span> <span class="o">=</span> <span class="mf">1.0</span>
+                <span class="n">exp</span> <span class="o">=</span> <span class="mi">1</span>
                 <span class="nb">dir</span> <span class="o">=</span> <span class="s2">&quot;up&quot;</span>
 
             <span class="n">orig_value</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="n">key</span><span class="o">+</span><span class="s2">&quot;_&quot;</span><span class="o">+</span><span class="n">suffix</span><span class="p">]</span>
@@ -2744,6 +2799,7 @@
                     <span class="n">walker_copy</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">walker_copy</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
                     <span class="n">walker_copy</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_P&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;MC_cell_P&#39;</span><span class="p">]</span>
                     <span class="n">walker_copy</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;iter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">i_ns_step</span>
+                    <span class="n">walker_copy</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;config_type&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="s2">&quot;config_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i_ns_step</span><span class="p">)</span> <span class="c1">#VF ADDED for ACEFIT test-train</span>
                     <span class="n">walker_copy</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;config_n_global&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">global_n</span>
                     <span class="k">if</span> <span class="n">walker_copy</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;masses&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">walker_copy</span><span class="o">.</span><span class="n">has</span><span class="p">(</span><span class="s1">&#39;momenta&#39;</span><span class="p">):</span>
                         <span class="n">walker_copy</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_KE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">walker_copy</span><span class="o">.</span><span class="n">get_kinetic_energy</span><span class="p">()</span>
@@ -3302,11 +3358,11 @@
         <span class="k">global</span> <span class="n">Z_list</span>
 
         <span class="kn">import</span> <span class="nn">sys</span>
-
+        
         <span class="n">sys</span><span class="o">.</span><span class="n">excepthook</span> <span class="o">=</span> <span class="n">excepthook_mpi_abort</span>
-
+        
         <span class="n">stacktrace</span><span class="o">.</span><span class="n">listen</span><span class="p">()</span>
-
+        
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">usage</span><span class="p">()</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -3434,6 +3490,12 @@
         <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">,</span> <span class="mf">1.0e-12</span><span class="p">))</span>
         <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;n_extra_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;n_extra_data&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;Z_cell_axis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;Z_cell_axis&#39;</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">))</span>
+        <span class="c1">#VGF nn parameters</span>
+        <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;min_nn_dis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;min_nn_dis&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+        <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;calc_nn_dis_init&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;min_nn_dis&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+        
+        <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;calc_nn_dis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;calc_nn_dis&#39;</span><span class="p">,</span> <span class="s1">&#39;F&#39;</span><span class="p">))</span>
+        <span class="c1">#VGF end nn parameters</span>
 
         <span class="c1"># surely there&#39;s a cleaner way of doing this?</span>
         <span class="k">try</span><span class="p">:</span>
@@ -3567,13 +3629,13 @@
         <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;n_model_calls&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
         <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;do_good_load_balance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">str_to_logical</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;do_good_load_balance&#39;</span><span class="p">,</span> <span class="s2">&quot;F&quot;</span><span class="p">))</span>
 
-        <span class="c1">#DOC \item process n\_atom\_steps</span>
-            <span class="c1">#DOC \item If break\_up\_atom\_traj</span>
-                <span class="c1">#DOC \item n\_atom\_steps\_per\_call = 1</span>
-                <span class="c1">#DOC \item n\_atom\_steps\_n\_calls = n\_atom\_steps</span>
-            <span class="c1">#DOC \item else</span>
-                <span class="c1">#DOC \item n\_atom\_steps\_per\_call = n\_atom\_steps</span>
-                <span class="c1">#DOC \item n\_atom\_steps\_n\_calls = 1</span>
+    <span class="c1">#DOC \item process n\_atom\_steps</span>
+        <span class="c1">#DOC \item **if** break\_up\_atom\_traj:</span>
+            <span class="c1">#DOC \item n\_atom\_steps\_per\_call = 1</span>
+            <span class="c1">#DOC \item n\_atom\_steps\_n\_calls = n\_atom\_steps</span>
+        <span class="c1">#DOC \item **else**:</span>
+            <span class="c1">#DOC \item n\_atom\_steps\_per\_call = n\_atom\_steps</span>
+            <span class="c1">#DOC \item n\_atom\_steps\_n\_calls = 1</span>
 
         <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;n_atom_steps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;n_atom_steps&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
         <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;atom_traj_len&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;atom_traj_len&#39;</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
@@ -4009,15 +4071,30 @@
                     <span class="c1"># random initial positions</span>
                     <span class="n">energy</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;nan&#39;</span><span class="p">)</span>
                     <span class="n">n_try</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="k">while</span> <span class="n">n_try</span> <span class="o">&lt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_init_max_n_tries&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="ow">or</span> <span class="n">energy</span> <span class="o">&gt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;start_energy_ceiling&#39;</span><span class="p">]):</span>
+                    <span class="c1">#VGF added optional nn rejection criteria</span>
+                    <span class="n">reject_len</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">while</span> <span class="p">(</span><span class="n">n_try</span> <span class="o">&lt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_init_max_n_tries&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="p">(((</span><span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="ow">or</span> <span class="n">energy</span> <span class="o">&gt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;start_energy_ceiling&#39;</span><span class="p">]))</span> <span class="ow">or</span> <span class="n">reject_len</span><span class="p">):</span>
                         <span class="n">at</span><span class="o">.</span><span class="n">set_scaled_positions</span><span class="p">(</span> <span class="n">rng</span><span class="o">.</span><span class="n">float_uniform</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span>
                         <span class="k">if</span> <span class="n">movement_args</span><span class="p">[</span><span class="s1">&#39;2D&#39;</span><span class="p">]:</span>  <span class="c1"># zero the Z coordiates in a 2D simulation</span>
                             <span class="n">temp_at</span><span class="o">=</span><span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">()</span>
                             <span class="n">temp_at</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="mf">0.0</span>
                             <span class="n">at</span><span class="o">.</span><span class="n">set_positions</span><span class="p">(</span><span class="n">temp_at</span><span class="p">)</span>
+                        <span class="c1">#VGF calculate nn_distances and reject if enabled, otherwise skip calculation and dont reject based on nn distance</span>
+                        <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;calc_nn_dis_init&#39;</span><span class="p">]:</span>
+                            <span class="n">distances</span> <span class="o">=</span> <span class="n">ase</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">get_distances</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">(),</span> <span class="n">pbc</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cell</span><span class="o">=</span><span class="n">at</span><span class="o">.</span><span class="n">get_cell</span><span class="p">())</span>
+                            <span class="n">bonds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">distances</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                            <span class="n">config_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
+                            <span class="n">min_bond</span> <span class="o">=</span> <span class="n">bonds</span><span class="p">[</span><span class="n">config_size</span><span class="p">]</span>
+                            <span class="c1">#print(&#39;min_bond_here&#39;, min_bond)</span>
+
+                            <span class="n">reject_len</span> <span class="o">=</span> <span class="n">min_bond</span> <span class="o">&lt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;min_nn_dis&#39;</span><span class="p">]</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">reject_len</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="c1">#VGF end</span>
                         <span class="n">energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
                         <span class="n">n_try</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="ow">or</span> <span class="n">energy</span> <span class="o">&gt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;start_energy_ceiling&#39;</span><span class="p">]:</span>
+
+                    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">energy</span><span class="p">)</span> <span class="ow">or</span> <span class="n">energy</span> <span class="o">&gt;</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;start_energy_ceiling&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">reject_len</span><span class="p">:</span>
                         <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;WARNING: rank </span><span class="si">%d</span><span class="s2"> failed to generate initial config by random positions under max energy </span><span class="si">%f</span><span class="s2"> in </span><span class="si">%d</span><span class="s2"> tries</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rank</span><span class="p">,</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;start_energy_ceiling&#39;</span><span class="p">],</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_init_max_n_tries&#39;</span><span class="p">]))</span>
 
                     <span class="c1"># try FORTRAN config initializer</span>
@@ -4043,7 +4120,14 @@
                 <span class="n">energy</span> <span class="o">=</span> <span class="n">eval_energy</span><span class="p">(</span><span class="n">at</span><span class="p">)</span>
                 <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;ns_energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rand_perturb_energy</span><span class="p">(</span><span class="n">energy</span><span class="p">,</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;random_energy_perturbation&#39;</span><span class="p">])</span>
                 <span class="n">at</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;volume&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">at</span><span class="o">.</span><span class="n">get_volume</span><span class="p">()</span>
-
+                <span class="c1">#VGF if nn rejection criteria enabled, print the final smallest nearest neighbour distance</span>
+                <span class="k">if</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;calc_nn_dis_init&#39;</span><span class="p">]:</span>
+                    <span class="n">distances</span> <span class="o">=</span> <span class="n">ase</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">get_distances</span><span class="p">(</span><span class="n">at</span><span class="o">.</span><span class="n">get_positions</span><span class="p">())</span>
+                    <span class="n">bonds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">distances</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+                    <span class="n">min_bond</span> <span class="o">=</span> <span class="n">bonds</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">at</span><span class="p">)]</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;min_bond_final&#39;</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">min_bond</span><span class="p">)</span>
+                <span class="c1">#VGF end</span>
+                
             <span class="c1"># Done initialising atomic positions. Now initialise momenta</span>
 
             <span class="c1"># set KEmax from P and Vmax</span>
@@ -4418,7 +4502,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.4.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
     </div>
   </body>
 </html>
