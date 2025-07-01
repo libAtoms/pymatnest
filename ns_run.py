@@ -493,10 +493,6 @@ def usage():
     ``calc_nn_dis=[ T | F ]``
      | While you can set the min_nn_dis to add an additional rejection criteria to the initial walker generation, you can use this keyword to keep the rejection criteria on throughout the sampling. This does increase the calculation time of a run and scales exponentially with the number of atoms.
      | default: F
-    
-    ``make_output_dir=[ T | F ]``
-     | Create an additional directory `output_data` in the calculation directory.
-     | default: F
 
     ``RE_pressures=sequence[float]``
      | Create a sequence of pressures for a replica-exchange NS simulations as a space separated list (e.g. RE_pressures=0.0 0.1 0.2 0.3). If this is only a single pressure, RE_pressures will be ignored in favor of MC_cell_P.
@@ -4101,7 +4097,7 @@ def main():
 
         ######################################################################
         # New arguments for RENS implementation (NU)
-        if str_to_logical(args.pop('make_output_dir', "F")):
+        if doing_replica_exchange:
             outfile_dir = f"output_data_{replica_idx}/"
             ns_args['out_file_prefix'] = outfile_dir + ns_args['out_file_prefix']
             if rank == 0:
@@ -4124,7 +4120,11 @@ def main():
                     "performing any replica-exchange."
                 )
             movement_args['MC_cell_P'] = ns_args["RE_pressures"][replica_idx]
-            args.pop('MC_cell_P')
+            try:
+                args.pop('MC_cell_P')
+                print("Got both MC_cell_P and RE_pressures, ignoring MC_cell_P")
+            except:
+                pass
         else:
             movement_args['MC_cell_P'] = float(args.pop('MC_cell_P', 0.0))
             
