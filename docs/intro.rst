@@ -43,7 +43,7 @@ Publications
 Algorithm
 -------------------------------------
 
-Nested sampling is an iterative, "top-down" method, it samples the Potential Energy Landscape (PES)
+Nested sampling is an iterative, "top-down" method, sampling the Potential Energy Landscape (PES)
 through a series of nested energy levels, starting from the high energy region (gas phase) and going towards the
 global minimum. The sampling is done using a set of walkers - these are randomly generated configurations at the initial step of the sampling,
 and the number of these determine the "resolution" of which the PES is sampled.
@@ -61,7 +61,7 @@ The iteration is continued until a satisfactory low energy configuration is reac
 
 The ``pymatnest`` package is a software
 library written in Fortran 95/python for the purpose of carrying out
-nested sampling calculations with a variety of options suitable for different systems.
+parallelised nested sampling calculations with a variety of options suitable for different systems and different ensembles.
 It can be used with the supplied fortran potential models and it also has interfaces with the following packages:
 
    - ``LAMMPS``
