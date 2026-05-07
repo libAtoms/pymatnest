@@ -5,12 +5,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>stacktrace &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=1476913b" />
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/classic.css?v=f11ead97" />
     
     <script src="../_static/documentation_options.js?v=29a6c3e3"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
-    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -38,11 +38,11 @@
   <h1>Source code for stacktrace</h1><div class="highlight"><pre>
 <span></span><span class="c1"># from stack exchange</span>
 
-<span class="kn">import</span> <span class="nn">code</span><span class="o">,</span> <span class="nn">traceback</span><span class="o">,</span> <span class="nn">signal</span><span class="o">,</span> <span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">code</span><span class="o">,</span><span class="w"> </span><span class="nn">traceback</span><span class="o">,</span><span class="w"> </span><span class="nn">signal</span><span class="o">,</span><span class="w"> </span><span class="nn">sys</span>
 
 <div class="viewcode-block" id="debug">
 <a class="viewcode-back" href="../stacktrace.html#stacktrace.debug">[docs]</a>
-<span class="k">def</span> <span class="nf">debug</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">debug</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Interrupt running process, and provide a python prompt for</span>
 <span class="sd">    interactive debugging.&quot;&quot;&quot;</span>
     <span class="n">d</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;_frame&#39;</span><span class="p">:</span><span class="n">frame</span><span class="p">}</span>         <span class="c1"># Allow access to frame object.</span>
@@ -59,7 +59,7 @@
 
 <div class="viewcode-block" id="listen">
 <a class="viewcode-back" href="../stacktrace.html#stacktrace.listen">[docs]</a>
-<span class="k">def</span> <span class="nf">listen</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">listen</span><span class="p">():</span>
     <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="n">debug</span><span class="p">)</span>  <span class="c1"># Register handler</span></div>
 
 </pre></div>
@@ -115,7 +115,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

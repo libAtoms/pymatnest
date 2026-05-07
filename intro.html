@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>Nested sampling method &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=1476913b" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=f11ead97" />
     
     <script src="_static/documentation_options.js?v=29a6c3e3"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -112,7 +112,7 @@ Phys. Chem. Chem. Phys. (2019), 21, 7305 <a class="reference external" href="htt
 </section>
 <section id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">¶</a></h2>
-<p>Nested sampling is an iterative, “top-down” method, it samples the Potential Energy Landscape (PES)
+<p>Nested sampling is an iterative, “top-down” method, sampling the Potential Energy Landscape (PES)
 through a series of nested energy levels, starting from the high energy region (gas phase) and going towards the
 global minimum. The sampling is done using a set of walkers - these are randomly generated configurations at the initial step of the sampling,
 and the number of these determine the “resolution” of which the PES is sampled.
@@ -128,7 +128,7 @@ The iteration is continued until a satisfactory low energy configuration is reac
 <h2><code class="docutils literal notranslate"><span class="pre">pymatnest</span></code><a class="headerlink" href="#pymatnest" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">pymatnest</span></code> package is a software
 library written in Fortran 95/python for the purpose of carrying out
-nested sampling calculations with a variety of options suitable for different systems.
+parallelised nested sampling calculations with a variety of options suitable for different systems and different ensembles.
 It can be used with the supplied fortran potential models and it also has interfaces with the following packages:</p>
 <blockquote>
 <div><ul class="simple">
@@ -267,14 +267,14 @@ It can be used with the supplied fortran potential models and it also has interf
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
 <p>latex exited with error
 [stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex)
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=latex)
  restricted \write18 enabled.
 entering extended mode
 (./math.tex
-LaTeX2e &lt;2021-11-15&gt; patch level 1
-L3 programming layer &lt;2022-01-21&gt;
+LaTeX2e &lt;2023-11-01&gt; patch level 1
+L3 programming layer &lt;2024-01-22&gt;
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
@@ -307,14 +307,14 @@ Transcript written on math.log.
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
 <p>latex exited with error
 [stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex)
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=latex)
  restricted \write18 enabled.
 entering extended mode
 (./math.tex
-LaTeX2e &lt;2021-11-15&gt; patch level 1
-L3 programming layer &lt;2022-01-21&gt;
+LaTeX2e &lt;2023-11-01&gt; patch level 1
+L3 programming layer &lt;2024-01-22&gt;
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
@@ -347,14 +347,14 @@ Transcript written on math.log.
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
 <p>latex exited with error
 [stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex)
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=latex)
  restricted \write18 enabled.
 entering extended mode
 (./math.tex
-LaTeX2e &lt;2021-11-15&gt; patch level 1
-L3 programming layer &lt;2022-01-21&gt;
+LaTeX2e &lt;2023-11-01&gt; patch level 1
+L3 programming layer &lt;2024-01-22&gt;
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
@@ -387,14 +387,14 @@ Transcript written on math.log.
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
 <p>latex exited with error
 [stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex)
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=latex)
  restricted \write18 enabled.
 entering extended mode
 (./math.tex
-LaTeX2e &lt;2021-11-15&gt; patch level 1
-L3 programming layer &lt;2022-01-21&gt;
+LaTeX2e &lt;2023-11-01&gt; patch level 1
+L3 programming layer &lt;2024-01-22&gt;
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
@@ -427,14 +427,14 @@ Transcript written on math.log.
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
 <p>latex exited with error
 [stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex)
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=latex)
  restricted \write18 enabled.
 entering extended mode
 (./math.tex
-LaTeX2e &lt;2021-11-15&gt; patch level 1
-L3 programming layer &lt;2022-01-21&gt;
+LaTeX2e &lt;2023-11-01&gt; patch level 1
+L3 programming layer &lt;2024-01-22&gt;
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
@@ -467,14 +467,14 @@ Transcript written on math.log.
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
 <p>latex exited with error
 [stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex)
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=latex)
  restricted \write18 enabled.
 entering extended mode
 (./math.tex
-LaTeX2e &lt;2021-11-15&gt; patch level 1
-L3 programming layer &lt;2022-01-21&gt;
+LaTeX2e &lt;2023-11-01&gt; patch level 1
+L3 programming layer &lt;2024-01-22&gt;
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
@@ -549,14 +549,14 @@ Transcript written on math.log.
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">*</span>)</p>
 <p>latex exited with error
 [stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex)
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=latex)
  restricted \write18 enabled.
 entering extended mode
 (./math.tex
-LaTeX2e &lt;2021-11-15&gt; patch level 1
-L3 programming layer &lt;2022-01-21&gt;
+LaTeX2e &lt;2023-11-01&gt; patch level 1
+L3 programming layer &lt;2024-01-22&gt;
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
@@ -588,14 +588,14 @@ Transcript written on math.log.
 <p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/</span>)</p>
 <p>latex exited with error
 [stdout]
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=latex)
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=latex)
  restricted \write18 enabled.
 entering extended mode
 (./math.tex
-LaTeX2e &lt;2021-11-15&gt; patch level 1
-L3 programming layer &lt;2022-01-21&gt;
+LaTeX2e &lt;2023-11-01&gt; patch level 1
+L3 programming layer &lt;2024-01-22&gt;
 (/usr/share/texlive/texmf-dist/tex/latex/base/article.cls
-Document Class: article 2021/10/04 v1.4n Standard LaTeX document class
+Document Class: article 2023/05/17 v1.4n Standard LaTeX document class
 (/usr/share/texlive/texmf-dist/tex/latex/base/size12.clo))
 (/usr/share/texlive/texmf-dist/tex/latex/base/inputenc.sty)
 (/usr/share/texlive/texmf-dist/tex/latex/amsmath/amsmath.sty
@@ -753,7 +753,7 @@ Transcript written on math.log.
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>

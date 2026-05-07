@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
     <title>lammpslib module &#8212; ns_doc 1 documentation</title>
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
-    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=1476913b" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/classic.css?v=f11ead97" />
     
     <script src="_static/documentation_options.js?v=29a6c3e3"></script>
-    <script src="_static/doctools.js?v=9a2dae69"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -48,7 +48,7 @@
 <p>ASE LAMMPS Calculator Library Version</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="lammpslib.LAMMPSlib">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">lammpslib.</span></span><span class="sig-name descname"><span class="pre">LAMMPSlib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_bad_restart_file=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory='.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammpslib.LAMMPSlib" title="Link to this definition">¶</a></dt>
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">lammpslib.</span></span><span class="sig-name descname"><span class="pre">LAMMPSlib</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">restart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_bad_restart_file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/lammpslib.html#LAMMPSlib"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#lammpslib.LAMMPSlib" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Calculator</span></code></p>
 <blockquote>
 <div><p>LAMMPSlib Interface Documentation</p>
@@ -108,7 +108,7 @@ whether to keep the lammps routine alive for more commands</p></td>
 <p>To run this calculator you must have LAMMPS installed and compiled to
 enable the python interface. See the LAMMPS manual.</p>
 <p>If the following code runs then lammps is installed correctly.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">lammps</span> <span class="kn">import</span> <span class="n">lammps</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">lammps</span><span class="w"> </span><span class="kn">import</span> <span class="n">lammps</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">lmp</span> <span class="o">=</span> <span class="n">lammps</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -125,8 +125,8 @@ program) python interface. As well as directly running any LAMMPS
 comand line it allows the values of any of LAMMPS variables to be
 extracted and returned to python.</p>
 <p><strong>Example</strong></p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">ase</span> <span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Atoms</span>
-<span class="kn">from</span> <span class="nn">lammpslib</span> <span class="kn">import</span> <span class="n">LAMMPSlib</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ase</span><span class="w"> </span><span class="kn">import</span> <span class="n">Atom</span><span class="p">,</span> <span class="n">Atoms</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">lammpslib</span><span class="w"> </span><span class="kn">import</span> <span class="n">LAMMPSlib</span>
 
 <span class="n">cmds</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;pair_style eam/alloy&quot;</span><span class="p">,</span>
         <span class="s2">&quot;pair_coeff * * NiAlH_jea.eam.alloy Al H&quot;</span><span class="p">]</span>
@@ -146,7 +146,7 @@ extracted and returned to python.</p>
 <p>LAMMPS provides a set of python functions to allow execution of the
 underlying C++ LAMMPS code. The functions used by the LAMMPSlib
 interface are:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">lammps</span> <span class="kn">import</span> <span class="n">lammps</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">lammps</span><span class="w"> </span><span class="kn">import</span> <span class="n">lammps</span>
 
 <span class="n">lmp</span> <span class="o">=</span> <span class="n">lammps</span><span class="p">(</span><span class="n">cmd_args</span><span class="p">)</span> <span class="c1"># initiate LAMMPS object with command line args</span>
 
@@ -225,13 +225,13 @@ directories.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lammpslib.LAMMPSlib.default_parameters">
-<span class="sig-name descname"><span class="pre">default_parameters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'atom_types':</span> <span class="pre">None,</span> <span class="pre">'boundary':</span> <span class="pre">True,</span> <span class="pre">'comm':</span> <span class="pre">None,</span> <span class="pre">'create_atoms':</span> <span class="pre">True,</span> <span class="pre">'create_box':</span> <span class="pre">True,</span> <span class="pre">'keep_alive':</span> <span class="pre">False,</span> <span class="pre">'lammps_header':</span> <span class="pre">['units</span> <span class="pre">metal',</span> <span class="pre">'atom_style</span> <span class="pre">atomic',</span> <span class="pre">'atom_modify</span> <span class="pre">map</span> <span class="pre">array</span> <span class="pre">sort</span> <span class="pre">0</span> <span class="pre">0'],</span> <span class="pre">'lammps_name':</span> <span class="pre">'',</span> <span class="pre">'log_file':</span> <span class="pre">None,</span> <span class="pre">'read_molecular_info':</span> <span class="pre">False}</span></em><a class="headerlink" href="#lammpslib.LAMMPSlib.default_parameters" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">default_parameters</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'atom_types':</span> <span class="pre">None,</span> <span class="pre">'boundary':</span> <span class="pre">True,</span> <span class="pre">'comm':</span> <span class="pre">None,</span> <span class="pre">'create_atoms':</span> <span class="pre">True,</span> <span class="pre">'create_box':</span> <span class="pre">True,</span> <span class="pre">'keep_alive':</span> <span class="pre">False,</span> <span class="pre">'lammps_header':</span> <span class="pre">['units</span> <span class="pre">metal',</span> <span class="pre">'atom_style</span> <span class="pre">atomic',</span> <span class="pre">'atom_modify</span> <span class="pre">map</span> <span class="pre">array</span> <span class="pre">sort</span> <span class="pre">0</span> <span class="pre">0'],</span> <span class="pre">'lammps_name':</span> <span class="pre">'',</span> <span class="pre">'log_file':</span> <span class="pre">None,</span> <span class="pre">'read_molecular_info':</span> <span class="pre">False}</span></span><a class="headerlink" href="#lammpslib.LAMMPSlib.default_parameters" title="Link to this definition">¶</a></dt>
 <dd><p>Default parameters</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lammpslib.LAMMPSlib.implemented_properties">
-<span class="sig-name descname"><span class="pre">implemented_properties</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['energy',</span> <span class="pre">'forces',</span> <span class="pre">'stress']</span></em><a class="headerlink" href="#lammpslib.LAMMPSlib.implemented_properties" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">implemented_properties</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['energy',</span> <span class="pre">'forces',</span> <span class="pre">'stress']</span></span><a class="headerlink" href="#lammpslib.LAMMPSlib.implemented_properties" title="Link to this definition">¶</a></dt>
 <dd><p>Properties calculator can handle (energy, forces, …)</p>
 </dd></dl>
 
@@ -242,7 +242,7 @@ directories.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lammpslib.LAMMPSlib.initialized">
-<span class="sig-name descname"><span class="pre">initialized</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#lammpslib.LAMMPSlib.initialized" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initialized</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#lammpslib.LAMMPSlib.initialized" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -344,7 +344,7 @@ any combination of these five: ‘positions’, ‘numbers’, ‘cell’,
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="lammpslib.LAMMPSlib.started">
-<span class="sig-name descname"><span class="pre">started</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#lammpslib.LAMMPSlib.started" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">started</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></span><a class="headerlink" href="#lammpslib.LAMMPSlib.started" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -481,7 +481,7 @@ function transposes cell matrix so the bases are column vectors</p>
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
     </div>
   </body>
 </html>
