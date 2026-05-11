@@ -52,6 +52,7 @@ Contents
    install.rst
    getstart.rst
    tutorial.rst
+   tutorial2.rst
    ns_run.rst
    ns_rng.rst
    rngstream.rst
