@@ -1258,6 +1258,8 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 
                 if E >= Emax: # reflect
                     Fhat = eval_forces(at)
+                    if movement_args['keep_atoms_fixed'] > 0:
+                        Fhat[:movement_args['keep_atoms_fixed'],:] = 0.0
                     Fhat /= np.linalg.norm(Fhat)
                     d_pos -= 2.0*Fhat*np.sum(Fhat*d_pos)
 
