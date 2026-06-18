@@ -1598,10 +1598,10 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         return (1, {})
 
     # print(print_prefix, ": do_MC_swap trying cluster", c1, c2)
-    p_1_orig = at.positions[c1,:].copy()
-    p_2_orig = at.positions[c2,:].copy()
-    at.positions[c1,:] = p_2_orig
-    at.positions[c2,:] = p_1_orig
+    p_1_orig = at.symbols[c1]
+    p_2_orig = at.symbols[c2]
+    at.symbols[c1] = p_2_orig
+    at.symbols[c2] = p_1_orig
     if not movement_args['swap_velo']:
         # TODO: don't do this for the time being, but we should be able to modify this
         # If we just swap particles by swapping positions, velocities will follow to the new position, and so will effectively be swapped
@@ -1636,8 +1636,8 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         at.info['ns_energy'] = new_energy
         accept_n = 1
     else: # reject
-        at.positions[c1,:] = p_1_orig
-        at.positions[c2,:] = p_2_orig
+        at.symbols[c1] = p_1_orig
+        at.symbols[c2] = p_2_orig
         if not movement_args['swap_velo']:
             velocities[c1,:] = v_1_orig
             velocities[c2,:] = v_2_orig
