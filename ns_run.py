@@ -3953,12 +3953,11 @@ def main():
                     rej_free_perturb_velo(at, None, KEmax) # adds KE to at.info['ns_energy']
 
             # swap atomic numbers if doing semi-grand canonical ensemble
-            ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0)
+            ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0) or (movement_args['n_swap_steps'] > 0)
 
         else:  # set up walkers with a restart
             # swap atomic numbers if doing semi-grand canonical ensemble
-            ns_args['swap_atomic_numbers'] = (
-                    movement_args['n_semi_grand_steps'] > 0)
+            ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0) or (movement_args['n_swap_steps'] > 0)
             at_list = ase.io.read(ns_args['restart_file'], index=":")  # LIVIA
             for r in range(size):
                 if rank == r:
