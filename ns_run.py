@@ -40,16 +40,16 @@ def usage():
        | Name of file to read in for atom information
        | default: ''
 
-    ``keep_atoms_fixed=int ``
+    ``keep_atoms_fixed=int``
        | Number of atoms to fix in surface simulation. 
 
-    ``apply_Z_wall=[T|F] ``
+    ``apply_Z_wall=[T|F]``
        | Whether to have a boundary in the Z direction to keep free particles reaching the other side of "surface" layer due to periodic boundary conditions.
        | This functionality is not fully tested! Recommended use with MC evaluator and fortran. If constructing a surface layer, make it parallel to the XY plane and set the X dimension with the "wall" taken into account, no atoms should violate the wall restriction initially!!!
        | If True, the wall is set at 10 angstroms below the top of the simulation cell.
 
     ``restart_file=path_to_file``
-       | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files.
+       | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. This arg is ignored if existing .snapshot. files are found.
 
     ``n_walkers=int``
        | MANDATORY
@@ -66,7 +66,7 @@ def usage():
        | MANDATORY
        | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``. Either this or ``converge_down_to_T`` is required.
 
-    ``converge_down_to_T=flot``
+    ``converge_down_to_T=float``
        | MANDATORY
        | temperature down to which Z(T) should be converged.  Either this or ``n_iter_times_fraction_killed`` is required.
 
