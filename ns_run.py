@@ -40,16 +40,16 @@ def usage():
        | Name of file to read in for atom information
        | default: ''
 
-    ``keep_atoms_fixed=int ``
+    ``keep_atoms_fixed=int``
        | Number of atoms to fix in surface simulation. 
 
-    ``apply_Z_wall=[T|F] ``
+    ``apply_Z_wall=[T|F]``
        | Whether to have a boundary in the Z direction to keep free particles reaching the other side of "surface" layer due to periodic boundary conditions.
        | This functionality is not fully tested! Recommended use with MC evaluator and fortran. If constructing a surface layer, make it parallel to the XY plane and set the X dimension with the "wall" taken into account, no atoms should violate the wall restriction initially!!!
        | If True, the wall is set at 10 angstroms below the top of the simulation cell.
 
     ``restart_file=path_to_file``
-       | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files.
+       | File for restart configs. Mutually exclusive with ``start_*``, one is required. The file should contain the state of the walkers to continue from along with the restart iteration number. Normally such a file can be the concatenated snapshot files. This arg is ignored if existing .snapshot. files are found.
 
     ``n_walkers=int``
        | MANDATORY
@@ -66,7 +66,7 @@ def usage():
        | MANDATORY
        | Number of nested sampling iteration cycles performed per walker. Thus the total number of iterations will be ``n_iter_times_fraction_killed`` / ``(n_cull/n_walkers)``. Either this or ``converge_down_to_T`` is required.
 
-    ``converge_down_to_T=flot``
+    ``converge_down_to_T=float``
        | MANDATORY
        | temperature down to which Z(T) should be converged.  Either this or ``n_iter_times_fraction_killed`` is required.
 
@@ -1258,6 +1258,8 @@ def do_MC_atom_walk(at, movement_args, Emax, KEmax):
 
                 if E >= Emax: # reflect
                     Fhat = eval_forces(at)
+                    if movement_args['keep_atoms_fixed'] > 0:
+                        Fhat[:movement_args['keep_atoms_fixed'],:] = 0.0
                     Fhat /= np.linalg.norm(Fhat)
                     d_pos -= 2.0*Fhat*np.sum(Fhat*d_pos)
 
@@ -1596,10 +1598,10 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         return (1, {})
 
     # print(print_prefix, ": do_MC_swap trying cluster", c1, c2)
-    p_1_orig = at.positions[c1,:].copy()
-    p_2_orig = at.positions[c2,:].copy()
-    at.positions[c1,:] = p_2_orig
-    at.positions[c2,:] = p_1_orig
+    p_1_orig = at.symbols[c1]
+    p_2_orig = at.symbols[c2]
+    at.symbols[c1] = p_2_orig
+    at.symbols[c2] = p_1_orig
     if not movement_args['swap_velo']:
         # TODO: don't do this for the time being, but we should be able to modify this
         # If we just swap particles by swapping positions, velocities will follow to the new position, and so will effectively be swapped
@@ -1634,8 +1636,8 @@ def do_MC_swap_step(at, movement_args, Emax, KEmax):
         at.info['ns_energy'] = new_energy
         accept_n = 1
     else: # reject
-        at.positions[c1,:] = p_1_orig
-        at.positions[c2,:] = p_2_orig
+        at.symbols[c1] = p_1_orig
+        at.symbols[c2] = p_2_orig
         if not movement_args['swap_velo']:
             velocities[c1,:] = v_1_orig
             velocities[c2,:] = v_2_orig
@@ -3265,7 +3267,7 @@ def main():
             exit_error("always need start_species or start_config_file, even if restart_file is specified\n",1)
         if ns_args['start_species'] is not None and ns_args['start_config_file'] is not None:
             exit_error("can't specify both start_species and start_config_file\n",1)
-        ns_args['restart_file'] = args.pop('restart_file', 'AUTO')
+        ns_args['restart_file'] = args.pop('restart_file', '')
 
         ns_args['max_volume_per_atom'] = float(args.pop('max_volume_per_atom', 1.0e3))
         ns_args['min_volume_per_atom'] = float(args.pop('min_volume_per_atom', 1.0))
@@ -3738,37 +3740,35 @@ def main():
                 exit_error("ERROR: Masses are not all equal, and atom_velo_rej_free_fully_randomize is false. Refusing to produce incorrect results\n", 1)
 
         created_temp_restart_file = False
-        if ns_args['restart_file'] == "AUTO":
-            if rank == 0:
-                print("DOING restart_file=AUTO")
-                import glob
-                sfx = ns_args['config_file_format']
+        if rank == 0:
+            print("Checking for latest restart files")
+            import glob
+            sfx = ns_args['config_file_format']
 
-                # try to match .0. or .ALL., but using sloppy regexp
-                print("checking snapshots glob", glob.iglob('%ssnapshot.[0-9]*.[0A]*.%s' % (ns_args['out_file_prefix'], sfx)))
-                try:
-                    newest_snapshot = max(glob.iglob('%ssnapshot.[0-9]*.[0A]*.%s' % (ns_args['out_file_prefix'], sfx)), key=os.path.getmtime)
-                    print("restarting from ", newest_snapshot)
-                    if re.search('\.ALL\.%s$' % sfx, newest_snapshot) is not None:  # latest snapshot is a combined one for all nodes
-                        print("snapshot is combined for all nodes")
-                        ns_args['restart_file'] = newest_snapshot
-                    else:
-                        snapshot_root = re.sub('\.0\.%s' % sfx, "", newest_snapshot)
-                        restart_file = snapshot_root+".ALL."+sfx
-                        print("creating combined snapshot file", restart_file, "from", [tf for tf in glob.iglob('%s.[0-9]*.%s' % (snapshot_root, sfx))])
-                        created_temp_restart_file = True
-                        with open(restart_file, "w") as snapshot_out:
-                            for snapshot_file in glob.iglob('%s.[0-9]*.%s' % (snapshot_root, sfx)):
-                                with open(snapshot_file, "r") as snapshot_in:
-                                    for line in snapshot_in:
-                                        snapshot_out.write(line)
-                        ns_args['restart_file'] = restart_file
-                except:
-                    print("no snapshot files found")
-                    ns_args['restart_file'] = ''
+            # try to match .0. or .ALL., but using sloppy regexp
+            print("checking snapshots glob", glob.iglob('%ssnapshot.[0-9]*.[0A]*.%s' % (ns_args['out_file_prefix'], sfx)))
+            try:
+                newest_snapshot = max(glob.iglob('%ssnapshot.[0-9]*.[0A]*.%s' % (ns_args['out_file_prefix'], sfx)), key=os.path.getmtime)
+                print("restarting from ", newest_snapshot)
+                if re.search('\.ALL\.%s$' % sfx, newest_snapshot) is not None:  # latest snapshot is a combined one for all nodes
+                    print("snapshot is combined for all nodes")
+                    ns_args['restart_file'] = newest_snapshot
+                else:
+                    snapshot_root = re.sub('\.0\.%s' % sfx, "", newest_snapshot)
+                    restart_file = snapshot_root+".ALL."+sfx
+                    print("creating combined snapshot file", restart_file, "from", [tf for tf in glob.iglob('%s.[0-9]*.%s' % (snapshot_root, sfx))])
+                    created_temp_restart_file = True
+                    with open(restart_file, "w") as snapshot_out:
+                        for snapshot_file in glob.iglob('%s.[0-9]*.%s' % (snapshot_root, sfx)):
+                            with open(snapshot_file, "r") as snapshot_in:
+                                for line in snapshot_in:
+                                    snapshot_out.write(line)
+                    ns_args['restart_file'] = restart_file
+            except:
+                print("no new snapshot files found")
 
-            if comm is not None:
-                ns_args['restart_file'] = comm.bcast(ns_args['restart_file'], root=0)
+        if comm is not None:
+            ns_args['restart_file'] = comm.bcast(ns_args['restart_file'], root=0)
         sys.stdout.flush()
 
         # set up walkers
@@ -3953,12 +3953,11 @@ def main():
                     rej_free_perturb_velo(at, None, KEmax) # adds KE to at.info['ns_energy']
 
             # swap atomic numbers if doing semi-grand canonical ensemble
-            ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0)
+            ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0) or (movement_args['n_swap_steps'] > 0)
 
         else:  # set up walkers with a restart
             # swap atomic numbers if doing semi-grand canonical ensemble
-            ns_args['swap_atomic_numbers'] = (
-                    movement_args['n_semi_grand_steps'] > 0)
+            ns_args['swap_atomic_numbers'] = (movement_args['n_semi_grand_steps'] > 0) or (movement_args['n_swap_steps'] > 0)
             at_list = ase.io.read(ns_args['restart_file'], index=":")  # LIVIA
             for r in range(size):
                 if rank == r:
