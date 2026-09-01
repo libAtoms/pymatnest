@@ -54,9 +54,9 @@ except:
 if reweight_delta_P != 0.0:
     Es += reweight_delta_P*Vs
 
-E_min_i = np.argmin(Es)
-E_min = Es[E_min_i]
-Es -= E_min
+#E_min_i = np.argmin(Es)
+#E_min = Es[E_min_i]
+#Es -= E_min
 
 if args.kolmogorov_smirnov_test:
     from scipy import stats
@@ -88,7 +88,7 @@ def analyse(log_a, T, interval=1):
     # Z = Z_true * exp(-shift)
 
     U_pot = sum(Z_term*Es)/Z
-    U = n_Extra_DOF/(2.0*beta) + U_pot + E_min
+    U = n_Extra_DOF/(2.0*beta) + U_pot #+ E_min
 
     Cvp = n_Extra_DOF*k_Boltzmann/2.0 + k_Boltzmann *beta*beta * (sum(Z_term * Es**2)/Z - U_pot**2)
 
@@ -104,10 +104,11 @@ def analyse(log_a, T, interval=1):
 
     if debug:
         sys.stderr.write("T %f extra DoF U_offset %f C_offset %f remaining Cvp %f\n" % (T, n_Extra_DOF/(2.0*beta), n_Extra_DOF*k_Boltzmann/2.0, Cvp-n_Extra_DOF*k_Boltzmann/2.0))
-
     log_Z = math.log(Z) + shift 
+
+
     # log(Z) is the true Z here, not shifted by some max value
-    Helmholtz_F = -log_Z / beta + n_Extra_DOF / (2.0 * beta) + E_min
+    Helmholtz_F = -log_Z / beta + n_Extra_DOF / (2.0 * beta) #+ E_min
 
     Z_max = np.amax(Z_term)
     low_percentile_config = np.where(Z_term > Z_max/10.0)[0][0]*interval
@@ -132,7 +133,8 @@ def analyse(log_a, T, interval=1):
             if Z_term[i] > Z_max*args.dump_terms:
                 Z_terms_fract += Z_term[i]
                 n_Z_terms += 1
-                print("Z_term",i, Es[i]+E_min, Vs[i], Z_term[i])
+                #print("Z_term",i, Es[i]+E_min, Vs[i], Z_term[i])
+                print("Z_term",i, Es[i], Vs[i], Z_term[i])
         print("#Z_term fract total ", n_Z_terms, Z_terms_fract/Z, high_percentile_config-low_percentile_config, Z_fract)
 
     return (log_Z, Helmholtz_F, U, Cvp, low_percentile_config, mode_config, high_percentile_config, Z_fract, V, ks_gaussianity, thermal_exp)
