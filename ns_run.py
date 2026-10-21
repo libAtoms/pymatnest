@@ -3045,6 +3045,7 @@ def do_ns_loop():
 
         # walk extras
         if not ns_args['no_extra_walks_at_all']:
+            for ii in range(max_n_cull_per_task - len(clone_walk_ind) + n_extra_walk_per_task):
                 r_i = rng.int_uniform(0, n_walkers)
                 # WARNING: this may select walkers for extra walks multiple
                 # times, yet never re-walk ones that were walked as clone
