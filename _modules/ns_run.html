@@ -3238,6 +3238,7 @@
 
         <span class="c1"># walk extras</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">ns_args</span><span class="p">[</span><span class="s1">&#39;no_extra_walks_at_all&#39;</span><span class="p">]:</span>
+            <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_n_cull_per_task</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">clone_walk_ind</span><span class="p">)</span> <span class="o">+</span> <span class="n">n_extra_walk_per_task</span><span class="p">):</span>
                 <span class="n">r_i</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">int_uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_walkers</span><span class="p">)</span>
                 <span class="c1"># WARNING: this may select walkers for extra walks multiple</span>
                 <span class="c1"># times, yet never re-walk ones that were walked as clone</span>
@@ -4502,7 +4503,7 @@
     </div>
     <div class="footer" role="contentinfo">
     &#169; Copyright 2015, livia.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.1.0.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 9.2.0.
     </div>
   </body>
 </html>
